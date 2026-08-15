@@ -1,7 +1,7 @@
 {
-  "name": "qismhub-platform",
+  "name": "shouba-platform",
   "version": "0.1.0",
-  "description": "QismHub — منصّة واجهة القسم لرؤساء الشُّعب",
+  "description": "شعبة — منصّة إدارة الشُّعب المدرسية لرؤساء الشُّعب",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

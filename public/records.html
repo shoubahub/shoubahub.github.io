@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>شعبة · السجلّات</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/identity/tokens.css" />
+<link rel="stylesheet" href="/frame.css" />
+<style>
+  *{box-sizing:border-box;margin:0}
+  body{font-family:var(--font-ar);color:var(--shouba-ink);background:var(--shouba-canvas);min-height:100vh;display:flex;justify-content:center;-webkit-font-smoothing:antialiased}
+  .screen{width:100%;max-width:430px;min-height:100vh;position:relative;overflow:hidden;isolation:isolate;background:var(--shouba-canvas);padding-bottom:110px}
+  .echo{position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .num{font-family:var(--font-num);unicode-bidi:isolate}
+  .statusbar{display:flex;align-items:center;justify-content:space-between;padding:16px 26px 0;font-size:12px;color:var(--shouba-hint);font-weight:600}
+  .batt{width:18px;height:9px;border-radius:3px;background:var(--shouba-hint)}
+  .head{padding:18px 26px 0;display:flex;flex-direction:column;gap:5px;align-items:flex-start;text-align:right}
+  .head .k{font-size:11.5px;color:var(--shouba-hint);font-weight:500}
+  .head .t{font-size:23px;font-weight:700;letter-spacing:-.01em}
+  /* بطاقة النموذج الكحلية بتبويب */
+  .card{position:relative;margin:36px 26px 0;background:linear-gradient(180deg,#1D5588,var(--shouba-navy) 52%,#103A5C);border-radius:26px 0 26px 26px;padding:18px 20px 20px;display:flex;flex-direction:column;gap:16px;
+    box-shadow:inset 0 1.5px 0 rgba(168,198,226,.45), inset 0 -2px 0 rgba(6,24,42,.5), 0 5px 0 #0E3252, 0 16px 30px rgba(20,50,80,.34)}
+  .card .tab{position:absolute;right:0;top:-19px;width:46%;height:21px;background:linear-gradient(180deg,#23608F,#1D5588);border-radius:20px 20px 0 0;box-shadow:inset 0 1.5px 0 rgba(168,198,226,.4)}
+  .card .r1{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .card .pill{background:rgba(244,241,234,.14);border-radius:999px;padding:6px 13px;font-size:11.5px;font-weight:600;color:var(--shouba-cream)}
+  .card .kind{font-size:12px;font-weight:600;color:#A8C6E2}
+  .card .title{font-size:20px;font-weight:700;color:var(--shouba-cream)}
+  .card .meta{font-size:12.5px;color:#8FB6DA;margin-top:6px}
+  .card .btns{display:flex;gap:10px}
+  .card .primary{flex:1;background:var(--shouba-cta);border-radius:16px;padding:14px;text-align:center;font-size:14.5px;font-weight:700;color:#241D06;text-shadow:0 1px 0 rgba(255,255,255,.4);
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(140,95,15,.4), 0 5px 0 var(--shouba-amber-deep), 0 10px 16px rgba(20,50,80,.34)}
+  .card .ghost{background:linear-gradient(180deg,rgba(244,241,234,.22),rgba(244,241,234,.09));border-radius:16px;padding:14px 22px;text-align:center;font-size:14.5px;font-weight:600;color:var(--shouba-cream);
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.3), inset 0 -2px 0 rgba(8,28,48,.35), 0 4px 0 rgba(8,28,48,.4), 0 8px 14px rgba(8,28,48,.28)}
+  .rowh{padding:22px 26px 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .rowh .link{font-size:12px;font-weight:600;color:var(--shouba-link)}
+  .rowh .t{font-size:16px;font-weight:700}
+  /* معاينة السجلّ (ورقة رسمية) */
+  .preview{position:relative;margin:26px 26px 0;background:linear-gradient(180deg,#FEFCF7,#F6F1E6);border-radius:20px;padding:18px;
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.95), inset 0 -1.5px 0 rgba(154,130,94,.16), 0 3px 0 rgba(190,172,140,.5), 0 10px 20px rgba(90,72,48,.2)}
+  .preview .e1{position:absolute;top:-13px;left:9%;right:9%;height:9px;border-radius:11px 11px 0 0;background:#DFD3BC}
+  .preview .e2{position:absolute;top:-7px;left:4.5%;right:4.5%;height:9px;border-radius:11px 11px 0 0;background:#EBE1CD}
+  .preview .wm{position:absolute;inset:0;border-radius:20px;overflow:hidden}
+  .preview .in{position:relative;display:flex;flex-direction:column;gap:12px}
+  .preview .ph{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;border-bottom:2px solid var(--shouba-navy)}
+  .preview .ph .date{font-size:10px;color:#7A6F5E;direction:ltr;unicode-bidi:isolate;font-family:var(--font-num)}
+  .preview .ph .org{font-size:10px;color:#7A6F5E;line-height:1.6;text-align:left}
+  .preview .ph .logo{width:26px;height:auto}
+  .preview .pt{font-size:13.5px;font-weight:700;color:var(--shouba-navy);text-align:right}
+  .preview .lines{display:flex;flex-direction:column;gap:7px}
+  .preview .ln{display:flex;gap:8px;align-items:center}
+  .preview .ln .k{width:34px;height:7px;border-radius:4px}
+  .preview .ln .v{flex:1;height:7px;border-radius:4px;background:rgba(22,69,110,.13)}
+  .preview .pf{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px solid rgba(120,98,66,.2);font-size:10px;color:#8A7F6E}
+  /* نماذج أخرى */
+  .other{position:relative;margin:12px 26px 0;background:linear-gradient(180deg,var(--shouba-paper),#F4EDE0);border-radius:20px;padding:13px 16px;display:flex;align-items:center;gap:13px;
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), inset 0 -1.5px 0 rgba(154,130,94,.18), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2)}
+  .other .edge{position:absolute;top:14px;bottom:14px;right:0;width:5px;border-radius:999px 0 0 999px;background:var(--shouba-amber)}
+  .other .tx{flex:1;display:flex;flex-direction:column;gap:2px;align-items:flex-end;text-align:right}
+  .other .tx b{font-size:14.5px;font-weight:600}.other .tx small{font-size:11.5px;color:var(--shouba-hint)}
+  .other .ic{width:34px;height:34px;border-radius:12px;background:var(--shouba-canvas);display:grid;place-items:center;flex:none}
+  /* الشريط السفلي */
+  .tabbar{position:fixed;bottom:20px;left:20px;right:20px;max-width:390px;margin:0 auto;background:linear-gradient(180deg,#FCF8F0,#F2EBDC);border-radius:28px;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.95), inset 0 -1.5px 0 rgba(154,130,94,.2), 0 4px 0 rgba(190,172,140,.55), 0 14px 26px rgba(90,72,48,.24)}
+  .tabbar .it{display:flex;flex-direction:column;align-items:center;gap:5px;width:52px;font-size:10px;color:var(--shouba-hint)}
+  .tabbar .it.on{color:var(--shouba-navy);font-weight:700}
+  .tabbar .fab{width:54px;height:54px;border-radius:999px;background:linear-gradient(180deg,#F4C878,#E8A33D 45%,#C98A20);display:grid;place-items:center;margin-top:-27px;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.7), inset 0 -3px 0 rgba(140,95,15,.45), 0 5px 0 var(--shouba-amber-deep), 0 12px 20px rgba(90,72,48,.34)}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="screen">
+    <svg class="echo" width="430" height="932" viewBox="0 0 430 932" fill="none" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
+      <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#D9CCB2" transform="translate(-150 640) rotate(-5) scale(4.6)"/>
+    </svg>
+    <div class="statusbar"><span class="num">٩:٤١</span><span style="display:flex;align-items:center;gap:6px"><span class="num">٩٤٪</span><span class="batt"></span></span></div>
+
+    <div class="head"><div class="k">النماذج الرسمية · تُملأ من بيانات المنصّة</div><div class="t">إصدار سجلّ</div></div>
+
+    <div class="card">
+      <div class="tab"></div>
+      <div class="r1"><div class="pill">مارس <span class="num">2026</span></div><div class="kind">نموذج وزاري · شهري</div></div>
+      <div><div class="title">سجلّ متابعة المنهج</div><div class="meta">مملوء من <span class="num">34</span> متابعة · جاهز للمراجعة</div></div>
+      <div class="btns"><div class="primary">تصدير <span class="num">PDF</span></div><div class="ghost">مشاركة</div></div>
+    </div>
+
+    <div class="rowh"><div class="link">تغيير الترويسة</div><div class="t">المعاينة</div></div>
+
+    <div class="preview">
+      <div class="e1"></div><div class="e2"></div>
+      <div class="wm"><svg width="200" height="200" viewBox="0 0 120 120" fill="none" style="position:absolute;left:-54px;bottom:-84px;opacity:.07"><path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#16456E"/></svg></div>
+      <div class="in">
+        <div class="ph">
+          <div class="date">2026-03-11</div>
+          <div style="display:flex;align-items:center;gap:9px">
+            <div class="org">شعبة علم النفس والفلسفة<br>ثانوية ابن سينا</div>
+            <img class="logo" src="/identity/assets/logo-vec-color.svg" alt="شعبة" />
+          </div>
+        </div>
+        <div class="pt">سجلّ متابعة المنهج · مارس</div>
+        <div class="lines">
+          <div class="ln"><div class="k" style="background:rgba(79,123,94,.4)"></div><div class="v"></div></div>
+          <div class="ln"><div class="k" style="background:rgba(196,112,63,.4)"></div><div class="v"></div></div>
+          <div class="ln"><div class="k" style="background:rgba(79,123,94,.4)"></div><div class="v"></div></div>
+          <div class="ln"><div class="k" style="background:rgba(183,68,58,.35)"></div><div class="v"></div></div>
+        </div>
+        <div class="pf"><span>صفحة <span class="num">1 / 2</span></span><span>رئيس الشعبة · توقيع إلكتروني</span></div>
+      </div>
+    </div>
+
+    <div class="rowh"><span></span><div class="t">نماذج أخرى</div></div>
+    <div class="other">
+      <div class="edge"></div>
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M12 4 L6 10 L12 16" stroke="#A79A86" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="tx"><b>كشف حضور المعلّمين</b><small>أسبوعي · جاهز</small></div>
+      <div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="#8A7F6E" stroke-width="1.8"/><path d="M4 9 H20" stroke="#8A7F6E" stroke-width="1.8"/></svg></div>
+    </div>
+  </div>
+
+  <div class="tabbar">
+    <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="14" rx="3" stroke="#A79A86" stroke-width="1.8"/><path d="M4 10 H20" stroke="#A79A86" stroke-width="1.8"/></svg>القسم</div>
+    <div class="it on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M6 3 H15 L19 7 V21 H6 Z" fill="#16456E"/></svg>السجلّات</div>
+    <div class="fab"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#24211C" stroke-width="2.6" stroke-linecap="round"/></svg></div>
+    <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="3.4" stroke="#A79A86" stroke-width="1.8"/><path d="M5.5 20 C5.5 16 8.5 14 12 14 C15.5 14 18.5 16 18.5 20" stroke="#A79A86" stroke-width="1.8" stroke-linecap="round"/></svg>المعلّمون</div>
+    <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"/><rect x="13" y="4" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"/><rect x="4" y="13" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"/><rect x="13" y="13" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"/></svg>اللوحة</div>
+  </div>
+ </div></div>
+ <script src="/nav.js"></script>
+</body>
+</html>

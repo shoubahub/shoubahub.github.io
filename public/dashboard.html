@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>شعبة · اللوحة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/identity/tokens.css" />
+<link rel="stylesheet" href="/frame.css" />
+<style>
+  *{box-sizing:border-box;margin:0}
+  body{font-family:var(--font-ar);color:var(--shouba-ink);background:var(--shouba-canvas);min-height:100vh;display:flex;justify-content:center;-webkit-font-smoothing:antialiased}
+  .screen{width:100%;max-width:430px;min-height:100vh;position:relative;overflow:hidden;isolation:isolate;background:var(--shouba-canvas);padding-bottom:110px}
+  .echo{position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .num{font-family:var(--font-num);unicode-bidi:isolate}
+
+  .statusbar{display:flex;align-items:center;justify-content:space-between;padding:16px 26px 0;font-size:12px;color:var(--shouba-hint);font-weight:600}
+  .batt{width:18px;height:9px;border-radius:3px;background:var(--shouba-hint)}
+
+  /* الرأس */
+  .head{padding:18px 26px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+  .head .d{font-size:11.5px;color:var(--shouba-hint);font-weight:500}
+  .head .g{font-size:23px;font-weight:700;letter-spacing:-.01em;margin-top:5px}
+  .head .av{width:46px;height:46px;border-radius:16px;background:var(--shouba-navy);display:grid;place-items:center;flex:none;box-shadow:5px 6px 14px rgba(20,50,80,.28);overflow:hidden}
+  .head .av img{width:34px;height:auto}
+
+  /* بطاقة الآن (كحلية بشكل تبويب) */
+  .now{position:relative;margin:36px 26px 0;background:linear-gradient(180deg,#1D5588 0%,var(--shouba-navy) 52%,#103A5C 100%);border-radius:26px 0 26px 26px;padding:18px 20px 20px;display:flex;flex-direction:column;gap:16px;
+    box-shadow:inset 0 1.5px 0 rgba(168,198,226,.45), inset 0 -2px 0 rgba(6,24,42,.5), 0 5px 0 #0E3252, 0 16px 30px rgba(20,50,80,.34)}
+  .now .tab{position:absolute;right:0;top:-19px;width:46%;height:21px;background:linear-gradient(180deg,#23608F,#1D5588);border-radius:20px 20px 0 0;box-shadow:inset 0 1.5px 0 rgba(168,198,226,.4)}
+  .now .r1{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .now .rem{background:rgba(244,241,234,.14);border-radius:999px;padding:6px 13px;font-size:11.5px;font-weight:600;color:var(--shouba-cream)}
+  .now .liv{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#A8C6E2}
+  .now .liv .dot{width:8px;height:8px;border-radius:999px;background:var(--shouba-amber)}
+  .now .title{font-size:20px;font-weight:700;color:var(--shouba-cream)}
+  .now .meta{font-size:12.5px;color:#8FB6DA;margin-top:6px}
+  .now .btns{display:flex;gap:10px}
+  .now .primary{flex:1;background:var(--shouba-cta);border-radius:16px;padding:14px;text-align:center;font-size:14.5px;font-weight:700;color:#241D06;text-shadow:0 1px 0 rgba(255,255,255,.4);
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(140,95,15,.4), 0 5px 0 var(--shouba-amber-deep), 0 10px 16px rgba(20,50,80,.34)}
+  .now .ghost{background:linear-gradient(180deg,rgba(244,241,234,.22),rgba(244,241,234,.09));border-radius:16px;padding:14px 22px;text-align:center;font-size:14.5px;font-weight:600;color:var(--shouba-cream);
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.3), inset 0 -2px 0 rgba(8,28,48,.35), 0 4px 0 rgba(8,28,48,.4), 0 8px 14px rgba(8,28,48,.28)}
+
+  .rowh{padding:22px 26px 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .rowh .link{font-size:12px;font-weight:600;color:var(--shouba-link)}
+  .rowh .t{font-size:16px;font-weight:700}
+
+  /* شريط الأسبوع */
+  .week{padding:12px 26px 0;display:flex;gap:8px}
+  .day{flex:1;border-radius:18px;padding:12px 0 10px;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .day.on{background:var(--shouba-navy);box-shadow:5px 7px 16px rgba(20,50,80,.26)}
+  .day.off{background:linear-gradient(180deg,#FBF7EE,#F3ECDE);box-shadow:inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16)}
+  .day .dn{font-size:11px}.day.on .dn{color:#A8C6E2}.day.off .dn{color:var(--shouba-hint)}
+  .day .dd{font-size:18px;direction:ltr;unicode-bidi:isolate}.day.on .dd{color:var(--shouba-cream);font-weight:700}.day.off .dd{color:var(--shouba-text-muted);font-weight:600}
+  .day .dots{display:flex;gap:3px}.day .dots i{width:4px;height:4px;border-radius:999px}
+
+  /* إنجاز المنهج */
+  .prog{position:relative;margin:30px 26px 0;background:linear-gradient(180deg,var(--shouba-paper),#F4EDE0);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:14px;
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), inset 0 -1.5px 0 rgba(154,130,94,.18), 0 3px 0 rgba(190,172,140,.5), 0 9px 18px rgba(120,98,66,.2)}
+  .prog .e1{position:absolute;top:-13px;left:9%;right:9%;height:9px;border-radius:11px 11px 0 0;background:#DFD3BC}
+  .prog .e2{position:absolute;top:-7px;left:4.5%;right:4.5%;height:9px;border-radius:11px 11px 0 0;background:#EBE1CD}
+  .prog .r1{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+  .prog .pct{font-size:26px;font-weight:700;color:var(--shouba-navy);direction:ltr;unicode-bidi:isolate}
+  .prog .lab b{font-size:15.5px;font-weight:700;display:block;text-align:right}
+  .prog .lab small{font-size:11.5px;color:var(--shouba-hint)}
+  .prog .segs{display:flex;gap:5px}
+  .prog .segs i{flex:1;height:8px;border-radius:999px;background:var(--shouba-line)}
+  .prog .segs i.f{background:var(--shouba-navy)}.prog .segs i.a{background:var(--shouba-amber)}
+
+  /* بحاجة إلى إجراء */
+  .act{position:relative;margin:12px 26px 0;background:linear-gradient(180deg,var(--shouba-paper),#F4EDE0);border-radius:20px;padding:13px 15px;display:flex;align-items:center;gap:13px;
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), inset 0 -1.5px 0 rgba(154,130,94,.18), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2)}
+  .act .edge{position:absolute;top:14px;bottom:14px;right:0;width:5px;border-radius:999px 0 0 999px;background:var(--shouba-amber)}
+  .act .pill{background:var(--shouba-canvas);border-radius:999px;padding:6px 13px;font-size:11.5px;font-weight:700;color:#8A5A18;flex:none}
+  .act .tx{flex:1;display:flex;flex-direction:column;gap:2px;align-items:flex-end;text-align:right}
+  .act .tx b{font-size:14.5px;font-weight:700}.act .tx small{font-size:11.5px;color:var(--shouba-hint)}
+  .act .avt{width:38px;height:38px;border-radius:13px;background:var(--shouba-canvas);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--shouba-text-muted);flex:none}
+  .more{display:flex;align-items:center;gap:8px;justify-content:flex-end;padding:10px 30px 0}
+  .more small{font-size:11.5px;color:var(--shouba-hint)}
+  .more .dots{display:flex;gap:3px}.more .dots i{width:5px;height:5px;border-radius:999px;background:#C9BCA6}.more .dots i.on{background:var(--shouba-navy)}
+
+  /* الشريط السفلي العائم */
+  .tabbar{position:fixed;bottom:20px;left:20px;right:20px;max-width:390px;margin:0 auto;background:linear-gradient(180deg,#FCF8F0,#F2EBDC);border-radius:28px;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.95), inset 0 -1.5px 0 rgba(154,130,94,.2), 0 4px 0 rgba(190,172,140,.55), 0 14px 26px rgba(90,72,48,.24)}
+  .tabbar .it{display:flex;flex-direction:column;align-items:center;gap:5px;width:52px;font-size:10px;color:var(--shouba-hint)}
+  .tabbar .it.on{color:var(--shouba-navy);font-weight:700}
+  .tabbar .fab{width:54px;height:54px;border-radius:999px;background:linear-gradient(180deg,#F4C878,#E8A33D 45%,#C98A20);display:grid;place-items:center;margin-top:-27px;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.7), inset 0 -3px 0 rgba(140,95,15,.45), 0 5px 0 var(--shouba-amber-deep), 0 12px 20px rgba(90,72,48,.34)}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="screen">
+    <svg class="echo" width="430" height="932" viewBox="0 0 430 932" fill="none" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
+      <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#D9CCB2" transform="translate(-150 590) rotate(-5) scale(4.6)"/>
+      <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#E1D6C0" transform="translate(-120 625) rotate(-5) scale(4.6)"/>
+    </svg>
+
+    <div class="statusbar">
+      <span class="num">٩:٤١</span>
+      <span style="display:flex;align-items:center;gap:6px"><span class="num">٩٤٪</span><span class="batt"></span></span>
+    </div>
+
+    <div class="head">
+      <div>
+        <div class="d">الأحد · <span class="num">١١ مارس</span> · الأسبوع <span class="num">٦</span></div>
+        <div class="g">صباح الخير، أ. محمد</div>
+      </div>
+      <div class="av"><img src="/identity/assets/logo-vec-dark.svg" alt="شعبة" /></div>
+    </div>
+
+    <div class="now">
+      <div class="tab"></div>
+      <div class="r1">
+        <div class="rem">يتبقّى <span class="num">١٨:٠٤</span></div>
+        <div class="liv">الآن · الحصة الثالثة <span class="dot"></span></div>
+      </div>
+      <div>
+        <div class="title">زيارة صفّية — أ. سعد العتيبي</div>
+        <div class="meta">فصل <span class="num">11/2</span> · فلسفة · الدور الثاني</div>
+      </div>
+      <div class="btns">
+        <div class="primary">ابدأ الاستمارة</div>
+        <div class="ghost">تأجيل</div>
+      </div>
+    </div>
+
+    <div class="rowh"><div class="link">الرزنامة الكاملة</div><div class="t">هذا الأسبوع</div></div>
+    <div class="week">
+      <div class="day on"><div class="dn">أحد</div><div class="dd">11</div><div class="dots"><i style="background:#E8A33D"></i><i style="background:#F4F1EA"></i><i style="background:rgba(244,241,234,.4)"></i></div></div>
+      <div class="day off"><div class="dn">اثن</div><div class="dd">12</div><div class="dots"><i style="background:#C9BCA6"></i><i style="background:#C9BCA6"></i></div></div>
+      <div class="day off"><div class="dn">ثلا</div><div class="dd">13</div><div class="dots"><i style="background:#B7443A"></i><i style="background:#C9BCA6"></i><i style="background:#C9BCA6"></i></div></div>
+      <div class="day off"><div class="dn">أرب</div><div class="dd">14</div><div class="dots"><i style="background:#C9BCA6"></i></div></div>
+      <div class="day off"><div class="dn">خمي</div><div class="dd">15</div><div class="dots"><i style="background:#C9BCA6"></i><i style="background:#C9BCA6"></i></div></div>
+    </div>
+
+    <div class="prog">
+      <div class="e1"></div><div class="e2"></div>
+      <div class="r1">
+        <div class="pct">72%</div>
+        <div class="lab"><b>إنجاز المنهج</b><small><span class="num">18</span> درسًا من <span class="num">25</span> · متقدّم بيومين</small></div>
+      </div>
+      <div class="segs"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="a"></i><i></i><i></i></div>
+    </div>
+
+    <div class="rowh">
+      <div style="display:flex;align-items:center;gap:10px"><div class="link">عرض الكل</div><div style="width:24px;height:24px;border-radius:999px;background:var(--shouba-amber);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--shouba-ink)"><span class="num">3</span></div></div>
+      <div class="t">بحاجة إلى إجراء</div>
+    </div>
+    <div class="act">
+      <div class="edge"></div>
+      <div class="pill">تذكير</div>
+      <div class="tx"><b>سعد العتيبي</b><small>سجلّ المتابعة متأخّر <span class="num">3</span> أيام</small></div>
+      <div class="avt">س ع</div>
+    </div>
+    <div class="more"><small>وطلبان آخران في الانتظار</small><div class="dots"><i class="on"></i><i></i><i></i></div></div>
+  </div>
+
+  <div class="tabbar">
+    <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="14" rx="3" stroke="#A79A86" stroke-width="1.8"/><path d="M4 10 H20" stroke="#A79A86" stroke-width="1.8"/></svg>القسم</div>
+    <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M6 3 H15 L19 7 V21 H6 Z" stroke="#A79A86" stroke-width="1.8" stroke-linejoin="round"/></svg>السجلّات</div>
+    <div class="fab"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#24211C" stroke-width="2.6" stroke-linecap="round"/></svg></div>
+    <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="3.4" stroke="#A79A86" stroke-width="1.8"/><path d="M5.5 20 C5.5 16 8.5 14 12 14 C15.5 14 18.5 16 18.5 20" stroke="#A79A86" stroke-width="1.8" stroke-linecap="round"/></svg>المعلّمون</div>
+    <div class="it on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="2" fill="#16456E"/><rect x="13" y="4" width="7" height="7" rx="2" fill="#16456E" opacity=".4"/><rect x="4" y="13" width="7" height="7" rx="2" fill="#16456E" opacity=".4"/><rect x="13" y="13" width="7" height="7" rx="2" fill="#16456E"/></svg>اللوحة</div>
+  </div>
+ </div></div>
+ <script src="/nav.js"></script>
+</body>
+</html>

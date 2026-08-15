@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · رمز الزرّ العنبري</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/identity/tokens.css" />
+<link rel="stylesheet" href="/shell.css" />
+<link rel="stylesheet" href="/components.css" />
+<link rel="stylesheet" href="/frame.css" />
+<style>
+  .wrap{padding:26px var(--gap-side) 40px;display:flex;flex-direction:column;gap:24px}
+  .kh h1{font-size:20px;font-weight:700}
+  .kh p{font-size:12.5px;color:var(--shouba-label);margin-top:5px;line-height:1.7}
+  .model{display:flex;flex-direction:column;gap:10px}
+  .model .t{font-size:12.5px;font-weight:700;color:var(--shouba-amber-deep)}
+  .model .n{font-size:11.5px;color:var(--shouba-hint)}
+  .sep{height:1px;background:var(--shouba-line)}
+
+  /* أ · الحالي: صدى المجلّد (نفس رمز الحقول) — للمقارنة فقط */
+
+  /* ب · نقاط الشين بدل الصدى */
+  .cta.dots::before{
+    background-image:url('/identity/assets/el-dots.svg');
+    left:-6px; bottom:auto; top:50%; transform:translateY(-50%);
+    width:96px; height:44px; opacity:.34}
+
+  /* ج · بلا زخرفة */
+  .cta.plain::before{display:none}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="screen">
+    <div class="wrap">
+      <div class="kh">
+        <h1>رمز الزرّ العنبري</h1>
+        <p>الحقول تحتفظ بصدى المجلّد في كل الحالات — المقارنة على الزرّ فقط.</p>
+      </div>
+
+      <div class="model">
+        <div class="t">أ · الحالي — صدى المجلّد</div>
+        <div class="paper" style="margin-bottom:4px"><input type="text" placeholder="اسم المدرسة" /></div>
+        <button class="cta">التالي</button>
+        <div class="n">الزرّ والحقل بالرمز نفسه ⇒ تكرار، والزرّ لا يتميّز.</div>
+      </div>
+      <div class="sep"></div>
+
+      <div class="model">
+        <div class="t">ب · نقاط الشين ⭐</div>
+        <div class="paper" style="margin-bottom:4px"><input type="text" placeholder="اسم المدرسة" /></div>
+        <button class="cta dots">التالي</button>
+        <div class="n">لغة من طبقتين: الأوراق = مجلّد · الإجراء = نقاط. الزرّ يكتسب هويّته.</div>
+      </div>
+      <div class="sep"></div>
+
+      <div class="model">
+        <div class="t">ج · بلا زخرفة</div>
+        <div class="paper" style="margin-bottom:4px"><input type="text" placeholder="اسم المدرسة" /></div>
+        <button class="cta plain">التالي</button>
+        <div class="n">أنظف وأهدأ — لكن الزرّ يفقد أي توقيع.</div>
+      </div>
+    </div>
+  </div>
+ </div></div>
+</body>
+</html>

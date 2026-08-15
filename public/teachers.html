@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>شعبة · المعلّمون</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/identity/tokens.css" />
+<link rel="stylesheet" href="/frame.css" />
+<style>
+  *{box-sizing:border-box;margin:0}
+  body{font-family:var(--font-ar);color:var(--shouba-ink);background:var(--shouba-canvas);min-height:100vh;display:flex;justify-content:center;-webkit-font-smoothing:antialiased}
+  .screen{width:100%;max-width:430px;min-height:100vh;position:relative;overflow:hidden;isolation:isolate;background:var(--shouba-canvas);padding-bottom:110px}
+  .echo{position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .num{font-family:var(--font-num);unicode-bidi:isolate}
+  .statusbar{display:flex;align-items:center;justify-content:space-between;padding:16px 26px 0;font-size:12px;color:var(--shouba-hint);font-weight:600}
+  .batt{width:18px;height:9px;border-radius:3px;background:var(--shouba-hint)}
+  .head{padding:18px 26px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+  .head .k{font-size:11.5px;color:var(--shouba-hint);font-weight:500}
+  .head .t{font-size:23px;font-weight:700;letter-spacing:-.01em;margin-top:5px}
+  .head .add{width:46px;height:46px;border-radius:16px;background:var(--shouba-navy);display:grid;place-items:center;flex:none;box-shadow:5px 6px 14px rgba(20,50,80,.28)}
+  /* بحث/فلترة */
+  .search{margin:16px 26px 0;background:linear-gradient(180deg,#FBF7EE,#F4EDE0);border-radius:16px;padding:12px 15px;display:flex;align-items:center;gap:10px;
+    box-shadow:inset 0 2px 5px rgba(120,98,66,.24)}
+  .search span{font-size:13px;color:var(--shouba-hint)}
+  /* قائمة بطاقات المعلّمين */
+  .list{padding:16px 26px 0;display:flex;flex-direction:column;gap:12px}
+  .tcard{position:relative;background:var(--shouba-cream);border-radius:18px;padding:18px 20px 16px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:150px;
+    box-shadow:8px 10px 22px rgba(90,72,48,.22)}
+  .tcard .shin1,.tcard .shin2{position:absolute;left:-110px;bottom:-30px;opacity:.09}
+  .tcard .shin2{left:-164px;bottom:-46px;opacity:.045}
+  .tcard .top{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .tcard .badge{border-radius:999px;padding:7px 14px;font-size:12px;font-weight:600}
+  .tcard .badge.pres{background:rgba(22,69,110,.08);color:var(--shouba-navy)}
+  .tcard .badge.pres .tm{color:var(--shouba-amber-deep);direction:ltr;unicode-bidi:isolate}
+  .tcard .badge.free{background:rgba(232,163,61,.14);color:var(--shouba-amber-deep)}
+  .tcard .logo{width:64px;height:auto;flex:none;opacity:.9}
+  .tcard .info{position:relative;display:flex;flex-direction:column;gap:5px;align-items:flex-end;text-align:right}
+  .tcard .info b{font-size:18px;font-weight:700;color:var(--shouba-navy)}
+  .tcard .info small{font-size:12.5px;color:var(--shouba-label)}
+  .tcard .foot{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;border-top:1px solid var(--shouba-line);font-size:11.5px}
+  .tcard .foot .visit{color:var(--shouba-text-muted)}
+  .tcard .foot .visit.due{color:var(--shouba-error);font-weight:600}
+  .tcard .foot .go{color:var(--shouba-link);font-weight:600}
+  /* الشريط السفلي */
+  .tabbar{position:fixed;bottom:20px;left:20px;right:20px;max-width:390px;margin:0 auto;background:linear-gradient(180deg,#FCF8F0,#F2EBDC);border-radius:28px;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.95), inset 0 -1.5px 0 rgba(154,130,94,.2), 0 4px 0 rgba(190,172,140,.55), 0 14px 26px rgba(90,72,48,.24)}
+  .tabbar .it{display:flex;flex-direction:column;align-items:center;gap:5px;width:52px;font-size:10px;color:var(--shouba-hint)}
+  .tabbar .it.on{color:var(--shouba-navy);font-weight:700}
+  .tabbar .fab{width:54px;height:54px;border-radius:999px;background:linear-gradient(180deg,#F4C878,#E8A33D 45%,#C98A20);display:grid;place-items:center;margin-top:-27px;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.7), inset 0 -3px 0 rgba(140,95,15,.45), 0 5px 0 var(--shouba-amber-deep), 0 12px 20px rgba(90,72,48,.34)}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="screen">
+    <svg class="echo" width="430" height="932" viewBox="0 0 430 932" fill="none" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
+      <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#D9CCB2" transform="translate(-150 690) rotate(-5) scale(4.6)"/>
+    </svg>
+    <div class="statusbar"><span class="num">٩:٤١</span><span style="display:flex;align-items:center;gap:6px"><span class="num">٩٤٪</span><span class="batt"></span></span></div>
+
+    <div class="head">
+      <div><div class="k">شعبة علم النفس والفلسفة · <span class="num">6</span> معلّمين</div><div class="t">المعلّمون</div></div>
+      <div class="add"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#F4F1EA" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+    </div>
+
+    <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#A79A86" stroke-width="1.8"/><path d="M20 20 L16 16" stroke="#A79A86" stroke-width="1.8" stroke-linecap="round"/></svg><span>ابحث عن معلّم…</span></div>
+
+    <div class="list">
+      <!-- بطاقة معلّم (فاتحة) — يحتاج زيارة -->
+      <div class="tcard">
+        <svg class="shin1" width="340" height="92" viewBox="20 -125 662 166" preserveAspectRatio="xMaxYMid meet"><path d="M 680.5 -80.1 L 660.7 -40 L 620.6 40 L 580.5 40 L 600.8 0 L 400.8 0 L 380.5 40 L 60.3 40 L 20.2 -40 L 336.6 -40 L 316.3 -80.1 L 311.7 -89.9 L 374.3 -124.1 L 396.5 -80.1 Z" fill="#16456E"/></svg>
+        <svg class="shin2" width="340" height="92" viewBox="20 -125 662 166" preserveAspectRatio="xMaxYMid meet"><path d="M 680.5 -80.1 L 660.7 -40 L 620.6 40 L 580.5 40 L 600.8 0 L 400.8 0 L 380.5 40 L 60.3 40 L 20.2 -40 L 336.6 -40 L 316.3 -80.1 L 311.7 -89.9 L 374.3 -124.1 L 396.5 -80.1 Z" fill="#16456E"/></svg>
+        <div class="top">
+          <div class="badge pres">حاضر · <span class="tm">7:38</span></div>
+          <img class="logo" src="/identity/assets/logo-vec-color.svg" alt="شعبة" />
+        </div>
+        <div class="info"><b>سعد العتيبي</b><small>فلسفة · <span class="num">3</span> فصول</small></div>
+        <div class="foot"><span class="go">الملف ›</span><span class="visit due">آخر زيارة قبل <span class="num">3</span> أسابيع</span></div>
+      </div>
+
+      <!-- بطاقة معلّم -->
+      <div class="tcard">
+        <svg class="shin1" width="340" height="92" viewBox="20 -125 662 166" preserveAspectRatio="xMaxYMid meet"><path d="M 680.5 -80.1 L 660.7 -40 L 620.6 40 L 580.5 40 L 600.8 0 L 400.8 0 L 380.5 40 L 60.3 40 L 20.2 -40 L 336.6 -40 L 316.3 -80.1 L 311.7 -89.9 L 374.3 -124.1 L 396.5 -80.1 Z" fill="#16456E"/></svg>
+        <svg class="shin2" width="340" height="92" viewBox="20 -125 662 166" preserveAspectRatio="xMaxYMid meet"><path d="M 680.5 -80.1 L 660.7 -40 L 620.6 40 L 580.5 40 L 600.8 0 L 400.8 0 L 380.5 40 L 60.3 40 L 20.2 -40 L 336.6 -40 L 316.3 -80.1 L 311.7 -89.9 L 374.3 -124.1 L 396.5 -80.1 Z" fill="#16456E"/></svg>
+        <div class="top">
+          <div class="badge pres">حاضر · <span class="tm">7:41</span></div>
+          <img class="logo" src="/identity/assets/logo-vec-color.svg" alt="شعبة" />
+        </div>
+        <div class="info"><b>منى الشمري</b><small>علم نفس · <span class="num">2</span> فصول</small></div>
+        <div class="foot"><span class="go">الملف ›</span><span class="visit">آخر زيارة الأسبوع الماضي</span></div>
+      </div>
+
+      <!-- بطاقة معلّم · متفرّغ -->
+      <div class="tcard">
+        <svg class="shin1" width="340" height="92" viewBox="20 -125 662 166" preserveAspectRatio="xMaxYMid meet"><path d="M 680.5 -80.1 L 660.7 -40 L 620.6 40 L 580.5 40 L 600.8 0 L 400.8 0 L 380.5 40 L 60.3 40 L 20.2 -40 L 336.6 -40 L 316.3 -80.1 L 311.7 -89.9 L 374.3 -124.1 L 396.5 -80.1 Z" fill="#16456E"/></svg>
+        <svg class="shin2" width="340" height="92" viewBox="20 -125 662 166" preserveAspectRatio="xMaxYMid meet"><path d="M 680.5 -80.1 L 660.7 -40 L 620.6 40 L 580.5 40 L 600.8 0 L 400.8 0 L 380.5 40 L 60.3 40 L 20.2 -40 L 336.6 -40 L 316.3 -80.1 L 311.7 -89.9 L 374.3 -124.1 L 396.5 -80.1 Z" fill="#16456E"/></svg>
+        <div class="top">
+          <div class="badge free">متفرّغ الآن</div>
+          <img class="logo" src="/identity/assets/logo-vec-color.svg" alt="شعبة" />
+        </div>
+        <div class="info"><b>خالد المطيري</b><small>فلسفة · <span class="num">2</span> فصول</small></div>
+        <div class="foot"><span class="go">الملف ›</span><span class="visit">آخر زيارة هذا الأسبوع</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabbar">
+    <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="14" rx="3" stroke="#A79A86" stroke-width="1.8"/><path d="M4 10 H20" stroke="#A79A86" stroke-width="1.8"/></svg>القسم</div>
+    <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M6 3 H15 L19 7 V21 H6 Z" stroke="#A79A86" stroke-width="1.8" stroke-linejoin="round"/></svg>السجلّات</div>
+    <div class="fab"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#24211C" stroke-width="2.6" stroke-linecap="round"/></svg></div>
+    <div class="it on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="3.4" stroke="#16456E" stroke-width="1.8"/><path d="M5.5 20 C5.5 16 8.5 14 12 14 C15.5 14 18.5 16 18.5 20" stroke="#16456E" stroke-width="1.8" stroke-linecap="round"/></svg>المعلّمون</div>
+    <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"/><rect x="13" y="4" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"/><rect x="4" y="13" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"/><rect x="13" y="13" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"/></svg>اللوحة</div>
+  </div>
+ </div></div>
+ <script src="/nav.js"></script>
+</body>
+</html>

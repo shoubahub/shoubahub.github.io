@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: #CDBFA8; font-family: "IBM Plex Sans Arabic", sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #16456E; text-decoration: none; }
+  a:hover { color: #A87F06; }
+</style>
+</helmet>
+
+<div dir="rtl" style="padding: 52px 40px 96px; display: flex; flex-direction: column; align-items: center; gap: 26px; color: #24211C;">
+
+  <div style="width: min(1160px, 100%); display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap;">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="font-size: 12px; letter-spacing: .2em; color: #7A6F5E; font-weight: 700;">مِنصّة شُعبة</div>
+      <div style="font-size: 46px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1;">الهوية البصرية</div>
+      <div style="font-size: 17px; color: #4A4238; max-width: 720px; line-height: 1.8; text-wrap: pretty;">منصّة إدارة تعليمية تُدير عمل رئيس القسم في المدرسة: توزيع الحصص، متابعة تقدّم المناهج، سجلّات المعلّمين، والتقارير الرسمية — في مكان واحد على الهاتف.</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+      <div style="background: #16456E; color: #F4F1EA; border-radius: 999px; padding: 9px 17px; font-size: 12px; font-weight: 700;">الشعار الجديد المعتمد</div>
+      <div style="background: #E8A33D; color: #24211C; border-radius: 999px; padding: 9px 17px; font-size: 12px; font-weight: 700;">تصميم المؤسِّس · متجهي SVG</div>
+    </div>
+  </div>
+
+  <div style="width: min(1160px, 100%); background: #EDE5D8; border-radius: 34px; padding: 48px; display: flex; align-items: center; justify-content: center; gap: 56px; flex-wrap: wrap; box-shadow: 16px 20px 42px rgba(90,72,48,.3), -10px -10px 26px rgba(255,253,247,.85);">
+    <div style="width: 440px; max-width: 100%; flex: none; background: #16456E; border-radius: 22px; padding: 38px 34px;">
+      <img src="assets/logo-vec-dark.svg" alt="الشعار المعتمد" style="width: 100%; height: auto; display: block;">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 18px; max-width: 400px;">
+      <div style="font-size: 12px; letter-spacing: .18em; font-weight: 700; color: #8A7F6E;">العلامة المعتمدة</div>
+      <div style="font-size: 28px; font-weight: 700; line-height: 1.35;">شينٌ كوفيّة تحمل الشعبة كلّها</div>
+      <div style="font-size: 16px; color: #3A342B; line-height: 1.8; text-wrap: pretty;">كلمة «شعبة» بخطّ كوفيّ زاويّ من تصميم المؤسّس: جسمها شينٌ ممتدّة بنقاطها الثلاث، وفوقها ضمّة خطّاط عنبرية، وخلفها تكرار مظلَّل يتراجع كسجلّات تتعاقب. أربعة عناصر، لكلٍّ مدلوله — كما يليها.</div>
+      <div style="display: flex; gap: 9px; flex-wrap: wrap;">
+        <div style="background: #F4F1EA; border-radius: 999px; padding: 8px 15px; font-size: 13px; font-weight: 600; color: #5C5344;">المتابعة</div>
+        <div style="background: #F4F1EA; border-radius: 999px; padding: 8px 15px; font-size: 13px; font-weight: 600; color: #5C5344;">الانتظام</div>
+        <div style="background: #F4F1EA; border-radius: 999px; padding: 8px 15px; font-size: 13px; font-weight: 600; color: #5C5344;">السرعة</div>
+        <div style="background: #F4F1EA; border-radius: 999px; padding: 8px 15px; font-size: 13px; font-weight: 600; color: #5C5344;">التفاعل</div>
+        <div style="background: #E8A33D; border-radius: 999px; padding: 8px 15px; font-size: 13px; font-weight: 600; color: #24211C;">الأثر</div>
+        <div style="background: #E8A33D; border-radius: 999px; padding: 8px 15px; font-size: 13px; font-weight: 600; color: #24211C;">المشاركة</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: min(1160px, 100%); background: #EDE5D8; border-radius: 34px; padding: 40px; display: flex; flex-direction: column; gap: 26px; box-shadow: 16px 20px 42px rgba(90,72,48,.3), -10px -10px 26px rgba(255,253,247,.85);">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 12px; letter-spacing: .18em; font-weight: 700; color: #8A7F6E;">مدلولات الشعار</div>
+        <div style="font-size: 26px; font-weight: 700;">أربعة عناصر، لكلٍّ ما يقوله</div>
+      </div>
+      <div style="font-size: 14px; color: #5F5648; max-width: 420px; line-height: 1.75; text-wrap: pretty;">لا عنصر في الشعار للزينة: كلٌّ منها يحمل معنًى من معاني عمل رئيس القسم.</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px;">
+      <div style="background: #F4F1EA; border-radius: 22px; padding: 24px 22px; display: flex; flex-direction: column; gap: 16px; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+        <div style="height: 80px; display: grid; place-items: center;"><img src="assets/el-shin.svg" alt="الشين" style="max-width: 100%; max-height: 80px; object-fit: contain;"></div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 17px; font-weight: 700;">الشين</div>
+          <div style="font-size: 15px; color: #3A342B; line-height: 1.8; text-wrap: pretty;">الأصالة من الحروف العربية بلمسة إبداعية — جسم الشعار كلّه شينٌ كوفيّة تُقرأ «شعبة».</div>
+        </div>
+      </div>
+      <div style="background: #F4F1EA; border-radius: 22px; padding: 24px 22px; display: flex; flex-direction: column; gap: 16px; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+        <div style="height: 80px; display: grid; place-items: center;"><img src="assets/el-dots.svg" alt="النقاط" style="max-width: 100%; max-height: 80px; object-fit: contain;"></div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 17px; font-weight: 700;">النقاط</div>
+          <div style="font-size: 15px; color: #3A342B; line-height: 1.8; text-wrap: pretty;">تدلّ على تعدّد الأفراد بالشعبة، وعلى المشاركة والتفاعل بينهم — وهي نقاط الشين نفسها.</div>
+        </div>
+      </div>
+      <div style="background: #F4F1EA; border-radius: 22px; padding: 24px 22px; display: flex; flex-direction: column; gap: 16px; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+        <div style="height: 80px; display: grid; place-items: center;"><img src="assets/el-echo.svg" alt="التكرار المظلَّل" style="max-width: 100%; max-height: 80px; object-fit: contain;"></div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 17px; font-weight: 700;">التكرار المظلَّل</div>
+          <div style="font-size: 15px; color: #3A342B; line-height: 1.8; text-wrap: pretty;">تعدّد السجلات للشعبة بصورة عصرية تحاكي التدخّل الإلكتروني — طبقات تتعاقب كسجلّات القسم.</div>
+        </div>
+      </div>
+      <div style="background: #F4F1EA; border-radius: 22px; padding: 24px 22px; display: flex; flex-direction: column; gap: 16px; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+        <div style="height: 80px; display: grid; place-items: center;"><img src="assets/el-damma.svg" alt="الضمّة" style="max-width: 100%; max-height: 80px; object-fit: contain;"></div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 17px; font-weight: 700;">الضمّة</div>
+          <div style="font-size: 15px; color: #3A342B; line-height: 1.8; text-wrap: pretty;">اشتمال هذه المنصّة على كلّ ما يحتاجه رئيس الشعبة — الضمّ بمعناه اللغويّ والوظيفيّ معًا.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: min(1160px, 100%); background: #EDE5D8; border-radius: 34px; padding: 40px; display: flex; flex-direction: column; gap: 26px; box-shadow: 16px 20px 42px rgba(90,72,48,.3), -10px -10px 26px rgba(255,253,247,.85);">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <div style="background: #24211C; color: #F4F1EA; border-radius: 999px; padding: 6px 15px; font-size: 12px; font-weight: 700;">التركيب الأفقي</div>
+        <div style="background: #E8A33D; color: #24211C; border-radius: 999px; padding: 6px 15px; font-size: 12px; font-weight: 700;">معتمد للمنصّة</div>
+      </div>
+      <div style="font-size: 14px; color: #5F5648; max-width: 460px; line-height: 1.75; text-wrap: pretty;">العلامة يمينًا، فاصل رقيق، ثم كلمة «مِنصّة شُعبة» بالخطّ الكوفيّ نفسه وضمّتها العنبرية — من ملف المؤسّس. الحدّ الأدنى لعرض التركيب <span dir="ltr" style="unicode-bidi: isolate;">240px</span>، ومساحة الحماية حوله = ارتفاع النقطة الكبرى.</div>
+    </div>
+    <div style="background: #F9F4E9; border: 1px solid #E2D7C2; border-radius: 22px; padding: 52px 40px; display: flex; align-items: center; justify-content: center; gap: 44px;">
+      <img src="assets/logo-vec-color.svg" alt="العلامة" style="width: 300px; height: auto; flex: none;">
+      <div style="width: 2px; height: 150px; border-radius: 2px; background: rgba(120,98,66,.45); flex: none;"></div>
+      <img src="assets/lockup-word-mansa-color.svg" alt="منصة شعبة" style="width: 350px; height: auto; position: relative; top: -20px;">
+    </div>
+    <div style="background: #16456E; border-radius: 22px; padding: 52px 40px; display: flex; align-items: center; justify-content: center; gap: 44px;">
+      <img src="assets/logo-vec-dark.svg" alt="العلامة على كحلي" style="width: 300px; height: auto; flex: none;">
+      <div style="width: 2px; height: 150px; border-radius: 2px; background: rgba(244,241,234,.5); flex: none;"></div>
+      <img src="assets/lockup-word-mansa-dark.svg" alt="منصة شعبة على كحلي" style="width: 350px; height: auto; position: relative; top: -20px;">
+    </div>
+    <div style="font-size: 14px; color: #5F5648; line-height: 1.75; text-wrap: pretty;">على الكحلي يكون الجسم كريميًّا والضمّة عنبرية. لا يُستعمل الشعار على لون ثالث.</div>
+  </div>
+
+  <div style="width: min(1160px, 100%); background: #F4F1EA; border-radius: 26px; padding: 30px 34px; display: flex; align-items: center; gap: 34px; flex-wrap: wrap; box-shadow: inset 3px 3px 9px rgba(120,98,66,.14);">
+    <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E; white-space: nowrap;">النسخ الثلاث</div>
+    <div style="display: flex; align-items: stretch; gap: 16px; flex-wrap: wrap; flex: 1;">
+      <div style="flex: 1 1 220px; background: #16456E; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+        <img src="assets/logo-vec-dark.svg" alt="الأساسي" style="width: 100%; max-width: 220px; height: auto;">
+        <div style="color: #A8C6E2; font-size: 12px; font-weight: 600;">الأساسي — على الكحلي</div>
+      </div>
+      <div style="flex: 1 1 220px; background: #F9F4E9; border: 1px solid #E2D7C2; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+        <img src="assets/logo-vec-color.svg" alt="على فاتح" style="width: 100%; max-width: 220px; height: auto;">
+        <div style="color: #8A7F6E; font-size: 12px; font-weight: 600;">على الخلفيات الفاتحة</div>
+      </div>
+      <div style="flex: 1 1 220px; background: #FFFFFF; border: 1px solid #E2D7C2; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+        <img src="assets/logo-vec-mono.svg" alt="أحادي" style="width: 100%; max-width: 220px; height: auto;">
+        <div style="color: #8A7F6E; font-size: 12px; font-weight: 600;">الأحادي — للأختام والفاكس</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: min(1160px, 100%); background: #EDE5D8; border-radius: 34px; padding: 40px; display: flex; flex-direction: column; gap: 26px; box-shadow: 16px 20px 42px rgba(90,72,48,.3), -10px -10px 26px rgba(255,253,247,.85);">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 12px; letter-spacing: .18em; font-weight: 700; color: #8A7F6E;">مساحة الحماية والمقاسات</div>
+        <div style="font-size: 26px; font-weight: 700;">كم يتنفّس الشعار، وإلى أين يصغر</div>
+      </div>
+      <div style="font-size: 14px; color: #5F5648; max-width: 430px; line-height: 1.75; text-wrap: pretty;">مساحة الحماية حول الشعار من كلّ جهة = ارتفاع النقطة الكبرى (الوسطى). لا نصّ ولا عنصر داخلها.</div>
+    </div>
+    <div style="display: flex; gap: 22px; flex-wrap: wrap; align-items: stretch;">
+      <div style="flex: 1 1 380px; background: #F4F1EA; border-radius: 22px; padding: 34px; display: grid; place-items: center; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+        <div style="border: 1.5px dashed #B97A1F; padding: 34px 40px; position: relative;">
+          <img src="assets/logo-vec-color.svg" alt="مساحة الحماية" style="width: 240px; height: auto; display: block;">
+          <div style="position: absolute; top: 6px; right: 8px; font-size: 10px; color: #B97A1F; font-weight: 700; font-family: 'IBM Plex Sans', monospace;">1×</div>
+          <div style="position: absolute; bottom: 6px; left: 8px; font-size: 10px; color: #B97A1F; font-weight: 700; font-family: 'IBM Plex Sans', monospace;">1×</div>
+        </div>
+      </div>
+      <div style="flex: 1 1 380px; background: #F4F1EA; border-radius: 22px; padding: 28px 30px; display: flex; flex-direction: column; gap: 18px; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+        <div style="display: flex; align-items: flex-end; gap: 26px; flex-wrap: wrap; justify-content: center; flex: 1;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <img src="assets/logo-vec-color.svg" alt="" style="width: 190px; height: auto;">
+            <div style="font-size: 11px; font-weight: 700; color: #8A7F6E; font-family: 'IBM Plex Sans', monospace;">192</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <img src="assets/logo-vec-color.svg" alt="" style="width: 96px; height: auto;">
+            <div style="font-size: 11px; font-weight: 700; color: #8A7F6E; font-family: 'IBM Plex Sans', monospace;">96</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <img src="assets/logo-vec-color.svg" alt="" style="width: 48px; height: auto;">
+            <div style="font-size: 11px; font-weight: 700; color: #8A7F6E; font-family: 'IBM Plex Sans', monospace;">48</div>
+          </div>
+        </div>
+        <div style="font-size: 13.5px; color: #5F5648; line-height: 1.75; text-wrap: pretty;">الحدّ الأدنى لعرض العلامة <span dir="ltr" style="unicode-bidi: isolate;">48px</span> شاشةً و<span dir="ltr" style="unicode-bidi: isolate;">14mm</span> طباعةً، وللتركيب الأفقي <span dir="ltr" style="unicode-bidi: isolate;">240px</span>. دون ذلك تُستعمل العلامة المصغّرة (قيد البناء بعد حسم الأيقونة).</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: min(1160px, 100%); background: #EDE5D8; border-radius: 34px; padding: 40px; display: flex; flex-direction: column; gap: 26px; box-shadow: 16px 20px 42px rgba(90,72,48,.3), -10px -10px 26px rgba(255,253,247,.85);">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 12px; letter-spacing: .18em; font-weight: 700; color: #8A7F6E;">الاستخدامات الخاطئة</div>
+        <div style="font-size: 26px; font-weight: 700;">ستّة أخطاء لا تُرتكب</div>
+      </div>
+      <div style="font-size: 14px; color: #5F5648; max-width: 430px; line-height: 1.75; text-wrap: pretty;">الشعار يُستعمل كما سُلّم: بلا تدوير ولا تلوين ولا ظلّ ولا تمديد، وعلى خلفياته المعتمدة وحدها.</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="position: relative; background: #F4F1EA; border-radius: 18px; height: 130px; display: grid; place-items: center; overflow: hidden; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+          <img src="assets/logo-vec-color.svg" alt="" style="width: 150px; transform: rotate(-14deg);">
+          <div style="position: absolute; top: 10px; left: 10px; width: 22px; height: 22px; border-radius: 999px; background: #B7443A; color: #FFF; display: grid; place-items: center; font-size: 12px; font-weight: 700;">✕</div>
+        </div>
+        <div style="font-size: 12.5px; color: #5F5648; font-weight: 600; text-align: center;">لا تدوير ولا إمالة</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="position: relative; background: #F4F1EA; border-radius: 18px; height: 130px; display: grid; place-items: center; overflow: hidden; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+          <img src="assets/logo-vec-color.svg" alt="" style="width: 150px; filter: hue-rotate(130deg) saturate(1.6);">
+          <div style="position: absolute; top: 10px; left: 10px; width: 22px; height: 22px; border-radius: 999px; background: #B7443A; color: #FFF; display: grid; place-items: center; font-size: 12px; font-weight: 700;">✕</div>
+        </div>
+        <div style="font-size: 12.5px; color: #5F5648; font-weight: 600; text-align: center;">لا ألوان خارج الهوية</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="position: relative; background: #F4F1EA; border-radius: 18px; height: 130px; display: grid; place-items: center; overflow: hidden; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+          <img src="assets/logo-vec-color.svg" alt="" style="width: 150px; filter: drop-shadow(4px 5px 3px rgba(36,33,28,.55));">
+          <div style="position: absolute; top: 10px; left: 10px; width: 22px; height: 22px; border-radius: 999px; background: #B7443A; color: #FFF; display: grid; place-items: center; font-size: 12px; font-weight: 700;">✕</div>
+        </div>
+        <div style="font-size: 12.5px; color: #5F5648; font-weight: 600; text-align: center;">لا ظلّ ولا تدرّج داخل العلامة</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="position: relative; background: #F4F1EA; border-radius: 18px; height: 130px; display: grid; place-items: center; overflow: hidden; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+          <img src="assets/logo-vec-color.svg" alt="" style="width: 150px; transform: scaleX(1.55);">
+          <div style="position: absolute; top: 10px; left: 10px; width: 22px; height: 22px; border-radius: 999px; background: #B7443A; color: #FFF; display: grid; place-items: center; font-size: 12px; font-weight: 700;">✕</div>
+        </div>
+        <div style="font-size: 12.5px; color: #5F5648; font-weight: 600; text-align: center;">لا تمديد ولا ضغط</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="position: relative; background: repeating-linear-gradient(45deg, #C4703F 0 14px, #6A5B8C 14px 28px, #4F7B5E 28px 42px); border-radius: 18px; height: 130px; display: grid; place-items: center; overflow: hidden;">
+          <img src="assets/logo-vec-dark.svg" alt="" style="width: 150px;">
+          <div style="position: absolute; top: 10px; left: 10px; width: 22px; height: 22px; border-radius: 999px; background: #B7443A; color: #FFF; display: grid; place-items: center; font-size: 12px; font-weight: 700;">✕</div>
+        </div>
+        <div style="font-size: 12.5px; color: #5F5648; font-weight: 600; text-align: center;">لا خلفية مزدحمة أو لون ثالث</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="position: relative; background: #F4F1EA; border-radius: 18px; height: 130px; display: flex; align-items: center; justify-content: center; gap: 12px; overflow: hidden; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+          <img src="assets/logo-vec-color.svg" alt="" style="width: 92px;">
+          <div style="font-size: 24px; font-weight: 700; color: #16456E;">مِنصّة شُعبة</div>
+          <div style="position: absolute; top: 10px; left: 10px; width: 22px; height: 22px; border-radius: 999px; background: #B7443A; color: #FFF; display: grid; place-items: center; font-size: 12px; font-weight: 700;">✕</div>
+        </div>
+        <div style="font-size: 12.5px; color: #5F5648; font-weight: 600; text-align: center;">لا كتابة للاسم بخطّ النصوص — الكلمة الكوفية فقط</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: min(1160px, 100%); background: #EDE5D8; border-radius: 34px; padding: 40px; display: flex; flex-direction: column; gap: 24px; box-shadow: 16px 20px 42px rgba(90,72,48,.3), -10px -10px 26px rgba(255,253,247,.85);">
+      <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">الألوان</div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+        <div style="border-radius: 16px; overflow: hidden; box-shadow: 5px 6px 14px rgba(90,72,48,.2);">
+          <div style="height: 76px; background: #16456E;"></div>
+          <div style="background: #F4F1EA; padding: 11px 12px;"><div style="font-size: 13px; font-weight: 700;">كحلي مؤسّسي</div><div style="font-size: 12px; color: #5F5648; direction: ltr; unicode-bidi: isolate; text-align: right; font-family: 'IBM Plex Sans', monospace;">#16456E</div></div>
+        </div>
+        <div style="border-radius: 16px; overflow: hidden; box-shadow: 5px 6px 14px rgba(90,72,48,.2);">
+          <div style="height: 76px; background: #0F3355;"></div>
+          <div style="background: #F4F1EA; padding: 11px 12px;"><div style="font-size: 13px; font-weight: 700;">كحلي عميق</div><div style="font-size: 12px; color: #5F5648; direction: ltr; unicode-bidi: isolate; text-align: right; font-family: 'IBM Plex Sans', monospace;">#0F3355</div></div>
+        </div>
+        <div style="border-radius: 16px; overflow: hidden; box-shadow: 5px 6px 14px rgba(90,72,48,.2);">
+          <div style="height: 76px; background: #E8A33D;"></div>
+          <div style="background: #F4F1EA; padding: 11px 12px;"><div style="font-size: 13px; font-weight: 700;">عنبري</div><div style="font-size: 12px; color: #5F5648; direction: ltr; unicode-bidi: isolate; text-align: right; font-family: 'IBM Plex Sans', monospace;">#E8A33D</div></div>
+        </div>
+        <div style="border-radius: 16px; overflow: hidden; box-shadow: 5px 6px 14px rgba(90,72,48,.2);">
+          <div style="height: 76px; background: #F1E8D8;"></div>
+          <div style="background: #F4F1EA; padding: 11px 12px;"><div style="font-size: 13px; font-weight: 700;">كريمي</div><div style="font-size: 12px; color: #5F5648; direction: ltr; unicode-bidi: isolate; text-align: right; font-family: 'IBM Plex Sans', monospace;">#F1E8D8</div></div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 9px;"><div style="width: 28px; height: 28px; border-radius: 8px; background: #F9F4E9; border: 1px solid rgba(120,98,66,.3); flex: none;"></div><div style="font-size: 11px; color: #5F5648; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">#F9F4E9</div></div>
+        <div style="display: flex; align-items: center; gap: 9px;"><div style="width: 28px; height: 28px; border-radius: 8px; background: #EDE5D8; flex: none;"></div><div style="font-size: 11px; color: #5F5648; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">#EDE5D8</div></div>
+        <div style="display: flex; align-items: center; gap: 9px;"><div style="width: 28px; height: 28px; border-radius: 8px; background: #8A7F6E; flex: none;"></div><div style="font-size: 11px; color: #5F5648; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">#8A7F6E</div></div>
+        <div style="display: flex; align-items: center; gap: 9px;"><div style="width: 28px; height: 28px; border-radius: 8px; background: #24211C; flex: none;"></div><div style="font-size: 11px; color: #5F5648; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">#24211C</div></div>
+      </div>
+      <div style="height: 1px; background: rgba(120,98,66,.22);"></div>
+      <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">ألوان وظيفية · للحالات والبيانات</div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;"><div style="width: 30px; height: 30px; border-radius: 9px; background: #3E7FB4; flex: none;"></div><div style="display: flex; flex-direction: column;"><div style="font-size: 12px; font-weight: 600;">معلومة ورابط</div><div style="font-size: 11px; color: #7A6F5E; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">#3E7FB4</div></div></div>
+        <div style="display: flex; align-items: center; gap: 10px;"><div style="width: 30px; height: 30px; border-radius: 9px; background: #4F7B5E; flex: none;"></div><div style="display: flex; flex-direction: column;"><div style="font-size: 12px; font-weight: 600;">منجَز</div><div style="font-size: 11px; color: #7A6F5E; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">#4F7B5E</div></div></div>
+        <div style="display: flex; align-items: center; gap: 10px;"><div style="width: 30px; height: 30px; border-radius: 9px; background: #C4703F; flex: none;"></div><div style="display: flex; flex-direction: column;"><div style="font-size: 12px; font-weight: 600;">قيد الإنجاز</div><div style="font-size: 11px; color: #7A6F5E; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">#C4703F</div></div></div>
+        <div style="display: flex; align-items: center; gap: 10px;"><div style="width: 30px; height: 30px; border-radius: 9px; background: #B7443A; flex: none;"></div><div style="display: flex; flex-direction: column;"><div style="font-size: 12px; font-weight: 600;">متأخّر</div><div style="font-size: 11px; color: #7A6F5E; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">#B7443A</div></div></div>
+        <div style="display: flex; align-items: center; gap: 10px;"><div style="width: 30px; height: 30px; border-radius: 9px; background: #6A5B8C; flex: none;"></div><div style="display: flex; flex-direction: column;"><div style="font-size: 12px; font-weight: 600;">تصنيف ووسم</div><div style="font-size: 11px; color: #7A6F5E; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">#6A5B8C</div></div></div>
+        <div style="display: flex; align-items: center; gap: 10px;"><div style="width: 30px; height: 30px; border-radius: 9px; background: #A79A86; flex: none;"></div><div style="display: flex; flex-direction: column;"><div style="font-size: 12px; font-weight: 600;">حدود ومعطّل</div><div style="font-size: 11px; color: #7A6F5E; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">#A79A86</div></div></div>
+      </div>
+      <div style="font-size: 14px; color: #5F5648; line-height: 1.75; text-wrap: pretty;">العنبري الجديد <span dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">#E8A33D</span> يحلّ محلّ الكهرماني السابق <span dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">#F2B90C</span> في كلّ الاستخدامات، وبنسبة لا تزيد على <span dir="ltr" style="unicode-bidi: isolate;">10٪</span> من السطح.</div>
+  </div>
+
+  <div style="width: min(1160px, 100%); background: #EDE5D8; border-radius: 34px; padding: 40px; display: flex; flex-direction: column; gap: 20px; box-shadow: 16px 20px 42px rgba(90,72,48,.3), -10px -10px 26px rgba(255,253,247,.85);">
+      <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">الخطوط</div>
+      <div style="display: flex; gap: 40px; flex-wrap: wrap; align-items: flex-start;">
+        <div style="flex: 1 1 420px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="font-size: 34px; font-weight: 700; line-height: 1.2;">شُعبة تُدير القسم</div>
+          <div style="font-size: 19px; font-weight: 500; color: #3A342B;">توزيع الحصص ومتابعة المناهج</div>
+          <div style="font-size: 15px; font-weight: 400; color: #5F5648; line-height: 1.8;">نصّ المتن: أربعة أوزان تكفي الهوية كلّها — <span dir="ltr" style="unicode-bidi: isolate;">400</span> للمتن، <span dir="ltr" style="unicode-bidi: isolate;">500</span> للعناوين الفرعية، <span dir="ltr" style="unicode-bidi: isolate;">600</span> و<span dir="ltr" style="unicode-bidi: isolate;">700</span> للعناوين.</div>
+        </div>
+        <div style="flex: 1 1 340px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 14px; color: #5F5648; line-height: 1.8; text-wrap: pretty;"><strong style="font-weight: 700; color: #3A342B;">IBM Plex Sans Arabic</strong> للعربية، و<strong style="font-weight: 700; color: #3A342B;">IBM Plex Sans</strong> للأرقام واللاتينية. الأرقام لاتينية دائمًا: <span dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace; font-size: 17px;">0123456789</span></div>
+          <div style="font-size: 14px; color: #5F5648; line-height: 1.75;">وخطّ الكلمة في الشعار خطّ كوفي زاويّ خاصّ، لا يُستعمل في النصوص.</div>
+        </div>
+      </div>
+  </div>
+
+  <div style="width: min(1160px, 100%); background: #EDE5D8; border-radius: 34px; padding: 40px 40px 36px; display: flex; flex-direction: column; gap: 26px; box-shadow: 16px 20px 42px rgba(90,72,48,.3), -10px -10px 26px rgba(255,253,247,.85);">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 12px; letter-spacing: .18em; font-weight: 700; color: #8A7F6E;">أيقونة التطبيق</div>
+        <div style="font-size: 26px; font-weight: 700;">الخيارات الخمس للحسم</div>
+      </div>
+      <div style="background: #E8A33D; color: #24211C; border-radius: 999px; padding: 9px 17px; font-size: 12px; font-weight: 700;">قرارك</div>
+    </div>
+
+    <div style="display: flex; gap: 22px; flex-wrap: wrap;">
+
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; width: 200px;">
+        <div style="position: relative; width: 120px; height: 120px; border-radius: 28px; background: #16456E; overflow: hidden; box-shadow: 6px 8px 18px rgba(20,50,80,.34);">
+          <div style="position: absolute; left: 10.7px; top: 0; width: 100px; height: 100px;">
+            <div style="position: absolute; left: 4.1px; top: 28.7px; width: 66px; height: 50.7px; background: url(assets/damma-amber.png) center/contain no-repeat; -webkit-mask: url(assets/damma-b.png) center/contain no-repeat; mask: url(assets/damma-b.png) center/contain no-repeat;"></div>
+            <svg width="100" height="100" viewBox="0 0 120 120" fill="none" style="position: absolute; inset: 0;">
+              <g transform="translate(50 62) scale(.78) translate(-60 -58)">
+                <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA" opacity=".3" transform="translate(-12 -14)"></path>
+                <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA" opacity=".54" transform="translate(-6 -7)"></path>
+                <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA"></path>
+              </g>
+            </svg>
+            <div style="position: absolute; left: 4.1px; top: 28.7px; width: 66px; height: 50.7px; background: url(assets/damma-navy.png) center/contain no-repeat; clip-path: polygon(7.7px 4.7px, 38.3px 4.7px, 42.2px 0.8px, 46.8px -1.1px, 67.5px -1.1px, 67.5px 47.6px, 7.7px 47.6px); -webkit-mask: url(assets/damma-b.png) center/contain no-repeat; mask: url(assets/damma-b.png) center/contain no-repeat;"></div>
+            <svg width="100" height="100" viewBox="0 0 120 120" fill="none" style="position: absolute; inset: 0;">
+              <circle cx="100" cy="40" r="11.5" fill="#E8A33D" opacity=".24"></circle>
+              <circle cx="100" cy="60" r="13.5" fill="#E8A33D" opacity=".24"></circle>
+              <circle cx="100" cy="80" r="11.5" fill="#E8A33D" opacity=".24"></circle>
+              <circle cx="100" cy="40" r="7" fill="#E8A33D"></circle>
+              <circle cx="100" cy="60" r="8" fill="#E8A33D"></circle>
+              <circle cx="100" cy="80" r="7" fill="#E8A33D"></circle>
+            </svg>
+          </div>
+          <div style="position: absolute; left: 13.3px; top: 86px; width: 93.3px; height: 24.2px; background: url(assets/noshin-cream.png) center/contain no-repeat; -webkit-mask: url(assets/shuba-noshin.png) center/contain no-repeat; mask: url(assets/shuba-noshin.png) center/contain no-repeat;"></div>
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="none" style="position: absolute; inset: 0;">
+            <circle cx="88.5" cy="89.3" r="2.13" fill="#F4F1EA"></circle>
+            <circle cx="93.1" cy="89.3" r="2.13" fill="#F4F1EA"></circle>
+            <circle cx="97.8" cy="89.3" r="2.13" fill="#F4F1EA"></circle>
+          </svg>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+          <div style="background: #E8A33D; color: #24211C; border-radius: 999px; padding: 4px 11px; font-size: 11px; font-weight: 700; font-family: 'IBM Plex Sans', monospace;">١ · المعتمدة</div>
+          <div style="font-size: 14px; font-weight: 700;">العلامة والكلمة تحتها</div>
+          <div style="font-size: 12px; color: #5F5648; line-height: 1.6; text-align: center;">الاسم مقروء بنقاط شينه، والعلامة تصغر لتفسح له.</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; width: 200px;">
+        <div style="position: relative; width: 120px; height: 120px; border-radius: 28px; background: #16456E; overflow: hidden; box-shadow: 6px 8px 18px rgba(20,50,80,.34);">
+          <div style="position: absolute; left: 7.8px; top: 9.7px; width: 105.9px; height: 105.9px;">
+            <div style="position: absolute; left: 4.3px; top: 30.5px; width: 69.9px; height: 53.7px; background: url(assets/damma-amber.png) center/contain no-repeat; -webkit-mask: url(assets/damma-b.png) center/contain no-repeat; mask: url(assets/damma-b.png) center/contain no-repeat;"></div>
+            <svg width="105.9" height="105.9" viewBox="0 0 120 120" fill="none" style="position: absolute; inset: 0;">
+              <g transform="translate(50 62) scale(.78) translate(-60 -58)">
+                <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA" opacity=".3" transform="translate(-12 -14)"></path>
+                <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA" opacity=".54" transform="translate(-6 -7)"></path>
+                <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA"></path>
+              </g>
+            </svg>
+            <div style="position: absolute; left: 4.3px; top: 30.5px; width: 69.9px; height: 53.7px; background: url(assets/damma-navy.png) center/contain no-repeat; clip-path: polygon(8.2px 5px, 40.5px 5px, 44.7px 0.9px, 49.5px -1.2px, 71.5px -1.2px, 71.5px 50.5px, 8.2px 50.5px); -webkit-mask: url(assets/damma-b.png) center/contain no-repeat; mask: url(assets/damma-b.png) center/contain no-repeat;"></div>
+            <svg width="105.9" height="105.9" viewBox="0 0 120 120" fill="none" style="position: absolute; inset: 0;">
+              <circle cx="100" cy="40" r="11.5" fill="#E8A33D" opacity=".24"></circle>
+              <circle cx="100" cy="60" r="13.5" fill="#E8A33D" opacity=".24"></circle>
+              <circle cx="100" cy="80" r="11.5" fill="#E8A33D" opacity=".24"></circle>
+              <circle cx="100" cy="40" r="7" fill="#E8A33D"></circle>
+              <circle cx="100" cy="60" r="8" fill="#E8A33D"></circle>
+              <circle cx="100" cy="80" r="7" fill="#E8A33D"></circle>
+            </svg>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+          <div style="background: #24211C; color: #F4F1EA; border-radius: 999px; padding: 4px 11px; font-size: 11px; font-weight: 700; font-family: 'IBM Plex Sans', monospace;">٢</div>
+          <div style="font-size: 14px; font-weight: 700;">العلامة وحدها</div>
+          <div style="font-size: 12px; color: #5F5648; line-height: 1.6; text-align: center;">أقوى من بعيد، والاسم يكتبه النظام تحتها.</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; width: 200px;">
+        <div style="position: relative; width: 120px; height: 120px; border-radius: 28px; background: #16456E; overflow: hidden; box-shadow: 6px 8px 18px rgba(20,50,80,.34);">
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="none" style="position: absolute; inset: 0;">
+            <g transform="translate(56 60) scale(.88) translate(-60 -58)">
+              <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA" opacity=".1" transform="translate(-8 -9)"></path>
+              <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA" opacity=".17"></path>
+            </g>
+          </svg>
+          <div style="position: absolute; left: 87.3px; top: 55.3px; width: 11.3px; height: 8.7px; background: url(assets/damma-amber.png) center/contain no-repeat; -webkit-mask: url(assets/damma-b.png) center/contain no-repeat; mask: url(assets/damma-b.png) center/contain no-repeat;"></div>
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="none" style="position: absolute; inset: 0;">
+            <circle cx="88.5" cy="67.3" r="2.13" fill="#E8A33D"></circle>
+            <circle cx="93.1" cy="67.3" r="2.13" fill="#E8A33D"></circle>
+            <circle cx="97.8" cy="67.3" r="2.13" fill="#E8A33D"></circle>
+          </svg>
+          <div style="position: absolute; left: 13.3px; top: 64px; width: 93.3px; height: 24.2px; background: url(assets/noshin-cream.png) center/contain no-repeat; -webkit-mask: url(assets/shuba-noshin.png) center/contain no-repeat; mask: url(assets/shuba-noshin.png) center/contain no-repeat;"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+          <div style="background: #24211C; color: #F4F1EA; border-radius: 999px; padding: 4px 11px; font-size: 11px; font-weight: 700; font-family: 'IBM Plex Sans', monospace;">٣</div>
+          <div style="font-size: 14px; font-weight: 700;">الكلمة هي الأيقونة</div>
+          <div style="font-size: 12px; color: #5F5648; line-height: 1.6; text-align: center;">شُعبة بتشكيل صحيح، والمجلّد خلفها باهت.</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; width: 200px;">
+        <div style="position: relative; width: 120px; height: 120px; border-radius: 28px; background: #16456E; overflow: hidden; box-shadow: 6px 8px 18px rgba(20,50,80,.34);">
+          <div style="position: absolute; left: 7.8px; top: 9.7px; width: 105.9px; height: 105.9px; opacity: .28;">
+            <div style="position: absolute; left: 4.3px; top: 30.5px; width: 69.9px; height: 53.7px; background: url(assets/damma-amber.png) center/contain no-repeat; -webkit-mask: url(assets/damma-b.png) center/contain no-repeat; mask: url(assets/damma-b.png) center/contain no-repeat;"></div>
+            <svg width="105.9" height="105.9" viewBox="0 0 120 120" fill="none" style="position: absolute; inset: 0;">
+              <g transform="translate(50 62) scale(.78) translate(-60 -58)">
+                <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA" opacity=".3" transform="translate(-12 -14)"></path>
+                <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA" opacity=".54" transform="translate(-6 -7)"></path>
+                <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA"></path>
+              </g>
+            </svg>
+            <div style="position: absolute; left: 4.3px; top: 30.5px; width: 69.9px; height: 53.7px; background: url(assets/damma-navy.png) center/contain no-repeat; clip-path: polygon(8.2px 5px, 40.5px 5px, 44.7px 0.9px, 49.5px -1.2px, 71.5px -1.2px, 71.5px 50.5px, 8.2px 50.5px); -webkit-mask: url(assets/damma-b.png) center/contain no-repeat; mask: url(assets/damma-b.png) center/contain no-repeat;"></div>
+            <svg width="105.9" height="105.9" viewBox="0 0 120 120" fill="none" style="position: absolute; inset: 0;">
+              <circle cx="100" cy="40" r="7" fill="#E8A33D"></circle>
+              <circle cx="100" cy="60" r="8" fill="#E8A33D"></circle>
+              <circle cx="100" cy="80" r="7" fill="#E8A33D"></circle>
+            </svg>
+          </div>
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="none" style="position: absolute; inset: 0;">
+            <circle cx="88.5" cy="67.3" r="2.13" fill="#E8A33D"></circle>
+            <circle cx="93.1" cy="67.3" r="2.13" fill="#E8A33D"></circle>
+            <circle cx="97.8" cy="67.3" r="2.13" fill="#E8A33D"></circle>
+          </svg>
+          <div style="position: absolute; left: 13.3px; top: 64px; width: 93.3px; height: 24.2px; background: url(assets/noshin-cream.png) center/contain no-repeat; -webkit-mask: url(assets/shuba-noshin.png) center/contain no-repeat; mask: url(assets/shuba-noshin.png) center/contain no-repeat;"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+          <div style="background: #24211C; color: #F4F1EA; border-radius: 999px; padding: 4px 11px; font-size: 11px; font-weight: 700; font-family: 'IBM Plex Sans', monospace;">٤</div>
+          <div style="font-size: 14px; font-weight: 700;">الشعار كاملًا خلفها</div>
+          <div style="font-size: 12px; color: #5F5648; line-height: 1.6; text-align: center;">مجلّدات وحرف ونقاط بشفافية <span dir="ltr" style="unicode-bidi: isolate;">28٪</span>.</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; width: 200px;">
+        <div style="position: relative; width: 120px; height: 120px; border-radius: 28px; background: #16456E; overflow: hidden; box-shadow: 6px 8px 18px rgba(20,50,80,.34);">
+          <div style="position: absolute; left: 7.8px; top: 9.7px; width: 105.9px; height: 105.9px; opacity: .28;">
+            <svg width="105.9" height="105.9" viewBox="0 0 120 120" fill="none" style="position: absolute; inset: 0;">
+              <g transform="translate(50 62) scale(.78) translate(-60 -58)">
+                <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA" opacity=".3" transform="translate(-12 -14)"></path>
+                <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA" opacity=".54" transform="translate(-6 -7)"></path>
+                <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA"></path>
+              </g>
+              <circle cx="100" cy="40" r="7" fill="#E8A33D"></circle>
+              <circle cx="100" cy="60" r="8" fill="#E8A33D"></circle>
+              <circle cx="100" cy="80" r="7" fill="#E8A33D"></circle>
+            </svg>
+          </div>
+          <div style="position: absolute; left: 12.1px; top: 40.2px; width: 69.9px; height: 53.7px; background: url(assets/damma-navy.png) center/contain no-repeat; opacity: .55; clip-path: polygon(8.2px 5px, 40.5px 5px, 44.7px 0.9px, 49.5px -1.2px, 71.5px -1.2px, 71.5px 50.5px, 8.2px 50.5px); -webkit-mask: url(assets/damma-b.png) center/contain no-repeat; mask: url(assets/damma-b.png) center/contain no-repeat;"></div>
+          <div style="position: absolute; left: 12.1px; top: 40.2px; width: 69.9px; height: 53.7px; background: url(assets/damma-amber.png) center/contain no-repeat; clip-path: polygon(-20px -20px, 8.2px -20px, 8.2px 50.5px, 140px 50.5px, 140px 76px, -20px 76px); -webkit-mask: url(assets/damma-b.png) center/contain no-repeat; mask: url(assets/damma-b.png) center/contain no-repeat;"></div>
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="none" style="position: absolute; inset: 0;">
+            <circle cx="88.5" cy="67.3" r="2.13" fill="#F4F1EA"></circle>
+            <circle cx="93.1" cy="67.3" r="2.13" fill="#F4F1EA"></circle>
+            <circle cx="97.8" cy="67.3" r="2.13" fill="#F4F1EA"></circle>
+          </svg>
+          <div style="position: absolute; left: 13.3px; top: 64px; width: 93.3px; height: 24.2px; background: url(assets/noshin-cream.png) center/contain no-repeat; -webkit-mask: url(assets/shuba-noshin.png) center/contain no-repeat; mask: url(assets/shuba-noshin.png) center/contain no-repeat;"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+          <div style="background: #24211C; color: #F4F1EA; border-radius: 999px; padding: 4px 11px; font-size: 11px; font-weight: 700; font-family: 'IBM Plex Sans', monospace;">٥</div>
+          <div style="font-size: 14px; font-weight: 700;">نقاط بيضاء وحافة كهرمانية</div>
+          <div style="font-size: 12px; color: #5F5648; line-height: 1.6; text-align: center;">لون واحد بارز في موضع واحد.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #F4F1EA; border-radius: 20px; padding: 20px 24px; font-size: 14px; color: #3A342B; line-height: 1.8; text-wrap: pretty;">اعتُمد الخيار ١: العلامة والكلمة تحتها، مع نقاط الشين على الاسم كما في ٥. تبقى بقية الخيارات هنا للتوثيق فقط.</div>
+  </div>
+
+  <div style="width: min(1240px, 100%); display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap;">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="font-size: 12px; letter-spacing: .2em; color: #7A6F5E; font-weight: 700;">شُعبة · واجهة المنصّة</div>
+      <div style="font-size: 42px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15;">اللوحة، الجدول، والنماذج</div>
+      <div style="font-size: 16px; color: #4A4238; max-width: 700px; line-height: 1.8; text-wrap: pretty;">سطح ورقي كريمي، وبطاقة واحدة زرقاء تحمل ما يجري الآن، وزرّ كهرماني واحد لكلّ شاشة. الباقي هدوء ومساحة.</div>
+    </div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <div style="background: #EDE5D8; border-radius: 999px; padding: 10px 18px; font-size: 13px; font-weight: 600; color: #5C5344; box-shadow: 5px 5px 12px rgba(120,98,66,.26), -4px -4px 10px rgba(255,253,247,.9);"><span dir="ltr" style="unicode-bidi: isolate;">390 × 844</span></div>
+      <div style="background: #E8A33D; border-radius: 999px; padding: 10px 18px; font-size: 13px; font-weight: 600; color: #24211C; box-shadow: 5px 5px 12px rgba(150,105,20,.26);">فاتح كريمي</div>
+    </div>
+  </div>
+
+  <div style="width: min(1240px, 100%); display: flex; gap: 34px; flex-wrap: wrap; justify-content: center;">
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
+      <div style="width: 390px; height: 844px; background: #EFE6D6; border-radius: 44px; overflow: hidden; position: relative; isolation: isolate; box-shadow: 18px 22px 46px rgba(90,72,48,.34), -8px -8px 20px rgba(255,253,247,.7);">
+        <svg width="390" height="844" viewBox="0 0 390 844" fill="none" style="position: absolute; inset: 0; z-index: -1;">
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#D9CCB2" transform="translate(-175 342) rotate(-5) scale(4.4)"></path>
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#E1D6C0" transform="translate(-148 373) rotate(-5) scale(4.4)"></path>
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#E9E0CD" transform="translate(-121 404) rotate(-5) scale(4.4)"></path>
+        </svg>
+
+        <div style="padding: 16px 26px 0; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #A79A86; font-weight: 600;">
+          <div dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">7:42</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">94%</div>
+            <div style="width: 18px; height: 9px; border-radius: 3px; background: #A79A86;"></div>
+          </div>
+        </div>
+
+        <div style="padding: 92px 30px 0; display: flex; flex-direction: column; align-items: center; gap: 22px;">
+          <div style="display: flex; align-items: center; gap: 18px;">
+            <img src="assets/logo-vec-color.svg" alt="الشعار" style="width: 150px; height: auto; flex: none;">
+            <div style="width: 2px; height: 62px; border-radius: 2px; background: rgba(120,98,66,.35); flex: none;"></div>
+            <img src="assets/lockup-word-mansa-color.svg" alt="منصة شعبة" style="width: 160px; height: auto; position: relative; top: -8px;">
+          </div>
+          <div style="font-size: 13px; color: #8A7F6E; text-align: center; line-height: 1.7;">إدارة شعب المدارس · وزارة التربية</div>
+        </div>
+
+        <div style="padding: 50px 26px 0; display: flex; flex-direction: column; gap: 14px;">
+          <div style="font-size: 20px; font-weight: 700;">تسجيل الدخول</div>
+          <div style="background: linear-gradient(180deg, #FBF7EE 0%, #F4EDE0 100%); border-radius: 20px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.9), inset 0 -1.5px 0 rgba(154,130,94,.18), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2);">
+            <div style="font-size: 11.5px; color: #A79A86; font-weight: 600;">الرقم المدني</div>
+            <div style="background: #EFE6D6; border-radius: 14px; padding: 13px 15px; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: inset 0 2px 5px rgba(120,98,66,.24);">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="3" stroke="#A79A86" stroke-width="1.7"></rect><circle cx="9" cy="12" r="2.4" stroke="#A79A86" stroke-width="1.7"></circle><path d="M14 10 H18 M14 14 H17" stroke="#A79A86" stroke-width="1.7" stroke-linecap="round"></path></svg>
+              <div style="font-size: 16px; font-weight: 600; color: #24211C; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace; letter-spacing: .06em;">278111204471</div>
+            </div>
+            <div style="font-size: 11px; color: #A79A86; line-height: 1.7;">يُطابَق بسجلّك في نظام الوزارة، ثمّ يصلك رمز على هاتفك المسجّل.</div>
+          </div>
+        </div>
+
+        <div style="position: absolute; left: 26px; right: 26px; bottom: 36px; display: flex; flex-direction: column; gap: 18px;">
+          <div style="background: linear-gradient(180deg, #F2BC66 0%, #E8A33D 46%, #D18E28 100%); border-radius: 18px; padding: 16px; text-align: center; font-size: 15.5px; font-weight: 700; color: #241D06; text-shadow: 0 1px 0 rgba(255,255,255,.4); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(140,95,15,.4), 0 5px 0 #A9701B, 0 12px 20px rgba(90,72,48,.3);">متابعة</div>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 16px;">
+            <div style="font-size: 12.5px; font-weight: 600; color: #3E7FB4;">الدخول بحساب الوزارة</div>
+            <div style="width: 1px; height: 14px; background: rgba(120,98,66,.3);"></div>
+            <div style="font-size: 12.5px; color: #8A7F6E;">المساعدة</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size: 13px; font-weight: 700; color: #5C5344;">١ · الدخول</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
+      <div style="width: 390px; height: 844px; background: #EFE6D6; border-radius: 44px; overflow: hidden; position: relative; isolation: isolate; box-shadow: 18px 22px 46px rgba(90,72,48,.34), -8px -8px 20px rgba(255,253,247,.7);">
+        <svg width="390" height="844" viewBox="0 0 390 844" fill="none" style="position: absolute; inset: 0; z-index: -1;">
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#D9CCB2" transform="translate(-175 342) rotate(-5) scale(4.4)"></path>
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#E1D6C0" transform="translate(-148 373) rotate(-5) scale(4.4)"></path>
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#E9E0CD" transform="translate(-121 404) rotate(-5) scale(4.4)"></path>
+        </svg>
+
+        <div style="padding: 16px 26px 0; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #A79A86; font-weight: 600;">
+          <div dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">7:43</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">94%</div>
+            <div style="width: 18px; height: 9px; border-radius: 3px; background: #A79A86;"></div>
+          </div>
+        </div>
+
+        <div style="padding: 20px 26px 0; display: flex; align-items: center; justify-content: space-between; gap: 14px;">
+          <div style="display: flex; gap: 5px; align-items: center;">
+            <div style="width: 26px; height: 5px; border-radius: 999px; background: #16456E;"></div>
+            <div style="width: 26px; height: 5px; border-radius: 999px; background: #16456E;"></div>
+            <div style="width: 26px; height: 5px; border-radius: 999px; background: #D9CCB2;"></div>
+          </div>
+          <div style="width: 38px; height: 38px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: grid; place-items: center; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16);">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M8 4 L14 10 L8 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+        </div>
+
+        <div style="padding: 40px 26px 0; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 25px; font-weight: 700;">رمز التحقّق</div>
+          <div style="font-size: 13.5px; color: #8A7F6E; line-height: 1.7;">أُرسل إلى الهاتف المنتهي بـ <span dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">4471</span></div>
+        </div>
+
+        <div style="padding: 34px 26px 0; display: flex; gap: 10px; direction: ltr;">
+          <div style="flex: 1; height: 66px; border-radius: 18px; background: #EFE6D6; display: grid; place-items: center; font-size: 25px; font-weight: 700; color: #24211C; font-family: 'IBM Plex Sans', monospace; box-shadow: inset 0 2px 6px rgba(120,98,66,.26);">4</div>
+          <div style="flex: 1; height: 66px; border-radius: 18px; background: #EFE6D6; display: grid; place-items: center; font-size: 25px; font-weight: 700; color: #24211C; font-family: 'IBM Plex Sans', monospace; box-shadow: inset 0 2px 6px rgba(120,98,66,.26);">7</div>
+          <div style="flex: 1; height: 66px; border-radius: 18px; background: #EFE6D6; display: grid; place-items: center; font-size: 25px; font-weight: 700; color: #24211C; font-family: 'IBM Plex Sans', monospace; box-shadow: inset 0 2px 6px rgba(120,98,66,.26), 0 0 0 2.5px #E8A33D;">2</div>
+          <div style="flex: 1; height: 66px; border-radius: 18px; background: #EFE6D6; display: grid; place-items: center; box-shadow: inset 0 2px 6px rgba(120,98,66,.26);">
+            <div style="width: 10px; height: 10px; border-radius: 999px; background: #C9BCA6;"></div>
+          </div>
+        </div>
+
+        <div style="padding: 20px 26px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <div style="font-size: 12.5px; font-weight: 600; color: #3E7FB4;">تغيير الرقم</div>
+          <div style="font-size: 12.5px; font-weight: 600; color: #A79A86;">إعادة الإرسال بعد <span dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">00:42</span></div>
+        </div>
+
+        <div style="margin: 34px 26px 0; background: linear-gradient(180deg, #FBF7EE 0%, #F4EDE0 100%); border-radius: 20px; padding: 16px 18px; display: flex; align-items: center; gap: 13px; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.9), inset 0 -1.5px 0 rgba(154,130,94,.18), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2);">
+          <div style="width: 40px; height: 40px; border-radius: 14px; background: rgba(22,69,110,.09); display: grid; place-items: center; flex: none;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2.6" stroke="#16456E" stroke-width="1.8"></rect><path d="M8.5 10 V7.5 C8.5 5.6 10 4 12 4 C14 4 15.5 5.6 15.5 7.5 V10" stroke="#16456E" stroke-width="1.8" stroke-linecap="round"></path></svg>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 3px;">
+            <div style="font-size: 14px; font-weight: 700;">الدخول ببصمة الجهاز</div>
+            <div style="font-size: 11.5px; color: #A79A86;">بعد هذه المرّة، دخولك بلمسة واحدة</div>
+          </div>
+          <div style="width: 44px; height: 26px; border-radius: 999px; background: #16456E; position: relative; box-shadow: inset 0 2px 4px rgba(8,28,48,.4); flex: none;">
+            <div style="position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 999px; background: #F4F1EA; box-shadow: 0 2px 4px rgba(8,28,48,.35);"></div>
+          </div>
+        </div>
+
+        <div style="position: absolute; left: 26px; right: 26px; bottom: 36px;">
+          <div style="background: linear-gradient(180deg, #F2BC66 0%, #E8A33D 46%, #D18E28 100%); border-radius: 18px; padding: 16px; text-align: center; font-size: 15.5px; font-weight: 700; color: #241D06; text-shadow: 0 1px 0 rgba(255,255,255,.4); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(140,95,15,.4), 0 5px 0 #A9701B, 0 12px 20px rgba(90,72,48,.3);">تحقّق</div>
+        </div>
+      </div>
+      <div style="font-size: 13px; font-weight: 700; color: #5C5344;">٢ · رمز التحقّق</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
+      <div style="width: 390px; height: 844px; background: #EFE6D6; border-radius: 44px; overflow: hidden; position: relative; isolation: isolate; box-shadow: 18px 22px 46px rgba(90,72,48,.34), -8px -8px 20px rgba(255,253,247,.7);">
+        <svg width="390" height="844" viewBox="0 0 390 844" fill="none" style="position: absolute; inset: 0; z-index: -1;">
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#D9CCB2" transform="translate(-175 342) rotate(-5) scale(4.4)"></path>
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#E1D6C0" transform="translate(-148 373) rotate(-5) scale(4.4)"></path>
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#E9E0CD" transform="translate(-121 404) rotate(-5) scale(4.4)"></path>
+        </svg>
+
+        <div style="padding: 16px 26px 0; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #A79A86; font-weight: 600;">
+          <div dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">7:44</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">94%</div>
+            <div style="width: 18px; height: 9px; border-radius: 3px; background: #A79A86;"></div>
+          </div>
+        </div>
+
+        <div style="padding: 20px 26px 0; display: flex; align-items: center; justify-content: space-between; gap: 14px;">
+          <div style="display: flex; gap: 5px; align-items: center;">
+            <div style="width: 26px; height: 5px; border-radius: 999px; background: #16456E;"></div>
+            <div style="width: 26px; height: 5px; border-radius: 999px; background: #16456E;"></div>
+            <div style="width: 26px; height: 5px; border-radius: 999px; background: #16456E;"></div>
+          </div>
+          <div style="width: 38px; height: 38px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: grid; place-items: center; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16);">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M8 4 L14 10 L8 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+        </div>
+
+        <div style="padding: 32px 26px 0; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 25px; font-weight: 700;">أهلًا أ. فهد</div>
+          <div style="font-size: 13.5px; color: #8A7F6E; line-height: 1.7;">هذه بياناتك من سجلّ الوزارة — أكّدها لتبدأ.</div>
+        </div>
+
+        <div style="margin: 24px 26px 0; background: linear-gradient(180deg, #1D5588 0%, #16456E 52%, #103A5C 100%); border-radius: 26px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; box-shadow: inset 0 1.5px 0 rgba(168,198,226,.45), inset 0 -2px 0 rgba(6,24,42,.5), 0 5px 0 #0E3252, 0 16px 30px rgba(20,50,80,.34);">
+          <div style="width: 52px; height: 52px; border-radius: 18px; background: rgba(244,241,234,.14); display: grid; place-items: center; font-size: 15px; font-weight: 700; color: #F4F1EA; flex: none;">ف م</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+            <div style="font-size: 17px; font-weight: 700; color: #F4F1EA;">فهد المطيري</div>
+            <div style="font-size: 12px; color: #8FB6DA;">رئيس شعبة · مدرسة الفروانية المتوسّطة</div>
+          </div>
+        </div>
+
+        <div style="padding: 26px 26px 0; display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 16px; font-weight: 700;">الشعبة التي تُشرف عليها</div>
+
+          <div style="background: linear-gradient(180deg, #FBF7EE 0%, #F4EDE0 100%); border-radius: 20px; padding: 15px 16px; display: flex; align-items: center; gap: 13px; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2), 0 0 0 2px #16456E;">
+            <div style="width: 22px; height: 22px; border-radius: 999px; background: #16456E; display: grid; place-items: center; flex: none;">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 3px; align-items: flex-end;">
+              <div style="font-size: 15px; font-weight: 700;">شعبة العلوم</div>
+              <div style="font-size: 11.5px; color: #A79A86;"><span dir="ltr" style="unicode-bidi: isolate;">6</span> معلّمين · <span dir="ltr" style="unicode-bidi: isolate;">34</span> حصة أسبوعيًّا</div>
+            </div>
+          </div>
+
+          <div style="background: linear-gradient(180deg, #FBF7EE 0%, #F4EDE0 100%); border-radius: 20px; padding: 15px 16px; display: flex; align-items: center; gap: 13px; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2);">
+            <div style="width: 22px; height: 22px; border-radius: 999px; border: 2px solid rgba(120,98,66,.3); flex: none;"></div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 3px; align-items: flex-end;">
+              <div style="font-size: 15px; font-weight: 600;">شعبة الرياضيات</div>
+              <div style="font-size: 11.5px; color: #A79A86;">إشراف مؤقّت · حتّى نهاية الفصل</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; padding: 2px 4px;">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#3E7FB4" stroke-width="2.2" stroke-linecap="round"></path></svg>
+            <div style="font-size: 12.5px; font-weight: 600; color: #3E7FB4;">شعبتي غير مذكورة</div>
+          </div>
+        </div>
+
+        <div style="position: absolute; left: 26px; right: 26px; bottom: 36px; display: flex; flex-direction: column; gap: 14px;">
+          <div style="font-size: 11.5px; color: #A79A86; text-align: center; line-height: 1.7;">بالمتابعة أنت توافق على سياسة استخدام بيانات الوزارة.</div>
+          <div style="background: linear-gradient(180deg, #F2BC66 0%, #E8A33D 46%, #D18E28 100%); border-radius: 18px; padding: 16px; text-align: center; font-size: 15.5px; font-weight: 700; color: #241D06; text-shadow: 0 1px 0 rgba(255,255,255,.4); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(140,95,15,.4), 0 5px 0 #A9701B, 0 12px 20px rgba(90,72,48,.3);">ابدأ العمل</div>
+        </div>
+      </div>
+      <div style="font-size: 13px; font-weight: 700; color: #5C5344;">٣ · تأكيد الشعبة</div>
+    </div>
+  </div>
+
+  <div style="width: min(1240px, 100%); display: flex; gap: 34px; flex-wrap: wrap; justify-content: center;">
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
+      <div style="width: 390px; height: 844px; background: #EFE6D6; border-radius: 44px; overflow: hidden; position: relative; isolation: isolate; box-shadow: 18px 22px 46px rgba(90,72,48,.34), -8px -8px 20px rgba(255,253,247,.7);">
+        <svg width="390" height="844" viewBox="0 0 390 844" fill="none" style="position: absolute; inset: 0; z-index: -1;">
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#D9CCB2" transform="translate(-175 342) rotate(-5) scale(4.4)"></path>
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#E1D6C0" transform="translate(-148 373) rotate(-5) scale(4.4)"></path>
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#E9E0CD" transform="translate(-121 404) rotate(-5) scale(4.4)"></path>
+        </svg>
+
+        <div style="padding: 16px 26px 0; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #A79A86; font-weight: 600;">
+          <div dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">7:42</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">94%</div>
+            <div style="width: 18px; height: 9px; border-radius: 3px; background: #A79A86;"></div>
+          </div>
+        </div>
+
+        <div style="padding: 18px 26px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;">
+          <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-start; text-align: right;">
+            <div style="font-size: 11.5px; color: #A79A86; font-weight: 500;">الأحد · <span dir="ltr" style="unicode-bidi: isolate;">11 مارس</span> · الأسبوع <span dir="ltr" style="unicode-bidi: isolate;">6</span></div>
+            <div style="font-size: 23px; font-weight: 700; letter-spacing: -.01em;">صباح الخير، أ. فهد</div>
+          </div>
+          <div style="width: 46px; height: 46px; border-radius: 16px; background: #16456E; display: grid; place-items: center; flex: none; box-shadow: 5px 6px 14px rgba(20,50,80,.28);">
+            <div style="position: relative; width: 30px; height: 26px; overflow: hidden;">
+              <div style="position: absolute; left: 1.2px; top: 8.6px; width: 19.8px; height: 15.2px; background: url(assets/damma-amber.png) center/contain no-repeat;"></div>
+              <svg width="30" height="30" viewBox="0 0 120 120" fill="none" style="position: absolute; left: 0; top: 0;">
+                <g transform="translate(50 62) scale(.78) translate(-60 -58)">
+                  <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA" opacity=".34" transform="translate(-9 -10)"></path>
+                  <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA"></path>
+                </g>
+              </svg>
+              <div style="position: absolute; left: 1.2px; top: 8.6px; width: 19.8px; height: 15.2px; background: url(assets/damma-navy.png) center/contain no-repeat; clip-path: polygon(2.3px 1.4px, 11.5px 1.4px, 12.7px 0.2px, 14px -0.4px, 20.3px -0.4px, 20.3px 14.3px, 2.3px 14.3px);"></div>
+              <svg width="30" height="30" viewBox="0 0 120 120" fill="none" style="position: absolute; left: 0; top: 0;">
+                <circle cx="100" cy="40" r="8" fill="#E8A33D"></circle>
+                <circle cx="100" cy="60" r="9" fill="#E8A33D"></circle>
+                <circle cx="100" cy="80" r="8" fill="#E8A33D"></circle>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div style="position: relative; margin: 36px 26px 0; background: linear-gradient(180deg, #1D5588 0%, #16456E 52%, #103A5C 100%); border-radius: 26px 0 26px 26px; padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: inset 0 1.5px 0 rgba(168,198,226,.45), inset 0 -2px 0 rgba(6,24,42,.5), 0 5px 0 #0E3252, 0 16px 30px rgba(20,50,80,.34);">
+          <div style="position: absolute; right: 0; top: -19px; width: 46%; height: 21px; background: linear-gradient(180deg, #23608F 0%, #1D5588 100%); border-radius: 20px 20px 0 0; box-shadow: inset 0 1.5px 0 rgba(168,198,226,.4);"></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="background: rgba(244,241,234,.14); border-radius: 999px; padding: 6px 13px; font-size: 11.5px; font-weight: 600; color: #F4F1EA;">يتبقّى <span dir="ltr" style="unicode-bidi: isolate;">18:04</span></div>
+            <div style="display: flex; align-items: center; gap: 7px;">
+              <div style="font-size: 12px; font-weight: 600; color: #A8C6E2;">الآن · الحصة الثالثة</div>
+              <div style="width: 8px; height: 8px; border-radius: 999px; background: #E8A33D;"></div>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: right;">
+            <div style="font-size: 20px; font-weight: 700; color: #F4F1EA;">زيارة صفّية — أ. محمد السالم</div>
+            <div style="font-size: 12.5px; color: #8FB6DA;">فصل <span dir="ltr" style="unicode-bidi: isolate;">7/3</span> · كيمياء · الدور الثاني</div>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <div style="background: linear-gradient(180deg, #F2BC66 0%, #E8A33D 46%, #D18E28 100%); border-radius: 16px; padding: 14px; flex: 1; text-align: center; font-size: 14.5px; font-weight: 700; color: #241D06; text-shadow: 0 1px 0 rgba(255,255,255,.4); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(140,95,15,.4), 0 5px 0 #A9701B, 0 10px 16px rgba(20,50,80,.34);">ابدأ الاستمارة</div>
+            <div style="background: linear-gradient(180deg, rgba(244,241,234,.22) 0%, rgba(244,241,234,.09) 100%); border-radius: 16px; padding: 14px 22px; text-align: center; font-size: 14.5px; font-weight: 600; color: #F4F1EA; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.3), inset 0 -2px 0 rgba(8,28,48,.35), 0 4px 0 rgba(8,28,48,.4), 0 8px 14px rgba(8,28,48,.28);">تأجيل</div>
+          </div>
+        </div>
+
+        <div style="padding: 22px 26px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <div style="font-size: 12px; font-weight: 600; color: #3E7FB4;">الرزنامة الكاملة</div>
+          <div style="font-size: 16px; font-weight: 700;">هذا الأسبوع</div>
+        </div>
+
+        <div style="padding: 12px 26px 0; display: flex; gap: 8px;">
+          <div style="flex: 1; background: #16456E; border-radius: 18px; padding: 12px 0 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 5px 7px 16px rgba(20,50,80,.26);">
+            <div style="font-size: 11px; color: #A8C6E2;">أحد</div>
+            <div style="font-size: 18px; font-weight: 700; color: #F4F1EA; direction: ltr; unicode-bidi: isolate;">11</div>
+            <div style="display: flex; gap: 3px;"><div style="width: 4px; height: 4px; border-radius: 999px; background: #E8A33D;"></div><div style="width: 4px; height: 4px; border-radius: 999px; background: #F4F1EA;"></div><div style="width: 4px; height: 4px; border-radius: 999px; background: rgba(244,241,234,.4);"></div></div>
+          </div>
+          <div style="flex: 1; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); border-radius: 18px; padding: 12px 0 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16);">
+            <div style="font-size: 11px; color: #A79A86;">اثن</div>
+            <div style="font-size: 18px; font-weight: 600; color: #5F5648; direction: ltr; unicode-bidi: isolate;">12</div>
+            <div style="display: flex; gap: 3px;"><div style="width: 4px; height: 4px; border-radius: 999px; background: #C9BCA6;"></div><div style="width: 4px; height: 4px; border-radius: 999px; background: #C9BCA6;"></div></div>
+          </div>
+          <div style="flex: 1; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); border-radius: 18px; padding: 12px 0 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16);">
+            <div style="font-size: 11px; color: #A79A86;">ثلا</div>
+            <div style="font-size: 18px; font-weight: 600; color: #5F5648; direction: ltr; unicode-bidi: isolate;">13</div>
+            <div style="display: flex; gap: 3px;"><div style="width: 4px; height: 4px; border-radius: 999px; background: #B7443A;"></div><div style="width: 4px; height: 4px; border-radius: 999px; background: #C9BCA6;"></div><div style="width: 4px; height: 4px; border-radius: 999px; background: #C9BCA6;"></div></div>
+          </div>
+          <div style="flex: 1; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); border-radius: 18px; padding: 12px 0 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16);">
+            <div style="font-size: 11px; color: #A79A86;">أرب</div>
+            <div style="font-size: 18px; font-weight: 600; color: #5F5648; direction: ltr; unicode-bidi: isolate;">14</div>
+            <div style="display: flex; gap: 3px;"><div style="width: 4px; height: 4px; border-radius: 999px; background: #C9BCA6;"></div></div>
+          </div>
+          <div style="flex: 1; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); border-radius: 18px; padding: 12px 0 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16);">
+            <div style="font-size: 11px; color: #A79A86;">خمي</div>
+            <div style="font-size: 18px; font-weight: 600; color: #5F5648; direction: ltr; unicode-bidi: isolate;">15</div>
+            <div style="display: flex; gap: 3px;"><div style="width: 4px; height: 4px; border-radius: 999px; background: #C9BCA6;"></div><div style="width: 4px; height: 4px; border-radius: 999px; background: #C9BCA6;"></div></div>
+          </div>
+        </div>
+
+        <div style="position: relative; margin: 30px 26px 0; background: linear-gradient(180deg, #FBF7EE 0%, #F4EDE0 100%); border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.9), inset 0 -1.5px 0 rgba(154,130,94,.18), 0 3px 0 rgba(190,172,140,.5), 0 9px 18px rgba(120,98,66,.2);">
+          <div style="position: absolute; top: -13px; left: 9%; right: 9%; height: 9px; border-radius: 11px 11px 0 0; background: #DFD3BC;"></div>
+          <div style="position: absolute; top: -7px; left: 4.5%; right: 4.5%; height: 9px; border-radius: 11px 11px 0 0; background: #EBE1CD;"></div>
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;">
+            <div style="font-size: 26px; font-weight: 700; color: #16456E; direction: ltr; unicode-bidi: isolate;">72%</div>
+            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start; text-align: right;">
+              <div style="font-size: 15.5px; font-weight: 700;">إنجاز المنهج</div>
+              <div style="font-size: 11.5px; color: #A79A86;"><span dir="ltr" style="unicode-bidi: isolate;">18</span> درسًا من <span dir="ltr" style="unicode-bidi: isolate;">25</span> · متقدّم بيومين</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 5px; direction: rtl;">
+            <div style="flex: 1; height: 8px; border-radius: 999px; background: #16456E;"></div>
+            <div style="flex: 1; height: 8px; border-radius: 999px; background: #16456E;"></div>
+            <div style="flex: 1; height: 8px; border-radius: 999px; background: #16456E;"></div>
+            <div style="flex: 1; height: 8px; border-radius: 999px; background: #16456E;"></div>
+            <div style="flex: 1; height: 8px; border-radius: 999px; background: #16456E;"></div>
+            <div style="flex: 1; height: 8px; border-radius: 999px; background: #E8A33D;"></div>
+            <div style="flex: 1; height: 8px; border-radius: 999px; background: #E2D7C2;"></div>
+            <div style="flex: 1; height: 8px; border-radius: 999px; background: #E2D7C2;"></div>
+          </div>
+        </div>
+
+        <div style="padding: 20px 26px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="font-size: 12px; font-weight: 600; color: #3E7FB4;">عرض الكل</div>
+            <div style="width: 24px; height: 24px; border-radius: 999px; background: #E8A33D; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #24211C;"><span dir="ltr" style="unicode-bidi: isolate;">3</span></div>
+          </div>
+          <div style="font-size: 16px; font-weight: 700;">بحاجة إلى إجراء</div>
+        </div>
+
+        <div style="padding: 12px 26px 0; display: flex; flex-direction: column; gap: 9px;">
+          <div style="position: relative; background: linear-gradient(180deg, #FBF7EE 0%, #F4EDE0 100%); border-radius: 20px; padding: 13px 15px; display: flex; align-items: center; gap: 13px; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.9), inset 0 -1.5px 0 rgba(154,130,94,.18), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2);">
+            <div style="position: absolute; top: 14px; bottom: 14px; right: 0; width: 5px; border-radius: 999px 0 0 999px; background: #E8A33D;"></div>
+            <div style="background: #EFE6D6; border-radius: 999px; padding: 6px 13px; font-size: 11.5px; font-weight: 700; color: #8A5A18; flex: none;">تذكير</div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; text-align: right;">
+              <div style="font-size: 14.5px; font-weight: 700;">محمد السالم</div>
+              <div style="font-size: 11.5px; color: #A79A86;">سجلّ المتابعة متأخّر <span dir="ltr" style="unicode-bidi: isolate;">3</span> أيام</div>
+            </div>
+            <div style="width: 38px; height: 38px; border-radius: 13px; background: #EFE6D6; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #5F5648; flex: none;">م س</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end; padding-left: 4px;">
+            <div style="font-size: 11.5px; color: #A79A86;">وطلبان آخران في الانتظار</div>
+            <div style="display: flex; gap: 3px;"><div style="width: 5px; height: 5px; border-radius: 999px; background: #16456E;"></div><div style="width: 5px; height: 5px; border-radius: 999px; background: #C9BCA6;"></div><div style="width: 5px; height: 5px; border-radius: 999px; background: #C9BCA6;"></div></div>
+          </div>
+        </div>
+
+        <div style="position: absolute; bottom: 20px; left: 20px; right: 20px; background: linear-gradient(180deg, #FCF8F0 0%, #F2EBDC 100%); border-radius: 28px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.95), inset 0 -1.5px 0 rgba(154,130,94,.2), 0 4px 0 rgba(190,172,140,.55), 0 14px 26px rgba(90,72,48,.24);">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 52px;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="14" rx="3" stroke="#A79A86" stroke-width="1.8"></rect><path d="M4 10 H20" stroke="#A79A86" stroke-width="1.8"></path></svg>
+            <div style="font-size: 10px; color: #A79A86;">القسم</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 52px;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M6 3 H15 L19 7 V21 H6 Z" stroke="#A79A86" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+            <div style="font-size: 10px; color: #A79A86;">السجلّات</div>
+          </div>
+          <div style="width: 54px; height: 54px; border-radius: 999px; background: linear-gradient(180deg, #F4C878 0%, #E8A33D 45%, #C98A20 100%); display: grid; place-items: center; margin-top: -27px; box-shadow: inset 0 2px 0 rgba(255,255,255,.7), inset 0 -3px 0 rgba(140,95,15,.45), 0 5px 0 #A9701B, 0 12px 20px rgba(90,72,48,.34);">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#24211C" stroke-width="2.6" stroke-linecap="round"></path></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 52px;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="3.4" stroke="#A79A86" stroke-width="1.8"></circle><path d="M5.5 20 C5.5 16 8.5 14 12 14 C15.5 14 18.5 16 18.5 20" stroke="#A79A86" stroke-width="1.8" stroke-linecap="round"></path></svg>
+            <div style="font-size: 10px; color: #A79A86;">المعلّمون</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 52px;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="2" fill="#16456E"></rect><rect x="13" y="4" width="7" height="7" rx="2" fill="#16456E" opacity=".4"></rect><rect x="4" y="13" width="7" height="7" rx="2" fill="#16456E" opacity=".4"></rect><rect x="13" y="13" width="7" height="7" rx="2" fill="#16456E"></rect></svg>
+            <div style="font-size: 10px; font-weight: 700; color: #16456E;">اللوحة</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size: 13px; font-weight: 700; color: #5C5344;">اللوحة</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
+      <div style="width: 390px; height: 844px; background: #EFE6D6; border-radius: 44px; overflow: hidden; position: relative; isolation: isolate; box-shadow: 18px 22px 46px rgba(90,72,48,.34), -8px -8px 20px rgba(255,253,247,.7);">
+        <svg width="390" height="844" viewBox="0 0 390 844" fill="none" style="position: absolute; inset: 0; z-index: -1;">
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#D9CCB2" transform="translate(-175 342) rotate(-5) scale(4.4)"></path>
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#E1D6C0" transform="translate(-148 373) rotate(-5) scale(4.4)"></path>
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#E9E0CD" transform="translate(-121 404) rotate(-5) scale(4.4)"></path>
+        </svg>
+
+        <div style="padding: 16px 26px 0; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #A79A86; font-weight: 600;">
+          <div dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">7:42</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">94%</div>
+            <div style="width: 18px; height: 9px; border-radius: 3px; background: #A79A86;"></div>
+          </div>
+        </div>
+
+        <div style="padding: 18px 26px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;">
+          <div style="display: flex; gap: 8px;">
+            <div style="width: 36px; height: 36px; border-radius: 13px; background: #F8F3E9; display: grid; place-items: center;">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M12 4 L6 10 L12 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+            <div style="width: 36px; height: 36px; border-radius: 13px; background: #F8F3E9; display: grid; place-items: center;">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M8 4 L14 10 L8 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-start; text-align: right;">
+            <div style="font-size: 11.5px; color: #A79A86; font-weight: 500;">الأسبوع <span dir="ltr" style="unicode-bidi: isolate;">6</span> · <span dir="ltr" style="unicode-bidi: isolate;">11 — 15 مارس</span></div>
+            <div style="font-size: 23px; font-weight: 700; letter-spacing: -.01em;">جدول الشعبة</div>
+          </div>
+        </div>
+
+        <div style="position: relative; margin: 36px 26px 0; background: linear-gradient(180deg, #1D5588 0%, #16456E 52%, #103A5C 100%); border-radius: 26px 0 26px 26px; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: inset 0 1.5px 0 rgba(168,198,226,.45), inset 0 -2px 0 rgba(6,24,42,.5), 0 5px 0 #0E3252, 0 16px 30px rgba(20,50,80,.34);">
+          <div style="position: absolute; right: 0; top: -19px; width: 46%; height: 21px; background: linear-gradient(180deg, #23608F 0%, #1D5588 100%); border-radius: 20px 20px 0 0; box-shadow: inset 0 1.5px 0 rgba(168,198,226,.4);"></div>
+          <div style="position: absolute; top: 18px; bottom: 18px; right: 0; width: 5px; border-radius: 999px 0 0 999px; background: #E8A33D;"></div>
+          <div style="background: linear-gradient(180deg, #F2BC66 0%, #E8A33D 46%, #D18E28 100%); border-radius: 16px; padding: 12px 16px; font-size: 13.5px; font-weight: 700; color: #241D06; text-shadow: 0 1px 0 rgba(255,255,255,.4); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(140,95,15,.4), 0 5px 0 #A9701B, 0 10px 16px rgba(20,50,80,.34);">معالجة</div>
+          <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-start; text-align: right;">
+            <div style="font-size: 12px; color: #E8A33D; font-weight: 600;">تعارض واحد · الثلاثاء</div>
+            <div style="font-size: 16px; font-weight: 700; color: #F4F1EA;">أ. خالد في صفّين معًا</div>
+            <div style="font-size: 11.5px; color: #8FB6DA;">الحصة الخامسة · <span dir="ltr" style="unicode-bidi: isolate;">7/2</span> و<span dir="ltr" style="unicode-bidi: isolate;">9/1</span></div>
+          </div>
+        </div>
+
+        <div style="padding: 20px 20px 0; display: flex; gap: 5px;">
+          <div style="width: 22px; flex: none;"></div>
+          <div style="flex: 1; background: #16456E; border-radius: 13px; padding: 8px 0; text-align: center; font-size: 11.5px; font-weight: 700; color: #F4F1EA;">أحد</div>
+          <div style="flex: 1; padding: 8px 0; text-align: center; font-size: 11.5px; font-weight: 600; color: #A79A86;">اثن</div>
+          <div style="flex: 1; padding: 8px 0; text-align: center; font-size: 11.5px; font-weight: 600; color: #A79A86;">ثلا</div>
+          <div style="flex: 1; padding: 8px 0; text-align: center; font-size: 11.5px; font-weight: 600; color: #A79A86;">أرب</div>
+          <div style="flex: 1; padding: 8px 0; text-align: center; font-size: 11.5px; font-weight: 600; color: #A79A86;">خمي</div>
+        </div>
+
+        <div style="padding: 8px 20px 0; display: flex; flex-direction: column; gap: 5px;">
+
+          <div style="display: flex; gap: 5px; align-items: stretch;">
+            <div style="width: 22px; flex: none; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #A79A86; direction: ltr; unicode-bidi: isolate;">1</div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #16456E;">نورة</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">8/1</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #3C6049;">محمد</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">7/1</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #16456E;">نورة</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">8/2</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #574978;">سارة</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">8/3</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #3C6049;">محمد</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">7/2</div></div>
+          </div>
+
+          <div style="display: flex; gap: 5px; align-items: stretch;">
+            <div style="width: 22px; flex: none; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #A79A86; direction: ltr; unicode-bidi: isolate;">2</div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #3C6049;">محمد</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">7/1</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #574978;">سارة</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">9/1</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #16456E;">نورة</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">8/1</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #3C6049;">محمد</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">7/3</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #A05A2E;">خالد</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">9/2</div></div>
+          </div>
+
+          <div style="display: flex; gap: 5px; align-items: stretch;">
+            <div style="width: 22px; flex: none; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #24211C; direction: ltr; unicode-bidi: isolate;">3</div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: #E8A33D; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: 3px 4px 12px rgba(150,105,20,.32);"><div style="font-size: 11px; font-weight: 700; color: #24211C;">محمد</div><div style="font-size: 9.5px; color: #6B4A0B; direction: ltr; unicode-bidi: isolate;">7/3</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #16456E;">نورة</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">8/3</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #A05A2E;">خالد</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">9/1</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #16456E;">نورة</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">8/2</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #574978;">سارة</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">8/1</div></div>
+          </div>
+
+          <div style="display: flex; gap: 5px; align-items: stretch;">
+            <div style="width: 22px; flex: none; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #A79A86; direction: ltr; unicode-bidi: isolate;">4</div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: rgba(183,68,58,.08); border: 1.5px dashed rgba(183,68,58,.45); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;"><div style="font-size: 10.5px; font-weight: 700; color: #9A342B;">فراغ</div><div style="font-size: 9.5px; color: #B7443A; direction: ltr; unicode-bidi: isolate;">9/2</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #3C6049;">محمد</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">7/2</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #574978;">سارة</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">9/1</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #A05A2E;">خالد</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">9/3</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #16456E;">نورة</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">8/3</div></div>
+          </div>
+
+          <div style="display: flex; gap: 5px; align-items: stretch;">
+            <div style="width: 22px; flex: none; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #A79A86; direction: ltr; unicode-bidi: isolate;">5</div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #574978;">سارة</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">8/2</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #A05A2E;">خالد</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">9/1</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: rgba(183,68,58,.1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;"><div style="font-size: 10.5px; font-weight: 700; color: #9A342B;">تعارض</div><div style="font-size: 9.5px; color: #B7443A;">خالد</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #3C6049;">محمد</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">7/1</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #574978;">سارة</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">9/2</div></div>
+          </div>
+
+          <div style="display: flex; gap: 5px; align-items: stretch;">
+            <div style="width: 22px; flex: none; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #A79A86; direction: ltr; unicode-bidi: isolate;">6</div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #16456E;">نورة</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">8/1</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: rgba(120,98,66,.07); display: grid; place-items: center; font-size: 11px; color: #C9BCA6;">—</div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #3C6049;">محمد</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">7/3</div></div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: rgba(120,98,66,.07); display: grid; place-items: center; font-size: 11px; color: #C9BCA6;">—</div>
+            <div style="flex: 1; height: 54px; border-radius: 14px; background: linear-gradient(180deg, #FBF7EE 0%, #F3ECDE 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-shadow: inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16);"><div style="font-size: 11px; font-weight: 700; color: #A05A2E;">خالد</div><div style="font-size: 9.5px; color: #A79A86; direction: ltr; unicode-bidi: isolate;">9/3</div></div>
+          </div>
+        </div>
+
+        <div style="padding: 14px 20px 0; display: flex; align-items: center; justify-content: flex-end; gap: 14px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 9px; height: 9px; border-radius: 3px; background: #574978;"></div><div style="font-size: 11px; color: #8A7F6E;">سارة</div></div>
+          <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 9px; height: 9px; border-radius: 3px; background: #A05A2E;"></div><div style="font-size: 11px; color: #8A7F6E;">خالد</div></div>
+          <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 9px; height: 9px; border-radius: 3px; background: #3C6049;"></div><div style="font-size: 11px; color: #8A7F6E;">محمد</div></div>
+          <div style="display: flex; align-items: center; gap: 6px;"><div style="width: 9px; height: 9px; border-radius: 3px; background: #16456E;"></div><div style="font-size: 11px; color: #8A7F6E;">نورة</div></div>
+        </div>
+
+        <div style="position: absolute; bottom: 20px; left: 20px; right: 20px; background: linear-gradient(180deg, #FCF8F0 0%, #F2EBDC 100%); border-radius: 28px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.95), inset 0 -1.5px 0 rgba(154,130,94,.2), 0 4px 0 rgba(190,172,140,.55), 0 14px 26px rgba(90,72,48,.24);">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 52px;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="14" rx="3" fill="#16456E"></rect><path d="M4 10 H20" stroke="#F8F3E9" stroke-width="1.6"></path></svg>
+            <div style="font-size: 10px; font-weight: 700; color: #16456E;">القسم</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 52px;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M6 3 H15 L19 7 V21 H6 Z" stroke="#A79A86" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+            <div style="font-size: 10px; color: #A79A86;">السجلّات</div>
+          </div>
+          <div style="width: 54px; height: 54px; border-radius: 999px; background: linear-gradient(180deg, #F4C878 0%, #E8A33D 45%, #C98A20 100%); display: grid; place-items: center; margin-top: -27px; box-shadow: inset 0 2px 0 rgba(255,255,255,.7), inset 0 -3px 0 rgba(140,95,15,.45), 0 5px 0 #A9701B, 0 12px 20px rgba(90,72,48,.34);">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#24211C" stroke-width="2.6" stroke-linecap="round"></path></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 52px;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="3.4" stroke="#A79A86" stroke-width="1.8"></circle><path d="M5.5 20 C5.5 16 8.5 14 12 14 C15.5 14 18.5 16 18.5 20" stroke="#A79A86" stroke-width="1.8" stroke-linecap="round"></path></svg>
+            <div style="font-size: 10px; color: #A79A86;">المعلّمون</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 52px;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"></rect><rect x="13" y="4" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"></rect><rect x="4" y="13" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"></rect><rect x="13" y="13" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"></rect></svg>
+            <div style="font-size: 10px; color: #A79A86;">اللوحة</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size: 13px; font-weight: 700; color: #5C5344;">جدول الشعبة</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 14px;">
+      <div style="width: 390px; height: 844px; background: #EFE6D6; border-radius: 44px; overflow: hidden; position: relative; isolation: isolate; box-shadow: 18px 22px 46px rgba(90,72,48,.34), -8px -8px 20px rgba(255,253,247,.7);">
+        <svg width="390" height="844" viewBox="0 0 390 844" fill="none" style="position: absolute; inset: 0; z-index: -1;">
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#D9CCB2" transform="translate(-175 342) rotate(-5) scale(4.4)"></path>
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#E1D6C0" transform="translate(-148 373) rotate(-5) scale(4.4)"></path>
+          <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#E9E0CD" transform="translate(-121 404) rotate(-5) scale(4.4)"></path>
+        </svg>
+
+        <div style="padding: 16px 26px 0; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #A79A86; font-weight: 600;">
+          <div dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">7:42</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div dir="ltr" style="unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">94%</div>
+            <div style="width: 18px; height: 9px; border-radius: 3px; background: #A79A86;"></div>
+          </div>
+        </div>
+
+        <div style="padding: 18px 26px 0; display: flex; flex-direction: column; gap: 5px; align-items: flex-start; text-align: right;">
+          <div style="font-size: 11.5px; color: #A79A86; font-weight: 500;">النماذج الرسمية · تُملأ من بيانات المنصّة</div>
+          <div style="font-size: 23px; font-weight: 700; letter-spacing: -.01em;">إصدار سجلّ</div>
+        </div>
+
+        <div style="position: relative; margin: 36px 26px 0; background: linear-gradient(180deg, #1D5588 0%, #16456E 52%, #103A5C 100%); border-radius: 26px 0 26px 26px; padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: inset 0 1.5px 0 rgba(168,198,226,.45), inset 0 -2px 0 rgba(6,24,42,.5), 0 5px 0 #0E3252, 0 16px 30px rgba(20,50,80,.34);">
+          <div style="position: absolute; right: 0; top: -19px; width: 46%; height: 21px; background: linear-gradient(180deg, #23608F 0%, #1D5588 100%); border-radius: 20px 20px 0 0; box-shadow: inset 0 1.5px 0 rgba(168,198,226,.4);"></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="background: rgba(244,241,234,.14); border-radius: 999px; padding: 6px 13px; font-size: 11.5px; font-weight: 600; color: #F4F1EA;">مارس <span dir="ltr" style="unicode-bidi: isolate;">2026</span></div>
+            <div style="font-size: 12px; font-weight: 600; color: #A8C6E2;">نموذج وزاري · شهري</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: right;">
+            <div style="font-size: 20px; font-weight: 700; color: #F4F1EA;">سجلّ متابعة المنهج</div>
+            <div style="font-size: 12.5px; color: #8FB6DA;">مملوء من <span dir="ltr" style="unicode-bidi: isolate;">34</span> متابعة · جاهز للمراجعة</div>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <div style="background: linear-gradient(180deg, #F2BC66 0%, #E8A33D 46%, #D18E28 100%); border-radius: 16px; padding: 14px; flex: 1; text-align: center; font-size: 14.5px; font-weight: 700; color: #241D06; text-shadow: 0 1px 0 rgba(255,255,255,.4); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(140,95,15,.4), 0 5px 0 #A9701B, 0 10px 16px rgba(20,50,80,.34);">تصدير <span dir="ltr" style="unicode-bidi: isolate;">PDF</span></div>
+            <div style="background: linear-gradient(180deg, rgba(244,241,234,.22) 0%, rgba(244,241,234,.09) 100%); border-radius: 16px; padding: 14px 22px; text-align: center; font-size: 14.5px; font-weight: 600; color: #F4F1EA; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.3), inset 0 -2px 0 rgba(8,28,48,.35), 0 4px 0 rgba(8,28,48,.4), 0 8px 14px rgba(8,28,48,.28);">مشاركة</div>
+          </div>
+        </div>
+
+        <div style="padding: 22px 26px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <div style="font-size: 12px; font-weight: 600; color: #3E7FB4;">تغيير الترويسة</div>
+          <div style="font-size: 16px; font-weight: 700;">المعاينة</div>
+        </div>
+
+        <div style="margin: 26px 26px 0; background: linear-gradient(180deg, #FEFCF7 0%, #F6F1E6 100%); border-radius: 20px; padding: 18px; position: relative; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.95), inset 0 -1.5px 0 rgba(154,130,94,.16), 0 3px 0 rgba(190,172,140,.5), 0 10px 20px rgba(90,72,48,.2);">
+          <div style="position: absolute; top: -13px; left: 9%; right: 9%; height: 9px; border-radius: 11px 11px 0 0; background: #DFD3BC;"></div>
+          <div style="position: absolute; top: -7px; left: 4.5%; right: 4.5%; height: 9px; border-radius: 11px 11px 0 0; background: #EBE1CD;"></div>
+          <div style="position: absolute; inset: 0; border-radius: 20px; overflow: hidden;"><svg width="200" height="200" viewBox="0 0 120 120" fill="none" style="position: absolute; left: -54px; bottom: -84px; opacity: .07;">
+            <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#16456E"></path>
+          </svg></div>
+          <div style="position: relative; display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 10px; border-bottom: 2px solid #16456E;">
+              <div style="font-size: 10px; color: #7A6F5E; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">2026-03-11</div>
+              <div style="display: flex; align-items: center; gap: 9px;">
+                <div style="font-size: 10px; color: #7A6F5E; line-height: 1.6; text-align: left;">شعبة العلوم<br>الفروانية المتوسّطة</div>
+                <div style="position: relative; width: 30px; height: 26px; overflow: hidden; flex: none;">
+                  <div style="position: absolute; left: 1.2px; top: 8.6px; width: 19.8px; height: 15.2px; background: url(assets/damma-amber.png) center/contain no-repeat;"></div>
+                  <svg width="30" height="30" viewBox="0 0 120 120" fill="none" style="position: absolute; left: 0; top: 0;">
+                    <g transform="translate(50 62) scale(.78) translate(-60 -58)">
+                      <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#16456E" opacity=".34" transform="translate(-9 -10)"></path>
+                      <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#16456E"></path>
+                    </g>
+                  </svg>
+                  <div style="position: absolute; left: 1.2px; top: 8.6px; width: 19.8px; height: 15.2px; background: url(assets/damma-paper.png) center/contain no-repeat; clip-path: polygon(2.3px 1.4px, 11.5px 1.4px, 12.7px 0.2px, 14px -0.4px, 20.3px -0.4px, 20.3px 14.3px, 2.3px 14.3px);"></div>
+                  <svg width="30" height="30" viewBox="0 0 120 120" fill="none" style="position: absolute; left: 0; top: 0;">
+                    <circle cx="100" cy="40" r="8" fill="#E8A33D"></circle>
+                    <circle cx="100" cy="60" r="9" fill="#E8A33D"></circle>
+                    <circle cx="100" cy="80" r="8" fill="#E8A33D"></circle>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div style="font-size: 13.5px; font-weight: 700; color: #16456E; text-align: right;">سجلّ متابعة المنهج · مارس</div>
+            <div style="display: flex; flex-direction: column; gap: 7px;">
+              <div style="display: flex; gap: 8px; align-items: center;"><div style="width: 34px; height: 7px; border-radius: 4px; background: rgba(79,123,94,.4);"></div><div style="flex: 1; height: 7px; border-radius: 4px; background: rgba(22,69,110,.13);"></div></div>
+              <div style="display: flex; gap: 8px; align-items: center;"><div style="width: 34px; height: 7px; border-radius: 4px; background: rgba(196,112,63,.4);"></div><div style="flex: 1; height: 7px; border-radius: 4px; background: rgba(22,69,110,.13);"></div></div>
+              <div style="display: flex; gap: 8px; align-items: center;"><div style="width: 34px; height: 7px; border-radius: 4px; background: rgba(79,123,94,.4);"></div><div style="flex: 1; height: 7px; border-radius: 4px; background: rgba(22,69,110,.13);"></div></div>
+              <div style="display: flex; gap: 8px; align-items: center;"><div style="width: 34px; height: 7px; border-radius: 4px; background: rgba(183,68,58,.35);"></div><div style="flex: 1; height: 7px; border-radius: 4px; background: rgba(22,69,110,.13);"></div></div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 10px; border-top: 1px solid rgba(120,98,66,.2);">
+              <div style="font-size: 10px; color: #8A7F6E;">صفحة <span dir="ltr" style="unicode-bidi: isolate;">1 / 2</span></div>
+              <div style="font-size: 10px; color: #7A6F5E;">رئيس القسم · توقيع إلكتروني</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding: 18px 26px 0; display: flex; flex-direction: column; gap: 9px;">
+          <div style="font-size: 16px; font-weight: 700; text-align: right;">نماذج أخرى</div>
+          <div style="position: relative; background: linear-gradient(180deg, #FBF7EE 0%, #F4EDE0 100%); border-radius: 20px; padding: 13px 16px; display: flex; align-items: center; gap: 13px; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.9), inset 0 -1.5px 0 rgba(154,130,94,.18), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2);">
+            <div style="position: absolute; top: 14px; bottom: 14px; right: 0; width: 5px; border-radius: 999px 0 0 999px; background: #E8A33D;"></div>
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M12 4 L6 10 L12 16" stroke="#A79A86" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; text-align: right;">
+              <div style="font-size: 14.5px; font-weight: 600;">كشف حضور المعلّمين</div>
+              <div style="font-size: 11.5px; color: #A79A86;">أسبوعي · جاهز</div>
+            </div>
+            <div style="width: 34px; height: 34px; border-radius: 12px; background: #EFE6D6; display: grid; place-items: center; flex: none;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="#8A7F6E" stroke-width="1.8"></rect><path d="M4 9 H20" stroke="#8A7F6E" stroke-width="1.8"></path></svg>
+            </div>
+          </div>
+        </div>
+
+        <div style="position: absolute; bottom: 20px; left: 20px; right: 20px; background: linear-gradient(180deg, #FCF8F0 0%, #F2EBDC 100%); border-radius: 28px; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.95), inset 0 -1.5px 0 rgba(154,130,94,.2), 0 4px 0 rgba(190,172,140,.55), 0 14px 26px rgba(90,72,48,.24);">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 52px;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="14" rx="3" stroke="#A79A86" stroke-width="1.8"></rect><path d="M4 10 H20" stroke="#A79A86" stroke-width="1.8"></path></svg>
+            <div style="font-size: 10px; color: #A79A86;">القسم</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 52px;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M6 3 H15 L19 7 V21 H6 Z" fill="#16456E"></path></svg>
+            <div style="font-size: 10px; font-weight: 700; color: #16456E;">السجلّات</div>
+          </div>
+          <div style="width: 54px; height: 54px; border-radius: 999px; background: linear-gradient(180deg, #F4C878 0%, #E8A33D 45%, #C98A20 100%); display: grid; place-items: center; margin-top: -27px; box-shadow: inset 0 2px 0 rgba(255,255,255,.7), inset 0 -3px 0 rgba(140,95,15,.45), 0 5px 0 #A9701B, 0 12px 20px rgba(90,72,48,.34);">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#24211C" stroke-width="2.6" stroke-linecap="round"></path></svg>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 52px;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="3.4" stroke="#A79A86" stroke-width="1.8"></circle><path d="M5.5 20 C5.5 16 8.5 14 12 14 C15.5 14 18.5 16 18.5 20" stroke="#A79A86" stroke-width="1.8" stroke-linecap="round"></path></svg>
+            <div style="font-size: 10px; color: #A79A86;">المعلّمون</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 52px;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"></rect><rect x="13" y="4" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"></rect><rect x="4" y="13" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"></rect><rect x="13" y="13" width="7" height="7" rx="2" fill="#A79A86" opacity=".6"></rect></svg>
+            <div style="font-size: 10px; color: #A79A86;">اللوحة</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size: 13px; font-weight: 700; color: #5C5344;">إصدار سجلّ</div>
+    </div>
+  
+  </div>
+
+  <div style="width: min(1240px, 100%); background: #EDE5D8; border-radius: 28px; padding: 30px 34px; display: flex; gap: 30px; flex-wrap: wrap; box-shadow: 14px 18px 34px rgba(90,72,48,.26), -8px -8px 20px rgba(255,253,247,.85);">
+    <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">لغة الواجهة</div>
+      <div style="font-size: 15px; color: #3A342B; line-height: 1.9; text-wrap: pretty;">الخلفية كريمية دافئة، والبطاقات أفتح منها بدرجة واحدة بلا حدود.<br>بطاقة زرقاء واحدة في كلّ شاشة تحمل ما يجري الآن أو ما ينتظر قرارك.<br>زرّ كهرماني واحد فيها، وزرّ ثانوي شفّاف بجانبه.<br>شريط سفلي عائم بأربعة أقسام وزرّ إضافة كهرماني في وسطه.</div>
+    </div>
+    <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">القرارات</div>
+      <div style="font-size: 15px; color: #3A342B; line-height: 1.9; text-wrap: pretty;">أيام الأسبوع بطاقات صغيرة، ونقاط تحت كلّ يوم تقول عدد ما ينتظر فيه.<br>إنجاز المنهج شرائح لا شريطًا متّصلًا: كلّ شريحة درس، والكهرمانية هي اليوم.<br>الأسماء تُختصر في مربّع حروف بدل الصور.<br>الحالات تُقال بشارة نصّية صغيرة: تذكير، اعتماد، تصدير، بديل.</div>
+    </div>
+    <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">التالي</div>
+      <div style="font-size: 15px; color: #3A342B; line-height: 1.9; text-wrap: pretty;">استمارة الزيارة الصفّية نفسها.<br>ملفّ المعلّم وسجلّ متابعته.<br>الحضور المباشر.<br>الإعدادات والصلاحيات.<br>وحين ترفع النماذج الوزارية أطابق حقولها حرفيًّا.</div>
+    </div>
+  </div>
+
+
+  <div style="width: min(1160px, 100%); background: #EDE5D8; border-radius: 34px; padding: 40px; display: flex; flex-direction: column; gap: 26px; box-shadow: 16px 20px 42px rgba(90,72,48,.3), -10px -10px 26px rgba(255,253,247,.85);">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 12px; letter-spacing: .18em; font-weight: 700; color: #8A7F6E;">الزخارف والرموز المعتمدة</div>
+        <div style="font-size: 26px; font-weight: 700;">صدى الشين، والرموز المصمتة</div>
+      </div>
+      <div style="font-size: 14px; color: #5F5648; max-width: 430px; line-height: 1.75; text-wrap: pretty;">زخرفة واحدة في السطح الواحد، بشفافية لا تزيد على 25٪، ولا زخرفة تحت الشعار مباشرة. الرموز كتل مصمتة تحاكي التكرار المظلَّل.</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px;">
+      <div style="background: #F4F1EA; border-radius: 16px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 9px; box-shadow: inset 2px 2px 7px rgba(120,98,66,.12);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#16456E"><path d="M4 4 H11 V11 H4 Z"></path><path d="M13 4 H20 V11 H13 Z" opacity=".38"></path><path d="M4 13 H11 V20 H4 Z" opacity=".38"></path><path d="M13 13 H20 V20 H13 Z"></path></svg>
+        <div style="font-size: 11px; color: #5F5648; font-weight: 600;">اللوحة</div>
+      </div>
+      <div style="background: #F4F1EA; border-radius: 16px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 9px; box-shadow: inset 2px 2px 7px rgba(120,98,66,.12);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#16456E"><path d="M4 5 H20 V9 H4 Z"></path><path d="M4 11 H20 V20 H4 Z" opacity=".38"></path><path d="M13 13 H18 V18 H13 Z" fill="#E8A33D"></path></svg>
+        <div style="font-size: 11px; color: #5F5648; font-weight: 600;">الجدول</div>
+      </div>
+      <div style="background: #F4F1EA; border-radius: 16px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 9px; box-shadow: inset 2px 2px 7px rgba(120,98,66,.12);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#16456E"><path d="M6 3 H13 L18 8 V21 H6 Z"></path><path d="M13 3 L18 8 H13 Z" fill="#E8A33D"></path></svg>
+        <div style="font-size: 11px; color: #5F5648; font-weight: 600;">السجلّات</div>
+      </div>
+      <div style="background: #F4F1EA; border-radius: 16px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 9px; box-shadow: inset 2px 2px 7px rgba(120,98,66,.12);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#16456E"><path d="M12 4 L16 8 L12 12 L8 8 Z"></path><path d="M5 20 C5 16 8 14 12 14 C16 14 19 16 19 20 Z" opacity=".38"></path></svg>
+        <div style="font-size: 11px; color: #5F5648; font-weight: 600;">المعلّمون</div>
+      </div>
+      <div style="background: #F4F1EA; border-radius: 16px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 9px; box-shadow: inset 2px 2px 7px rgba(120,98,66,.12);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#16456E"><path d="M4 12 H8 V20 H4 Z" opacity=".38"></path><path d="M10 6 H14 V20 H10 Z"></path><path d="M16 9 H20 V20 H16 Z" fill="#E8A33D"></path></svg>
+        <div style="font-size: 11px; color: #5F5648; font-weight: 600;">التقارير</div>
+      </div>
+      <div style="background: #F4F1EA; border-radius: 16px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 9px; box-shadow: inset 2px 2px 7px rgba(120,98,66,.12);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#16456E"><path d="M6 17 V10 C6 6.5 8.5 4.5 12 4.5 C15.5 4.5 18 6.5 18 10 V17 L20 19 H4 Z"></path><circle cx="12" cy="21.4" r="1.6" fill="#E8A33D"></circle></svg>
+        <div style="font-size: 11px; color: #5F5648; font-weight: 600;">الإشعارات</div>
+      </div>
+      <div style="background: #F4F1EA; border-radius: 16px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 9px; box-shadow: inset 2px 2px 7px rgba(120,98,66,.12);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#16456E"><path d="M6 5 H18 V21 H6 Z" opacity=".38"></path><path d="M9 3 H15 V7 H9 Z"></path><path d="M9.2 13.4 L11.4 15.6 L15.4 11.6 L14 10.2 L11.4 12.8 L10.6 12 Z" fill="#E8A33D"></path></svg>
+        <div style="font-size: 11px; color: #5F5648; font-weight: 600;">الزيارات</div>
+      </div>
+      <div style="background: #F4F1EA; border-radius: 16px; padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 9px; box-shadow: inset 2px 2px 7px rgba(120,98,66,.12);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#16456E"><path d="M12 3 L17 8 H14 V14 H10 V8 H7 Z"></path><path d="M4 15 H20 V20 H4 Z" opacity=".38"></path></svg>
+        <div style="font-size: 11px; color: #5F5648; font-weight: 600;">التصدير</div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+      <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">صدى الشين · للأغلفة والرؤوس</div>
+        <div style="position: relative; background: #16456E; border-radius: 16px; padding: 24px 22px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; min-height: 128px;">
+          <svg width="300" height="80" viewBox="20 -125 662 166" preserveAspectRatio="xMinYMid meet" style="position: absolute; right: -70px; top: -8px; opacity: .12;">
+            <path d="M 680.5 -80.1 L 660.7 -40 L 620.6 40 L 580.5 40 L 600.8 0 L 400.8 0 L 380.5 40 L 60.3 40 L 20.2 -40 L 336.6 -40 L 316.3 -80.1 L 311.7 -89.9 L 374.3 -124.1 L 396.5 -80.1 Z" fill="#F4F1EA"></path>
+          </svg>
+          <div style="position: relative; font-size: 11px; color: #A8C6E2; font-weight: 600;">مارس 2026</div>
+          <div style="position: relative; font-size: 16px; font-weight: 700; color: #F4F1EA;">سجلّ متابعة المنهج</div>
+        </div>
+      </div>
+      <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">الحالة الفارغة · ضمّة ونقاط</div>
+        <div style="position: relative; background: #F4F1EA; border-radius: 16px; padding: 26px 22px; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 128px; justify-content: center;">
+          <img src="assets/el-damma.svg" alt="" style="position: absolute; left: -40px; bottom: -64px; width: 210px; opacity: .09; transform: rotate(-6deg);">
+          <div style="position: relative; display: flex; gap: 9px;">
+            <div style="width: 9px; height: 9px; border-radius: 999px; background: #16456E;"></div>
+            <div style="width: 11px; height: 11px; border-radius: 999px; background: #E8A33D; margin-top: -1px;"></div>
+            <div style="width: 9px; height: 9px; border-radius: 999px; background: #16456E;"></div>
+          </div>
+          <div style="position: relative; font-size: 14px; font-weight: 700; color: #16456E;">لا زيارات مجدولة هذا الأسبوع</div>
+          <div style="position: relative; font-size: 12px; color: #8A7F6E;">أضف زيارة من زرّ الإضافة في الأسفل</div>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+      <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">بطاقة معلّم · ترددات الشين على الكحلي</div>
+        <div style="position: relative; background: #16456E; border-radius: 18px; padding: 26px 24px 22px; overflow: hidden; min-height: 190px; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; box-shadow: 8px 10px 22px rgba(20,50,80,.32);">
+          <svg width="340" height="92" viewBox="20 -125 662 166" preserveAspectRatio="xMaxYMid meet" style="position: absolute; left: -110px; bottom: -30px; opacity: .1;">
+            <path d="M 680.5 -80.1 L 660.7 -40 L 620.6 40 L 580.5 40 L 600.8 0 L 400.8 0 L 380.5 40 L 60.3 40 L 20.2 -40 L 336.6 -40 L 316.3 -80.1 L 311.7 -89.9 L 374.3 -124.1 L 396.5 -80.1 Z" fill="#F4F1EA"></path>
+          </svg>
+          <svg width="340" height="92" viewBox="20 -125 662 166" preserveAspectRatio="xMaxYMid meet" style="position: absolute; left: -164px; bottom: -46px; opacity: .05;">
+            <path d="M 680.5 -80.1 L 660.7 -40 L 620.6 40 L 580.5 40 L 600.8 0 L 400.8 0 L 380.5 40 L 60.3 40 L 20.2 -40 L 336.6 -40 L 316.3 -80.1 L 311.7 -89.9 L 374.3 -124.1 L 396.5 -80.1 Z" fill="#F4F1EA"></path>
+          </svg>
+          <div style="position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+            <div style="background: rgba(244,241,234,.14); border-radius: 999px; padding: 7px 14px; font-size: 12px; font-weight: 600; color: #F4F1EA;">حاضر · <span dir="ltr" style="unicode-bidi: isolate; color: #E8A33D;">7:38</span></div>
+            <img src="assets/logo-vec-dark.svg" alt="الشعار" style="width: 74px; height: auto; flex: none;">
+          </div>
+          <div style="position: relative; display: flex; flex-direction: column; gap: 5px; align-items: flex-start; text-align: right;">
+            <div style="font-size: 19px; font-weight: 700; color: #F4F1EA;">نورة العجمي</div>
+            <div style="font-size: 12.5px; color: #A8C6E2;">لغة عربية · شعبة اللغة العربية · <span dir="ltr" style="unicode-bidi: isolate;">3</span> فصول</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">بطاقة معلّم · ترددات الشين على الفاتح</div>
+        <div style="position: relative; background: #F4F1EA; border-radius: 18px; padding: 26px 24px 22px; overflow: hidden; min-height: 190px; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; box-shadow: 8px 10px 22px rgba(90,72,48,.22);">
+          <svg width="340" height="92" viewBox="20 -125 662 166" preserveAspectRatio="xMaxYMid meet" style="position: absolute; left: -110px; bottom: -30px; opacity: .09;">
+            <path d="M 680.5 -80.1 L 660.7 -40 L 620.6 40 L 580.5 40 L 600.8 0 L 400.8 0 L 380.5 40 L 60.3 40 L 20.2 -40 L 336.6 -40 L 316.3 -80.1 L 311.7 -89.9 L 374.3 -124.1 L 396.5 -80.1 Z" fill="#16456E"></path>
+          </svg>
+          <svg width="340" height="92" viewBox="20 -125 662 166" preserveAspectRatio="xMaxYMid meet" style="position: absolute; left: -164px; bottom: -46px; opacity: .045;">
+            <path d="M 680.5 -80.1 L 660.7 -40 L 620.6 40 L 580.5 40 L 600.8 0 L 400.8 0 L 380.5 40 L 60.3 40 L 20.2 -40 L 336.6 -40 L 316.3 -80.1 L 311.7 -89.9 L 374.3 -124.1 L 396.5 -80.1 Z" fill="#16456E"></path>
+          </svg>
+          <div style="position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+            <div style="background: rgba(22,69,110,.08); border-radius: 999px; padding: 7px 14px; font-size: 12px; font-weight: 600; color: #16456E;">حاضر · <span dir="ltr" style="unicode-bidi: isolate; color: #A9701B;">7:38</span></div>
+            <img src="assets/logo-vec-color.svg" alt="الشعار" style="width: 74px; height: auto; flex: none;">
+          </div>
+          <div style="position: relative; display: flex; flex-direction: column; gap: 5px; align-items: flex-start; text-align: right;">
+            <div style="font-size: 19px; font-weight: 700; color: #16456E;">نورة العجمي</div>
+            <div style="font-size: 12.5px; color: #8A7F6E;">لغة عربية · شعبة اللغة العربية · <span dir="ltr" style="unicode-bidi: isolate;">3</span> فصول</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+      <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">الأيقونة المعتمدة · رمزًا مصغّرًا</div>
+        <div style="background: #F4F1EA; border-radius: 16px; padding: 24px 22px; min-height: 128px; display: flex; align-items: center; justify-content: center; gap: 26px;">
+          <img src="assets/app-icon-approved.png" alt="الأيقونة" style="width: 88px; height: 88px;">
+          <img src="assets/app-icon-approved.png" alt="" style="width: 56px; height: 56px;">
+          <img src="assets/app-icon-approved.png" alt="" style="width: 36px; height: 36px;">
+          <img src="assets/app-icon-approved.png" alt="" style="width: 24px; height: 24px;">
+        </div>
+      </div>
+      <div style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">الأيقونة في رأس قائمة</div>
+        <div style="position: relative; background: #16456E; border-radius: 16px; padding: 24px 22px; overflow: hidden; display: flex; align-items: center; gap: 14px; min-height: 128px;">
+          <img src="assets/app-icon-approved.png" alt="" style="width: 52px; height: 52px; flex: none;">
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div style="font-size: 16px; font-weight: 700; color: #F4F1EA;">مِنصّة شُعبة</div>
+            <div style="font-size: 11.5px; color: #A8C6E2;">إدارة شُعب المدارس · وزارة التربية</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size: 14px; color: #5F5648; line-height: 1.75; text-wrap: pretty;">الجزء الرئيسي من الرمز كحلي كامل، والثانوي بشفافية 38٪، وقطعة عنبرية واحدة حيث الفعل. ترددات الشين تُقصّ بحافة البطاقة أسفل يسارها بطبقتين باهتتين. تُستكمل بقية الرموز (الإعدادات، البحث، الحضور، الصلاحيات…) على القاعدة نفسها.</div>
+  </div>
+
+  <div style="width: min(1160px, 100%); background: #EDE5D8; border-radius: 34px; padding: 40px; display: flex; flex-direction: column; gap: 26px; box-shadow: 16px 20px 42px rgba(90,72,48,.3), -10px -10px 26px rgba(255,253,247,.85);">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 12px; letter-spacing: .18em; font-weight: 700; color: #8A7F6E;">سجلّات رئيس الشعبة</div>
+        <div style="font-size: 26px; font-weight: 700;">نماذج مطبوعة جاهزة للتعبئة</div>
+      </div>
+      <div style="font-size: 14px; color: #5F5648; max-width: 430px; line-height: 1.75; text-wrap: pretty;">ترويسة وزارية نصّية بلا شعار في الرأس — رمز صغير واحد في التذييل، والأولوية لحقول التعبئة.</div>
+    </div>
+    <div style="display: flex; gap: 22px; flex-wrap: wrap; align-items: flex-start;">
+<div style="flex: 1 1 400px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">سجلّ متابعة المنهج · جدول</div>
+      </div>
+      <div style="background: #FFFFFF; border-radius: 10px; padding: 26px 28px 18px; display: flex; flex-direction: column; gap: 14px; min-height: 520px; box-shadow: 10px 12px 26px rgba(90,72,48,.24); font-size: 10.5px; color: #24211C;">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+          <div style="display: flex; flex-direction: column; gap: 3px; font-size: 10px; color: #3A342B; line-height: 1.6;">
+            <div>وزارة التربية</div>
+            <div>منطقة الفروانية التعليمية</div>
+            <div>مدرسة الفروانية المتوسّطة — بنين</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; flex: none;">
+            <image-slot id="school-logo-record" shape="circle" fit="contain" src="assets/school-crest-default.svg" placeholder="شعار المدرسة" style="width: 74px; height: 74px; border: 1.5px dashed #C9BCA6; border-radius: 50%; background: #FBF9F4;"></image-slot>
+            <div style="font-size: 8.5px; color: #A79A86; font-weight: 600;">شعار المدرسة</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; font-size: 10px; color: #3A342B; line-height: 1.6; text-align: left;">
+            <div>العام الدراسي: <span style="color: #8A7F6E;">2025 / 2026</span></div>
+            <div>الفصل الدراسي: <span style="color: #8A7F6E;">الثاني</span></div>
+            <div>قسم اللغة العربية</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center; padding: 6px 0 2px; border-top: 2px solid #16456E; border-bottom: 2px solid #16456E;">
+          <div style="font-size: 14.5px; font-weight: 700; color: #16456E; padding-top: 6px;">سجلّ متابعة تنفيذ المنهج</div>
+          <div style="display: flex; gap: 18px; font-size: 10px; color: #3A342B; padding-bottom: 6px;">
+            <div>الشهر: <span style="display: inline-block; width: 70px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+            <div>المعلّم: <span style="display: inline-block; width: 110px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+            <div>الصفّ: <span style="display: inline-block; width: 50px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          </div>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; flex: 1;">
+          <thead>
+            <tr style="background: #F4F1EA;">
+              <th style="border: 1px solid #C9BCA6; padding: 7px 6px; font-weight: 700; color: #16456E; width: 34px;">م</th>
+              <th style="border: 1px solid #C9BCA6; padding: 7px 6px; font-weight: 700; color: #16456E;">الدرس / الموضوع</th>
+              <th style="border: 1px solid #C9BCA6; padding: 7px 6px; font-weight: 700; color: #16456E; width: 74px;">التاريخ المقرّر</th>
+              <th style="border: 1px solid #C9BCA6; padding: 7px 6px; font-weight: 700; color: #16456E; width: 74px;">تاريخ التنفيذ</th>
+              <th style="border: 1px solid #C9BCA6; padding: 7px 6px; font-weight: 700; color: #16456E; width: 88px;">ملاحظات</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="border: 1px solid #C9BCA6; padding: 9px 6px; text-align: center; color: #8A7F6E;">1</td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td></tr>
+            <tr><td style="border: 1px solid #C9BCA6; padding: 9px 6px; text-align: center; color: #8A7F6E;">2</td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td></tr>
+            <tr><td style="border: 1px solid #C9BCA6; padding: 9px 6px; text-align: center; color: #8A7F6E;">3</td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td></tr>
+            <tr><td style="border: 1px solid #C9BCA6; padding: 9px 6px; text-align: center; color: #8A7F6E;">4</td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td></tr>
+            <tr><td style="border: 1px solid #C9BCA6; padding: 9px 6px; text-align: center; color: #8A7F6E;">5</td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td></tr>
+            <tr><td style="border: 1px solid #C9BCA6; padding: 9px 6px; text-align: center; color: #8A7F6E;">6</td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td><td style="border: 1px solid #C9BCA6;"></td></tr>
+          </tbody>
+        </table>
+        <div style="display: flex; justify-content: space-between; gap: 20px; font-size: 10px; color: #3A342B; padding-top: 4px;">
+          <div>توقيع المعلّم: <span style="display: inline-block; width: 90px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          <div>رئيس القسم: <span style="display: inline-block; width: 90px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          <div>التاريخ: &nbsp;&nbsp;/&nbsp;&nbsp;/&nbsp;20</div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; padding-top: 8px; border-top: 1px solid #EDE5D8;">
+          <div style="display: flex; gap: 4px; align-items: center;">
+            <div style="width: 4px; height: 4px; border-radius: 999px; background: #16456E;"></div>
+            <div style="width: 5px; height: 5px; border-radius: 999px; background: #E8A33D;"></div>
+            <div style="width: 4px; height: 4px; border-radius: 999px; background: #16456E;"></div>
+          </div>
+          <div style="font-size: 8.5px; color: #A79A86;">أُنشئ عبر مِنصّة شُعبة · shoubahub.com</div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #5F5648; line-height: 1.7; text-wrap: pretty;">ترويسة نصّية وزارية بلا شعار، جدول بحدود رملية هادئة وصفوف رحبة للكتابة اليدوية، ونقاط الشين وحدها في التذييل.</div>
+    </div>
+<div style="flex: 1 1 400px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">استمارة زيارة صفّية · حقول</div>
+      </div>
+      <div style="background: #FFFFFF; border-radius: 10px; padding: 26px 28px 18px; display: flex; flex-direction: column; gap: 14px; min-height: 520px; box-shadow: 10px 12px 26px rgba(90,72,48,.24); font-size: 10.5px; color: #24211C;">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+          <div style="display: flex; flex-direction: column; gap: 3px; font-size: 10px; color: #3A342B; line-height: 1.6;">
+            <div>وزارة التربية</div>
+            <div>مدرسة الفروانية المتوسّطة — بنين</div>
+            <div>قسم اللغة العربية</div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; flex: none;">
+            <image-slot id="school-logo-visit" shape="circle" fit="contain" src="assets/school-crest-default.svg" placeholder="شعار المدرسة" style="width: 74px; height: 74px; border: 1.5px dashed #C9BCA6; border-radius: 50%; background: #FBF9F4;"></image-slot>
+            <div style="font-size: 8.5px; color: #A79A86; font-weight: 600;">شعار المدرسة</div>
+          </div>
+          <div style="font-size: 10px; color: #3A342B; text-align: left; line-height: 1.6;">رقم الاستمارة: <span style="color: #8A7F6E; font-family: 'IBM Plex Sans', monospace;" dir="ltr">Z-114</span><br>التاريخ: &nbsp;&nbsp;/&nbsp;&nbsp;/&nbsp;20</div>
+        </div>
+        <div style="text-align: center; padding: 8px 0; border-top: 2px solid #16456E; border-bottom: 2px solid #16456E; font-size: 14.5px; font-weight: 700; color: #16456E;">استمارة زيارة صفّية</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; font-size: 10px; color: #3A342B;">
+          <div>اسم المعلّم: <span style="display: inline-block; width: 100px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          <div>المادّة: <span style="display: inline-block; width: 80px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          <div>الصفّ / الفصل: <span style="display: inline-block; width: 70px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          <div>الحصّة: <span style="display: inline-block; width: 50px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          <div>موضوع الدرس: <span style="display: inline-block; width: 90px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          <div>نوع الزيارة: <span style="display: inline-block; width: 70px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0; flex: 1; border: 1px solid #C9BCA6; border-radius: 4px; overflow: hidden;">
+          <div style="background: #F4F1EA; padding: 7px 10px; font-size: 10px; font-weight: 700; color: #16456E; border-bottom: 1px solid #C9BCA6;">عناصر الملاحظة <span style="font-weight: 400; color: #8A7F6E;">(يوضع تقدير من 1 إلى 4)</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #EDE5D8; font-size: 9.5px;"><span>التهيئة وتنظيم بيئة الصفّ</span><span style="display: inline-block; width: 34px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #EDE5D8; font-size: 9.5px;"><span>وضوح الأهداف وتحقّقها</span><span style="display: inline-block; width: 34px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #EDE5D8; font-size: 9.5px;"><span>تنويع الاستراتيجيات والوسائل</span><span style="display: inline-block; width: 34px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #EDE5D8; font-size: 9.5px;"><span>تفاعل الطلبة ومشاركتهم</span><span style="display: inline-block; width: 34px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #EDE5D8; font-size: 9.5px;"><span>التقويم وربط التعلّم بالحياة</span><span style="display: inline-block; width: 34px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          <div style="padding: 8px 10px; font-size: 9.5px; color: #3A342B;">التوصيات:
+            <div style="height: 12px; border-bottom: 1px dotted #A79A86; margin-top: 8px;"></div>
+            <div style="height: 12px; border-bottom: 1px dotted #A79A86; margin-top: 6px;"></div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; gap: 20px; font-size: 10px; color: #3A342B; padding-top: 4px;">
+          <div>توقيع المعلّم: <span style="display: inline-block; width: 90px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+          <div>رئيس القسم: <span style="display: inline-block; width: 90px; border-bottom: 1px dotted #A79A86;">&nbsp;</span></div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; padding-top: 8px; border-top: 1px solid #EDE5D8;">
+          <img src="assets/el-damma.svg" alt="" style="width: 16px; opacity: .55;">
+          <div style="font-size: 8.5px; color: #A79A86;">أُنشئ عبر مِنصّة شُعبة · shoubahub.com</div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #5F5648; line-height: 1.7; text-wrap: pretty;">حقول تعبئة منقّطة وبنود تقدير جاهزة، والضمّة الصغيرة وحدها في التذييل — الرمز حاضر بلا مزاحمة للمحتوى الرسمي.</div>
+    </div>
+    <div style="flex: 1 1 400px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">الشهادات · ترويسة بالشعار وصدى الشين</div>
+      </div>
+      <div style="position: relative; background: #FFFFFF; border-radius: 10px; padding: 30px 30px 22px; overflow: hidden; display: flex; flex-direction: column; gap: 16px; min-height: 470px; box-shadow: 10px 12px 26px rgba(90,72,48,.24);">
+        <svg width="360" height="98" viewBox="20 -125 662 166" preserveAspectRatio="xMaxYMid meet" style="position: absolute; left: -120px; bottom: -26px; opacity: .06;">
+          <path d="M 680.5 -80.1 L 660.7 -40 L 620.6 40 L 580.5 40 L 600.8 0 L 400.8 0 L 380.5 40 L 60.3 40 L 20.2 -40 L 336.6 -40 L 316.3 -80.1 L 311.7 -89.9 L 374.3 -124.1 L 396.5 -80.1 Z" fill="#16456E"></path>
+        </svg>
+        <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid #E2D7C2;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; flex: none;">
+            <image-slot id="school-logo-cert" shape="circle" fit="contain" src="assets/school-crest-default.svg" placeholder="شعار المدرسة" style="width: 74px; height: 74px; border: 1.5px dashed #C9BCA6; border-radius: 50%; background: #FBF9F4;"></image-slot>
+            <div style="font-size: 8.5px; color: #A79A86; font-weight: 600;">شعار المدرسة</div>
+          </div>
+          <div style="text-align: left; font-size: 10.5px; color: #5F5648; line-height: 1.7;">قسم اللغة العربية<br>مدرسة الفروانية المتوسّطة</div>
+        </div>
+        <div style="position: relative; display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center; padding-top: 4px;">
+          <div style="font-size: 18px; font-weight: 700; color: #16456E;">شهادة تقدير</div>
+          <div style="font-size: 10.5px; color: #8A7F6E;">تُمنح للمعلّم المنجز خطّته في موعدها</div>
+        </div>
+        <div style="position: relative; display: flex; flex-direction: column; gap: 8px; flex: 1; padding-top: 6px;">
+          <div style="height: 8px; border-radius: 4px; background: rgba(22,69,110,.1); width: 84%; align-self: center;"></div>
+          <div style="height: 8px; border-radius: 4px; background: rgba(22,69,110,.1); width: 92%; align-self: center;"></div>
+          <div style="height: 8px; border-radius: 4px; background: rgba(22,69,110,.1); width: 60%; align-self: center;"></div>
+        </div>
+        <div style="position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; padding-top: 12px; border-top: 1px solid #E2D7C2;">
+          <div style="font-size: 9.5px; color: #5F5648; line-height: 1.7;">رئيس القسم · التوقيع الإلكتروني</div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <img src="assets/app-icon-approved.png" alt="" style="width: 22px; height: 22px; flex: none;">
+            <img src="assets/logo-vec-color.svg" alt="شعار المنصة" style="width: 62px; height: auto; opacity: .85;">
+          </div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #5F5648; line-height: 1.7; text-wrap: pretty;">الشهادات تحمل الشعار في الرأس وشعار المنصّة المصغّر في التذييل، وتردد الشين أسفل اليسار بشفافية 6٪ — بخلاف السجلّات التي تكتفي برمز التذييل.</div>
+    </div>
+    </div>
+  </div>
+
+  <div style="width: min(1160px, 100%); display: flex; gap: 22px; flex-wrap: wrap;">
+    <div style="flex: 1 1 420px; background: #EDE5D8; border-radius: 28px; padding: 30px; display: flex; flex-direction: column; gap: 18px; box-shadow: 14px 18px 34px rgba(90,72,48,.26), -8px -8px 20px rgba(255,253,247,.85);">
+      <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">الترويسة الرسمية</div>
+      <div style="background: #F4F1EA; border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: 6px 8px 18px rgba(90,72,48,.18);">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 14px; border-bottom: 3px solid #16456E;">
+          <img src="assets/logo-vec-color.svg" alt="شعار" style="width: 150px; height: auto;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="assets/app-icon-approved.png" alt="" style="width: 30px; height: 30px; flex: none;">
+            <div style="text-align: left; font-size: 11px; color: #5F5648; line-height: 1.7;">قسم اللغة العربية<br>مدرسة الفروانية المتوسّطة · الكويت</div>
+          </div>
+        </div>
+        <div style="height: 3px; width: 90px; background: #E8A33D; border-radius: 2px; margin-top: -13px;"></div>
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="height: 8px; border-radius: 4px; background: rgba(22,69,110,.12); width: 82%;"></div>
+          <div style="height: 8px; border-radius: 4px; background: rgba(22,69,110,.12); width: 96%;"></div>
+          <div style="height: 8px; border-radius: 4px; background: rgba(22,69,110,.12); width: 64%;"></div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-top: 12px; border-top: 1px solid #E2D7C2;">
+          <div style="font-size: 11px; color: #8A7F6E;">مِنصّة شُعبة — منصّة إدارة الشُعب المدرسية</div>
+          <div style="font-size: 11px; color: #8A7F6E; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">shoubahub.com</div>
+        </div>
+      </div>
+      <div style="font-size: 14px; color: #5F5648; line-height: 1.75; text-wrap: pretty;">الخطّ الكحلي السميك أسفل الترويسة يقتبس جسم الشين، والشريط العنبري القصير يقتبس الضمّة — لا زخرفة غيرهما.</div>
+    </div>
+    <div style="flex: 1 1 300px; background: #EDE5D8; border-radius: 28px; padding: 30px; display: flex; flex-direction: column; gap: 18px; box-shadow: 14px 18px 34px rgba(90,72,48,.26), -8px -8px 20px rgba(255,253,247,.85);">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">أيقونة التطبيق</div>
+        <div style="background: #E8A33D; color: #24211C; border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 700;">معتمدة — الخيار ١</div>
+      </div>
+      <div style="font-size: 14px; color: #3A342B; line-height: 1.9; text-wrap: pretty;">اعتُمد الخيار ١: <strong style="color: #16456E;">العلامة والكلمة تحتها</strong>، والاسم بنقاط شينه الكريمية كما في الخيار ٥. التفاصيل في قسم «أيقونة التطبيق» أعلاه.</div>
+    </div>
+  </div>
+
+  <div style="width: min(1160px, 100%); display: flex; gap: 22px; flex-wrap: wrap; align-items: stretch;">
+    <div style="flex: 1 1 420px; background: #EDE5D8; border-radius: 28px; padding: 30px; display: flex; flex-direction: column; gap: 18px; box-shadow: 14px 18px 34px rgba(90,72,48,.26), -8px -8px 20px rgba(255,253,247,.85);">
+      <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">توقيع البريد الإلكتروني</div>
+      <div style="background: #FFFFFF; border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 6px 8px 18px rgba(90,72,48,.18);">
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <div style="height: 8px; border-radius: 4px; background: rgba(22,69,110,.1); width: 92%;"></div>
+          <div style="height: 8px; border-radius: 4px; background: rgba(22,69,110,.1); width: 70%;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px; padding-top: 14px; border-top: 2px solid #16456E;">
+          <img src="assets/logo-vec-color.svg" alt="الشعار" style="width: 76px; height: auto; flex: none;">
+          <div style="width: 1px; height: 52px; background: rgba(120,98,66,.28);"></div>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <div style="font-size: 14px; font-weight: 700; color: #16456E;">فهد العتيبي</div>
+            <div style="font-size: 11px; color: #5F5648;">رئيس قسم اللغة العربية · مدرسة الفروانية المتوسّطة</div>
+            <div style="font-size: 10.5px; color: #8A7F6E; direction: ltr; unicode-bidi: isolate; text-align: right; font-family: 'IBM Plex Sans', monospace;">shoubahub.com</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #5F5648; line-height: 1.7; text-wrap: pretty;">خطّ كحلي يفصل التوقيع عن الرسالة، والعلامة يمينًا ثم المعلومات — بلا صور ولا شبكات اجتماعية.</div>
+    </div>
+    <div style="flex: 1 1 420px; background: #EDE5D8; border-radius: 28px; padding: 30px; display: flex; flex-direction: column; gap: 18px; box-shadow: 14px 18px 34px rgba(90,72,48,.26), -8px -8px 20px rgba(255,253,247,.85);">
+      <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">صور الحسابات الاجتماعية</div>
+      <div style="display: flex; gap: 18px; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <div style="width: 96px; height: 96px; border-radius: 999px; background: #16456E; display: grid; place-items: center; box-shadow: 6px 8px 18px rgba(20,50,80,.3);">
+            <img src="assets/logo-vec-dark.svg" alt="الصورة الرمزية" style="width: 68px; height: auto;">
+          </div>
+          <div style="font-size: 11px; font-weight: 700; color: #8A7F6E;">الصورة الرمزية</div>
+        </div>
+        <div style="flex: 1 1 240px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="position: relative; background: #16456E; border-radius: 14px; height: 96px; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 18px; box-shadow: 6px 8px 18px rgba(20,50,80,.3);">
+            <svg width="260" height="70" viewBox="20 -125 662 166" preserveAspectRatio="xMaxYMid meet" style="position: absolute; left: -90px; bottom: -18px; opacity: .1;">
+              <path d="M 680.5 -80.1 L 660.7 -40 L 620.6 40 L 580.5 40 L 600.8 0 L 400.8 0 L 380.5 40 L 60.3 40 L 20.2 -40 L 336.6 -40 L 316.3 -80.1 L 311.7 -89.9 L 374.3 -124.1 L 396.5 -80.1 Z" fill="#F4F1EA"></path>
+            </svg>
+            <img src="assets/logo-vec-dark.svg" alt="" style="position: relative; width: 90px; height: auto;">
+            <img src="assets/lockup-word-mansa-dark.svg" alt="" style="position: relative; width: 110px; height: auto; margin-top: -8px;">
+          </div>
+          <div style="font-size: 11px; font-weight: 700; color: #8A7F6E;">الغلاف — التركيب الأفقي وترددات الشين</div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #5F5648; line-height: 1.7; text-wrap: pretty;">الرمزية: العلامة وحدها على الكحلي وسط الدائرة. الغلاف: التركيب الأفقي وترددات الشين أسفل اليسار — لا نصّ آخر.</div>
+    </div>
+  </div>
+
+  <div style="width: min(1160px, 100%); background: #EDE5D8; border-radius: 34px; padding: 40px; display: flex; flex-direction: column; gap: 26px; box-shadow: 16px 20px 42px rgba(90,72,48,.3), -10px -10px 26px rgba(255,253,247,.85);">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 12px; letter-spacing: .18em; font-weight: 700; color: #8A7F6E;">القرطاسية الرسمية</div>
+        <div style="font-size: 26px; font-weight: 700;">ختم، غلاف تقرير، وبطاقة</div>
+      </div>
+      <div style="font-size: 14px; color: #5F5648; max-width: 440px; line-height: 1.75; text-wrap: pretty;">الختم بالنسخة الأحادية دائمًا، والغلاف على الكحلي الأساسي، والبطاقة على الكريمي. لا خطّ ثالث ولا لون ثالث.</div>
+    </div>
+    <div style="display: flex; gap: 22px; flex-wrap: wrap; align-items: stretch;">
+      <div style="flex: 1 1 260px; background: #F4F1EA; border-radius: 22px; padding: 30px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 18px; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+        <div style="width: 190px; height: 190px; border-radius: 999px; border: 3px solid #16456E; display: grid; place-items: center;">
+          <div style="width: 168px; height: 168px; border-radius: 999px; border: 1.5px solid #16456E; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 14px;">
+            <div style="font-size: 11px; font-weight: 700; color: #16456E; letter-spacing: .08em;">مِنصّة شُعبة</div>
+            <img src="assets/logo-vec-mono.svg" alt="ختم" style="width: 88px; height: auto;">
+            <div style="font-size: 9.5px; font-weight: 600; color: #16456E;">قسم اللغة العربية · الفروانية</div>
+          </div>
+        </div>
+        <div style="font-size: 12px; color: #5F5648; line-height: 1.7; text-align: center; text-wrap: pretty;">الختم الرسمي — دائرتان والعلامة وسطهما، بلون واحد.</div>
+      </div>
+      <div style="flex: 1 1 300px; background: #F4F1EA; border-radius: 22px; padding: 30px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 18px; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+        <div style="width: 280px; height: 396px; background: #16456E; border-radius: 8px; padding: 26px 24px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 10px 14px 28px rgba(20,50,80,.35);">
+          <svg width="280" height="396" viewBox="0 0 120 120" fill="none" preserveAspectRatio="xMinYMax meet" style="position: absolute; inset: 0; opacity: .08;">
+            <g transform="translate(8 96) scale(1.15) translate(-60 -58)">
+              <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA" transform="translate(-12 -14)"></path>
+              <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA"></path>
+            </g>
+          </svg>
+          <div style="position: relative; display: flex; justify-content: flex-start;">
+            <img src="assets/logo-vec-dark.svg" alt="الشعار" style="width: 104px; height: auto;"></div>
+          <div style="position: relative; display: flex; flex-direction: column; gap: 12px;">
+            <div style="width: 44px; height: 3px; border-radius: 2px; background: #E8A33D;"></div>
+            <div style="font-size: 24px; font-weight: 700; color: #F4F1EA; line-height: 1.4;">تقرير أعمال الشعبة</div>
+            <div style="font-size: 12px; color: #A8C6E2; line-height: 1.7;">الفصل الدراسي الأول · قسم اللغة العربية</div>
+          </div>
+          <div style="position: relative; display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid rgba(244,241,234,.25);">
+            <div style="font-size: 10px; color: #A8C6E2;">مِنصّة شُعبة</div>
+            <div style="font-size: 10px; color: #A8C6E2; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">shoubahub.com</div>
+          </div>
+        </div>
+        <div style="font-size: 12px; color: #5F5648; line-height: 1.7; text-align: center; text-wrap: pretty;">غلاف التقرير — كحلي، وصدى المجلّد أسفل اليسار، وشريط عنبري قصير فوق العنوان.</div>
+      </div>
+      <div style="flex: 1 1 300px; background: #F4F1EA; border-radius: 22px; padding: 30px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 18px; box-shadow: inset 3px 3px 9px rgba(120,98,66,.13);">
+        <div style="display: flex; flex-direction: column; gap: 16px; align-items: center;">
+          <div style="width: 300px; height: 178px; background: #F9F4E9; border: 1px solid #E2D7C2; border-radius: 12px; padding: 20px 22px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 8px 10px 22px rgba(90,72,48,.22);">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+              <img src="assets/logo-vec-color.svg" alt="الشعار" style="width: 82px; height: auto;">
+              <div style="width: 34px; height: 3px; border-radius: 2px; background: #E8A33D;"></div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="font-size: 15px; font-weight: 700; color: #16456E;">فهد العتيبي</div>
+              <div style="font-size: 10.5px; color: #5F5648;">رئيس قسم اللغة العربية · مدرسة الفروانية المتوسّطة</div>
+              <div style="font-size: 10px; color: #8A7F6E; direction: ltr; unicode-bidi: isolate; text-align: right; font-family: 'IBM Plex Sans', monospace;">shoubahub.com · +965 9xxx xxxx</div>
+            </div>
+          </div>
+          <div style="width: 300px; height: 178px; background: #16456E; border-radius: 12px; display: grid; place-items: center; box-shadow: 8px 10px 22px rgba(20,50,80,.3);">
+            <img src="assets/logo-vec-dark.svg" alt="ظهر البطاقة" style="width: 130px; height: auto;">
+          </div>
+        </div>
+        <div style="font-size: 12px; color: #5F5648; line-height: 1.7; text-align: center; text-wrap: pretty;">البطاقة — وجه كريمي للمعلومات، وظهر كحلي للعلامة وحدها.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: min(1160px, 100%); background: #EDE5D8; border-radius: 34px; padding: 40px; display: flex; flex-direction: column; gap: 26px; box-shadow: 16px 20px 42px rgba(90,72,48,.3), -10px -10px 26px rgba(255,253,247,.85);">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 12px; letter-spacing: .18em; font-weight: 700; color: #8A7F6E;">قوالب المنشورات</div>
+        <div style="font-size: 26px; font-weight: 700;">ثلاثة قوالب للسوشال ميديا</div>
+      </div>
+      <div style="font-size: 14px; color: #5F5648; max-width: 440px; line-height: 1.75; text-wrap: pretty;">مقاس <span dir="ltr" style="unicode-bidi: isolate;">1080×1080</span>. إعلان على الكحلي، ونصيحة على الكريمي، ورقم على العنبري — لا قالب رابع.</div>
+    </div>
+    <div style="display: flex; gap: 22px; flex-wrap: wrap; justify-content: center;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+        <div style="width: 310px; height: 310px; background: #16456E; border-radius: 18px; padding: 26px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 10px 14px 28px rgba(20,50,80,.32);">
+          <svg width="310" height="310" viewBox="0 0 120 120" fill="none" preserveAspectRatio="xMinYMax meet" style="position: absolute; inset: 0; opacity: .07;">
+            <g transform="translate(4 106) scale(1.05) translate(-60 -58)">
+              <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA" transform="translate(-12 -14)"></path>
+              <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#F4F1EA"></path>
+            </g>
+          </svg>
+          <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="background: #E8A33D; color: #24211C; border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 700;">إعلان</div>
+            <img src="assets/logo-vec-dark.svg" alt="" style="width: 62px; height: auto;">
+          </div>
+          <div style="position: relative; display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-size: 23px; font-weight: 700; color: #F4F1EA; line-height: 1.5;">توزيع الحصص أصبح آليًا</div>
+            <div style="font-size: 13px; color: #A8C6E2; line-height: 1.7;">جدول الأسبوع كاملًا في دقيقة، بلا تعارضات.</div>
+          </div>
+          <div style="position: relative; display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid rgba(244,241,234,.22);">
+            <div style="display: flex; gap: 5px;">
+              <div style="width: 7px; height: 7px; border-radius: 999px; background: #E8A33D;"></div>
+              <div style="width: 8px; height: 8px; border-radius: 999px; background: #E8A33D; margin-top: -1px;"></div>
+              <div style="width: 7px; height: 7px; border-radius: 999px; background: #E8A33D;"></div>
+            </div>
+            <div style="font-size: 11px; color: #A8C6E2; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">shoubahub.com</div>
+          </div>
+        </div>
+        <div style="font-size: 13px; font-weight: 700; color: #5C5344;">إعلان ميزة — كحلي</div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+        <div style="width: 310px; height: 310px; background: #F9F4E9; border: 1px solid #E2D7C2; border-radius: 18px; padding: 26px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 10px 14px 28px rgba(90,72,48,.22);">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="background: #16456E; color: #F4F1EA; border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 700;">من دفتر رئيس القسم</div>
+            <img src="assets/el-damma.svg" alt="" style="width: 40px; height: auto;">
+          </div>
+          <div style="font-size: 20px; font-weight: 700; color: #16456E; line-height: 1.75; text-wrap: pretty;">زيارة صفّية واحدة موثّقة خير من عشر ملاحظات شفهية.</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid #E2D7C2;">
+            <img src="assets/logo-vec-color.svg" alt="" style="width: 58px; height: auto;">
+            <div style="font-size: 11px; color: #8A7F6E; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">shoubahub.com</div>
+          </div>
+        </div>
+        <div style="font-size: 13px; font-weight: 700; color: #5C5344;">نصيحة — كريمي</div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+        <div style="width: 310px; height: 310px; background: #E8A33D; border-radius: 18px; padding: 26px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 10px 14px 28px rgba(150,105,20,.32);">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="background: #24211C; color: #F4F1EA; border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 700;">بالأرقام</div>
+            <div style="background: #16456E; border-radius: 12px; padding: 8px 12px;"><img src="assets/logo-vec-dark.svg" alt="" style="width: 58px; height: auto; display: block;"></div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-size: 56px; font-weight: 700; color: #16456E; line-height: 1;">٩٤٪</div>
+            <div style="font-size: 15px; font-weight: 700; color: #24211C; line-height: 1.6;">من تقارير الشعبة تُنجز في أقل من دقيقتين</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid rgba(36,33,28,.25);">
+            <div style="font-size: 11px; font-weight: 700; color: #24211C;">مِنصّة شُعبة</div>
+            <div style="font-size: 11px; color: #24211C; direction: ltr; unicode-bidi: isolate; font-family: 'IBM Plex Sans', monospace;">shoubahub.com</div>
+          </div>
+        </div>
+        <div style="font-size: 13px; font-weight: 700; color: #5C5344;">رقم — عنبري</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: min(1160px, 100%); background: #EDE5D8; border-radius: 28px; padding: 32px 34px; display: flex; gap: 30px; flex-wrap: wrap; box-shadow: 14px 18px 34px rgba(90,72,48,.26), -8px -8px 20px rgba(255,253,247,.85);">
+    <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">مفاتيح المنصّة</div>
+      <div style="font-size: 15px; color: #3A342B; line-height: 1.9;">المتابعة · الانتظام · السرعة<br>التفاعل · الأثر · المشاركة</div>
+      <div style="height: 1px; background: rgba(120,98,66,.22); margin: 4px 0;"></div>
+      <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">قواعد</div>
+      <div style="font-size: 15px; color: #3A342B; line-height: 1.9;">الاستخدام الأساسي على الخلفية الكحلية<br>مع الكلمة يكون التركيب أفقيًّا<br>الضمّة لا تُحذف في أيّ صورة<br>مساحة الحماية = ارتفاع النقطة الكبرى</div>
+    </div>
+    <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">ممنوع</div>
+      <div style="font-size: 15px; color: #3A342B; line-height: 1.9;">تلوين الشعار بغير الكحلي أو الكريمي<br>تدوير الشعار أو إمالته<br>ظلّ أو تدرّج داخل العلامة<br>كتابة الكلمة بخطّ آخر<br>وضع الشعار على صورة مزدحمة</div>
+    </div>
+    <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-size: 12px; letter-spacing: .16em; font-weight: 700; color: #8A7F6E;">ما بقي</div>
+      <div style="font-size: 15px; color: #3A342B; line-height: 1.85; text-wrap: pretty;">الشعار في هذا المستند متجهي <span dir="ltr" style="unicode-bidi: isolate;">SVG</span> من ملف كانفا الأصلي، وأيقونة التطبيق محسومة (الخيار ١). ما بقي قبل التصدير النهائي: اشتقاق علامة مصغّرة للمقاسات الصغيرة من الضمّة والنقاط.</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+</body>
+</html>

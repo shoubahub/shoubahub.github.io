@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QismHub · روح مادّية (Neumorphism)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#e7ddc9;          /* أساس دافئ (طين/ورق) */
+    --bg2:#efe7d6;
+    --raise-l:#fbf5e6;     /* لمعة علوية */
+    --raise-d:#c9bd9f;     /* ظلّ سفلي */
+    --ink:#4b4128; --ink2:#7a6e50; --muted:#9c8f6d;
+    --accent:#12857a; --accent-d:#0e6b62; --accent-l:#2dd4bf;
+    --gold:#c79a3e;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{font-family:"IBM Plex Sans Arabic",sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;
+    background-image:radial-gradient(900px 500px at 70% -10%,rgba(255,255,255,.35),transparent),radial-gradient(700px 400px at 10% 110%,rgba(150,130,90,.15),transparent)}
+  .wrap{max-width:900px;margin:0 auto;padding:20px 16px 40px}
+
+  /* لبنة بارزة (outset) */
+  .raise{background:linear-gradient(145deg,var(--bg2),#ddd2b8);border-radius:22px;
+    box-shadow:7px 7px 16px var(--raise-d), -7px -7px 16px var(--raise-l)}
+  /* لبنة غائرة (inset) */
+  .inset{background:var(--bg);border-radius:16px;
+    box-shadow:inset 5px 5px 11px var(--raise-d), inset -5px -5px 11px var(--raise-l)}
+
+  .top{display:flex;align-items:center;gap:14px;padding:16px 20px;margin-bottom:18px}
+  .top .hi{font-weight:700;font-size:18px}
+  .top .dt{font-size:12px;color:var(--muted)}
+  .avatar{width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;
+    background:linear-gradient(145deg,#16a08e,#0e6b62);box-shadow:4px 4px 9px var(--raise-d), -3px -3px 8px var(--raise-l)}
+  .bell{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--accent-d);margin-inline-start:auto}
+
+  .grid{display:grid;grid-template-columns:1.3fr 1fr;gap:18px}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+
+  /* بطاقة البطل الملوّنة البارزة */
+  .hero{grid-column:1 / -1;background:linear-gradient(150deg,#12857a,#0c5b52);border-radius:24px;padding:20px 22px;color:#fff;position:relative;overflow:hidden;
+    box-shadow:8px 8px 20px rgba(70,90,80,.35), inset 1px 1px 0 rgba(255,255,255,.15)}
+  .hero::after{content:"";position:absolute;left:-40px;top:-50px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.06)}
+  .hero .live{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.14);padding:4px 12px;border-radius:99px;font-size:12px}
+  .hero .live .d{width:8px;height:8px;border-radius:50%;background:var(--accent-l);box-shadow:0 0 0 4px rgba(45,212,191,.25)}
+  .hero .big{font-size:18px;font-weight:700;margin:12px 0 4px}
+  .hero .sm{font-size:13px;color:#bfeee7}
+  .hero .ringwrap{position:absolute;left:22px;top:22px}
+  .hero .ringwrap .v{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:20px}
+  .hero .ringwrap .v small{font-size:10px;color:#bfeee7;font-weight:500}
+
+  .sect-t{display:flex;align-items:center;font-weight:700;font-size:15px;padding:0 4px 12px;color:var(--ink)}
+  .sect-t .mo{margin-inline-start:auto;font-size:12.5px;color:var(--accent-d);font-weight:600}
+
+  /* بطاقات إحصاء بارزة بأيقونات غائرة */
+  .stats{display:flex;gap:14px}
+  .stat{flex:1;padding:16px 12px;text-align:center;border-radius:20px}
+  .stat .ic{width:46px;height:46px;border-radius:14px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--accent-d)}
+  .stat .n{font-size:24px;font-weight:800}
+  .stat .k{font-size:11.5px;color:var(--muted)}
+
+  .card{padding:18px}
+
+  /* مهام: صفوف غائرة */
+  .task{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;margin-bottom:10px;font-size:13.5px;color:var(--ink)}
+  .task .ci{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:15px;flex:none;color:#fff}
+  .task.b .ci{background:linear-gradient(145deg,#4c93f2,#2f6fd0)}.task.g .ci{background:linear-gradient(145deg,#22b07a,#158a5c)}.task.p .ci{background:linear-gradient(145deg,#9b7b e0,#7c5fc7);background:linear-gradient(145deg,#9b7be0,#7c5fc7)}
+  .task .tm{margin-inline-start:auto;font-size:11.5px;color:var(--muted)}
+
+  /* إنجاز: أشرطة غائرة بحشوة بارزة */
+  .bar{display:flex;align-items:center;gap:12px;margin:14px 0;font-size:13px}
+  .bar .l{width:90px;color:var(--ink2);font-weight:600}
+  .bar .tk{flex:1;height:14px;border-radius:99px;padding:3px}
+  .bar .fl{display:block;height:100%;border-radius:99px;background:linear-gradient(145deg,#16a08e,#0e6b62);box-shadow:1px 1px 2px rgba(0,0,0,.15)}
+  .bar .v{width:42px;text-align:left;color:var(--accent-d);font-weight:800;font-size:12px}
+
+  .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:22px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top raise">
+      <div class="avatar">م</div>
+      <div><div class="hi">صباح الخير، محمد</div><div class="dt">الخميس · ٢٢ مايو ٢٠٢٦</div></div>
+      <div class="bell inset" style="border-radius:14px">🔔</div>
+    </div>
+
+    <div class="grid">
+      <!-- البطل -->
+      <div class="hero">
+        <div class="ringwrap">
+          <svg width="78" height="78" viewBox="0 0 78 78"><circle cx="39" cy="39" r="32" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="8"/><circle cx="39" cy="39" r="32" fill="none" stroke="#2dd4bf" stroke-width="8" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="76" transform="rotate(-90 39 39)"/></svg>
+          <div class="v">62%<small>المنهج</small></div>
+        </div>
+        <div style="text-align:right">
+          <span class="live"><span class="d"></span> الآن</span>
+          <div class="big">يدرّس: أ. محمد — الحصة ٣</div>
+          <div class="sm">متفرّغ: أ. سعد · أ. منى</div>
+        </div>
+      </div>
+
+      <!-- المهام -->
+      <div class="card raise">
+        <div class="sect-t">مهام اليوم <span class="mo">عرض الكل</span></div>
+        <div class="task inset b"><span class="ci">👁</span> زيارة أ. محمد — ح٣ <span class="tm">٩:٠٠</span></div>
+        <div class="task inset g"><span class="ci">👥</span> اجتماع القسم <span class="tm">١٠:٣٠</span></div>
+        <div class="task inset p"><span class="ci">🎯</span> تجهيز أسبوع الفلسفة <span class="tm">١:٠٠</span></div>
+      </div>
+
+      <!-- إنجاز -->
+      <div class="card raise">
+        <div class="sect-t">إنجاز المنهج</div>
+        <div class="bar"><span class="l">القسم عام</span><span class="tk inset"><span class="fl" style="width:62%"></span></span><span class="v">62%</span></div>
+        <div class="bar"><span class="l">العاشر</span><span class="tk inset"><span class="fl" style="width:71%"></span></span><span class="v">71%</span></div>
+        <div class="bar"><span class="l">الحادي عشر</span><span class="tk inset"><span class="fl" style="width:58%"></span></span><span class="v">58%</span></div>
+      </div>
+    </div>
+
+    <!-- إحصاء -->
+    <div class="stats" style="margin-top:18px">
+      <div class="stat raise"><div class="ic inset">👤</div><div class="n">6</div><div class="k">المعلمون</div></div>
+      <div class="stat raise"><div class="ic inset">✔</div><div class="n">14</div><div class="k">الزيارات</div></div>
+      <div class="stat raise"><div class="ic inset">🗂</div><div class="n">9</div><div class="k">السجلات</div></div>
+    </div>
+
+    <p class="foot">روح مادّية (Neumorphism) — حقيقية بالكود بلا صور · بروز وعمق ملموس</p>
+  </div>
+</body>
+</html>

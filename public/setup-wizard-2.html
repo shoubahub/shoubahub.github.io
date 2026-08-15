@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · الإعداد · القسم</title>
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#16456E" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/identity/tokens.css" />
+<link rel="stylesheet" href="/shell.css" />
+<link rel="stylesheet" href="/components.css" />
+<link rel="stylesheet" href="/frame.css" />
+<style>
+  /* خاص بهذه الشاشة فقط */
+  .sdrop.locked{opacity:.5;pointer-events:none;filter:grayscale(.3)}
+  .subjects{display:flex;flex-direction:column;gap:9px}
+  .subj{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:15px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .subj b{font-size:14.5px;font-weight:700;color:var(--shouba-ink)}
+  .subj .gt{font-size:11.5px;font-weight:600;color:var(--shouba-amber-deep);background:rgba(169,112,27,.1);border-radius:999px;padding:5px 11px;white-space:nowrap}
+  .subj-empty{font-size:12.5px;color:var(--shouba-hint);padding:4px 2px}
+  .hide{display:none !important}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="screen has-foot">
+    <div class="navrow">
+      <div class="brand">
+        <img src="/identity/assets/logo-vec-color.svg" alt="شعبة" />
+        <span class="vsep"></span>
+        <div class="prog">
+          <div class="lbl">إعداد الشعبة · <b>خطوة <span class="num">٢</span> من <span class="num">٤</span></b></div>
+          <div class="dots"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+        </div>
+      </div>
+      <div class="back" onclick="history.back()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M8 4 L14 10 L8 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <div class="head">
+      <div class="h">شعبتك</div>
+      <div class="s">حدّد مرحلتك ثم تخصّصك — وتظهر مواد شعبتك تلقائياً.</div>
+    </div>
+
+    <form class="fields" autocomplete="off" onsubmit="return false">
+      <!-- المرحلة -->
+      <div class="field">
+        <label>المرحلة</label>
+        <div class="sdrop" data-label="المرحلة">
+          <button type="button" class="trigger">
+            <span class="val ph">اختر المرحلة</span>
+            <span class="chev"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M5 8 L10 13 L15 8" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <select id="stage"><option value="" disabled selected hidden>اختر المرحلة</option></select>
+        </div>
+      </div>
+
+      <!-- الشعبة -->
+      <div class="field">
+        <label>الشعبة (التخصّص)</label>
+        <div class="sdrop locked" id="deptDrop" data-label="الشعبة">
+          <button type="button" class="trigger">
+            <span class="val ph">اختر الشعبة</span>
+            <span class="chev"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M5 8 L10 13 L15 8" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <select id="dept"><option value="" disabled selected hidden>اختر الشعبة</option></select>
+        </div>
+      </div>
+
+      <!-- مواد الشعبة (معاينة حيّة) -->
+      <div class="field hide" id="subjectsWrap">
+        <label>مواد شعبتك</label>
+        <div class="subjects" id="subjects"></div>
+      </div>
+    </form>
+  </div>
+
+  <div class="foot">
+    <button class="cta" id="next" disabled>التالي</button>
+  </div>
+ </div></div>
+
+<script src="/refdata.js"></script>
+<script src="/components.js"></script>
+<script>
+  var KEY='shouba.setup', R=window.SHOUBA_REF;
+  function load(){ try{return JSON.parse(localStorage.getItem(KEY))||{};}catch(e){return {};} }
+  function save(patch){ var d=load(); Object.assign(d,patch); localStorage.setItem(KEY,JSON.stringify(d)); }
+
+  var stageSel=document.getElementById('stage'), deptSel=document.getElementById('dept');
+  var deptDrop=document.getElementById('deptDrop'), next=document.getElementById('next');
+  var subjectsWrap=document.getElementById('subjectsWrap'), subjects=document.getElementById('subjects');
+
+  function setTrigger(dropSel, text, isPh){
+    var v=dropSel.closest('.sdrop').querySelector('.val');
+    v.textContent=text; v.classList.toggle('ph', !!isPh);
+  }
+  function fillOptions(sel, list, ph){
+    sel.innerHTML='<option value="" disabled selected hidden>'+ph+'</option>';
+    list.forEach(function(o){ var op=document.createElement('option'); op.textContent=o; sel.appendChild(op); });
+  }
+
+  // املأ المراحل
+  fillOptions(stageSel, R.stages, 'اختر المرحلة');
+
+  function onStage(){
+    var st=stageSel.value; if(!st) return;
+    fillOptions(deptSel, R.departments[st]||[], 'اختر الشعبة');
+    setTrigger(deptSel, 'اختر الشعبة', true);
+    deptDrop.classList.remove('locked');
+    subjectsWrap.classList.add('hide'); subjects.innerHTML='';
+    save({ stage: st, department:'' });
+    validate();
+  }
+  function onDept(){
+    var dp=deptSel.value; if(!dp) return;
+    var list=R.departmentSubjects[dp]||[];
+    subjects.innerHTML='';
+    if(list.length){
+      list.forEach(function(s){
+        var row=document.createElement('div'); row.className='subj';
+        row.innerHTML='<b>'+s.name+'</b><span class="gt">'+s.grade+' · '+s.track+'</span>';
+        subjects.appendChild(row);
+      });
+    } else {
+      subjects.innerHTML='<div class="subj-empty">مواد هذه الشعبة تُضاف لاحقاً من الإدارة.</div>';
+    }
+    subjectsWrap.classList.remove('hide');
+    save({ department: dp, subjects: list });
+    validate();
+  }
+  function validate(){ next.disabled = !(stageSel.value && deptSel.value); }
+
+  stageSel.addEventListener('change', onStage);
+  deptSel.addEventListener('change', onDept);
+
+  // استرجاع ما أُدخل سابقاً
+  (function prefill(){
+    var s=load();
+    if(s.stage){ stageSel.value=s.stage; setTrigger(stageSel, s.stage, false);
+      fillOptions(deptSel, R.departments[s.stage]||[], 'اختر الشعبة'); deptDrop.classList.remove('locked');
+      if(s.department){ deptSel.value=s.department; setTrigger(deptSel, s.department, false); onDept(); }
+    }
+    validate();
+  })();
+
+  next.addEventListener('click', function(){
+    if(next.disabled) return;
+    location.href='/setup-wizard-3.html';   // الخطوة ③ (العام) — تُبنى تالياً
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QismHub · نموذج حقيقي (هجين)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Amiri:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --wood1:#result; --paper:#f4ecd8; --paper2:#ebe0c6; --ink:#4a3b26; --ink-soft:#8a7550;
+    --gold:#a67c2e; --gold-l:#d8b24e; --olive1:#8faa64; --olive2:#5f7d3e; --line:#d8c6a0;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{
+    font-family:"IBM Plex Sans Arabic",-apple-system,"Segoe UI",Tahoma,sans-serif;color:#e9dcc2;min-height:100vh;
+    background-image:
+      radial-gradient(1200px 500px at 70% -10%,rgba(214,178,110,.10),transparent),
+      repeating-linear-gradient(91deg,rgba(0,0,0,.05) 0 2px,transparent 2px 8px),
+      linear-gradient(160deg,#43301c,#271a0e);
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:16px}
+
+  /* الشريط العلوي */
+  .top{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;
+    background:linear-gradient(180deg,#4c3620,#3a2814);border:1px solid #241609;
+    box-shadow:0 6px 16px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.06)}
+  .top .hi{font-weight:700;font-size:16px;color:#f2e6cd}
+  .top .dt{font-size:11.5px;color:#b39c74}
+  .search{flex:1;min-width:40px;background:#241708;border:1px solid #543a1e;border-radius:10px;padding:9px 12px;color:#9c855f;font-size:12.5px;box-shadow:inset 0 2px 5px rgba(0,0,0,.5)}
+  .ic-btn{width:36px;height:36px;border-radius:10px;background:#2e1f0f;border:1px solid #503620;color:var(--gold-l);display:flex;align-items:center;justify-content:center;flex:none;font-size:18px}
+  .ava{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#d8b24e,#7c5a1c);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;box-shadow:0 2px 4px rgba(0,0,0,.4)}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  @media(max-width:640px){ .grid{grid-template-columns:1fr} }
+
+  .sheet-title{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:#5a4526;border-bottom:2px solid var(--line);padding-bottom:9px;margin-bottom:13px}
+  .sheet-title .i{color:var(--gold);display:inline-flex}
+
+  /* ورقة مثبّتة بمشبك (SVG واقعي) */
+  .clip{position:relative;background:linear-gradient(180deg,#f6eeda,#e9dcbe);border:1px solid #cdb98f;border-radius:5px;padding:22px 16px 16px;color:var(--ink);
+    box-shadow:0 12px 26px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.65)}
+  .clip .pin{position:absolute;top:-16px;right:50%;transform:translateX(50%);width:52px;height:34px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+  .stat .i{font-size:19px;color:var(--gold)}
+  .stat .n{font-size:26px;font-weight:700;color:#453520;line-height:1;margin:5px 0 2px}
+  .stat .k{font-size:10.5px;color:var(--ink-soft)}
+  .stat .up{font-size:10px;color:#6f8f5a;font-weight:600}
+
+  /* مفكّرة جلدية */
+  .journal{background:linear-gradient(160deg,#3c2b18,#281a0c);border:1px solid #543a1e;border-radius:9px;padding:16px 18px;position:relative;
+    box-shadow:0 12px 26px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06)}
+  .journal .jt{font-weight:700;font-size:14px;color:#e9d6ab;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .journal .jt .i{color:var(--gold-l)}
+  .journal ul{list-style:none}
+  .journal li{font-family:"Amiri",serif;font-style:italic;font-size:16px;color:#d3bb87;padding:6px 0;border-bottom:1px dashed #4e3a22;display:flex;align-items:center;gap:9px}
+  .journal li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold);flex:none;box-shadow:0 0 0 3px rgba(166,124,46,.2)}
+
+  /* الرزنامة */
+  .cal{grid-column:1 / -1;background:linear-gradient(180deg,#f6eeda,#e9dcbe);border:1px solid #cdb98f;border-radius:5px 5px 9px 9px;padding:22px 16px 16px;color:var(--ink);position:relative;
+    box-shadow:0 12px 26px rgba(0,0,0,.4)}
+  .rings{position:absolute;top:-9px;left:0;right:0;display:flex;justify-content:space-around;padding:0 26px}
+  .rings i{width:11px;height:18px;border-radius:99px;background:linear-gradient(180deg,#d6d6d6,#8f8f8f);box-shadow:0 2px 2px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.7)}
+  .week{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+  @media(max-width:640px){ .week{grid-template-columns:1fr} }
+  .day{background:#fffdf7;border:1px solid #e7dabb;border-radius:6px;min-height:96px;padding:8px}
+  .day .dn{font-size:11px;color:#a2895c;text-align:center;font-weight:600;border-bottom:1px dashed #e3d3ad;padding-bottom:5px;margin-bottom:6px}
+  .note{font-size:11px;border-radius:6px;padding:5px 8px;margin-bottom:5px;font-weight:600;line-height:1.4;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+  .note.b{background:#d7e6f5;color:#25537e}.note.g{background:#d7ecdd;color:#215237}.note.p{background:#e6dcf5;color:#4a3877}
+  .note.done{background:#e8dfc8;color:#93805e;text-decoration:line-through;box-shadow:none}
+
+  /* السجل (إنجاز المنهج) */
+  .ledger{grid-column:1 / -1;background:repeating-linear-gradient(0deg,#fbf5e6 0 30px,#f2e9d0 30px 31px),#fbf5e6;border:1px solid #ddceA6;border:1px solid #ddcea6;border-radius:6px;padding:16px 18px;
+    box-shadow:0 12px 26px rgba(0,0,0,.35)}
+  .bar{display:flex;align-items:center;gap:12px;margin:11px 0;font-size:13px}
+  .bar .l{width:96px;color:#6a5533;font-weight:600}
+  .bar .tk{flex:1;height:13px;border-radius:99px;background:#e6d8b6;box-shadow:inset 0 2px 4px rgba(90,60,20,.35);overflow:hidden;padding:2px}
+  .bar .fl{display:block;height:100%;border-radius:99px;background:linear-gradient(180deg,var(--olive1),var(--olive2));box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+  .bar .v{width:42px;text-align:left;color:#7a6238;font-weight:700;font-size:12px}
+
+  .foot{text-align:center;color:#8a7550;font-size:12px;margin:18px 0 8px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div class="hi">صباح الخير، محمد</div>
+        <div class="dt">الخميس · ٢٢ مايو ٢٠٢٦</div>
+      </div>
+      <div class="search">ابحث في السجلات، المعلمين، المهام…</div>
+      <div class="ic-btn">🔔</div>
+      <div class="ava">م</div>
+    </div>
+
+    <div class="grid">
+      <!-- ورقة نظرة عامة بمشبك -->
+      <div class="clip">
+        <svg class="pin" viewBox="0 0 52 34" aria-hidden="true">
+          <rect x="8" y="10" width="36" height="20" rx="4" fill="#c9c9c9" stroke="#8a8a8a"/>
+          <rect x="8" y="10" width="36" height="9" rx="4" fill="#e8e8e8"/>
+          <path d="M14 10 V4 a3 3 0 0 1 6 0 V10" fill="none" stroke="#8a8a8a" stroke-width="2.4"/>
+          <path d="M32 10 V4 a3 3 0 0 1 6 0 V10" fill="none" stroke="#8a8a8a" stroke-width="2.4"/>
+        </svg>
+        <div class="sheet-title"><span class="i">▦</span> نظرة عامة</div>
+        <div class="stats">
+          <div class="stat"><div class="i">👤</div><div class="n">6</div><div class="k">المعلمون</div><div class="up">مكتمل</div></div>
+          <div class="stat"><div class="i">✔</div><div class="n">14</div><div class="k">الزيارات</div><div class="up">↑ هذا الشهر</div></div>
+          <div class="stat"><div class="i">🗂</div><div class="n">9</div><div class="k">السجلات</div><div class="up">نشطة</div></div>
+        </div>
+      </div>
+
+      <!-- مفكّرة مهام اليوم -->
+      <div class="journal">
+        <div class="jt"><span class="i">✎</span> مهام اليوم</div>
+        <ul>
+          <li>زيارة الأستاذ محمد — الحصة الثالثة</li>
+          <li>اعتماد محضر اجتماع القسم</li>
+          <li>متابعة إنجاز منهج الحادي عشر</li>
+          <li>تجهيز أسبوع الفلسفة</li>
+        </ul>
+      </div>
+
+      <!-- الرزنامة بلولب -->
+      <div class="cal">
+        <div class="rings"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="sheet-title"><span class="i">🗓</span> رزنامة الأسبوع · ٢٦–٣٠ أكتوبر</div>
+        <div class="week">
+          <div class="day"><div class="dn">الأحد</div><div class="note b">زيارة أ. محمد ح٣</div></div>
+          <div class="day"><div class="dn">الاثنين</div><div class="note g">اجتماع القسم</div></div>
+          <div class="day"><div class="dn">الثلاثاء</div></div>
+          <div class="day"><div class="dn">الأربعاء</div><div class="note p">أسبوع الفلسفة</div></div>
+          <div class="day"><div class="dn">الخميس</div><div class="note done">زيارة أ. منى</div></div>
+        </div>
+      </div>
+
+      <!-- سجل إنجاز المنهج -->
+      <div class="ledger">
+        <div class="sheet-title"><span class="i">📊</span> سجل إنجاز المنهج</div>
+        <div class="bar"><span class="l">القسم (عام)</span><span class="tk"><span class="fl" style="width:62%"></span></span><span class="v">62%</span></div>
+        <div class="bar"><span class="l">العاشر</span><span class="tk"><span class="fl" style="width:71%"></span></span><span class="v">71%</span></div>
+        <div class="bar"><span class="l">الحادي عشر</span><span class="tk"><span class="fl" style="width:58%"></span></span><span class="v">58%</span></div>
+        <div class="bar"><span class="l">الثاني عشر</span><span class="tk"><span class="fl" style="width:45%"></span></span><span class="v">45%</span></div>
+      </div>
+    </div>
+
+    <p class="foot">نموذج حقيقي مبنيّ بالكود (CSS/SVG) — بلا أصول مدفوعة · النظام الهجين</p>
+  </div>
+</body>
+</html>

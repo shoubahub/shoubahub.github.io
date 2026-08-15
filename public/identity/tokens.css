@@ -1,0 +1,34 @@
+/* Shouba (مِنصّة شُعبة) — Design Tokens */
+:root {
+  /* Brand colors */
+  --shouba-navy: #16456E;        /* الأساسي — خلفية العلامة والبطاقة الرئيسية */
+  --shouba-amber: #E8A33D;       /* العنبري — لون الفعل الواحد في الشاشة */
+  --shouba-ink: #24211C;         /* نص أساسي */
+  --shouba-cream: #F4F1EA;       /* سطح فاتح / نص على الكحلي */
+  --shouba-paper: #F9F4E9;       /* ورق أفتح (بطاقات) */
+  --shouba-sand: #EDE5D8;        /* ألواح الأقسام */
+  --shouba-canvas: #EFE6D6;      /* خلفية شاشات الهاتف */
+  --shouba-line: #E2D7C2;        /* حدود رقيقة */
+  --shouba-text-muted: #5F5648;
+  --shouba-label: #8A7F6E;       /* عناوين صغيرة متباعدة الأحرف */
+  --shouba-hint: #A79A86;
+  --shouba-navy-light: #A8C6E2;  /* نص ثانوي على الكحلي */
+  --shouba-link: #3E7FB4;
+  --shouba-amber-deep: #A9701B;  /* ظل الزر العنبري */
+  --shouba-error: #B7443A;
+
+  /* Amber CTA gradient */
+  --shouba-cta: linear-gradient(180deg, #F2BC66 0%, #E8A33D 46%, #D18E28 100%);
+
+  /* Type */
+  --font-ar: "IBM Plex Sans Arabic", sans-serif;   /* 300–700 */
+  --font-num: "IBM Plex Sans", monospace;          /* أرقام ولاتيني */
+
+  /* Radii */
+  --r-pill: 999px; --r-card: 22px; --r-btn: 18px; --r-input: 14px;
+
+  /* Shadows */
+  --shadow-card: 8px 10px 22px rgba(90,72,48,.22);
+  --shadow-navy: 8px 10px 22px rgba(20,50,80,.32);
+  --shadow-inset: inset 0 2px 5px rgba(120,98,66,.24);
+}

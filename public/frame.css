@@ -1,0 +1,56 @@
+/* إطار الهاتف التوضيحي — يحدّد مقاس الشاشة المرجعي (390×844) على الكمبيوتر
+   وعلى الجوّال الفعلي يملأ الشاشة بلا إطار. */
+
+/* منع أي تمرير/تحرّك أفقي على كل الأجهزة */
+html,body{overflow-x:hidden;max-width:100%}
+body.framed{overscroll-behavior-x:none}
+
+/* خلفية سطح المكتب حول الهاتف */
+body.framed{
+  background:#dfd7c8;
+  background-image:radial-gradient(1000px 600px at 50% -10%, rgba(255,255,255,.35), transparent);
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:28px 0;
+}
+
+/* هيكل الهاتف */
+body.framed .device{
+  width:390px;height:844px;flex:none;position:relative;
+  background:#0b0f14;border-radius:52px;padding:12px;
+  box-shadow:0 40px 90px rgba(40,30,15,.45), inset 0 0 0 2px #2a2a2e;
+}
+body.framed .device::before{ /* النوتش */
+  content:"";position:absolute;top:14px;left:50%;transform:translateX(-50%);
+  width:128px;height:26px;background:#0b0f14;border-radius:0 0 16px 16px;z-index:20;
+}
+body.framed .device .viewport{
+  width:100%;height:100%;border-radius:42px;overflow:hidden;position:relative;background:var(--shouba-canvas,#EFE6D6);
+}
+/* شارة المقاس */
+body.framed .device::after{
+  content:"390 × 844 · مقاس الجوّال المرجعي";
+  position:absolute;bottom:-34px;left:50%;transform:translateX(-50%);white-space:nowrap;
+  font-family:"IBM Plex Sans Arabic",sans-serif;font-size:12px;color:#7a6e58;font-weight:600;
+}
+
+/* داخل الإطار، الشاشة تملأ الـviewport (لا 100vh) + مساحة النوتش أعلاها
+   (تكافئ env(safe-area-inset-top) على الجهاز الحقيقي) */
+body.framed .screen{min-height:100% !important;height:100%;max-width:none !important;overflow:auto;padding-top:30px}
+/* الأشرطة السفلية العائمة تُقيّد داخل الإطار (بمواضع سفلية صريحة) */
+body.framed .tabbar{position:absolute !important;bottom:20px;left:20px;right:20px;max-width:none !important;margin:0 auto !important}
+body.framed .foot{position:absolute !important;left:0;right:0;bottom:0;max-width:none !important;margin:0 !important}
+
+/* على الجوّال الحقيقي: بلا إطار، الشاشة كاملة
+   ملاحظة حاسمة: نستخدم dvh (الارتفاع المرئي الفعلي) لا vh — لأن vh في متصفّحات الجوّال
+   يحسب المساحة تحت شريط المتصفّح، فيقع الزرّ السفلي تحت الطيّة ويضطر المستخدم للتمرير. */
+@media (max-width:460px){
+  body.framed{background:var(--shouba-canvas,#EFE6D6);padding:0;display:block;overflow-x:hidden;min-height:100dvh}
+  body.framed .device{width:100%;max-width:100%;height:auto;min-height:100vh;min-height:100dvh;border-radius:0;padding:0;box-shadow:none}
+  body.framed .device::before,body.framed .device::after{display:none}
+  body.framed .device .viewport{width:100%;max-width:100%;border-radius:0;height:auto;min-height:100vh;min-height:100dvh;overflow-x:hidden}
+  body.framed .screen{width:100%;max-width:100% !important;height:auto;min-height:100vh !important;min-height:100dvh !important;overflow-x:hidden;
+    padding-top:env(safe-area-inset-top)}
+  /* شريط الإجراء يُثبَّت بالمساحة المرئية (fixed) فيظهر الزرّ دائماً بلا تمرير */
+  body.framed .foot{position:fixed !important;left:0;right:0;bottom:0;top:auto;max-width:100% !important;margin:0 !important}
+  body.framed .tabbar{position:fixed !important}
+}

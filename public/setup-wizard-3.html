@@ -72,6 +72,7 @@
 <script src="/components.js"></script>
 <script>
   var KEY = 'shouba.setup', R = window.SHOUBA_REF;
+  var RET_REVIEW = new URLSearchParams(location.search).get('ret') === 'review';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
   function save(patch){ var d = load(); Object.assign(d, patch); localStorage.setItem(KEY, JSON.stringify(d)); }
 
@@ -123,7 +124,8 @@
   next.addEventListener('click', function(){
     if(!validate()) return;
     save({ year: yearSel.value, term: state.term });
-    location.href = '/setup-wizard-4.html';   // الخطوة ④ (الإشراف) — تُبنى تالياً
+    // ret=review: قادم من شاشة المراجعة لتعديل سطر ⟵ يعود إليها بعد الحفظ
+    location.href = RET_REVIEW ? '/setup-review.html' : '/setup-wizard-4.html';
   });
 </script>
 </body>

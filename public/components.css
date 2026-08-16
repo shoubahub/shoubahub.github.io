@@ -97,7 +97,8 @@
 .pick.on{box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2), 0 0 0 2px var(--shouba-navy)}
 .pick .mark{width:22px;height:22px;border-radius:999px;flex:none;display:grid;place-items:center;border:2px solid rgba(120,98,66,.3)}
 .pick.on .mark{background:var(--shouba-navy);border-color:var(--shouba-navy)}
-.pick .tx{flex:1;display:flex;flex-direction:column;gap:3px;align-items:flex-end}
+/* RTL: flex-start = اليمين — النصّ يُحاذي حافّة البطاقة اليمنى (flex-end كان يزيحه لليسار) */
+.pick .tx{flex:1;display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:right}
 .pick .tx b{font-size:15px;font-weight:700}
 .pick .tx small{font-size:11.5px;color:var(--shouba-hint)}
 

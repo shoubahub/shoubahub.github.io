@@ -97,7 +97,8 @@
 
   next.addEventListener('click', function(){
     save({ principal: principal.value.trim(), supervisor: supervisor.value.trim() });
-    location.href = '/setup-wizard-5.html';   // الخطوة ⑤ (المعلّمون) — تُبنى تالياً
+    // بعد ش④ تأتي شاشة المراجعة (فاصل المجموعتين) — ومنها ش⑤ المعلّمون
+    location.href = '/setup-review.html';
   });
 </script>
 </body>

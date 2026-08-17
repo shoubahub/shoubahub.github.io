@@ -20,7 +20,6 @@
   /* خاص بهذه الشاشة فقط — لا هيكل ولا هوامش عامّة */
   .rhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
   .rhead .n{font-size:12px;font-weight:700;color:var(--shouba-navy)}
-  .rlist{display:flex;flex-direction:column;gap:9px}
   .rlist .pick{padding:13px 15px}
   .rlist .pick .tx b{font-size:14.5px;font-weight:600}
   .rlist .pick.on .tx b{font-weight:700}
@@ -68,7 +67,7 @@
             <label>سجلّاتك — ألغِ أو أضِف بحرّية</label>
             <span class="n" id="count"></span>
           </div>
-          <div class="rlist" id="list"></div>
+          <div class="stack rlist" id="list"></div>
           <div class="hint">اضغط أي سجلّ لإلغائه أو إعادته — والمحذوف من الحزمة لا يُفقد، يبقى في مكتبة القوالب.</div>
         </div>
 
@@ -98,7 +97,6 @@
 <script src="/components.js"></script>
 <script>
   var KEY = 'shouba.setup', R = window.SHOUBA_REF;
-  var RET_REVIEW = new URLSearchParams(location.search).get('ret') === 'review';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
   function save(patch){ var d = load(); Object.assign(d, patch); localStorage.setItem(KEY, JSON.stringify(d)); }
 
@@ -141,9 +139,7 @@
 
     var n = items.filter(function(x){ return x.on; }).length;
     countEl.textContent = n === 0 ? 'لم تختر سجلاً'
-                        : n === 1 ? 'سجلّ واحد'
-                        : n === 2 ? 'سجلّان'
-                        : n + ' سجلاً';
+                        : Shouba.count(n, { one:'سجلّ', two:'سجلّان', few:'سجلّات', many:'سجلاً' });
     next.textContent = n > 0 ? 'التالي' : 'تخطّي الآن';
   }
 
@@ -174,7 +170,7 @@
   next.addEventListener('click', function(){
     persist();
     // ret=review: قادم من شاشة المراجعة لتعديل سطر ⟵ يعود إليها بعد الحفظ
-    location.href = RET_REVIEW ? '/setup-review.html' : '/setup-wizard-7.html';
+    location.href = Shouba.returnTo() || '/setup-wizard-7.html';
   });
 
   persist(); render(); validate();

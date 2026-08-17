@@ -18,6 +18,25 @@ Shouba.greet = function () {
 };
 document.addEventListener('DOMContentLoaded', function () { Shouba.greet(); });
 
+/* تصريف المعدود عربياً — مصدر واحد لكل العدّادات:
+   ١ مفرد · ٢ مثنّى · ٣–١٠ جمع · ١١+ تمييز مفرد منصوب.
+   الصيغ: { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً' } */
+Shouba.unit = function (n, f) {
+  return n === 1 ? f.one : n === 2 ? f.two : (n >= 3 && n <= 10) ? f.few : f.many;
+};
+Shouba.count = function (n, f) {
+  if (n === 1) return f.one + ' واحد';
+  if (n === 2) return f.two;
+  return n + ' ' + Shouba.unit(n, f);
+};
+
+/* وجهة العودة بعد تعديل سطر من شاشة مراجعة — مصدر واحد لكل شاشات المعالج:
+   ?ret=review ⟵ مراجعة المنتصف · ?ret=final ⟵ المراجعة النهائية · بلا وسم = المسار الأمامي */
+Shouba.returnTo = function () {
+  var r = new URLSearchParams(location.search).get('ret');
+  return r === 'final' ? '/setup-wizard-7.html' : r === 'review' ? '/setup-review.html' : '';
+};
+
 (function () {
   var backdrop, sheet, list, titleEl;
 

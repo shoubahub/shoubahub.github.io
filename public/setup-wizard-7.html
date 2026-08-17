@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · الإعداد · المراجعة النهائية</title>
+<!-- PWA -->
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#16456E" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/identity/tokens.css" />
+<link rel="stylesheet" href="/shell.css" />
+<link rel="stylesheet" href="/components.css" />
+<link rel="stylesheet" href="/frame.css" />
+<style>
+  /* خاص بهذه الشاشة فقط — لا هيكل ولا هوامش عامّة */
+  .tally{display:flex;gap:9px}
+  .tally .t{flex:1;background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:15px;
+    padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .tally .t b{font-size:19px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num)}
+  .tally .t span{font-size:11.5px;font-weight:600;color:var(--shouba-label)}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="screen has-foot">
+    <!-- ختام المعالج — النقاط الثلاث مضيئة والترويسة تعلن الاكتمال -->
+    <div class="navrow">
+      <div class="brand">
+        <img src="/identity/assets/logo-vec-color.svg" alt="شعبة" />
+        <span class="vsep"></span>
+        <div class="prog">
+          <div class="lbl">محتوى الشعبة · <b>اكتمل</b></div>
+          <div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+        </div>
+      </div>
+      <div class="back" onclick="history.back()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M8 4 L14 10 L8 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <!-- العنوان خارج .content — موضعه ثابت في كل الشاشات (قاعدة LAYOUT) -->
+    <div class="head">
+      <div class="h">شعبتك جاهزة</div>
+      <div class="s">هذه حصيلة إعدادك — راجِعها، واضغط أي سطر لتعديله. ثم ابدأ عملك.</div>
+    </div>
+
+    <div class="content">
+      <div class="fields">
+        <!-- الحصيلة في سطر واحد -->
+        <div class="field">
+          <div class="tally" id="tally"></div>
+        </div>
+
+        <!-- الأسطر القابلة للتعديل -->
+        <div class="field">
+          <label>ما أدخلته</label>
+          <div class="stack" id="rows"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <button class="cta" id="start">ابدأ العمل</button>
+  </div>
+ </div></div>
+
+<script src="/components.js"></script>
+<script>
+  var KEY = 'shouba.setup';
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+  function save(patch){ var d = load(); Object.assign(d, patch); localStorage.setItem(KEY, JSON.stringify(d)); }
+
+  var d = load(), DASH = '—';
+  var teachers = d.teachers || [], records = d.records || [], subjects = d.subjects || [];
+
+  function j(){ return [].slice.call(arguments).filter(function(x){ return x && String(x).trim(); }).join(' · '); }
+
+  /* الحصيلة — ثلاثة أرقام تُري ثقل ما أُنجز (التسمية تُصرَّف من الأساس) */
+  var TALLY = [
+    { n: teachers.length, label: Shouba.unit(teachers.length, { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً' }) },
+    { n: subjects.length, label: Shouba.unit(subjects.length, { one:'مادّة', two:'مادّتان', few:'مواد', many:'مادّةً' }) },
+    { n: records.length,  label: Shouba.unit(records.length,  { one:'سجلّ', two:'سجلّان', few:'سجلّات', many:'سجلاً' }) }
+  ];
+  var tallyEl = document.getElementById('tally');
+  TALLY.forEach(function(t){
+    var el = document.createElement('div'); el.className = 't';
+    el.innerHTML = '<b></b><span></span>';
+    el.querySelector('b').textContent = t.n;
+    el.querySelector('span').textContent = t.label;
+    tallyEl.appendChild(el);
+  });
+
+  /* كل سطر يعيد لشاشته بـ ret=final فيعود إلى هذه المراجعة بعد التعديل (لا إلى مراجعة المنتصف) */
+  var ROWS = [
+    { to:'/setup-wizard.html',   main: d.schoolName || DASH, sub: j('المدرسة', d.region, d.schoolType) },
+    { to:'/setup-wizard-2.html', main: d.department || DASH, sub: j('الشعبة', d.stage, subjects.length ? subjects.length + ' مواد' : '') },
+    { to:'/setup-wizard-3.html', main: d.year || DASH,       sub: j('العام الدراسي', d.term) },
+    { to:'/setup-wizard-4.html', main: d.principal || 'لم تُضِف الإشراف بعد', sub: j('الإشراف', d.supervisor || 'اختياري — لك إكماله لاحقاً') },
+    { to:'/setup-wizard-5.html', main: teachers.length
+                                   ? teachers.slice(0,2).map(function(t){ return 'أ. ' + t; }).join(' · ')
+                                     + (teachers.length > 2 ? ' وآخرون' : '')
+                                   : 'لم تُضِف معلّماً',
+                                 sub: j('معلّموك', teachers.length ? Shouba.count(teachers.length, { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً' }) : '') },
+    { to:'/setup-wizard-6.html', main: records.length ? Shouba.count(records.length, { one:'سجلّ', two:'سجلّان', few:'سجلّات', many:'سجلاً' }) + ' مختاراً' : 'لم تختر سجلاً',
+                                 sub: j('سجلّاتك', records.length === 15 ? 'الحزمة الجاهزة كاملة' : 'الحزمة معدَّلة') }
+  ];
+
+  var CHEV = '<svg width="15" height="15" viewBox="0 0 20 20" fill="none">'
+           + '<path d="M12 4 L6 10 L12 16" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  var rowsEl = document.getElementById('rows');
+  ROWS.forEach(function(r){
+    var el = document.createElement('div');
+    el.className = 'pick';
+    el.innerHTML = '<div class="tx"><b></b><small></small></div>' + CHEV;
+    el.querySelector('b').textContent = r.main;
+    el.querySelector('small').textContent = r.sub;
+    el.addEventListener('click', function(){ location.href = r.to + '?ret=final'; });
+    rowsEl.appendChild(el);
+  });
+
+  document.getElementById('start').addEventListener('click', function(){
+    save({ setupDone: true });
+    // وجهة اللوحة الجديدة — لم تُبنَ بعد، فينقطع المسار كما في كل شاشة،
+    // ويوم تُبنى تعمل الوصلة وحدها بلا تعديل.
+    location.href = '/board.html';
+  });
+</script>
+</body>
+</html>

@@ -26,7 +26,6 @@
   .addbtn[disabled]{background:#D9CCB2;box-shadow:0 2px 0 rgba(190,172,140,.6);cursor:not-allowed}
   .addbtn[disabled]:active{transform:none}
   .count{font-size:12px;font-weight:700;color:var(--shouba-label)}
-  .tlist{display:flex;flex-direction:column;gap:9px}
   .ini{width:38px;height:38px;border-radius:999px;flex:none;display:grid;place-items:center;background:var(--shouba-navy);
     color:var(--shouba-cream);font-size:13px;font-weight:700}
   .del{width:34px;height:34px;border-radius:12px;flex:none;border:0;cursor:pointer;display:grid;place-items:center;
@@ -79,7 +78,7 @@
         <!-- القائمة -->
         <div class="field">
           <label id="count" class="count">لم تُضِف معلّماً بعد</label>
-          <div class="tlist" id="list"></div>
+          <div class="stack" id="list"></div>
           <div class="empty" id="empty">تظهر هنا أسماء معلّميك بمجرّد إضافتهم.</div>
         </div>
       </div>
@@ -94,7 +93,6 @@
 <script src="/components.js"></script>
 <script>
   var KEY = 'shouba.setup';
-  var RET_REVIEW = new URLSearchParams(location.search).get('ret') === 'review';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
   function save(patch){ var d = load(); Object.assign(d, patch); localStorage.setItem(KEY, JSON.stringify(d)); }
 
@@ -144,9 +142,7 @@
 
     var n = teachers.length;
     countEl.textContent = n === 0 ? 'لم تُضِف معلّماً بعد'
-                        : n === 1 ? 'معلّم واحد'
-                        : n === 2 ? 'معلّمان'
-                        : n + ' معلّمين';
+                        : Shouba.count(n, { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً' });
     emptyEl.classList.toggle('hide', n > 0);
     next.textContent = n > 0 ? 'التالي' : 'تخطّي الآن';
   }
@@ -181,7 +177,7 @@
   next.addEventListener('click', function(){
     persist();
     // ret=review: قادم من شاشة المراجعة لتعديل سطر ⟵ يعود إليها بعد الحفظ
-    location.href = RET_REVIEW ? '/setup-review.html' : '/setup-wizard-6.html';   // ش⑥ شكل السجلات — تُبنى تالياً
+    location.href = Shouba.returnTo() || '/setup-wizard-6.html';   // ش⑥ شكل السجلات — تُبنى تالياً
   });
 
   render(); validate();

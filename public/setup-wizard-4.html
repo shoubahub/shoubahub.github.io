@@ -98,8 +98,8 @@
 
   next.addEventListener('click', function(){
     save({ principal: principal.value.trim(), supervisor: supervisor.value.trim() });
-    // بعد ش④ تأتي شاشة المراجعة (فاصل المجموعتين) — ومنها ش⑤ المعلّمون
-    location.href = '/setup-review.html';
+    // بعد ش④ تأتي مراجعة المنتصف — وإن كان التعديل قادماً من المراجعة النهائية عاد إليها
+    location.href = Shouba.returnTo() || '/setup-review.html';
   });
 </script>
 </body>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · الإعداد · شكل السجلّات</title>
+<!-- PWA -->
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#16456E" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/identity/tokens.css" />
+<link rel="stylesheet" href="/shell.css" />
+<link rel="stylesheet" href="/components.css" />
+<link rel="stylesheet" href="/frame.css" />
+<style>
+  /* خاص بهذه الشاشة فقط — لا هيكل ولا هوامش عامّة */
+  .rhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .rhead .n{font-size:12px;font-weight:700;color:var(--shouba-navy)}
+  .rlist{display:flex;flex-direction:column;gap:9px}
+  .rlist .pick{padding:13px 15px}
+  .rlist .pick .tx b{font-size:14.5px;font-weight:600}
+  .rlist .pick.on .tx b{font-weight:700}
+  .del{width:32px;height:32px;border-radius:11px;flex:none;border:0;cursor:pointer;display:grid;place-items:center;
+    background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);box-shadow:0 2px 0 rgba(190,172,140,.5)}
+  .del:active{transform:translateY(1px)}
+  .addrow{display:flex;gap:12px;align-items:stretch}
+  .addrow .paper{flex:1}
+  .addbtn{flex:none;width:54px;border:0;border-radius:var(--r-input);cursor:pointer;background:var(--shouba-navy);
+    display:grid;place-items:center;box-shadow:0 3px 0 rgba(12,38,62,.55), 0 8px 16px rgba(20,50,80,.22)}
+  .addbtn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(12,38,62,.55)}
+  .addbtn[disabled]{background:#D9CCB2;box-shadow:0 2px 0 rgba(190,172,140,.6);cursor:not-allowed}
+  .addbtn[disabled]:active{transform:none}
+  .warn{font-size:12px;font-weight:600;color:var(--shouba-error)}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="screen has-foot">
+    <div class="navrow">
+      <div class="brand">
+        <img src="/identity/assets/logo-vec-color.svg" alt="شعبة" />
+        <span class="vsep"></span>
+        <div class="prog">
+          <div class="lbl">محتوى الشعبة · <b>خطوة <span class="num">٢</span> من <span class="num">٣</span></b></div>
+          <div class="dots"><i class="on"></i><i class="on"></i><i></i></div>
+        </div>
+      </div>
+      <div class="back" onclick="history.back()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M8 4 L14 10 L8 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <!-- العنوان خارج .content — موضعه ثابت في كل الشاشات (قاعدة LAYOUT) -->
+    <div class="head">
+      <div class="h">سجلّاتك جاهزة</div>
+      <div class="s">هذه سجلّات رئيس الشعبة الرسمية، مؤشّرة ومعتمدة للمضيّ — ألغِ ما لا يخصّ شعبتك، وأضِف ما تريد.</div>
+    </div>
+
+    <div class="content">
+      <div class="fields">
+        <!-- القائمة -->
+        <div class="field">
+          <div class="rhead">
+            <label>سجلّاتك — ألغِ أو أضِف بحرّية</label>
+            <span class="n" id="count"></span>
+          </div>
+          <div class="rlist" id="list"></div>
+          <div class="hint">اضغط أي سجلّ لإلغائه أو إعادته — والمحذوف من الحزمة لا يُفقد، يبقى في مكتبة القوالب.</div>
+        </div>
+
+        <!-- إضافة سجلّ خاص -->
+        <div class="field">
+          <label for="rname">أضِف سجلاً خاصّاً بك</label>
+          <div class="addrow">
+            <div class="paper">
+              <input id="rname" type="text" placeholder="اسم السجلّ" maxlength="60" />
+            </div>
+            <button type="button" class="addbtn" id="add" disabled aria-label="أضِف السجلّ">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#F4F1EA" stroke-width="2.4" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="hint" id="msg">يُضاف مؤشّراً في آخر القائمة.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <button class="cta" id="next">التالي</button>
+  </div>
+ </div></div>
+
+<script src="/refdata.js"></script>
+<script src="/components.js"></script>
+<script>
+  var KEY = 'shouba.setup', R = window.SHOUBA_REF;
+  var RET_REVIEW = new URLSearchParams(location.search).get('ret') === 'review';
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+  function save(patch){ var d = load(); Object.assign(d, patch); localStorage.setItem(KEY, JSON.stringify(d)); }
+
+  var listEl=document.getElementById('list'), countEl=document.getElementById('count');
+  var input=document.getElementById('rname'), addBtn=document.getElementById('add');
+  var msgEl=document.getElementById('msg'), next=document.getElementById('next');
+  var HINT = msgEl.textContent;
+
+  /* حالة الشاشة: كل سجلّ {name, on, custom} — الحزمة أولاً ثم ما أضافه المستخدم */
+  var saved = load().records;                       // أسماء المختارة (إن سبقت زيارة)
+  var items = R.readyRecords.map(function(n){
+    return { name:n, custom:false, on: saved ? saved.indexOf(n) !== -1 : true };   // الافتراضي: كلّها مؤشّرة
+  });
+  if(saved){                                        // ما أضافه المستخدم سابقاً وليس من الحزمة
+    saved.filter(function(n){ return R.readyRecords.indexOf(n) === -1; })
+         .forEach(function(n){ items.push({ name:n, custom:true, on:true }); });
+  }
+
+  var CHK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none">'
+          + '<path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var DEL = '<svg width="14" height="14" viewBox="0 0 20 20" fill="none">'
+          + '<path d="M5 5 L15 15 M15 5 L5 15" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round"/></svg>';
+
+  function render(){
+    listEl.innerHTML = '';
+    items.forEach(function(it, i){
+      var row = document.createElement('div');
+      row.className = 'pick' + (it.on ? ' on' : '');
+      row.innerHTML = '<span class="mark">' + CHK + '</span><div class="tx"><b></b></div>'
+                    + (it.custom ? '<button type="button" class="del" aria-label="احذف">' + DEL + '</button>' : '');
+      row.querySelector('b').textContent = it.name;
+      row.addEventListener('click', function(){ it.on = !it.on; persist(); render(); });
+      var del = row.querySelector('.del');
+      if(del) del.addEventListener('click', function(e){
+        e.stopPropagation();                        // الحذف لا يُفهم تأشيراً
+        items.splice(i,1); persist(); render();
+      });
+      listEl.appendChild(row);
+    });
+
+    var n = items.filter(function(x){ return x.on; }).length;
+    countEl.textContent = n === 0 ? 'لم تختر سجلاً'
+                        : n === 1 ? 'سجلّ واحد'
+                        : n === 2 ? 'سجلّان'
+                        : n + ' سجلاً';
+    next.textContent = n > 0 ? 'التالي' : 'تخطّي الآن';
+  }
+
+  function persist(){
+    save({ records: items.filter(function(x){ return x.on; }).map(function(x){ return x.name; }) });
+  }
+
+  function clean(v){ return String(v||'').replace(/\s+/g,' ').trim(); }
+  function validate(){ addBtn.disabled = clean(input.value).length < 2; }
+
+  addBtn.addEventListener('click', function(){
+    var name = clean(input.value);
+    if(!name) return;
+    if(items.some(function(x){ return x.name === name; })){
+      msgEl.textContent = 'هذا السجلّ موجود بالفعل.'; msgEl.className = 'warn'; return;
+    }
+    items.push({ name:name, custom:true, on:true });
+    input.value = ''; msgEl.textContent = HINT; msgEl.className = 'hint';
+    persist(); render(); validate(); input.focus();
+  });
+
+  input.addEventListener('input', function(){
+    if(msgEl.className === 'warn'){ msgEl.textContent = HINT; msgEl.className = 'hint'; }
+    validate();
+  });
+  input.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); addBtn.click(); } });
+
+  next.addEventListener('click', function(){
+    persist();
+    // ret=review: قادم من شاشة المراجعة لتعديل سطر ⟵ يعود إليها بعد الحفظ
+    location.href = RET_REVIEW ? '/setup-review.html' : '/setup-wizard-7.html';
+  });
+
+  persist(); render(); validate();
+</script>
+</body>
+</html>

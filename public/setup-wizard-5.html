@@ -45,8 +45,8 @@
         <img src="/identity/assets/logo-vec-color.svg" alt="شعبة" />
         <span class="vsep"></span>
         <div class="prog">
-          <div class="lbl">محتوى الشعبة · <b>خطوة <span class="num">١</span> من <span class="num">٤</span></b></div>
-          <div class="dots"><i class="on"></i><i></i><i></i><i></i></div>
+          <div class="lbl">محتوى الشعبة · <b>خطوة <span class="num">١</span> من <span class="num">٣</span></b></div>
+          <div class="dots"><i class="on"></i><i></i><i></i></div>
         </div>
       </div>
       <div class="back" onclick="history.back()">
@@ -181,7 +181,7 @@
   next.addEventListener('click', function(){
     persist();
     // ret=review: قادم من شاشة المراجعة لتعديل سطر ⟵ يعود إليها بعد الحفظ
-    location.href = RET_REVIEW ? '/setup-review.html' : '/setup-wizard-6.html';
+    location.href = RET_REVIEW ? '/setup-review.html' : '/setup-wizard-6.html';   // ش⑥ شكل السجلات — تُبنى تالياً
   });
 
   render(); validate();

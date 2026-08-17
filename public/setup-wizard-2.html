@@ -122,12 +122,13 @@
   }
   function onDept(){
     var dp=deptSel.value; if(!dp) return;
-    var list=R.departmentSubjects[dp]||[];
+    var list=R.subjectsOf(stageSel.value, dp);
     subjects.innerHTML='';
     if(list.length){
       list.forEach(function(s){
         var row=document.createElement('div'); row.className='subj';
-        row.innerHTML='<b>'+s.name+'</b><span class="gt">'+s.grade+' · '+s.track+'</span>';
+        // المرحلة بلا مسارات ⇒ لا فاصل معلّق بعد الصف
+        row.innerHTML='<b>'+s.name+'</b><span class="gt">'+(s.track ? s.grade+' · '+s.track : s.grade)+'</span>';
         subjects.appendChild(row);
       });
     } else {

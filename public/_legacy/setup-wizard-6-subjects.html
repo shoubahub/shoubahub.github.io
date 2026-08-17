@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · الإعداد · مواد الشعبة</title>
+<!-- PWA -->
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#16456E" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/identity/tokens.css" />
+<link rel="stylesheet" href="/shell.css" />
+<link rel="stylesheet" href="/components.css" />
+<link rel="stylesheet" href="/frame.css" />
+<style>
+  /* خاص بهذه الشاشة فقط — لا هيكل ولا هوامش عامّة */
+  .count{font-size:12px;font-weight:700;color:var(--shouba-label)}
+  .slist{display:flex;flex-direction:column;gap:9px}
+  .gt{font-size:11.5px;font-weight:600;color:var(--shouba-amber-deep);background:rgba(169,112,27,.1);
+    border-radius:999px;padding:5px 11px;white-space:nowrap;flex:none}
+  .del{width:34px;height:34px;border-radius:12px;flex:none;border:0;cursor:pointer;display:grid;place-items:center;
+    background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);box-shadow:0 2px 0 rgba(190,172,140,.5)}
+  .del:active{transform:translateY(1px)}
+  .empty{font-size:12.5px;color:var(--shouba-hint);padding:2px;line-height:1.7}
+  .warn{font-size:12px;font-weight:600;color:var(--shouba-error)}
+  .addbtn{width:100%;margin-top:2px}
+  .hide{display:none !important}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="screen has-foot">
+    <div class="navrow">
+      <div class="brand">
+        <img src="/identity/assets/logo-vec-color.svg" alt="شعبة" />
+        <span class="vsep"></span>
+        <div class="prog">
+          <div class="lbl">محتوى الشعبة · <b>خطوة <span class="num">٢</span> من <span class="num">٤</span></b></div>
+          <div class="dots"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+        </div>
+      </div>
+      <div class="back" onclick="history.back()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M8 4 L14 10 L8 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <!-- العنوان خارج .content — موضعه ثابت في كل الشاشات (قاعدة LAYOUT) -->
+    <div class="head">
+      <div class="h">مواد شعبتك</div>
+      <div class="s">راجِع المواد التي تدرّسها شعبتك — عليها تُبنى خطة المنهج ونسبة الإنجاز.</div>
+    </div>
+
+    <div class="content">
+      <div class="fields">
+        <!-- القائمة -->
+        <div class="field">
+          <label id="count" class="count">لم تُضِف مادّة بعد</label>
+          <div class="slist" id="list"></div>
+          <div class="empty" id="empty"></div>
+        </div>
+
+        <!-- الإضافة -->
+        <div class="field" id="addBox">
+          <label>إضافة مادّة</label>
+
+          <div class="sdrop" id="subjDrop" data-label="المادّة">
+            <button type="button" class="trigger">
+              <span class="val ph">اختر المادّة</span>
+              <span class="chev"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M5 8 L10 13 L15 8" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </button>
+            <select id="subj"><option value="" disabled selected hidden>اختر المادّة</option></select>
+          </div>
+
+          <div class="sdrop" id="gradeDrop" data-label="الصف">
+            <button type="button" class="trigger">
+              <span class="val ph">اختر الصف</span>
+              <span class="chev"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M5 8 L10 13 L15 8" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </button>
+            <select id="grade"><option value="" disabled selected hidden>اختر الصف</option></select>
+          </div>
+
+          <!-- المسار: لا يظهر إلّا إذا كان للصف أكثر من مسار -->
+          <div class="segs hide" id="tracks"></div>
+
+          <button type="button" class="cta addbtn" id="add" disabled>أضِف المادّة</button>
+          <div class="hint" id="msg">اختر المادّة وصفّها — ويظهر المسار حين يكون للصف أكثر من مسار.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <button class="cta" id="next">تخطّي الآن</button>
+  </div>
+ </div></div>
+
+<script src="/refdata.js"></script>
+<script src="/components.js"></script>
+<script>
+  var KEY = 'shouba.setup', R = window.SHOUBA_REF;
+  var RET_REVIEW = new URLSearchParams(location.search).get('ret') === 'review';
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+  function save(patch){ var d = load(); Object.assign(d, patch); localStorage.setItem(KEY, JSON.stringify(d)); }
+
+  var d = load();
+  var subjects = (d.subjects || []).slice();     // نفس مفتاح ش② — هذه الشاشة تعدّل ما عُرض هناك
+  var stage = d.stage || '';
+  var dept  = d.department || '';
+
+  var listEl=document.getElementById('list'), countEl=document.getElementById('count'), emptyEl=document.getElementById('empty');
+  var addBox=document.getElementById('addBox'), msgEl=document.getElementById('msg'), addBtn=document.getElementById('add');
+  var subjSel=document.getElementById('subj'), gradeSel=document.getElementById('grade');
+  var subjDrop=document.getElementById('subjDrop'), gradeDrop=document.getElementById('gradeDrop');
+  var tracksEl=document.getElementById('tracks'), next=document.getElementById('next');
+  var HINT = msgEl.textContent;
+  var track = '';
+
+  /* ===== المرجعية ===== */
+  // أسماء مواد الشعبة بلا تكرار (المادّة الواحدة تتكرّر عبر الصفوف في المرجعية)
+  var refSubjects = R.subjectsOf(stage, dept).map(function(s){ return s.name; })
+                     .filter(function(n, i, a){ return a.indexOf(n) === i; });
+  var refGrades   = R.gradesByStage[stage] || [];        // [{grade, tracks[]}]
+
+  var TICK = '<span class="tick"><svg width="11" height="11" viewBox="0 0 12 12" fill="none">'
+           + '<path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+  var DEL  = '<svg width="15" height="15" viewBox="0 0 20 20" fill="none">'
+           + '<path d="M5 5 L15 15 M15 5 L5 15" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round"/></svg>';
+
+  function fill(sel, list, ph){
+    sel.innerHTML = '<option value="" disabled selected hidden>' + ph + '</option>';
+    list.forEach(function(o){ var op=document.createElement('option'); op.textContent=o; sel.appendChild(op); });
+  }
+  function resetTrigger(drop, ph){
+    var v = drop.querySelector('.val'); v.textContent = ph; v.classList.add('ph');
+    drop.querySelector('select').selectedIndex = 0;
+  }
+
+  /* ===== القائمة ===== */
+  function render(){
+    listEl.innerHTML = '';
+    subjects.forEach(function(s, i){
+      var row = document.createElement('div');
+      row.className = 'pick';
+      row.innerHTML = '<div class="tx"><b></b></div><span class="gt"></span>'
+                    + '<button type="button" class="del" aria-label="احذف">' + DEL + '</button>';
+      row.querySelector('b').textContent = s.name;
+      row.querySelector('.gt').textContent = s.track ? s.grade + ' · ' + s.track : s.grade;
+      row.querySelector('.del').addEventListener('click', function(){
+        subjects.splice(i,1); persist(); render();
+      });
+      listEl.appendChild(row);
+    });
+
+    var n = subjects.length;
+    countEl.textContent = n === 0 ? 'لم تُضِف مادّة بعد'
+                        : n === 1 ? 'مادّة واحدة'
+                        : n === 2 ? 'مادّتان'
+                        : n + ' مواد';
+    emptyEl.classList.toggle('hide', n > 0);
+    next.textContent = n > 0 ? 'التالي' : 'تخطّي الآن';
+  }
+
+  function persist(){ save({ subjects: subjects }); }
+
+  /* ===== المسار — لا يظهر إلّا إذا كان للصف أكثر من مسار ===== */
+  function tracksOf(gradeName){
+    var g = refGrades.filter(function(x){ return x.grade === gradeName; })[0];
+    return (g && g.tracks) || [];
+  }
+  function buildTracks(gradeName){
+    var list = tracksOf(gradeName);
+    tracksEl.innerHTML = ''; track = '';
+    if(list.length < 2){                 // مسار واحد أو بلا مسار ⇒ يُخفى الحقل
+      track = list[0] || '';
+      tracksEl.classList.add('hide');
+      return;
+    }
+    list.forEach(function(t){
+      var b = document.createElement('button');
+      b.type='button'; b.className='seg'; b.dataset.val=t; b.innerHTML = TICK + t;
+      b.addEventListener('click', function(){
+        track = t;
+        [].forEach.call(tracksEl.children, function(x){ x.classList.toggle('on', x === b); });
+        validate();
+      });
+      tracksEl.appendChild(b);
+    });
+    tracksEl.classList.remove('hide');
+  }
+
+  function validate(){
+    var needsTrack = !tracksEl.classList.contains('hide');
+    addBtn.disabled = !(subjSel.value && gradeSel.value && (!needsTrack || track));
+  }
+
+  subjSel.addEventListener('change', function(){ clearWarn(); validate(); });
+  gradeSel.addEventListener('change', function(){ clearWarn(); buildTracks(gradeSel.value); validate(); });
+
+  function clearWarn(){ if(msgEl.className === 'warn'){ msgEl.textContent = HINT; msgEl.className='hint'; } }
+
+  addBtn.addEventListener('click', function(){
+    if(addBtn.disabled) return;
+    var item = { name: subjSel.value, grade: gradeSel.value, track: track };
+    // حارس التكرار: نفس المادّة لنفس الصف والمسار
+    var dup = subjects.some(function(s){ return s.name===item.name && s.grade===item.grade && s.track===item.track; });
+    if(dup){ msgEl.textContent = 'هذه المادّة مضافة لهذا الصف بالفعل.'; msgEl.className='warn'; return; }
+    subjects.push(item);
+    persist(); render();
+    resetTrigger(subjDrop, 'اختر المادّة'); resetTrigger(gradeDrop, 'اختر الصف');
+    tracksEl.innerHTML=''; tracksEl.classList.add('hide'); track='';
+    msgEl.textContent = HINT; msgEl.className='hint';
+    validate();
+  });
+
+  next.addEventListener('click', function(){
+    persist();
+    // ret=review: قادم من شاشة المراجعة لتعديل سطر ⟵ يعود إليها بعد الحفظ
+    location.href = RET_REVIEW ? '/setup-review.html' : '/setup-wizard-7.html';
+  });
+
+  /* ===== التهيئة ===== */
+  (function init(){
+    fill(subjSel, refSubjects, 'اختر المادّة');
+    fill(gradeSel, refGrades.map(function(g){ return g.grade; }), 'اختر الصف');
+
+    // مرجعية ناقصة ⇒ لا طريق مسدود: تُشرَح الحال ويبقى الزرّ السفلي مفتوحاً
+    var lacking = !refSubjects.length || !refGrades.length;
+    if(lacking){
+      addBox.classList.add('hide');
+      emptyEl.textContent = 'مواد شعبتك تُضاف قريباً من الإدارة. يمكنك المتابعة الآن وإكمالها لاحقاً من إعدادات شعبتك.';
+    } else {
+      emptyEl.textContent = 'أضِف مواد شعبتك من القائمة أدناه.';
+    }
+    render(); validate();
+  })();
+</script>
+</body>
+</html>

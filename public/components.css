@@ -117,7 +117,10 @@
 .sheet.open{transform:translateY(0)}
 .sheet .grab{width:46px;height:5px;border-radius:999px;background:#D9CCB2;margin:6px auto 2px;flex:none}
 .sheet .sheet-title{font-family:var(--font-ar);font-size:15.5px;font-weight:700;color:var(--shouba-ink);text-align:center;padding:8px 0 14px;flex:none}
-.sheet .sheet-list{overflow:auto;display:flex;flex-direction:column;gap:9px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+/* الحاوية تُمرَّر (overflow:auto) فتقصّ حلقة الاختيار الممتدّة خارج العنصر (box-shadow spread).
+   الحلّ: فسحة داخلية بقدر الحلقة، وتُعوَّض بهامش سالب كي تبقى الأسطر بمحاذاة العنوان. */
+.sheet .sheet-list{overflow:auto;display:flex;flex-direction:column;gap:9px;
+  padding:3px 3px 6px;margin-inline:-3px;-webkit-overflow-scrolling:touch}
 .sheet-opt{width:100%;border:0;cursor:pointer;text-align:right;font-family:var(--font-ar);font-size:15px;font-weight:600;color:var(--shouba-ink);
   background:linear-gradient(180deg,var(--shouba-paper) 0%,#F1E9DB 100%);border-radius:15px;padding:15px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;
   box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}

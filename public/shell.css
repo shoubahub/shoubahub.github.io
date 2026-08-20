@@ -90,4 +90,6 @@ body{
   padding:16px var(--gap-side) calc(28px + env(safe-area-inset-bottom));
   display:flex; flex-direction:column; gap:12px;
   background:linear-gradient(180deg, rgba(239,230,214,0) 0%, var(--shouba-canvas) 42%) }
-.screen.has-foot{ padding-bottom:150px }   /* مساحة كي لا يغطّي الشريطُ المحتوى */
+.screen.has-foot{ padding-bottom:150px }   /* مساحة الشريط المثبّت */
+.screen.has-tabbar{ padding-bottom:118px }   /* مساحة كي لا يغطّي الشريطُ المحتوى */
+.screen.has-topbar{ padding-top:60px }   /* مساحة الرأس المضغوط الثابت */

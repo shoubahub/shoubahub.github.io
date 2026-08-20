@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · اللوحة</title>
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#16456E" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/identity/tokens.css" />
+<link rel="stylesheet" href="/shell.css" />
+<link rel="stylesheet" href="/components.css" />
+<link rel="stylesheet" href="/frame.css" />
+<style>
+  /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
+  .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
+  .card-navy{padding:14px 16px;gap:10px}
+  .card-navy .ttl{font-size:15.5px}
+  .card-navy .acts .cta{padding:11px 14px;font-size:14px}
+  .card-navy .acts .ghost2{padding:11px 15px;font-size:13.5px}
+  .planline{padding:0 var(--gap-side);font-size:12px;color:var(--shouba-text-muted);font-weight:600}
+  .planline b{color:var(--shouba-navy)}
+  .todo{padding:0 var(--gap-side);display:flex;flex-direction:column;gap:7px}
+  .titem{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;padding:10px 13px;
+    display:flex;align-items:center;gap:10px;box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .titem .ini{width:30px;height:30px;border-radius:999px;flex:none;display:grid;place-items:center;
+    background:var(--shouba-navy);color:var(--shouba-cream);font-size:12.5px;font-weight:700}
+  .titem .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .titem .tx b{font-size:13px;font-weight:700;color:var(--shouba-navy)}
+  .titem .tx small{font-size:11px;color:var(--shouba-label)}
+  .more{font-size:11.5px;color:var(--shouba-hint);padding:0 var(--gap-side)}
+  .invite{margin:0 var(--gap-side);font-size:12.5px;color:var(--shouba-text-muted);line-height:1.8;
+    background:rgba(120,98,66,.06);border-radius:14px;padding:12px 14px}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+    <div class="topbar">
+      <img src="/identity/assets/logo-vec-color.svg" alt="شعبة" />
+      <div class="tt">
+        <b id="deptName">شعبتك</b>
+        <span id="dateLine">—</span>
+      </div>
+      <div class="iconbtn" id="settings" title="الإعدادات">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
+          <circle cx="10" cy="10" r="2.6" stroke="#5F5648" stroke-width="1.8"/>
+          <path d="M10 2.6v2M10 15.4v2M17.4 10h-2M4.6 10h-2M15.2 4.8l-1.4 1.4M6.2 13.8l-1.4 1.4M15.2 15.2l-1.4-1.4M6.2 6.2L4.8 4.8"
+                stroke="#5F5648" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+  <div class="screen has-topbar has-tabbar">
+
+
+    <div class="content">
+      <div class="board">
+
+        <!-- ① جدول حصص اليوم (مصفوف بأعمدة — أولوية النظرة الأولى) -->
+        <section>
+          <div class="sect"><div class="h" id="todayTtl">حصص اليوم</div><div class="a" id="toSchedule">الجدول الكامل ›</div></div>
+          <div class="tbl" id="periods"></div>
+        </section>
+
+        <!-- ② البطاقة الكحلية: ما يجري الآن / ما ينتظر قرارك -->
+        <div class="card-navy" id="nowCard"></div>
+
+        <!-- ③ مصفوفة الأسبوع -->
+        <section>
+          <div class="sect"><div class="h">هذا الأسبوع</div><div class="a" id="toWeek">الرزنامة الكاملة ›</div></div>
+          <div class="wmx" id="week"></div>
+        </section>
+
+        <!-- ④ إنجاز المنهج -->
+        <section>
+          <div class="sect"><div class="h">إنجاز المنهج</div><div class="a" id="planPct">—</div></div>
+          <div class="slices" id="slices"></div>
+          <div class="planline" id="planLine"></div>
+        </section>
+
+        <!-- ⑤ بحاجة إلى إجراء -->
+        <section>
+          <div class="sect"><div class="h">بحاجة إلى إجراء</div><div class="a" id="todoCount">—</div></div>
+          <div class="todo" id="todo"></div>
+          <div class="more" id="todoMore"></div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="tabbar">
+    <button class="tab on" data-go="/board.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 8.4 10 3l7 5.4V16a1 1 0 0 1-1 1h-3.5v-4.5h-5V17H4a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      اللوحة
+    </button>
+    <button class="tab" data-go="/teachers.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 17c0-3 2.7-4.6 6-4.6S16 14 16 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      معلّموك
+    </button>
+    <button class="tab-add" id="add" aria-label="إضافة">
+      <svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#241D06" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </button>
+    <button class="tab" data-go="/records.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 9h6M7 12.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      سجلّاتك
+    </button>
+    <button class="tab" data-go="/schedule.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3.5" y="4.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 8.5h13M7 3v3M13 3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      جدولك
+    </button>
+  </div>
+ </div></div>
+
+<script src="/refdata.js"></script>
+<script src="/components.js"></script>
+<script>
+  var KEY='shouba.setup', R=window.SHOUBA_REF;
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+  var d = load();
+
+  var MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  var SHORT=['أحد','اثن','ثلا','أرب','خمي'];
+  var TYPE_CLASS={ 'اختبار':'t-exam', 'اجتماع':'t-meet', 'فعالية':'t-act' };
+
+  /* ===== الرأس المضغوط ===== */
+  var now=new Date(), dayIdx=now.getDay(), isWeekend=dayIdx>4;
+  var todayName = isWeekend ? null : R.days[dayIdx];
+  var weekNo = d.weekNo || 1;
+  document.getElementById('deptName').textContent = d.department || 'شعبتك';
+  document.getElementById('dateLine').textContent =
+    (isWeekend ? 'عطلة' : R.days[dayIdx]) + ' · ' + now.getDate() + ' ' + MONTHS[now.getMonth()]
+    + ' · الأسبوع ' + weekNo;   // اسم المدرسة يُحذف من السطر اليومي — يبتره القصّ ولا يُحتاج يومياً
+
+  /* ===== الحصص ===== */
+  var times = R.periodTimes[d.stage] || R.periodTimes['ثانوي'];
+  function toMin(t){ var p=t.split(':'); return (+p[0])*60 + (+p[1]); }
+  var m = now.getHours()*60 + now.getMinutes(), currentIdx=-1, nextIdx=-1;
+  times.forEach(function(t,i){
+    if(m >= toMin(t.from) && m < toMin(t.to)) currentIdx=i;
+    if(nextIdx===-1 && m < toMin(t.from)) nextIdx=i;
+  });
+  if(isWeekend){ currentIdx=-1; nextIdx=-1; }
+
+  var schedules=d.schedules||{}, teachers=Object.keys(schedules), hasSchedules=teachers.length>0;
+  var viewDay = isWeekend ? R.days[0] : todayName;              // في العطلة نعرض جدول الأحد
+  function slotOf(t,p){ var day=schedules[t] && schedules[t][viewDay]; return (day && day[p]) || ''; }
+  function busyAt(p){ return teachers.filter(function(t){ return slotOf(t,p); }); }
+  function firstName(n){ return n.split(' ')[0]; }
+
+  /* ===== ① جدول حصص اليوم ===== */
+  document.getElementById('todayTtl').textContent = isWeekend ? 'حصص الأحد' : 'حصص اليوم';
+  var tbl = document.getElementById('periods');
+  if(!hasSchedules){
+    tbl.innerHTML = '<div class="empty">جداول معلّميك لم تُدخل بعد — وبها يُعرف مَن يدرّس في كل حصة ومَن متفرّغ.</div>';
+  } else {
+    var html = '<div class="tr hd"><span class="c1">#</span><span class="c2">الوقت</span>'
+             + '<span class="c3">مَن يدرّس</span><span class="c4">متفرّغ</span></div>';
+    times.forEach(function(t,i){
+      var busy = busyAt(i), free = teachers.length - busy.length;
+      var names = busy.length ? busy.slice(0,3).map(firstName).join(' · ') + (busy.length>3 ? ' +'+(busy.length-3) : '')
+                              : 'لا أحد';
+      html += '<div class="tr' + (i===currentIdx ? ' now' : '') + (currentIdx>-1 && i<currentIdx ? ' past' : '') + '">'
+            + '<span class="c1">' + (i+1) + '</span>'
+            + '<span class="c2">' + t.from + '</span>'
+            + '<span class="c3">' + names + '</span>'
+            + '<span class="c4">' + free + '</span></div>';
+    });
+    tbl.innerHTML = html;
+  }
+
+  /* ===== ② البطاقة الكحلية ===== */
+  var events = d.events || [], card = document.getElementById('nowCard');
+  function remain(){
+    var n=new Date(), sec = toMin(times[currentIdx].to)*60 - (n.getHours()*3600 + n.getMinutes()*60 + n.getSeconds());
+    if(sec<0) sec=0;
+    var mm=Math.floor(sec/60), ss=sec%60;
+    return 'يتبقّى ' + mm + ':' + (ss<10?'0':'') + ss;
+  }
+  function paintCard(){
+    var kicker, left='', ttl, sub;
+    var todayEvents = events.filter(function(e){ return e.day===todayName; });
+    if(currentIdx>-1 && hasSchedules){
+      var busy=busyAt(currentIdx), free=teachers.length-busy.length;
+      kicker='الآن · الحصة ' + (currentIdx+1); left=remain();
+      ttl = busy.length ? Shouba.count(busy.length,{one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'}) + ' يدرّسون الآن'
+                        : 'لا أحد يدرّس الآن';
+      sub = busy.length ? busy.slice(0,2).map(function(t){ return 'أ. '+firstName(t)+' · '+slotOf(t,currentIdx); }).join('   ')
+                          + (busy.length>2 ? '  +'+(busy.length-2) : '') + (free ? '  ·  '+free+' متفرّغون' : '')
+                        : 'كل معلّميك متفرّغون في هذه الحصة.';
+    } else if(todayEvents.length){
+      kicker='اليوم'; ttl=todayEvents[0].title; sub=todayEvents[0].type + ' · ' + todayName;
+    } else if(!hasSchedules){
+      kicker='ابدأ من هنا'; ttl='أدخِل جداول معلّميك'; sub='بها تعرف اللوحة مَن يدرّس الآن، وتُحسب الأنصبة والتغطية.';
+    } else if(isWeekend){
+      kicker='التالي'; ttl='عطلة نهاية الأسبوع'; sub='يبدأ الدوام الأحد · أوّل حصة ' + times[0].from;
+    } else if(nextIdx>-1){
+      kicker='التالي'; ttl='الحصة ' + (nextIdx+1) + ' تبدأ ' + times[nextIdx].from; sub='لم تبدأ الحصص بعد.';
+    } else {
+      kicker='انتهى اليوم'; ttl='انتهى دوام اليوم';
+      var up = events.filter(function(e){ return R.days.indexOf(e.day) > dayIdx; })[0];
+      sub = up ? 'التالي: ' + up.title + ' · ' + up.day : 'لا مواعيد متبقّية هذا الأسبوع.';
+    }
+    card.innerHTML = '<div class="top"><div class="kicker"><span class="pulse"></span>' + kicker + '</div>'
+      + '<div class="left">' + left + '</div></div>'
+      + '<div><div class="ttl">' + ttl + '</div><div class="sub">' + sub + '</div></div>'
+      + '<div class="acts"><button class="cta" id="cardCta">الجدول الكامل</button>'
+      + '<button class="ghost2" id="cardGhost">معلّموك</button></div>';
+    document.getElementById('cardCta').addEventListener('click', function(){ location.href='/schedule.html'; });
+    document.getElementById('cardGhost').addEventListener('click', function(){ location.href='/teachers.html'; });
+  }
+  paintCard();
+  if(currentIdx>-1 && hasSchedules) setInterval(function(){ var l=card.querySelector('.left'); if(l) l.textContent=remain(); }, 1000);
+
+  /* ===== ③ مصفوفة الأسبوع: عمود لكل يوم ===== */
+  var sunday=new Date(now); sunday.setDate(now.getDate() - (isWeekend ? dayIdx : dayIdx));
+  var weekEl=document.getElementById('week');
+  R.days.forEach(function(day,i){
+    var dt=new Date(sunday); dt.setDate(sunday.getDate()+i);
+    var list=events.filter(function(e){ return e.day===day; });
+    var col=document.createElement('div');
+    col.className='wcol' + (day===todayName ? ' today' : '');
+    var inner='<div class="wh">' + SHORT[i] + '<b>' + dt.getDate() + '</b></div>';
+    if(list.length){
+      list.forEach(function(e){ inner += '<div class="wi ' + (TYPE_CLASS[e.type]||'') + '">' + e.title + '</div>'; });
+    } else inner += '<div class="wq">—</div>';
+    col.innerHTML=inner;
+    weekEl.appendChild(col);
+  });
+
+  /* ===== ④ إنجاز المنهج ===== */
+  var plan=d.plan||{}, progress=d.progress||{}, subjectNames=Object.keys(plan);
+  var slicesEl=document.getElementById('slices');
+  if(!subjectNames.length){
+    document.getElementById('planPct').textContent='';
+    slicesEl.style.display='none';
+    document.getElementById('planLine').textContent='بانتظار خطة المنهج — تُضاف من الإدارة أو من سجلّ «ما قُطع من المنهج».';
+  } else {
+    var total=0, done=0, cells=[];
+    subjectNames.forEach(function(s){
+      plan[s].forEach(function(L){
+        total++;
+        var isDone=Object.keys(progress).some(function(k){ return k.indexOf('|'+s+'|'+L.week)>-1 && progress[k]; });
+        if(isDone) done++;
+        cells.push({done:isDone, now:L.week===weekNo});
+      });
+    });
+    cells.slice(0,40).forEach(function(c){
+      var i=document.createElement('i');
+      if(c.done) i.className='done'; else if(c.now) i.className='now';
+      slicesEl.appendChild(i);
+    });
+    document.getElementById('planPct').textContent = (total ? Math.round(done/total*100) : 0) + '%';
+    document.getElementById('planLine').innerHTML =
+      Shouba.count(done,{one:'درس',two:'درسان',few:'دروس',many:'درساً'}) + ' من <b>' + total + '</b> · الأسبوع ' + weekNo + ' جارٍ';
+  }
+
+  /* ===== ⑤ بحاجة إلى إجراء ===== */
+  var todoEl=document.getElementById('todo'), items=[];
+  (d.teachers||[]).forEach(function(t){ if(!schedules[t]) items.push({name:t,badge:'تذكير',text:'لم يُدخل جدوله بعد'}); });
+  if(subjectNames.length){
+    (d.teachers||[]).slice(0,3).forEach(function(t){
+      var late=subjectNames.some(function(s){
+        return plan[s].some(function(L){ return L.week<weekNo && !progress[t+'|'+s+'|'+L.week]; });
+      });
+      if(late) items.push({name:t,badge:'متابعة',text:'دروس سابقة لم تُؤشَّر في خطة المنهج'});
+    });
+  }
+  document.getElementById('todoCount').textContent = items.length ? items.length : 'لا شيء';
+  if(!items.length){
+    todoEl.innerHTML='<div class="invite">لا شيء ينتظر إجراءً الآن — شعبتك منضبطة.</div>';
+  } else {
+    items.slice(0,2).forEach(function(it){
+      var el=document.createElement('div'); el.className='titem';
+      el.innerHTML='<span class="ini">'+it.name.charAt(0)+'</span>'
+        + '<div class="tx"><b>أ. '+it.name+'</b><small>'+it.text+'</small></div>'
+        + '<span class="chip">'+it.badge+'</span>';
+      todoEl.appendChild(el);
+    });
+    if(items.length>2) document.getElementById('todoMore').textContent =
+      'و' + Shouba.count(items.length-2,{one:'طلب',two:'طلبان',few:'طلبات',many:'طلباً'}) + ' في الانتظار';
+  }
+
+  /* ===== التنقّل ===== */
+  [].forEach.call(document.querySelectorAll('.tab'), function(b){
+    b.addEventListener('click', function(){ if(!b.classList.contains('on')) location.href=b.dataset.go; });
+  });
+  document.getElementById('toSchedule').addEventListener('click', function(){ location.href='/schedule.html'; });
+  document.getElementById('settings').addEventListener('click', function(){ location.href='/setup-wizard-7.html'; });
+</script>
+</body>
+</html>

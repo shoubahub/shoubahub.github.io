@@ -89,7 +89,7 @@
 .dots{display:flex;gap:5px;align-items:center}
 .dots i{width:26px;height:5px;border-radius:999px;background:#D9CCB2;transition:background .2s}
 .dots i.on{background:var(--shouba-navy)}
-.back{width:38px;height:38px;border-radius:14px;background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);display:grid;place-items:center;flex:none;cursor:pointer;
+.back,.iconbtn{width:38px;height:38px;border-radius:14px;background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);display:grid;place-items:center;flex:none;cursor:pointer;
   box-shadow:inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16)}
 
 /* ---------- بطاقة اختيار ورقية ---------- */
@@ -129,3 +129,109 @@
 .sheet-opt .mk{width:22px;height:22px;border-radius:999px;flex:none;display:grid;place-items:center;border:2px solid rgba(120,98,66,.28)}
 .sheet-opt.on{color:var(--shouba-navy);box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 0 0 2px var(--shouba-navy)}
 .sheet-opt.on .mk{background:var(--shouba-navy);border-color:var(--shouba-navy)}
+
+/* ===================================================================
+   نمط الشاشات الرئيسية (تبويبات) — أُضيف مع اللوحة 2026-08-20
+   =================================================================== */
+
+/* وسم صغير (نوع موعد · صف · حالة) */
+.chip{font-size:11.5px;font-weight:600;color:var(--shouba-amber-deep);background:rgba(169,112,27,.1);
+  border-radius:999px;padding:5px 11px;white-space:nowrap;flex:none}
+.chip.navy{color:var(--shouba-navy);background:rgba(22,69,110,.09)}
+.chip.muted{color:var(--shouba-label);background:rgba(120,98,66,.09)}
+
+/* شريط التبويبات — **عائم** بأربعة أقسام وزرّ إضافة عنبري في وسطه (دليل الهوية) */
+.tabbar{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));
+  max-width:calc(var(--screen-max) - 32px);margin:0 auto;z-index:3;
+  display:flex;align-items:center;gap:2px;padding:7px 8px;border-radius:26px;
+  background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);
+  box-shadow:inset 0 1.4px 0 rgba(255,255,255,.95), 0 3px 0 rgba(190,172,140,.55), 0 14px 26px rgba(90,72,48,.24)}
+.tab{flex:1;border:0;background:transparent;cursor:pointer;border-radius:19px;padding:8px 2px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-family:var(--font-ar);font-size:10.5px;font-weight:600;color:var(--shouba-label)}
+.tab.on{color:var(--shouba-navy);background:rgba(22,69,110,.08)}
+.tab:active{transform:translateY(1px)}
+/* زرّ الإضافة العنبري — وسط الشريط، الفعل الوحيد فيه */
+.tab-add{flex:none;width:46px;height:46px;border-radius:999px;border:0;cursor:pointer;margin:0 4px;
+  background:var(--shouba-cta);display:grid;place-items:center;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), 0 4px 0 var(--shouba-amber-deep), 0 10px 18px rgba(90,72,48,.3)}
+.tab-add:active{transform:translateY(3px);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), 0 1px 0 var(--shouba-amber-deep)}
+
+/* ---------- البطاقة الكحلية: واحدة لكل شاشة، تحمل ما يجري الآن أو ما ينتظر القرار ---------- */
+.card-navy{margin:0 var(--gap-side);background:var(--shouba-navy);border-radius:var(--r-card);padding:17px 18px;
+  display:flex;flex-direction:column;gap:13px;color:var(--shouba-cream);position:relative;overflow:hidden;
+  box-shadow:var(--shadow-navy)}
+.card-navy .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-navy .kicker{font-size:12.5px;font-weight:700;color:var(--shouba-navy-light);display:flex;align-items:center;gap:8px}
+.card-navy .kicker .pulse{width:8px;height:8px;border-radius:999px;background:var(--shouba-amber);flex:none}
+.card-navy .left{font-size:12.5px;font-weight:700;color:var(--shouba-navy-light);font-family:var(--font-num)}
+.card-navy .ttl{font-size:17px;font-weight:700;line-height:1.5}
+.card-navy .sub{font-size:13px;font-weight:500;color:var(--shouba-navy-light);line-height:1.7}
+.card-navy .acts{display:flex;gap:10px;align-items:center;padding-top:3px}
+.card-navy .acts .cta{width:auto;flex:1;padding:13px 16px;font-size:14.5px}
+.card-navy .acts .ghost2{flex:none;border:0;cursor:pointer;background:rgba(244,241,234,.12);color:var(--shouba-cream);
+  font-family:var(--font-ar);font-size:14px;font-weight:700;border-radius:var(--r-btn);padding:13px 18px}
+.card-navy .acts .ghost2:active{transform:translateY(1px)}
+
+/* ---------- شرائح إنجاز المنهج (كل شريحة درس) ---------- */
+.slices{display:flex;gap:3px;padding:0 var(--gap-side)}
+.slices i{flex:1;height:9px;border-radius:3px;background:#E2D7C2}
+.slices i.done{background:var(--shouba-navy)}
+.slices i.now{background:var(--shouba-amber)}
+
+
+/* عنوان قسم داخل الشاشة */
+.sect{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 var(--gap-side)}
+.sect .h{font-size:15px;font-weight:700;color:var(--shouba-ink)}
+.sect .a{font-size:12px;font-weight:700;color:var(--shouba-link);cursor:pointer}
+
+/* ===================================================================
+   شريط الرأس المضغوط الثابت + الجداول المصفوفة (2026-08-20)
+   المبدأ: الوظيفة قبل الشكل — أقلّ ارتفاع للرأس والأسفل، وأوسع مساحة عمل.
+   =================================================================== */
+
+/* رأس ثابت مضغوط: شعار صغير · هوية الشعبة · التاريخ · إعدادات */
+.topbar{position:fixed;top:0;left:0;right:0;max-width:var(--screen-max);margin:0 auto;z-index:3;
+  display:flex;align-items:center;gap:11px;
+  padding:calc(9px + env(safe-area-inset-top)) var(--gap-side) 9px;
+  background:linear-gradient(180deg, var(--shouba-canvas) 72%, rgba(239,230,214,0))}
+.topbar > img{width:32px;height:auto;flex:none}
+.topbar .tt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.topbar .tt b{font-size:14px;font-weight:700;color:var(--shouba-navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .tt span{font-size:11px;font-weight:600;color:var(--shouba-label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .iconbtn{width:34px;height:34px;border-radius:12px}
+
+/* جدول مصفوف بأعمدة — يعرض أكثر من البطاقات في مساحة أقلّ */
+.tbl{margin:0 var(--gap-side);border-radius:18px;overflow:hidden;
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 8px 16px rgba(120,98,66,.14)}
+.tbl .tr{display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid rgba(226,215,194,.75)}
+.tbl .tr:last-child{border-bottom:0}
+.tbl .tr.hd{background:rgba(120,98,66,.07);padding:7px 13px}
+.tbl .tr.hd span{font-size:10.5px;font-weight:700;color:var(--shouba-label)}
+.tbl .tr.now{background:rgba(22,69,110,.08)}
+.tbl .tr.past{opacity:1;color:var(--shouba-label)}
+.tbl .c1{width:20px;flex:none;font-size:12.5px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num);text-align:center}
+.tbl .c2{width:42px;flex:none;font-size:11px;font-weight:600;color:var(--shouba-hint);font-family:var(--font-num)}
+.tbl .c3{flex:1;min-width:0;font-size:12.5px;font-weight:600;color:var(--shouba-ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbl .c4{flex:none;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+.tbl .tr.past .c1{color:var(--shouba-label)}
+.tbl .empty{padding:14px 13px;font-size:12.5px;color:var(--shouba-hint);line-height:1.8}
+
+/* مصفوفة الأسبوع: عمود لكل يوم ومواعيده تحته */
+.wmx{display:flex;gap:5px;padding:0 var(--gap-side);align-items:stretch}
+.wcol{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.wcol .wh{text-align:center;font-size:10.5px;font-weight:700;color:var(--shouba-label);padding:5px 2px;border-radius:9px;
+  background:rgba(120,98,66,.07);display:flex;flex-direction:column;gap:1px}
+.wcol .wh b{font-size:12px;color:var(--shouba-navy);font-family:var(--font-num)}
+.wcol.today .wh{background:var(--shouba-navy);color:var(--shouba-navy-light)}
+.wcol.today .wh b{color:var(--shouba-cream)}
+.wcol .wi{font-size:10px;font-weight:600;line-height:1.4;border-radius:9px;padding:6px 6px 6px 5px;color:var(--shouba-navy);
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-inline-start:3px solid var(--shouba-line);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85), 0 1.5px 0 rgba(190,172,140,.4);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.wcol .wi.t-exam{border-inline-start-color:var(--shouba-error)}
+.wcol .wi.t-meet{border-inline-start-color:var(--shouba-navy)}
+.wcol .wi.t-act{border-inline-start-color:var(--shouba-amber)}
+.wcol .wq{font-size:10px;color:var(--shouba-hint);text-align:center;padding:4px 0}

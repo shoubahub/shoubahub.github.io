@@ -37,7 +37,7 @@ body.framed .device::after{
    (تكافئ env(safe-area-inset-top) على الجهاز الحقيقي) */
 body.framed .screen{min-height:100% !important;height:100%;max-width:none !important;overflow:auto;padding-top:30px}
 /* الأشرطة السفلية العائمة تُقيّد داخل الإطار (بمواضع سفلية صريحة) */
-body.framed .tabbar{position:absolute !important;bottom:20px;left:20px;right:20px;max-width:none !important;margin:0 auto !important}
+body.framed .tabbar{position:absolute !important;bottom:20px;left:20px;right:20px;max-width:none !important;margin:0 auto !important}   /* الشريط عائم أصلاً — الإطار يقيّده فحسب */
 body.framed .foot{position:absolute !important;left:0;right:0;bottom:0;max-width:none !important;margin:0 !important}
 
 /* على الجوّال الحقيقي: بلا إطار، الشاشة كاملة
@@ -53,4 +53,16 @@ body.framed .foot{position:absolute !important;left:0;right:0;bottom:0;max-width
   /* شريط الإجراء يُثبَّت بالمساحة المرئية (fixed) فيظهر الزرّ دائماً بلا تمرير */
   body.framed .foot{position:fixed !important;left:0;right:0;bottom:0;top:auto;max-width:100% !important;margin:0 !important}
   body.framed .tabbar{position:fixed !important}
+}
+
+/* الرأس الثابت داخل الإطار (كالأشرطة السفلية) */
+body.framed .topbar{position:absolute !important;top:0;left:0;right:0;max-width:none !important;margin:0 !important;
+  padding-top:32px}   /* مساحة النوتش داخل الإطار */
+@media (max-width:460px){
+  body.framed .topbar{position:fixed !important;padding-top:calc(9px + env(safe-area-inset-top))}
+}
+/* الشاشة ذات الرأس الثابت تحجز مساحته (تتقدّم على قاعدة النوتش العامّة) */
+body.framed .screen.has-topbar{padding-top:96px}
+@media (max-width:460px){
+  body.framed .screen.has-topbar{padding-top:calc(62px + env(safe-area-inset-top)) !important}
 }

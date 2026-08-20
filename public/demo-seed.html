@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · بذر بيانات تجريبية (أداة تطوير)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/identity/tokens.css" />
+<link rel="stylesheet" href="/shell.css" />
+<link rel="stylesheet" href="/components.css" />
+<style>
+  /* أداة تطوير — خارج المنتج، لا تتبع نظام الشاشات */
+  .wrap{width:100%;max-width:560px;margin:0 auto;padding:26px 22px 60px;display:flex;flex-direction:column;gap:20px}
+  h1{font-size:22px;font-weight:700;color:var(--shouba-navy)}
+  .devnote{background:#FBEBE9;border:1.5px dashed var(--shouba-error);border-radius:14px;padding:14px 16px;
+    font-size:13px;line-height:1.8;color:#7A2E27}
+  .devnote b{color:var(--shouba-error)}
+  .state{background:var(--shouba-paper);border-radius:16px;padding:16px;font-size:13.5px;line-height:2;
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .state .k{color:var(--shouba-label);font-weight:600}
+  .state .v{font-weight:700;color:var(--shouba-navy)}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row .cta,.row .btn-ghost{flex:1;min-width:180px}
+  .log{font-size:12px;color:var(--shouba-text-muted);white-space:pre-wrap;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>بذر بيانات تجريبية</h1>
+
+  <div class="devnote">
+    <b>أداة تطوير — ليست جزءاً من المنتج.</b><br />
+    لا يشير إليها أي رابط داخل المنصّة، ولا يراها رئيس الشعبة.<br />
+    <b>قيد الإزالة:</b> تُؤرشف في <code>_legacy/</code> بعد اعتماد اللوحة والشاشات التي تخدمها،
+    و<b>تُستثنى وجوباً من أي نشر فعليّ</b> (Railway).
+  </div>
+
+  <div class="state" id="state"></div>
+
+  <div class="row">
+    <button class="cta" id="seed">املأ ببيانات تجريبية</button>
+    <button class="btn-ghost" id="clear">امسح التجريبي</button>
+  </div>
+
+  <div class="log" id="log"></div>
+</div>
+
+<script src="/refdata.js"></script>
+<script src="/components.js"></script>
+<script>
+  var KEY = 'shouba.setup', R = window.SHOUBA_REF;
+  /* المفاتيح التجريبية وحدها — لا تُمسّ بيانات الإعداد الحقيقية */
+  var DEMO_KEYS = ['schedules','plan','weekNo','events','progress','demoSeeded'];
+
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+  function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+
+  var GRADE_NO = { 'الأول':1,'الثاني':2,'الثالث':3,'الرابع':4,'الخامس':5,
+                   'السادس':6,'السابع':7,'الثامن':8,'التاسع':9,
+                   'العاشر':10,'الحادي عشر':11,'الثاني عشر':12 };
+
+  var SAMPLE_TEACHERS = ['بدر الرشيدي','ناصر السالم','طلال الدوسري','منيرة العجمي','هيا الفهد','عبدالله المري'];
+
+  function render(){
+    var d = load();
+    var sch = d.schedules || {}, tCount = Object.keys(sch).length;
+    var lessons = 0; Object.keys(d.plan||{}).forEach(function(s){ lessons += d.plan[s].length; });
+    document.getElementById('state').innerHTML =
+      '<div><span class="k">الشعبة:</span> <span class="v">' + (d.department || '—') + '</span> · '
+      + '<span class="k">المرحلة:</span> <span class="v">' + (d.stage || '—') + '</span></div>'
+      + '<div><span class="k">معلّموك (حقيقيون):</span> <span class="v">' + ((d.teachers||[]).length) + '</span></div>'
+      + '<div><span class="k">حال البذرة:</span> <span class="v">' + (d.demoSeeded ? 'مبذورة' : 'لا توجد بيانات تجريبية') + '</span></div>'
+      + '<div><span class="k">جداول:</span> <span class="v">' + tCount + '</span> معلّم · '
+      + '<span class="k">دروس الخطة:</span> <span class="v">' + lessons + '</span> · '
+      + '<span class="k">مواعيد:</span> <span class="v">' + ((d.events||[]).length) + '</span></div>';
+  }
+
+  function log(msg){ document.getElementById('log').textContent = msg; }
+
+  document.getElementById('seed').addEventListener('click', function(){
+    var d = load();
+    if(!d.stage){ log('أكمِل معالج الإعداد أولاً — البذرة تبني فوق شعبتك لا بدلاً منها.'); return; }
+
+    var teachers = (d.teachers || []).slice();
+    var added = 0;
+    while(teachers.length < 6 && added < SAMPLE_TEACHERS.length){        // شعبة بلا معلّمين ⇒ نكمل بأسماء عيّنة
+      if(teachers.indexOf(SAMPLE_TEACHERS[added]) === -1) teachers.push(SAMPLE_TEACHERS[added]);
+      added++;
+    }
+
+    var subjects = (d.subjects || []).slice();
+    if(!subjects.length) subjects = R.subjectsOf(d.stage, d.department).slice();
+    if(!subjects.length){ log('لا مواد لهذه الشعبة في المرجعية — لا يمكن توليد جداول.'); return; }
+
+    var periods = R.periodsByStage[d.stage] || 7, days = R.days;
+
+    /* جداول: توزيع ثابت (لا عشوائي) كي تتكرّر النتيجة نفسها عند كل بذر */
+    var schedules = {};
+    teachers.forEach(function(t, ti){
+      var byDay = {};
+      days.forEach(function(day, di){
+        var slots = [];
+        for(var p = 0; p < periods; p++){
+          var occupied = ((p + di + ti) % 3) !== 0;                       // نحو ثلثَي اليوم مشغول
+          if(occupied){
+            var s = subjects[(p + di + ti) % subjects.length];
+            var g = GRADE_NO[s.grade] || '';
+            var section = ((p + ti) % 3) + 1;
+            slots.push(g + '/' + section + ' · ' + s.name);
+          } else slots.push('');
+        }
+        byDay[day] = slots;
+      });
+      schedules[t] = byDay;
+    });
+
+    /* خطة المنهج: ٨ أسابيع لكل مادّة (أسماء دروس عامّة موسومة بأنها تجريبية) */
+    var plan = {}, names = [];
+    subjects.forEach(function(s){ if(names.indexOf(s.name) === -1) names.push(s.name); });
+    names.forEach(function(n){
+      var arr = [];
+      for(var w = 1; w <= 8; w++) arr.push({ week: w, lesson: n + ' — الدرس ' + w });
+      plan[n] = arr;
+    });
+
+    /* مواعيد الأسبوع */
+    var events = [
+      { day:'الأحد',    type:'اختبار',  title:'اختبار قصير — ' + names[0] },
+      { day:'الثلاثاء', type:'اجتماع',  title:'اجتماع الشعبة الشهري' },
+      { day:'الخميس',   type:'فعالية',  title:'معرض إنجازات الطلبة' }
+    ];
+
+    /* تأشير درسين كأنّهما شُرحا */
+    var progress = {};
+    progress[teachers[0] + '|' + names[0] + '|3'] = true;
+    if(teachers[1]) progress[teachers[1] + '|' + names[0] + '|3'] = true;
+
+    d.teachers = teachers;
+    d.schedules = schedules;
+    d.plan = plan;
+    d.weekNo = 3;
+    d.events = events;
+    d.progress = progress;
+    d.demoSeeded = true;
+    save(d); render();
+    log('تمّت البذرة: ' + teachers.length + ' جدولاً · ' + names.length + ' مادّة × ٨ أسابيع · '
+        + events.length + ' مواعيد. بيانات إعدادك لم تُمسّ.');
+  });
+
+  document.getElementById('clear').addEventListener('click', function(){
+    var d = load();
+    DEMO_KEYS.forEach(function(k){ delete d[k]; });
+    save(d); render();
+    log('مُسحت البيانات التجريبية. بقيت شعبتك ومعلّموك وسجلّاتك كما أدخلتها.');
+  });
+
+  render();
+</script>
+</body>
+</html>

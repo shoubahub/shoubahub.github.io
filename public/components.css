@@ -235,3 +235,37 @@
 .wcol .wi.t-meet{border-inline-start-color:var(--shouba-navy)}
 .wcol .wi.t-act{border-inline-start-color:var(--shouba-amber)}
 .wcol .wq{font-size:10px;color:var(--shouba-hint);text-align:center;padding:4px 0}
+
+/* ---------- شعار المدرسة أو رمز الشعبة (للواجهة فقط — النماذج لها إعداداتها لاحقاً) ---------- */
+.crestpick{display:flex;flex-direction:column;align-items:center;gap:7px;padding:6px var(--gap-side) 0}
+.crest{width:74px;height:74px;border-radius:999px;border:0;cursor:pointer;display:grid;place-items:center;overflow:hidden;
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.18)}
+.crest:active{transform:translateY(1px)}
+.crest img{width:100%;height:100%;object-fit:cover}
+.crest .crest-svg{width:38px;height:38px}
+.crest-svg .m{fill:var(--shouba-navy)}
+.crest-svg .a{fill:var(--shouba-amber)}
+.crestpick .cap{font-size:12px;font-weight:600;color:var(--shouba-label)}
+.crestpick .cap b{color:var(--shouba-navy)}
+
+/* شبكة الرموز داخل اللوحة السفلية */
+.icongrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;width:100%}
+.icell{border:0;cursor:pointer;border-radius:16px;padding:11px 4px;display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F1E9DB 100%);font-family:var(--font-ar);
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+.icell span{font-size:9.5px;font-weight:600;color:var(--shouba-label);line-height:1.35;text-align:center}
+.icell .crest-svg{width:26px;height:26px}
+.icell.on{box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 0 0 2px var(--shouba-navy)}
+.icell.on span{color:var(--shouba-navy)}
+.icell:active{transform:translateY(1px)}
+/* سطر فاصل داخل اللوحة السفلية (بين خيار الرفع وشبكة الرموز) */
+.sheet-note{font-size:12px;font-weight:600;color:var(--shouba-label);text-align:center;padding:2px 0}
+/* خيار الرفع داخل اللوحة — صفّ كامل العرض ليتميّز عن الرموز */
+.btn-ghost.wupload{display:flex;align-items:center;justify-content:center;gap:9px}
+/* طبقات رموز الشعب — الكحلي كتلة، العنبري لمسة، و«الفراغ» بلون السطح ليقرأ فوق الكتلة */
+.crest-svg .hole{fill:var(--shouba-paper)}
+.crest-svg .ca{fill:var(--shouba-amber)}
+.crest-svg .s{fill:none;stroke:var(--shouba-navy);stroke-width:1.9}
+.crest-svg .sa{fill:none;stroke:var(--shouba-amber);stroke-width:2.2;stroke-linecap:round}
+.crest-svg .ha{fill:none;stroke:var(--shouba-paper);stroke-width:1.6;stroke-linecap:round}

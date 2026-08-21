@@ -108,6 +108,21 @@ Shouba.returnTo = function () {
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
   }
 
+  /* لوحة سفلية عامّة لأي محتوى (شبكة رموز مثلاً) — تعيد استعمال نفس العنصر */
+  Shouba.sheet = {
+    open: function (title, node) {
+      ensure();
+      titleEl.textContent = title || '';
+      list.innerHTML = '';
+      list.appendChild(node);
+      list.scrollTop = 0;
+      document.body.style.overflow = 'hidden';
+      backdrop.classList.add('open');
+      requestAnimationFrame(function () { sheet.classList.add('open'); });
+    },
+    close: function () { close(); }
+  };
+
   if (document.readyState !== 'loading') init();
   else document.addEventListener('DOMContentLoaded', init);
 })();

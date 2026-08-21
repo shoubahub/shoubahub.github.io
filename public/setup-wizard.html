@@ -82,6 +82,16 @@
           <input id="school" type="text" placeholder="اكتب اسم المدرسة" maxlength="60" />
         </div>
       </div>
+
+      <!-- شعار المدرسة أو رمز الشعبة — بعد اسم المدرسة · اختياري · للواجهة فقط
+           (ترويسات النماذج الرسمية لها إعداداتها الخاصة لاحقاً — قرار المستخدم) -->
+      <div class="field">
+        <label>شعار مدرستك أو رمز شعبتك</label>
+        <div class="crestpick">
+          <button type="button" class="crest" id="crestBtn" aria-label="اختر شعاراً"></button>
+          <div class="cap"><b>اختياري</b> · اضغط للاختيار أو لرفع شعار مدرستك</div>
+        </div>
+      </div>
     </form>
     </div><!-- /content -->
   </div>
@@ -91,6 +101,7 @@
   </div>
  </div></div>
 
+<script src="/icons.js"></script>
 <script src="/components.js"></script>
 <script>
   var KEY = 'shouba.setup';
@@ -136,6 +147,97 @@
   });
 
   validate();
+
+  /* ===== شعار المدرسة أو رمز الشعبة — اختياري، للواجهة فقط =====
+     (ترويسات النماذج الرسمية لها إعداداتها الخاصة لاحقاً — قرار المستخدم 2026-08-20) */
+  var crestBtn = document.getElementById('crestBtn');
+  var DEFAULT_CREST = '/identity/assets/school-crest-default.svg';
+
+  function paintCrest(){
+    var c = load().crest;
+    if(c && c.type === 'image'){ crestBtn.innerHTML = '<img src="' + c.data + '" alt="شعار المدرسة" />'; }
+    else if(c && c.type === 'icon'){ crestBtn.innerHTML = SHOUBA_ICONS.svg(c.id, 38); }
+    else { crestBtn.innerHTML = '<img src="' + DEFAULT_CREST + '" alt="شعار افتراضي" style="width:46px;height:46px;object-fit:contain" />'; }
+  }
+
+  /* يصغّر الصورة المرفوعة إلى ٢٥٦px — مخزن المتصفّح محدود، والتصغير شرط ألّا ينكسر الحفظ */
+  function shrink(file, cb){
+    var fr = new FileReader();
+    fr.onload = function(){
+      var img = new Image();
+      img.onload = function(){
+        var s = 256, cv = document.createElement('canvas'); cv.width = s; cv.height = s;
+        var ctx = cv.getContext('2d');
+        var side = Math.min(img.width, img.height);
+        ctx.drawImage(img, (img.width-side)/2, (img.height-side)/2, side, side, 0, 0, s, s);
+        cb(cv.toDataURL('image/png'));
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  }
+
+  crestBtn.addEventListener('click', function(){
+    var cur = load().crest || {};
+    var wrap = document.createElement('div');
+    wrap.className = 'stack';
+
+    /* ① خيار الرفع — صفّ كامل العرض في الأعلى، متميّز عن الرموز لا واحداً منها */
+    var up = document.createElement('button');
+    up.type = 'button'; up.className = 'btn-ghost wupload';
+    up.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24">'
+      + '<path fill="#16456E" d="M12 3.4 17 8.6h-3.4v6.2h-3.2V8.6H7z"/>'
+      + '<path fill="#E8A33D" d="M4.4 17.2h15.2v3.2H4.4z"/></svg>'
+      + 'ارفع شعار مدرستك من جهازك';
+    up.addEventListener('click', function(){
+      var f = document.createElement('input');
+      f.type = 'file'; f.accept = 'image/*';
+      f.addEventListener('change', function(){
+        if(!f.files || !f.files[0]) return;
+        shrink(f.files[0], function(dataUrl){
+          save({ crest: { type:'image', data: dataUrl } });
+          paintCrest(); Shouba.sheet.close();
+        });
+      });
+      f.click();
+    });
+    wrap.appendChild(up);
+
+    /* ② فاصل ثم شبكة الرموز */
+    var note = document.createElement('div');
+    note.className = 'sheet-note';
+    note.textContent = 'أو اختر رمزاً لشعبتك';
+    wrap.appendChild(note);
+
+    var grid = document.createElement('div');
+    grid.className = 'icongrid';
+    SHOUBA_ICONS.list.forEach(function(it){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'icell' + (cur.type === 'icon' && cur.id === it.id ? ' on' : '');
+      b.innerHTML = SHOUBA_ICONS.svg(it.id, 26) + '<span>' + it.label + '</span>';
+      b.addEventListener('click', function(){
+        save({ crest: { type:'icon', id: it.id } });
+        paintCrest(); Shouba.sheet.close();
+      });
+      grid.appendChild(b);
+    });
+    wrap.appendChild(grid);
+
+    /* ③ الإزالة — صفّ كامل العرض في الأسفل */
+    var clr = document.createElement('button');
+    clr.type = 'button'; clr.className = 'btn-ghost';
+    clr.textContent = 'بلا شعار — أعِد الافتراضي';
+    clr.addEventListener('click', function(){
+      var d2 = load(); delete d2.crest; localStorage.setItem(KEY, JSON.stringify(d2));
+      paintCrest(); Shouba.sheet.close();
+    });
+    wrap.appendChild(clr);
+
+    Shouba.sheet.open('شعار مدرستك أو رمز شعبتك', wrap);
+  });
+
+  paintCrest();
 </script>
 </body>
 </html>

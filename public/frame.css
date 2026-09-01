@@ -66,3 +66,16 @@ body.framed .screen.has-topbar{padding-top:96px}
 @media (max-width:460px){
   body.framed .screen.has-topbar{padding-top:calc(62px + env(safe-area-inset-top)) !important}
 }
+
+/* ===== مساحة النوتش للرأس: مشروطة بوضع التطبيق (إصلاح 2026-08-27) =====
+   في تبويب سفاري تبدأ الصفحة **تحت** شريط الحالة أصلاً، فإضافة env(safe-area-inset-top)
+   تحسب المساحة مرّتين ⇒ شريط فارغ داخل الرأس (رآه المستخدم على جهازه).
+   أمّا في وضع التطبيق (أُضيف للشاشة الرئيسية) فالصفحة تمتدّ تحت شريط الحالة فتلزم المساحة. */
+@media (max-width:460px){
+  body.framed .topbar{padding-top:10px}
+  body.framed .screen.has-topbar{padding-top:72px !important}
+}
+@media (max-width:460px) and (display-mode: standalone){
+  body.framed .topbar{padding-top:calc(10px + env(safe-area-inset-top))}
+  body.framed .screen.has-topbar{padding-top:calc(72px + env(safe-area-inset-top)) !important}
+}

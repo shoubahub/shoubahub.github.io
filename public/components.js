@@ -30,6 +30,16 @@ Shouba.count = function (n, f) {
   return n + ' ' + Shouba.unit(n, f);
 };
 
+
+/* الاسم المختصر للعرض: الاسم الأول + اسم العائلة (قاعدة المستخدم 2026-08-27)
+   «محمد عبدالله سعد البرّاك» ← «محمد البرّاك» · الاسم المفرد يبقى كما هو.
+   التخزين يبقى بالاسم الكامل — الاختصار للعرض فقط. */
+Shouba.shortName = function (full) {
+  var p = String(full || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  if (!p.length) return '';
+  return p.length > 1 ? p[0] + ' ' + p[p.length - 1] : p[0];
+};
+
 /* وجهة العودة بعد تعديل سطر من شاشة مراجعة — مصدر واحد لكل شاشات المعالج:
    ?ret=review ⟵ مراجعة المنتصف · ?ret=final ⟵ المراجعة النهائية · بلا وسم = المسار الأمامي */
 Shouba.returnTo = function () {

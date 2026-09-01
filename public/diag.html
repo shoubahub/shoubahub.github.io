@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>تشخيص الرأس</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/identity/tokens.css" />
+<link rel="stylesheet" href="/shell.css" />
+<link rel="stylesheet" href="/components.css" />
+<link rel="stylesheet" href="/frame.css" />
+<style>
+  body{font-family:'IBM Plex Sans Arabic',sans-serif;background:#EFE6D6;padding:0;display:block}
+  .out{padding:14px;font-size:13px;line-height:2;color:#24211C}
+  .out b{color:#16456E;font-family:'IBM Plex Sans',monospace}
+  .k{color:#8A7F6E}
+  .safe{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:#B7443A;z-index:99}
+</style>
+</head>
+<body class="framed">
+  <!-- شريط أحمر بارتفاع مساحة النوتش تماماً: إن ظهر فالمساحة موجودة، وإن اختفى فهي صفر -->
+  <div class="safe"></div>
+
+  <div class="device"><div class="viewport">
+    <div class="topbar" id="tb">
+      <div class="tbcrest"></div>
+      <div class="tt"><b>تشخيص</b><span>قياس الرأس</span></div>
+      <div class="iconbtn"></div>
+    </div>
+    <div class="screen has-topbar has-tabbar">
+      <div class="out" id="out">…</div>
+    </div>
+  </div></div>
+
+<script>
+  var tb = document.getElementById('tb'), cs = getComputedStyle(tb);
+  var probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top);width:1px;visibility:hidden';
+  document.body.appendChild(probe);
+  var safeTop = Math.round(probe.getBoundingClientRect().height);
+  var rows = [
+    ['عرض الشاشة (CSS px)', innerWidth],
+    ['ارتفاع الشاشة', innerHeight],
+    ['مساحة النوتش env(safe-area-inset-top)', safeTop + 'px'],
+    ['هل انطبق شرط الجوّال (≤460)؟', matchMedia('(max-width:460px)').matches ? 'نعم' : 'لا'],
+    ['وضع التطبيق (standalone)؟', matchMedia('(display-mode: standalone)').matches ? 'نعم' : 'لا (تبويب سفاري)'],
+    ['padding-top للرأس', cs.paddingTop],
+    ['ارتفاع الرأس', Math.round(tb.getBoundingClientRect().height) + 'px'],
+    ['أعلى الرأس (top)', Math.round(tb.getBoundingClientRect().top) + 'px'],
+    ['موضع الرأس', cs.position],
+    ['نسخة frame.css محمّلة؟', (function(){
+      var ok='—';
+      try{ for(var i=0;i<document.styleSheets.length;i++){ var s=document.styleSheets[i];
+        if((s.href||'').indexOf('frame.css')>-1) ok='نعم'; } }catch(e){ ok='تعذّر الفحص'; }
+      return ok; })()]
+  ];
+  document.getElementById('out').innerHTML =
+    rows.map(function(r){ return '<div><span class="k">'+r[0]+':</span> <b>'+r[1]+'</b></div>'; }).join('');
+</script>
+</body>
+</html>

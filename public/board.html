@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>شعبة · اللوحة</title>
 <link rel="manifest" href="/manifest.webmanifest" />
-<meta name="theme-color" content="#16456E" />
+<meta name="theme-color" content="#1B5183" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/identity/tokens.css" />
-<link rel="stylesheet" href="/shell.css" />
-<link rel="stylesheet" href="/components.css" />
-<link rel="stylesheet" href="/frame.css" />
+<link rel="stylesheet" href="/identity/tokens.css?v=202608291819" />
+<link rel="stylesheet" href="/shell.css?v=202608291819" />
+<link rel="stylesheet" href="/components.css?v=202608291819" />
+<link rel="stylesheet" href="/frame.css?v=202608291819" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -40,7 +40,7 @@
 <body class="framed">
  <div class="device"><div class="viewport">
     <div class="topbar">
-      <img src="/identity/assets/logo-vec-color.svg" alt="شعبة" />
+      <div class="tbcrest" id="tbCrest"></div>
       <div class="tt">
         <b id="deptName">شعبتك</b>
         <span id="dateLine">—</span>
@@ -66,7 +66,7 @@
         </section>
 
         <!-- ② البطاقة الكحلية: ما يجري الآن / ما ينتظر قرارك -->
-        <div class="card-navy" id="nowCard"></div>
+        <div class="card-soft" id="nowCard"></div>
 
         <!-- ③ مصفوفة الأسبوع -->
         <section>
@@ -115,8 +115,9 @@
   </div>
  </div></div>
 
-<script src="/refdata.js"></script>
-<script src="/components.js"></script>
+<script src="/refdata.js?v=202608291819"></script>
+<script src="/icons.js?v=202608291819"></script>
+<script src="/components.js?v=202608291819"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -131,9 +132,29 @@
   var todayName = isWeekend ? null : R.days[dayIdx];
   var weekNo = d.weekNo || 1;
   document.getElementById('deptName').textContent = d.department || 'شعبتك';
-  document.getElementById('dateLine').textContent =
-    (isWeekend ? 'عطلة' : R.days[dayIdx]) + ' · ' + now.getDate() + ' ' + MONTHS[now.getMonth()]
-    + ' · الأسبوع ' + weekNo;   // اسم المدرسة يُحذف من السطر اليومي — يبتره القصّ ولا يُحتاج يومياً
+
+  /* سطر الرأس الثاني (معتمد 2026-08-27): اسم رئيس الشعبة · عدد المعلّمين · الفصل · الأسبوع.
+     التاريخ خرج منه بطلب المستخدم — الأسبوع أنفع له يومياً. */
+  (function headLine(){
+    var head  = (window.Shouba && Shouba.user().name) || '';
+    var tcount = (d.teachers || []).length;
+    var term  = d.term === 'الفصل الثاني' ? 'ف٢' : d.term === 'الفصل الأول' ? 'ف١' : '';
+    var parts = [];
+    if(head)   parts.push('أ. ' + Shouba.shortName(head));
+    if(tcount) parts.push('<b class="num">' + tcount + '</b> ' + Shouba.unit(tcount, {one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'}));
+    if(term)   parts.push(term);
+    parts.push('الأسبوع <b class="num">' + weekNo + '</b>');
+    document.getElementById('dateLine').innerHTML = parts.join(' · ');
+  })();
+
+  /* شعار المدرسة أو رمز الشعبة في الرأس — يقرأ ما اختاره المستخدم في ش①.
+     بلا اختيار: علامة المنصّة على الكحلي. */
+  (function paintTopCrest(){
+    var el = document.getElementById('tbCrest'), c = d.crest;
+    if(c && c.type === 'image') el.innerHTML = '<img src="' + c.data + '" alt="شعار المدرسة" />';
+    else if(c && c.type === 'icon' && window.SHOUBA_ICONS) el.innerHTML = SHOUBA_ICONS.svg(c.id, 22);
+    else el.innerHTML = '<img src="/identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
+  })();
 
   /* ===== الحصص ===== */
   var times = R.periodTimes[d.stage] || R.periodTimes['ثانوي'];

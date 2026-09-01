@@ -134,13 +134,12 @@
  </div></div>
 
 <script src="/refdata.js?v=202609011304"></script>
+<script src="/derive.js?v=202609011503"></script>
 <script src="/icons.js?v=202608291819"></script>
 <script src="/components.js?v=202609011421"></script>
 <script>
-  var KEY='shouba.setup', R=window.SHOUBA_REF;
-  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
-  function save(){ localStorage.setItem(KEY, JSON.stringify(d)); }
-  var d = load();
+  var R=window.SHOUBA_REF;
+  var d = Shouba.data();          /* المصدر الواحد — القراءة والكتابة من طبقة الاشتقاق */
 
   var GRADE_NO = { 'الأول':1,'الثاني':2,'الثالث':3,'الرابع':4,'الخامس':5,
                    'السادس':6,'السابع':7,'الثامن':8,'التاسع':9,
@@ -148,28 +147,16 @@
   var ORD  = ['الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة'];
   var SHORT= ['أحد','اثن','ثلا','أرب','خمي'];
 
-  var stage   = d.stage || 'ثانوي';
-  var days    = R.days;
-  var times   = R.periodTimes[stage] || R.periodTimes['ثانوي'];
-  var pCount  = R.periodsOf(stage) || 7;
-  var subjects= (d.subjects && d.subjects.length) ? d.subjects : R.subjectsOf(stage, d.department);
-  var teachers= (d.teachers || []).slice();
-  d.schedules = d.schedules || {};
+  /* البنية والحقائق كلّها من طبقة الاشتقاق — هذه الشاشة تعرض وتُدخل، ولا تحسب */
+  var days     = Shouba.days();
+  var times    = Shouba.periods();
+  var subjects = Shouba.subjects();
+  var teachers = Shouba.teachers();
 
-  function lastName(n){ var p=String(n||'').trim().split(' ').filter(Boolean); return p[p.length-1] || n; }
-  function slotsOf(t, day){
-    var s = d.schedules[t] || (d.schedules[t] = {});
-    if(!s[day]) { s[day] = []; }
-    while(s[day].length < pCount) s[day].push('');
-    return s[day];
-  }
-  function splitSlot(s){
-    var p = String(s||'').split('·').map(function(x){ return x.trim(); });
-    return { cls:p[0]||'', subject:p[1]||'' };
-  }
-  function filledCount(t){
-    var n=0; days.forEach(function(day){ slotsOf(t,day).forEach(function(v){ if(v) n++; }); }); return n;
-  }
+  var lastName    = Shouba.lastName;
+  var slotsOf     = function(t, day){ return Shouba.daySlots(t, day); };
+  var splitSlot   = Shouba.splitSlot;
+  var filledCount = Shouba.loadOf;
 
   /* شعار المدرسة أو رمز الشعبة في الرأس (نفس منطق اللوحة) */
   (function paintTopCrest(){
@@ -206,17 +193,19 @@
 
     /* ===== المصفوفة ===== */
     var grid = document.getElementById('grid');
-    /* تعارض: معلّم آخر أُسند إلى نفس الصف/الشعبة في نفس اليوم والحصة */
-    function clashAt(day, pIdx, cls){
-      if(!cls) return null;
-      var who=null;
-      teachers.forEach(function(t){
-        if(t===cur || who) return;
-        if(splitSlot(slotsOf(t,day)[pIdx]).cls === cls) who=t;
+    /* التعارضات تُحسب في طبقة الاشتقاق؛ هنا نحوّلها إلى خريطة سريعة لتلوين المربّعات.
+       المفتاح: «اليوم|رقم الحصة» ← اسم المعلّم الآخر. */
+    var clashMap = {};
+    function buildClashMap(){
+      clashMap = {};
+      Shouba.clashes(cur).forEach(function(c){
+        var other = c.teachers[0] === cur ? c.teachers[1] : c.teachers[0];
+        clashMap[c.day + '|' + c.pIdx] = other;
       });
-      return who;
     }
+    function clashAt(day, pIdx, cls){ return cls ? (clashMap[day + '|' + pIdx] || null) : null; }
     function paintGrid(){
+      buildClashMap();
       grid.innerHTML='';
       var hd = document.createElement('div');
       hd.className='grow hd';
@@ -333,9 +322,8 @@
     }
 
     function setSlot(day, pIdx, val){
-      slotsOf(cur, day)[pIdx] = val;
+      Shouba.setSlot(cur, day, pIdx, val);     /* الكتابة والحفظ في مكان واحد */
       if(val) lastSlot = val;
-      save();
       paintAll();
     }
 

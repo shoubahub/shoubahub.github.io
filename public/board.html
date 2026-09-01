@@ -117,6 +117,7 @@
  </div></div>
 
 <script src="/refdata.js?v=202609011304"></script>
+<script src="/derive.js?v=202609011503"></script>
 <script src="/icons.js?v=202608291819"></script>
 <script src="/components.js?v=202609011421"></script>
 <script>
@@ -167,11 +168,12 @@
   });
   if(isWeekend){ currentIdx=-1; nextIdx=-1; }
 
-  var schedules=d.schedules||{}, teachers=Object.keys(schedules), hasSchedules=teachers.length>0;
+  /* الحقائق من طبقة الاشتقاق (derive.js) — اللوحة تسأل ولا تحسب */
+  var teachers=Shouba.scheduled(), hasSchedules=teachers.length>0;
   var viewDay = isWeekend ? R.days[0] : todayName;              // في العطلة نعرض جدول الأحد
-  function slotOf(t,p){ var day=schedules[t] && schedules[t][viewDay]; return (day && day[p]) || ''; }
-  function busyAt(p){ return teachers.filter(function(t){ return slotOf(t,p); }); }
-  function firstName(n){ return n.split(' ')[0]; }
+  function slotOf(t,p){ return Shouba.slot(t, viewDay, p); }
+  function busyAt(p){ return Shouba.busyAt(viewDay, p); }
+  var firstName = Shouba.firstNameOf;
 
   /* ===== ① جدول حصص اليوم — شارة بسطرين لكل معلّم (معتمد 2026-09-01) =====
      الاسم الأخير · تحته المادة والصف · والحصة الجارية مظلَّلة بكاملها مع الوقت المتبقّي.
@@ -183,12 +185,8 @@
   var tbl = document.getElementById('periods');
 
   var ORD = ['الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة'];
-  function lastName(n){ var p = String(n||'').trim().split(' ').filter(Boolean); return p[p.length-1] || n; }
-  /* «١١/٢ · الفلسفة» ⟵ الخانة المخزّنة في الجدول */
-  function splitSlot(s){
-    var parts = String(s).split('·').map(function(x){ return x.trim(); });
-    return { cls: parts[0] || '', subject: parts[1] || '' };
-  }
+  var lastName  = Shouba.lastName;
+  var splitSlot = Shouba.splitSlot;   /* «١١/٢ · الفلسفة» ← { cls, subject } */
   /* الوقت المتبقّي في الحصة/الفرصة الجارية */
   function leftIn(t){
     var n = new Date(), sec = toMin(t.to)*60 - (n.getHours()*3600 + n.getMinutes()*60 + n.getSeconds());
@@ -321,43 +319,28 @@
   });
 
   /* ===== ④ إنجاز المنهج ===== */
-  var plan=d.plan||{}, progress=d.progress||{}, subjectNames=Object.keys(plan);
+  var subjectNames=Shouba.planSubjects();
   var slicesEl=document.getElementById('slices');
   if(!subjectNames.length){
     document.getElementById('planPct').textContent='';
     slicesEl.style.display='none';
     document.getElementById('planLine').textContent='بانتظار خطة المنهج — تُضاف من الإدارة أو من سجلّ «ما قُطع من المنهج».';
   } else {
-    var total=0, done=0, cells=[];
-    subjectNames.forEach(function(s){
-      plan[s].forEach(function(L){
-        total++;
-        var isDone=Object.keys(progress).some(function(k){ return k.indexOf('|'+s+'|'+L.week)>-1 && progress[k]; });
-        if(isDone) done++;
-        cells.push({done:isDone, now:L.week===weekNo});
-      });
-    });
+    var pr=Shouba.planProgress(), total=pr.total, done=pr.done, cells=pr.cells;
     cells.slice(0,40).forEach(function(c){
       var i=document.createElement('i');
       if(c.done) i.className='done'; else if(c.now) i.className='now';
       slicesEl.appendChild(i);
     });
-    document.getElementById('planPct').textContent = (total ? Math.round(done/total*100) : 0) + '%';
+    document.getElementById('planPct').textContent = pr.pct + '%';
     document.getElementById('planLine').innerHTML =
       Shouba.count(done,{one:'درس',two:'درسان',few:'دروس',many:'درساً'}) + ' من <b>' + total + '</b> · الأسبوع ' + weekNo + ' جارٍ';
   }
 
   /* ===== ⑤ بحاجة إلى إجراء ===== */
   var todoEl=document.getElementById('todo'), items=[];
-  (d.teachers||[]).forEach(function(t){ if(!schedules[t]) items.push({name:t,badge:'تذكير',text:'لم يُدخل جدوله بعد'}); });
-  if(subjectNames.length){
-    (d.teachers||[]).slice(0,3).forEach(function(t){
-      var late=subjectNames.some(function(s){
-        return plan[s].some(function(L){ return L.week<weekNo && !progress[t+'|'+s+'|'+L.week]; });
-      });
-      if(late) items.push({name:t,badge:'متابعة',text:'دروس سابقة لم تُؤشَّر في خطة المنهج'});
-    });
-  }
+  Shouba.withoutSchedule().forEach(function(t){ items.push({name:t,badge:'تذكير',text:'لم يُدخل جدوله بعد'}); });
+  Shouba.behindPlan(3).forEach(function(t){ items.push({name:t,badge:'متابعة',text:'دروس سابقة لم تُؤشَّر في خطة المنهج'}); });
   document.getElementById('todoCount').textContent = items.length ? items.length : 'لا شيء';
   if(!items.length){
     todoEl.closest('section').classList.add('calm');

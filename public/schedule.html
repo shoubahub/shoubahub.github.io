@@ -2,129 +2,365 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>شعبة · الجدول</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · جداول المعلّمين</title>
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#1B5183" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/identity/tokens.css" />
-<link rel="stylesheet" href="/frame.css" />
+<link rel="stylesheet" href="/identity/tokens.css?v=202609011359" />
+<link rel="stylesheet" href="/shell.css?v=202609011359" />
+<link rel="stylesheet" href="/components.css?v=202609011359" />
+<link rel="stylesheet" href="/frame.css?v=202609011359" />
 <style>
-  *{box-sizing:border-box;margin:0}
-  body{font-family:var(--font-ar);color:var(--shouba-ink);background:var(--shouba-canvas);min-height:100vh;display:flex;justify-content:center;-webkit-font-smoothing:antialiased}
-  .screen{width:100%;max-width:430px;min-height:100vh;position:relative;overflow:hidden;isolation:isolate;background:var(--shouba-canvas);padding-bottom:110px}
-  .echo{position:absolute;inset:0;z-index:-1;pointer-events:none}
-  .num{font-family:var(--font-num);unicode-bidi:isolate}
-  .statusbar{display:flex;align-items:center;justify-content:space-between;padding:16px 26px 0;font-size:12px;color:var(--shouba-hint);font-weight:600}
-  .batt{width:18px;height:9px;border-radius:3px;background:var(--shouba-hint)}
-  .head{padding:18px 26px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
-  .head .navs{display:flex;gap:8px}
-  .head .nb{width:36px;height:36px;border-radius:13px;background:#F8F3E9;display:grid;place-items:center}
-  .head .d{font-size:11.5px;color:var(--shouba-hint);font-weight:500}
-  .head .g{font-size:23px;font-weight:700;letter-spacing:-.01em;margin-top:5px;text-align:right}
-  /* بطاقة التعارض الكحلية */
-  .conflict{position:relative;margin:36px 26px 0;background:linear-gradient(180deg,#1D5588,var(--shouba-navy) 52%,#103A5C);border-radius:26px 0 26px 26px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;
-    box-shadow:inset 0 1.5px 0 rgba(168,198,226,.45), inset 0 -2px 0 rgba(6,24,42,.5), 0 5px 0 #0E3252, 0 16px 30px rgba(20,50,80,.34)}
-  .conflict .tab{position:absolute;right:0;top:-19px;width:46%;height:21px;background:linear-gradient(180deg,#23608F,#1D5588);border-radius:20px 20px 0 0;box-shadow:inset 0 1.5px 0 rgba(168,198,226,.4)}
-  .conflict .edge{position:absolute;top:18px;bottom:18px;right:0;width:5px;border-radius:999px 0 0 999px;background:var(--shouba-amber)}
-  .conflict .btn{background:var(--shouba-cta);border-radius:16px;padding:12px 16px;font-size:13.5px;font-weight:700;color:#241D06;text-shadow:0 1px 0 rgba(255,255,255,.4);
-    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(140,95,15,.4), 0 5px 0 var(--shouba-amber-deep), 0 10px 16px rgba(20,50,80,.34)}
-  .conflict .tx{display:flex;flex-direction:column;gap:5px;align-items:flex-end;text-align:right}
-  .conflict .tx .c{font-size:12px;color:var(--shouba-amber);font-weight:600}
-  .conflict .tx .h{font-size:16px;font-weight:700;color:var(--shouba-cream)}
-  .conflict .tx .m{font-size:11.5px;color:#8FB6DA}
-  /* رأس الأيام */
-  .dayhead{padding:20px 20px 0;display:flex;gap:5px}
-  .dayhead .sp{width:22px;flex:none}
-  .dayhead .c{flex:1;padding:8px 0;text-align:center;font-size:11.5px;font-weight:600;color:var(--shouba-hint)}
-  .dayhead .c.on{background:var(--shouba-navy);border-radius:13px;color:var(--shouba-cream);font-weight:700}
-  /* شبكة الحصص */
-  .grid{padding:8px 20px 0;display:flex;flex-direction:column;gap:5px}
-  .grow{display:flex;gap:5px;align-items:stretch}
-  .grow .p{width:22px;flex:none;display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--shouba-hint);direction:ltr;unicode-bidi:isolate}
-  .grow .p.on{color:var(--shouba-ink)}
-  .cell{flex:1;height:54px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-    background:linear-gradient(180deg,#FBF7EE,#F3ECDE);box-shadow:inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 5px 10px rgba(120,98,66,.16)}
-  .cell b{font-size:11px;font-weight:700}.cell small{font-size:9.5px;color:var(--shouba-hint);direction:ltr;unicode-bidi:isolate}
-  .cell.now{background:var(--shouba-amber);box-shadow:3px 4px 12px rgba(150,105,20,.32)}
-  .cell.now b{color:var(--shouba-ink)}.cell.now small{color:#6B4A0B}
-  .cell.gap{background:rgba(183,68,58,.08);border:1.5px dashed rgba(183,68,58,.45);box-shadow:none}
-  .cell.gap b{color:#9A342B;font-size:10.5px}.cell.gap small{color:var(--shouba-error)}
-  .cell.conf{background:rgba(183,68,58,.1);box-shadow:none}.cell.conf b{color:#9A342B;font-size:10.5px}.cell.conf small{color:var(--shouba-error)}
-  .cell.empty{background:rgba(120,98,66,.07);box-shadow:none;color:#C9BCA6;font-size:11px}
-  /* المعلمون: نورة كحلي، محمد أخضر، سارة بنفسجي، خالد نحاسي */
-  .t-nora{color:#16456E}.t-mohd{color:#3C6049}.t-sara{color:#574978}.t-khaled{color:#A05A2E}
-  .legend{padding:14px 20px 0;display:flex;align-items:center;justify-content:flex-end;gap:14px;flex-wrap:wrap}
-  .legend .lg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--shouba-label)}
-  .legend .sw{width:9px;height:9px;border-radius:3px}
-  /* الشريط السفلي */
-  .tabbar{position:fixed;bottom:20px;left:20px;right:20px;max-width:390px;margin:0 auto;background:linear-gradient(180deg,#FCF8F0,#F2EBDC);border-radius:28px;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;
-    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.95), inset 0 -1.5px 0 rgba(154,130,94,.2), 0 4px 0 rgba(190,172,140,.55), 0 14px 26px rgba(90,72,48,.24)}
-  .tabbar .it{display:flex;flex-direction:column;align-items:center;gap:5px;width:52px;font-size:10px;color:var(--shouba-hint)}
-  .tabbar .it.on{color:var(--shouba-navy);font-weight:700}
-  .tabbar .fab{width:54px;height:54px;border-radius:999px;background:linear-gradient(180deg,#F4C878,#E8A33D 45%,#C98A20);display:grid;place-items:center;margin-top:-27px;
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.7), inset 0 -3px 0 rgba(140,95,15,.45), 0 5px 0 var(--shouba-amber-deep), 0 12px 20px rgba(90,72,48,.34)}
+  /* خاص بشاشة الجداول — الرأس والشريط السفلي واللوحة السفلية من components.css.
+     الهامش الجانبي هنا أضيق من الموحّد عمداً: المصفوفة تحتاج كل بكسل (الوظيفة قبل الشكل). */
+  .wrap{display:flex;flex-direction:column;gap:12px;padding-top:12px}
+
+  /* شريط المعلّمين — شارة لكل معلّم وتحتها مؤشّر اكتمال جدوله */
+  .tsel{display:flex;gap:7px;overflow-x:auto;padding:3px var(--gap-side);scrollbar-width:none}
+  .tsel::-webkit-scrollbar{display:none}
+  .tch{flex:none;border:0;cursor:pointer;font-family:var(--font-ar);text-align:center;
+    background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;padding:8px 12px;
+    display:flex;flex-direction:column;gap:2px;color:var(--shouba-text-muted);
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .tch b{font-size:13px;font-weight:700;color:var(--shouba-navy);white-space:nowrap}
+  .tch small{font-size:10.5px;font-weight:700;color:var(--shouba-hint);font-family:var(--font-num)}
+  .tch.on{box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 0 0 2px var(--shouba-navy)}
+  .tch.none small{color:var(--shouba-amber-deep)}
+
+  /* المصفوفة: أعمدة = الأيام · صفوف = الحصص */
+  .grid{margin:0 12px;border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 8px 16px rgba(120,98,66,.14)}
+  .grow{display:flex;align-items:stretch;gap:4px;padding:4px 6px}
+  .grow.hd{background:rgba(120,98,66,.07);padding:6px}
+  .grow.hd span{flex:1;text-align:center;font-size:10.5px;font-weight:700;color:var(--shouba-label)}
+  .grow.hd .pl{flex:none;width:42px}
+  .pl{flex:none;width:42px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+  .pl b{font-size:13px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num);line-height:1.1}
+  .pl small{font-size:8.5px;font-weight:600;color:var(--shouba-hint)}
+  .cell{flex:1;min-width:0;border:0;cursor:pointer;font-family:var(--font-ar);
+    background:rgba(120,98,66,.05);border-radius:11px;padding:7px 3px;min-height:46px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+  .cell .cls{font-size:12.5px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num)}
+  .cell .sub{font-size:9px;font-weight:600;color:var(--shouba-text-muted);
+    max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cell.free{color:var(--shouba-hint);font-size:15px;font-weight:700}
+  .cell.clash{background:rgba(183,68,58,.10);box-shadow:inset 0 0 0 1.5px var(--shouba-error)}
+  .cell.clash .cls{color:var(--shouba-error)}
+  /* صفّ الفرصة — فاصل رفيع لا مربّعات (لا تُدخل فيه حصص) */
+  .gbrk{display:flex;align-items:center;gap:8px;padding:3px 12px;background:rgba(232,163,61,.10)}
+  .gbrk span{font-size:10px;font-weight:700;color:var(--shouba-amber-deep);white-space:nowrap}
+  .gbrk i{flex:1;height:1px;background:rgba(169,112,27,.28)}
+
+  /* تنبيه التعارض + سطر الإرشاد */
+  .clashes{margin:0 12px;display:none;flex-direction:column;gap:5px;
+    background:rgba(183,68,58,.08);border-radius:13px;padding:10px 12px}
+  .clashes.show{display:flex}
+  .clashes b{font-size:12.5px;font-weight:700;color:var(--shouba-error)}
+  .clashes small{font-size:11.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.7}
+  .hintline{padding:0 var(--gap-side);font-size:11.5px;font-weight:600;color:var(--shouba-hint);line-height:1.7}
+  .empty{margin:0 var(--gap-side);font-size:12.5px;color:var(--shouba-text-muted);line-height:1.8;
+    background:rgba(120,98,66,.06);border-radius:14px;padding:14px 15px;display:flex;flex-direction:column;gap:10px}
+
+  /* محتوى اللوحة السفلية: شارات الشعب + أزرار سريعة */
+  .secs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:2px 0 4px}
+  .secbtn{border:0;cursor:pointer;font-family:var(--font-num);font-size:16px;font-weight:700;
+    width:52px;height:48px;border-radius:14px;color:var(--shouba-navy);
+    background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .quick{display:flex;gap:8px;padding-bottom:4px}
+  .quick button{flex:1;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;
+    border-radius:13px;padding:11px 10px;color:var(--shouba-navy);background:rgba(22,69,110,.09)}
+  .quick button.amber{background:rgba(232,163,61,.18);color:var(--shouba-amber-deep)}
+  .endbtn{width:100%;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;
+    color:var(--shouba-label);background:transparent;padding:12px 0 2px}
 </style>
 </head>
 <body class="framed">
  <div class="device"><div class="viewport">
-  <div class="screen">
-    <svg class="echo" width="430" height="932" viewBox="0 0 430 932" fill="none" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
-      <path d="M14 39 C14 34 18 30 23 30 H61 L67 24 C69 22 71 21 74 21 H97 C102 21 106 25 106 30 V87 C106 92 102 96 97 96 H23 C18 96 14 92 14 87 Z" fill="#D9CCB2" transform="translate(-150 640) rotate(-5) scale(4.6)"/>
-    </svg>
-    <div class="statusbar"><span class="num">٩:٤١</span><span style="display:flex;align-items:center;gap:6px"><span class="num">٩٤٪</span><span class="batt"></span></span></div>
-
-    <div class="head">
-      <div class="navs">
-        <div class="nb"><svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M12 4 L6 10 L12 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="nb"><svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M8 4 L14 10 L8 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="topbar">
+      <div class="tbcrest" id="tbCrest"></div>
+      <div class="tt">
+        <b>جداول شعبتك</b>
+        <span id="headLine">—</span>
       </div>
-      <div><div class="d">الأسبوع <span class="num">6</span> · <span class="num">11 — 15 مارس</span></div><div class="g">جدول الشعبة</div></div>
-    </div>
-
-    <div class="conflict">
-      <div class="tab"></div><div class="edge"></div>
-      <div class="btn">معالجة</div>
-      <div class="tx"><div class="c">تعارض واحد · الثلاثاء</div><div class="h">أ. خالد في صفّين معًا</div><div class="m">الحصة الخامسة · <span class="num">7/2</span> و<span class="num">9/1</span></div></div>
-    </div>
-
-    <div class="dayhead"><div class="sp"></div><div class="c on">أحد</div><div class="c">اثن</div><div class="c">ثلا</div><div class="c">أرب</div><div class="c">خمي</div></div>
-
-    <div class="grid">
-      <div class="grow"><div class="p">1</div>
-        <div class="cell"><b class="t-nora">نورة</b><small>8/1</small></div><div class="cell"><b class="t-mohd">محمد</b><small>7/1</small></div><div class="cell"><b class="t-nora">نورة</b><small>8/2</small></div><div class="cell"><b class="t-sara">سارة</b><small>8/3</small></div><div class="cell"><b class="t-mohd">محمد</b><small>7/2</small></div>
-      </div>
-      <div class="grow"><div class="p">2</div>
-        <div class="cell"><b class="t-mohd">محمد</b><small>7/1</small></div><div class="cell"><b class="t-sara">سارة</b><small>9/1</small></div><div class="cell"><b class="t-nora">نورة</b><small>8/1</small></div><div class="cell"><b class="t-mohd">محمد</b><small>7/3</small></div><div class="cell"><b class="t-khaled">خالد</b><small>9/2</small></div>
-      </div>
-      <div class="grow"><div class="p on">3</div>
-        <div class="cell now"><b>محمد</b><small>7/3</small></div><div class="cell"><b class="t-nora">نورة</b><small>8/3</small></div><div class="cell"><b class="t-khaled">خالد</b><small>9/1</small></div><div class="cell"><b class="t-nora">نورة</b><small>8/2</small></div><div class="cell"><b class="t-sara">سارة</b><small>8/1</small></div>
-      </div>
-      <div class="grow"><div class="p">4</div>
-        <div class="cell gap"><b>فراغ</b><small>9/2</small></div><div class="cell"><b class="t-mohd">محمد</b><small>7/2</small></div><div class="cell"><b class="t-sara">سارة</b><small>9/1</small></div><div class="cell"><b class="t-khaled">خالد</b><small>9/3</small></div><div class="cell"><b class="t-nora">نورة</b><small>8/3</small></div>
-      </div>
-      <div class="grow"><div class="p">5</div>
-        <div class="cell"><b class="t-sara">سارة</b><small>8/2</small></div><div class="cell"><b class="t-khaled">خالد</b><small>9/1</small></div><div class="cell conf"><b>تعارض</b><small>خالد</small></div><div class="cell"><b class="t-mohd">محمد</b><small>7/1</small></div><div class="cell"><b class="t-sara">سارة</b><small>9/2</small></div>
-      </div>
-      <div class="grow"><div class="p">6</div>
-        <div class="cell"><b class="t-nora">نورة</b><small>8/1</small></div><div class="cell empty">—</div><div class="cell"><b class="t-mohd">محمد</b><small>7/3</small></div><div class="cell empty">—</div><div class="cell"><b class="t-khaled">خالد</b><small>9/3</small></div>
+      <div class="iconbtn" id="toBoard" title="اللوحة">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M8 4 L14 10 L8 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
     </div>
 
-    <div class="legend">
-      <div class="lg"><span class="sw" style="background:#574978"></span>سارة</div>
-      <div class="lg"><span class="sw" style="background:#A05A2E"></span>خالد</div>
-      <div class="lg"><span class="sw" style="background:#3C6049"></span>محمد</div>
-      <div class="lg"><span class="sw" style="background:#16456E"></span>نورة</div>
+  <div class="screen has-topbar has-tabbar">
+    <div class="content">
+      <div class="wrap" id="wrap">
+        <div class="tsel" id="tsel"></div>
+        <div class="grid" id="grid"></div>
+        <div class="clashes" id="clashes"></div>
+        <div class="hintline" id="hintline"></div>
+      </div>
     </div>
   </div>
 
   <div class="tabbar">
-    <div class="it on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="14" rx="3" fill="#16456E"/><path d="M4 10 H20" stroke="#F8F3E9" stroke-width="1.6"/></svg>القسم</div>
-    <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M6 3 H15 L19 7 V21 H6 Z" stroke="#A79A86" stroke-width="1.8" stroke-linejoin="round"/></svg>السجلّات</div>
-    <div class="fab"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#24211C" stroke-width="2.6" stroke-linecap="round"/></svg></div>
-    <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="3.4" stroke="#A79A86" stroke-width="1.8"/><path d="M5.5 20 C5.5 16 8.5 14 12 14 C15.5 14 18.5 16 18.5 20" stroke="#A79A86" stroke-width="1.8" stroke-linecap="round"/></svg>المعلّمون</div>
-    <div class="it"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="2" fill="#A79A86"/><rect x="13" y="4" width="7" height="7" rx="2" fill="#A79A86" opacity=".4"/><rect x="4" y="13" width="7" height="7" rx="2" fill="#A79A86" opacity=".4"/><rect x="13" y="13" width="7" height="7" rx="2" fill="#A79A86"/></svg>اللوحة</div>
+    <button class="tab" data-go="/board.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 8.4 10 3l7 5.4V16a1 1 0 0 1-1 1h-3.5v-4.5h-5V17H4a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      اللوحة
+    </button>
+    <button class="tab" data-go="/teachers.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 17c0-3 2.7-4.6 6-4.6S16 14 16 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      معلّموك
+    </button>
+    <button class="tab-add" id="add" aria-label="إضافة">
+      <svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#241D06" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </button>
+    <button class="tab" data-go="/records.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 9h6M7 12.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      سجلّاتك
+    </button>
+    <button class="tab on" data-go="/schedule.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3.5" y="4.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 8.5h13M7 3v3M13 3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      جدولك
+    </button>
   </div>
  </div></div>
- <script src="/nav.js"></script>
+
+<script src="/refdata.js?v=202609011304"></script>
+<script src="/icons.js?v=202608291819"></script>
+<script src="/components.js?v=202609011421"></script>
+<script>
+  var KEY='shouba.setup', R=window.SHOUBA_REF;
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+  function save(){ localStorage.setItem(KEY, JSON.stringify(d)); }
+  var d = load();
+
+  var GRADE_NO = { 'الأول':1,'الثاني':2,'الثالث':3,'الرابع':4,'الخامس':5,
+                   'السادس':6,'السابع':7,'الثامن':8,'التاسع':9,
+                   'العاشر':10,'الحادي عشر':11,'الثاني عشر':12 };
+  var ORD  = ['الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة'];
+  var SHORT= ['أحد','اثن','ثلا','أرب','خمي'];
+
+  var stage   = d.stage || 'ثانوي';
+  var days    = R.days;
+  var times   = R.periodTimes[stage] || R.periodTimes['ثانوي'];
+  var pCount  = R.periodsOf(stage) || 7;
+  var subjects= (d.subjects && d.subjects.length) ? d.subjects : R.subjectsOf(stage, d.department);
+  var teachers= (d.teachers || []).slice();
+  d.schedules = d.schedules || {};
+
+  function lastName(n){ var p=String(n||'').trim().split(' ').filter(Boolean); return p[p.length-1] || n; }
+  function slotsOf(t, day){
+    var s = d.schedules[t] || (d.schedules[t] = {});
+    if(!s[day]) { s[day] = []; }
+    while(s[day].length < pCount) s[day].push('');
+    return s[day];
+  }
+  function splitSlot(s){
+    var p = String(s||'').split('·').map(function(x){ return x.trim(); });
+    return { cls:p[0]||'', subject:p[1]||'' };
+  }
+  function filledCount(t){
+    var n=0; days.forEach(function(day){ slotsOf(t,day).forEach(function(v){ if(v) n++; }); }); return n;
+  }
+
+  /* شعار المدرسة أو رمز الشعبة في الرأس (نفس منطق اللوحة) */
+  (function paintTopCrest(){
+    var el=document.getElementById('tbCrest'), c=d.crest;
+    if(c && c.type==='image') el.innerHTML='<img src="'+c.data+'" alt="شعار المدرسة" />';
+    else if(c && c.type==='icon' && window.SHOUBA_ICONS) el.innerHTML=SHOUBA_ICONS.svg(c.id,22);
+    else el.innerHTML='<img src="/identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
+  })();
+
+  /* ===== لا معلّمين بعد: الشاشة تدلّ على مصدرها ولا تعرض مصفوفة فارغة ===== */
+  if(!teachers.length){
+    document.getElementById('wrap').innerHTML =
+      '<div class="empty"><div>لم تُضِف معلّمي شعبتك بعد — والجدول يُبنى على أسمائهم.</div>'
+      + '<button class="cta" id="toTeachers">أضِف معلّميك</button></div>';
+    document.getElementById('headLine').textContent = 'بانتظار أسماء معلّميك';
+    document.getElementById('toTeachers').addEventListener('click', function(){ location.href='/setup-wizard-5.html'; });
+  } else {
+    var cur = teachers[0];
+    var lastSlot = null;                       /* آخر إدخال — لزرّ التكرار السريع */
+
+    /* ===== شريط المعلّمين ===== */
+    var tsel = document.getElementById('tsel');
+    function paintTsel(){
+      tsel.innerHTML='';
+      teachers.forEach(function(t){
+        var n = filledCount(t);
+        var b = document.createElement('button');
+        b.className = 'tch' + (t===cur ? ' on' : '') + (n ? '' : ' none');
+        b.innerHTML = '<b>'+lastName(t)+'</b><small>' + (n ? n + ' حصة' : 'بلا جدول') + '</small>';
+        b.addEventListener('click', function(){ cur=t; paintAll(); });
+        tsel.appendChild(b);
+      });
+    }
+
+    /* ===== المصفوفة ===== */
+    var grid = document.getElementById('grid');
+    /* تعارض: معلّم آخر أُسند إلى نفس الصف/الشعبة في نفس اليوم والحصة */
+    function clashAt(day, pIdx, cls){
+      if(!cls) return null;
+      var who=null;
+      teachers.forEach(function(t){
+        if(t===cur || who) return;
+        if(splitSlot(slotsOf(t,day)[pIdx]).cls === cls) who=t;
+      });
+      return who;
+    }
+    function paintGrid(){
+      grid.innerHTML='';
+      var hd = document.createElement('div');
+      hd.className='grow hd';
+      hd.innerHTML = '<div class="pl"></div>' + SHORT.map(function(s){ return '<span>'+s+'</span>'; }).join('');
+      grid.appendChild(hd);
+
+      var clashes=[];
+      times.forEach(function(t){
+        if(t.brk){
+          var br=document.createElement('div');
+          br.className='gbrk';
+          br.innerHTML='<i></i><span>'+t.label+'</span><i></i>';
+          grid.appendChild(br);
+          return;
+        }
+        var pIdx = t.n - 1;
+        var row = document.createElement('div');
+        row.className='grow';
+        row.innerHTML = '<div class="pl"><b>'+t.n+'</b><small>الحصة</small></div>';
+        days.forEach(function(day){
+          var val = slotsOf(cur, day)[pIdx], s = splitSlot(val);
+          var c = document.createElement('button');
+          var who = clashAt(day, pIdx, s.cls);
+          c.className = 'cell' + (val ? '' : ' free') + (who ? ' clash' : '');
+          c.innerHTML = val
+            ? '<span class="cls">'+s.cls+'</span><span class="sub">'+s.subject+'</span>'
+            : '·';
+          if(who) clashes.push({ day:day, n:t.n, cls:s.cls, who:who });
+          c.addEventListener('click', function(){ openCell(day, pIdx, t.n); });
+          row.appendChild(c);
+        });
+        grid.appendChild(row);
+      });
+      paintClashes(clashes);
+    }
+
+    function paintClashes(list){
+      var box=document.getElementById('clashes');
+      if(!list.length){ box.className='clashes'; box.innerHTML=''; return; }
+      box.className='clashes show';
+      box.innerHTML = '<b>تعارض في الإسناد ('+list.length+')</b>'
+        + list.slice(0,3).map(function(c){
+            return '<small>'+c.day+' · الحصة '+c.n+' — الصفّ <b>'+c.cls+'</b> مُسنَد أيضاً إلى أ. '+lastName(c.who)+'</small>';
+          }).join('');
+    }
+
+    /* ===== اللوحة السفلية: المادة ← الشعبة ← حفظ فوري ← الحصة التالية ===== */
+    function openCell(day, pIdx, pNo){
+      var node = document.createElement('div');
+
+      var quick = document.createElement('div');
+      quick.className='quick';
+      var bFree = document.createElement('button');
+      bFree.textContent = 'متفرّغ — أفرِغ الخانة';
+      bFree.addEventListener('click', function(){ setSlot(day, pIdx, ''); advance(day, pIdx); });
+      quick.appendChild(bFree);
+      if(lastSlot){
+        var bRep = document.createElement('button');
+        bRep.className='amber';
+        bRep.textContent = 'كرّر: ' + lastSlot;
+        bRep.addEventListener('click', function(){ setSlot(day, pIdx, lastSlot); advance(day, pIdx); });
+        quick.appendChild(bRep);
+      }
+      node.appendChild(quick);
+
+      if(!subjects.length){
+        var warn=document.createElement('div');
+        warn.className='sheet-note';
+        warn.textContent='لا مواد لهذه الشعبة في المرجعية — تُضاف من الإدارة.';
+        node.appendChild(warn);
+      }
+      subjects.forEach(function(s){
+        var g = GRADE_NO[s.grade] || s.grade;
+        var b = document.createElement('button');
+        b.className='sheet-opt';
+        b.innerHTML='<span>'+s.name+' — '+s.grade+(s.track?' '+s.track:'')+'</span>';
+        b.addEventListener('click', function(){ pickSection(day, pIdx, pNo, s.name, g); });
+        node.appendChild(b);
+      });
+
+      /* مخرج صريح من الإدخال المتتابع — وإلّا ظنّ المستخدم أن اللوحة لا تُغلق إلّا بالخلفية */
+      var done = document.createElement('button');
+      done.className='endbtn';
+      done.textContent='إنهاء الإدخال';
+      done.addEventListener('click', function(){ Shouba.sheet.close(); });
+      node.appendChild(done);
+
+      Shouba.sheet.open(day + ' · الحصة ' + ORD[pNo-1] + ' — أ. ' + lastName(cur), node);
+    }
+
+    /* الخطوة الثانية داخل اللوحة نفسها: رقم الشعبة */
+    function pickSection(day, pIdx, pNo, subject, grade){
+      var node = document.createElement('div');
+      var note = document.createElement('div');
+      note.className='sheet-note';
+      note.textContent = subject + ' · الصفّ ' + grade + ' — اختر الشعبة';
+      node.appendChild(note);
+      var secs = document.createElement('div');
+      secs.className='secs';
+      for(var i=1;i<=6;i++){
+        (function(n){
+          var b=document.createElement('button');
+          b.className='secbtn'; b.textContent=n;
+          b.addEventListener('click', function(){
+            setSlot(day, pIdx, grade + '/' + n + ' · ' + subject);
+            advance(day, pIdx);
+          });
+          secs.appendChild(b);
+        })(i);
+      }
+      node.appendChild(secs);
+      Shouba.sheet.open(day + ' · الحصة ' + ORD[pNo-1] + ' — أ. ' + lastName(cur), node);
+    }
+
+    function setSlot(day, pIdx, val){
+      slotsOf(cur, day)[pIdx] = val;
+      if(val) lastSlot = val;
+      save();
+      paintAll();
+    }
+
+    /* الإدخال المتتابع: بعد كل اعتماد تُفتح الحصة التالية في اليوم نفسه بلا رجوع */
+    function advance(day, pIdx){
+      var next = null;
+      times.forEach(function(t){ if(!t.brk && t.n-1 > pIdx && next===null) next = t.n; });
+      if(next === null){ Shouba.sheet.close(); return; }
+      openCell(day, next-1, next);
+    }
+
+    function paintAll(){
+      paintTsel(); paintGrid();
+      var blank = teachers.filter(function(t){ return filledCount(t)===0; }).length;
+      document.getElementById('headLine').textContent =
+        Shouba.count(teachers.length,{one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'})
+        + ' · ' + (blank
+            ? Shouba.count(blank,{one:'جدول',two:'جدولان',few:'جداول',many:'جدولاً'}) + ' بلا إدخال'
+            : 'كل الجداول مُدخلة');
+      document.getElementById('hintline').textContent =
+        'اضغط أي مربّع لإسناد حصة · وبعد كل اعتماد تُفتح الحصة التالية في اليوم نفسه.';
+    }
+    paintAll();
+  }
+
+  /* التنقّل من الشريط السفلي */
+  [].forEach.call(document.querySelectorAll('.tab[data-go]'), function(b){
+    b.addEventListener('click', function(){ location.href = b.dataset.go; });
+  });
+  document.getElementById('toBoard').addEventListener('click', function(){ location.href='/board.html'; });
+  document.getElementById('add').addEventListener('click', function(){ location.href='/setup-wizard-5.html'; });
+</script>
 </body>
 </html>

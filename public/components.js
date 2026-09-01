@@ -99,8 +99,10 @@ Shouba.returnTo = function () {
     close();
   }
 
+  var sheetPending = false;   /* حارس السباق: فتح ثم إغلاق في الدورة نفسها كان يترك اللوحة مفتوحة بلا خلفية */
   function close() {
     if (!sheet) return;
+    sheetPending = false;
     sheet.classList.remove('open');
     backdrop.classList.remove('open');
     document.body.style.overflow = '';
@@ -128,7 +130,8 @@ Shouba.returnTo = function () {
       list.scrollTop = 0;
       document.body.style.overflow = 'hidden';
       backdrop.classList.add('open');
-      requestAnimationFrame(function () { sheet.classList.add('open'); });
+      sheetPending = true;
+      requestAnimationFrame(function () { if (sheetPending) sheet.classList.add('open'); });
     },
     close: function () { close(); }
   };

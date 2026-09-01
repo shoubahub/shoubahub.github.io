@@ -36,15 +36,20 @@
   .grid{margin:0 12px;border-radius:16px;overflow:hidden;
     background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
     box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 8px 16px rgba(120,98,66,.14)}
-  .grow{display:flex;align-items:stretch;gap:4px;padding:4px 6px}
+  .grow{display:flex;align-items:stretch;gap:6px;padding:4px 6px}
   .grow.hd{background:rgba(120,98,66,.07);padding:6px}
-  .grow.hd span{flex:1;text-align:center;font-size:10.5px;font-weight:700;color:var(--shouba-label)}
+  .grow.hd span{flex:1;text-align:center;font-size:10.5px;font-weight:700;color:var(--shouba-label);
+    padding:2px 0;border-radius:8px}
+  /* تمييز أعمدة الأيام: نطاق رأسيّ خفيف يوماً بعد يوم، وإلّا قُرئت الخانات صفَّاً واحداً متّصلاً
+     (لاحظه المستخدم 2026-09-01). النطاق يبدأ من اسم اليوم فيمتدّ العمود كلّه. */
+  .grow.hd span.alt{background:rgba(120,98,66,.09)}
+  .cell.alt{background:rgba(120,98,66,.13)}
   .grow.hd .pl{flex:none;width:42px}
   .pl{flex:none;width:42px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
   .pl b{font-size:13px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num);line-height:1.1}
   .pl small{font-size:8.5px;font-weight:600;color:var(--shouba-hint)}
   .cell{flex:1;min-width:0;border:0;cursor:pointer;font-family:var(--font-ar);
-    background:rgba(120,98,66,.05);border-radius:11px;padding:7px 3px;min-height:46px;
+    background:rgba(120,98,66,.025);border-radius:11px;padding:7px 3px;min-height:46px;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
   .cell .cls{font-size:12.5px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num)}
   .cell .sub{font-size:9px;font-weight:600;color:var(--shouba-text-muted);
@@ -215,7 +220,8 @@
       grid.innerHTML='';
       var hd = document.createElement('div');
       hd.className='grow hd';
-      hd.innerHTML = '<div class="pl"></div>' + SHORT.map(function(s){ return '<span>'+s+'</span>'; }).join('');
+      hd.innerHTML = '<div class="pl"></div>'
+        + SHORT.map(function(s,i){ return '<span'+(i%2===0?' class="alt"':'')+'>'+s+'</span>'; }).join('');
       grid.appendChild(hd);
 
       var clashes=[];
@@ -231,11 +237,11 @@
         var row = document.createElement('div');
         row.className='grow';
         row.innerHTML = '<div class="pl"><b>'+t.n+'</b><small>الحصة</small></div>';
-        days.forEach(function(day){
+        days.forEach(function(day, di){
           var val = slotsOf(cur, day)[pIdx], s = splitSlot(val);
           var c = document.createElement('button');
           var who = clashAt(day, pIdx, s.cls);
-          c.className = 'cell' + (val ? '' : ' free') + (who ? ' clash' : '');
+          c.className = 'cell' + (di%2===0 ? ' alt' : '') + (val ? '' : ' free') + (who ? ' clash' : '');
           c.innerHTML = val
             ? '<span class="cls">'+s.cls+'</span><span class="sub">'+s.subject+'</span>'
             : '·';
@@ -265,7 +271,7 @@
       var quick = document.createElement('div');
       quick.className='quick';
       var bFree = document.createElement('button');
-      bFree.textContent = 'متفرّغ — أفرِغ الخانة';
+      bFree.textContent = 'أفرِغ الخانة';
       bFree.addEventListener('click', function(){ setSlot(day, pIdx, ''); advance(day, pIdx); });
       quick.appendChild(bFree);
       if(lastSlot){

@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/identity/tokens.css?v=202608291819" />
 <link rel="stylesheet" href="/shell.css?v=202608291819" />
-<link rel="stylesheet" href="/components.css?v=202608291819" />
+<link rel="stylesheet" href="/components.css?v=202609011343" />
 <link rel="stylesheet" href="/frame.css?v=202608291819" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
@@ -65,28 +65,29 @@
           <div class="tbl" id="periods"></div>
         </section>
 
-        <!-- ② البطاقة الكحلية: ما يجري الآن / ما ينتظر قرارك -->
-        <div class="card-soft" id="nowCard"></div>
-
-        <!-- ③ مصفوفة الأسبوع -->
+        <!-- ② مصفوفة الأسبوع — تلي الجدول مباشرةً (قرار المستخدم: أعمال الأسبوع أهمّ) -->
         <section>
           <div class="sect"><div class="h">هذا الأسبوع</div><div class="a" id="toWeek">الرزنامة الكاملة ›</div></div>
           <div class="wmx" id="week"></div>
         </section>
 
-        <!-- ④ إنجاز المنهج -->
+        <!-- ③ إنجاز المنهج -->
         <section>
           <div class="sect"><div class="h">إنجاز المنهج</div><div class="a" id="planPct">—</div></div>
           <div class="slices" id="slices"></div>
           <div class="planline" id="planLine"></div>
         </section>
 
-        <!-- ⑤ بحاجة إلى إجراء -->
+        <!-- ④ بحاجة إلى إجراء -->
         <section>
           <div class="sect"><div class="h">بحاجة إلى إجراء</div><div class="a" id="todoCount">—</div></div>
           <div class="todo" id="todo"></div>
           <div class="more" id="todoMore"></div>
         </section>
+
+        <!-- البطاقة الورقية: ما يجري الآن / ما ينتظر قرارك.
+             نزلت إلى الأسفل بقرار المستخدم: «أعمال هذا الأسبوع أهمّ، وتكون بعد الجدول». -->
+        <div class="card-soft" id="nowCard"></div>
 
       </div>
     </div>
@@ -115,7 +116,7 @@
   </div>
  </div></div>
 
-<script src="/refdata.js?v=202608291819"></script>
+<script src="/refdata.js?v=202609011304"></script>
 <script src="/icons.js?v=202608291819"></script>
 <script src="/components.js?v=202608291819"></script>
 <script>
@@ -172,25 +173,92 @@
   function busyAt(p){ return teachers.filter(function(t){ return slotOf(t,p); }); }
   function firstName(n){ return n.split(' ')[0]; }
 
-  /* ===== ① جدول حصص اليوم ===== */
-  document.getElementById('todayTtl').textContent = isWeekend ? 'حصص الأحد' : 'حصص اليوم';
+  /* ===== ① جدول حصص اليوم — شارة بسطرين لكل معلّم (معتمد 2026-09-01) =====
+     الاسم الأخير · تحته المادة والصف · والحصة الجارية مظلَّلة بكاملها مع الوقت المتبقّي.
+     يقبل صفوف الفرص: أي عنصر في periodTimes يحمل break:true يُعرض صفَّ فرصة. */
+  /* عنوان الجدول: «جدول حصص اليوم الأحد · ٦/٩» — اليوم وتاريخه بلا سنة (قرار المستخدم) */
+  document.getElementById('todayTtl').textContent = isWeekend
+    ? 'جدول حصص الأحد'
+    : 'جدول حصص اليوم ' + todayName + ' · ' + now.getDate() + '/' + (now.getMonth()+1);
   var tbl = document.getElementById('periods');
-  if(!hasSchedules){
-    tbl.innerHTML = '<div class="empty">جداول معلّميك لم تُدخل بعد — وبها يُعرف مَن يدرّس في كل حصة ومَن متفرّغ.</div>';
-  } else {
-    var html = '<div class="tr hd"><span class="c1">#</span><span class="c2">الوقت</span>'
-             + '<span class="c3">مَن يدرّس</span><span class="c4">متفرّغ</span></div>';
-    times.forEach(function(t,i){
-      var busy = busyAt(i), free = teachers.length - busy.length;
-      var names = busy.length ? busy.slice(0,3).map(firstName).join(' · ') + (busy.length>3 ? ' +'+(busy.length-3) : '')
-                              : 'لا أحد';
-      html += '<div class="tr' + (i===currentIdx ? ' now' : '') + (currentIdx>-1 && i<currentIdx ? ' past' : '') + '">'
-            + '<span class="c1">' + (i+1) + '</span>'
-            + '<span class="c2">' + t.from + '</span>'
-            + '<span class="c3">' + names + '</span>'
-            + '<span class="c4">' + free + '</span></div>';
+
+  var ORD = ['الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة'];
+  function lastName(n){ var p = String(n||'').trim().split(' ').filter(Boolean); return p[p.length-1] || n; }
+  /* «١١/٢ · الفلسفة» ⟵ الخانة المخزّنة في الجدول */
+  function splitSlot(s){
+    var parts = String(s).split('·').map(function(x){ return x.trim(); });
+    return { cls: parts[0] || '', subject: parts[1] || '' };
+  }
+  /* الوقت المتبقّي في الحصة/الفرصة الجارية */
+  function leftIn(t){
+    var n = new Date(), sec = toMin(t.to)*60 - (n.getHours()*3600 + n.getMinutes()*60 + n.getSeconds());
+    if(sec < 0) sec = 0;
+    var mm = Math.floor(sec/60), ss = sec % 60;
+    return 'باقي ' + mm + ':' + (ss < 10 ? '0' : '') + ss;
+  }
+
+  function paintTable(){
+    if(!hasSchedules){
+      tbl.innerHTML = '<div class="empty">جداول معلّميك لم تُدخل بعد — وبها يُعرف مَن يدرّس في كل حصة ومَن متفرّغ.</div>';
+      return;
+    }
+    var html = '', pIdx = -1;                       // pIdx: ترقيم الحصص وحدها (الفرص لا تُرقَّم)
+    times.forEach(function(t, i){
+      var isBreak = !!t.brk;
+      var isNow = (i === currentIdx) && !isWeekend;
+      if(!isBreak) pIdx++;
+
+      var title = isBreak ? (t.label || 'فرصة') : ('الحصة ' + (ORD[pIdx] || (pIdx+1)));
+      var isPastRow = !isWeekend && currentIdx > -1 && i < currentIdx;
+      /* الحالة تُحجز لها خانة ثابتة حتى في الصفوف القادمة، فتستوي الأعمدة (قرار المستخدم) */
+      /* عمود واحد للحالة: «باقي mm:ss» أثناء الحصة ← «انتهت» بعد انتهائها (قرار المستخدم 2026-09-01) */
+      var stateTxt = isNow ? leftIn(t) : isPastRow ? 'انتهت' : '';
+      var state = '<span class="state' + (stateTxt ? '' : ' is-empty') + '">' + stateTxt + '</span>';
+      var head  = '<div class="top"><span class="ttl">' + title + '</span>'
+                + '<span class="tm"><span class="hh">' + t.from + '</span>' + (isNow ? '<em>الآن</em>' : '') + '</span>' + state
+                ;
+
+      /* صفّ الفرصة: يحمل تنبيه المراقبة إن كان اليوم على الشعبة مراقبة (قرار المستخدم 2026-09-01) */
+      if(isBreak){
+        var duty = (t.duty && d.duty && d.duty[todayName]) || null;   // التنبيه في الفرص فقط لا في لقاء الصباح
+        var dutyHtml = duty
+          ? '<div class="duty"><span>مراقبة الشعبة اليوم</span>'
+            + '<a id="dutyLink">جدول المراقبة ›</a></div>'
+          : '';
+        html += '<div class="per brk' + (isNow ? ' now' : '') + '">' + head + '</div>' + dutyHtml + '</div>';
+        return;
+      }
+
+      var slotIdx = (t.n || (pIdx+1)) - 1;              // الفهرس بحسب رقم الحصة لا ترتيب الصف (الفرصة تُزيحه)
+      var busy = busyAt(slotIdx), free = teachers.length - busy.length;
+      var isPast = !isWeekend && currentIdx > -1 && i < currentIdx;   // تُطوى الحصص الماضية
+      html += '<div class="per' + (isNow ? ' now' : '') + (isPast ? ' past' : '') + '">'
+            + head + '<span class="cnt">' + busy.length + ' يدرّسون</span></div>'
+            + '<div class="pairs">';
+      busy.forEach(function(name){
+        var s = splitSlot(slotOf(name, slotIdx));
+        html += '<span class="ch"><span class="nm">' + lastName(name) + '</span>'
+              + '<span class="l2"><span class="sub">' + s.subject + '</span>'
+              + '<span class="cl">' + s.cls + '</span></span></span>';
+      });
+      if(free) html += '<span class="freechip">' + free + ' متفرّغ</span>';
+      html += '</div></div>';
     });
     tbl.innerHTML = html;
+  }
+  paintTable();
+
+  /* الحصة الماضية تُفتح بالضغط عليها */
+  tbl.addEventListener('click', function(e){
+    var row = e.target.closest && e.target.closest('.per.past');
+    if(row) row.classList.toggle('open');
+  });
+  /* العدّاد يتجدّد كل ثانية ما دامت هناك حصة جارية */
+  if(currentIdx > -1 && !isWeekend && hasSchedules){
+    setInterval(function(){
+      var el = tbl.querySelector('.per.now .state');
+      if(el) el.textContent = leftIn(times[currentIdx]);
+    }, 1000);
   }
 
   /* ===== ② البطاقة الكحلية ===== */
@@ -199,7 +267,7 @@
     var n=new Date(), sec = toMin(times[currentIdx].to)*60 - (n.getHours()*3600 + n.getMinutes()*60 + n.getSeconds());
     if(sec<0) sec=0;
     var mm=Math.floor(sec/60), ss=sec%60;
-    return 'يتبقّى ' + mm + ':' + (ss<10?'0':'') + ss;
+    return 'باقي ' + mm + ':' + (ss<10?'0':'') + ss;
   }
   function paintCard(){
     var kicker, left='', ttl, sub;

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · اللوحة (معاينة بساعة الدوام)</title>
+<meta name="theme-color" content="#1B5183" />
+<style>
+  html,body{margin:0;padding:0;height:100%;background:#EFE6D6}
+  iframe{border:0;width:100%;height:100%;display:block}
+  .bar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:9;
+    background:rgba(36,33,28,.86);color:#F4F1EA;border-radius:999px;padding:7px 14px;
+    font:600 11.5px 'IBM Plex Sans Arabic',sans-serif;white-space:nowrap}
+</style>
+</head>
+<body>
+  <div class="bar">معاينة بساعة ثابتة: الأحد ١٠:٥٠ — أداة تطوير</div>
+  <iframe id="f"></iframe>
+<script>
+  /* تحقن ساعة ثابتة في اللوحة كي تُرى حالات الدوام (الطيّ · التنبيه · العدّاد) خارج وقته */
+  fetch('/board.html?x=' + Date.now()).then(function(r){ return r.text(); }).then(function(html){
+    var stub = '<scr' + 'ipt>(function(){var R=Date;var F=new R(2026,8,6,10,50,0);'
+      + 'function D(){if(arguments.length)return new R(arguments[0],arguments[1]||0,arguments[2]||1,arguments[3]||0,arguments[4]||0,arguments[5]||0);'
+      + 'return new R(F.getTime());}D.now=function(){return F.getTime()};D.prototype=R.prototype;window.Date=D;})();</scr' + 'ipt>';
+    var doc = document.getElementById('f').contentDocument;
+    doc.open(); doc.write(html.replace('<head>', '<head>' + stub)); doc.close();
+  });
+</script>
+</body>
+</html>

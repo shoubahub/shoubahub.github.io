@@ -38,6 +38,7 @@
   <div class="state" id="state"></div>
 
   <div class="row">
+    <button class="cta" id="full">املأ شعبة تجريبية كاملة</button>
     <button class="cta" id="seed">املأ ببيانات تجريبية</button>
     <button class="btn-ghost" id="clear">امسح التجريبي</button>
   </div>
@@ -50,7 +51,7 @@
 <script>
   var KEY = 'shouba.setup', R = window.SHOUBA_REF;
   /* المفاتيح التجريبية وحدها — لا تُمسّ بيانات الإعداد الحقيقية */
-  var DEMO_KEYS = ['schedules','plan','weekNo','events','progress','demoSeeded'];
+  var DEMO_KEYS = ['schedules','plan','weekNo','events','progress','duty','demoSeeded'];
 
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
   function save(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
@@ -92,7 +93,7 @@
     if(!subjects.length) subjects = R.subjectsOf(d.stage, d.department).slice();
     if(!subjects.length){ log('لا مواد لهذه الشعبة في المرجعية — لا يمكن توليد جداول.'); return; }
 
-    var periods = R.periodsByStage[d.stage] || 7, days = R.days;
+    var periods = R.periodsOf(d.stage) || 6, days = R.days;
 
     /* جداول: توزيع ثابت (لا عشوائي) كي تتكرّر النتيجة نفسها عند كل بذر */
     var schedules = {};
@@ -125,6 +126,7 @@
 
     /* مواعيد الأسبوع */
     var events = [
+    /* مراقبة الشعبة — يوم في الأسبوع عليه مراقبة (بيانات تجريبية حتى تُبنى شاشة رفع جدول المراقبة) */
       { day:'الأحد',    type:'اختبار',  title:'اختبار قصير — ' + names[0] },
       { day:'الثلاثاء', type:'اجتماع',  title:'اجتماع الشعبة الشهري' },
       { day:'الخميس',   type:'فعالية',  title:'معرض إنجازات الطلبة' }
@@ -139,6 +141,7 @@
     d.schedules = schedules;
     d.plan = plan;
     d.weekNo = 3;
+    d.duty = { 'الأحد': { place: 'الفناء الشرقي' }, 'الثلاثاء': { place: 'الممرّ الرئيسي' } };
     d.events = events;
     d.progress = progress;
     d.demoSeeded = true;
@@ -152,6 +155,26 @@
     DEMO_KEYS.forEach(function(k){ delete d[k]; });
     save(d); render();
     log('مُسحت البيانات التجريبية. بقيت شعبتك ومعلّموك وسجلّاتك كما أدخلتها.');
+  });
+
+
+  /* زرّ «شعبة تجريبية كاملة» — يكتب الهوية والإعداد ثم يبذر، لمعاينة اللوحة بلا المرور بالمعالج.
+     أداة تطوير: يُزال مع الصفحة عند الاعتماد. */
+  document.getElementById('full').addEventListener('click', function(){
+    localStorage.setItem('shouba.user', JSON.stringify({ name:'محمد ناصر البرّاك', method:'google' }));
+    var d = load();
+    d.region = 'حولي'; d.schoolType = 'بنين'; d.schoolName = 'ثانوية عبدالله السالم';
+    d.crest = { type:'icon', id:'mind' };
+    d.stage = 'ثانوي'; d.department = 'الفلسفة وعلم النفس';
+    d.subjects = R.subjectsOf('ثانوي','الفلسفة وعلم النفس');
+    d.year = '٢٠٢٦/٢٠٢٧'; d.term = 'الفصل الأول';
+    d.principal = 'فهد العتيبي'; d.supervisor = 'سعد المطيري';
+    d.teachers = ['أحمد الفهد','أمين المطيري','سعد العجمي','فيصل الرشيد','بدر الرشيدي','ناصر السالم'];
+    d.records = R.readyRecords.slice();
+    d.setupDone = true;
+    save(d); render();
+    document.getElementById('seed').click();          // ثم يبذر الجداول والخطة والمواعيد
+    log('جاهزة: شعبة تجريبية كاملة + جداول ومواعيد. افتح اللوحة.');
   });
 
   render();

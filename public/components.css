@@ -326,3 +326,107 @@
   background:url('/identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(3);opacity:.16}
 .topbar > *{position:relative;z-index:1}
 .topbar .tbcrest{box-shadow:0 0 0 2px var(--shouba-amber)}
+/* فسحة بين عنوان القسم وبطاقته — كان ملتصقاً بها (لاحظه المستخدم على جهازه 2026-08-27) */
+.sect{margin-bottom:11px}
+
+/* ===== جدول حصص اليوم (معتمد 2026-09-01) — شارة بسطرين لكل معلّم =====
+   الاسم الأخير محاذىً لليمين · تحته المادة والصف · والحصة الجارية مظلَّلة بكاملها.
+   يقبل صفوف الفرص (.brk) — أوقاتها تأتي من جدول المدرسة. */
+.per{padding:10px 13px;border-bottom:1px solid rgba(226,215,194,.75)}
+.per:last-child{border-bottom:0}
+.per.now{background:rgba(22,69,110,.10);box-shadow:inset 3px 0 0 var(--shouba-navy)}
+.per .top{display:flex;align-items:center;gap:8px;font-size:12px}
+.per .top .ttl{font-weight:700;color:var(--shouba-navy)}
+.per .top .tm{color:var(--shouba-hint);font-family:var(--font-num);font-size:11px}
+.per .top .left{font-size:10.5px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+.per .top .cnt{margin-inline-start:auto;font-size:10.5px;font-weight:700;color:var(--shouba-label)}
+.per .pairs{display:flex;flex-wrap:wrap;gap:6px;padding-top:7px}
+.per .ch{display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px;
+  background:rgba(22,69,110,.08);border-radius:9px;padding:5px 9px}
+.per .ch .nm{font-size:11.5px;font-weight:700;color:var(--shouba-navy)}
+.per .ch .l2{display:flex;gap:6px;align-items:center;font-size:10px}
+.per .ch .l2 .sub{color:var(--shouba-text-muted);font-weight:600}
+.per .ch .l2 .cl{color:var(--shouba-amber-deep);font-family:var(--font-num);font-weight:700}
+.per .freechip{align-self:center;font-size:10.5px;font-weight:700;color:var(--shouba-label);
+  background:rgba(120,98,66,.08);border-radius:9px;padding:6px 10px}
+/* صفّ الفرصة — هادئ يميّزه عن الحصص */
+.per.brk{background:rgba(120,98,66,.05)}
+.per.brk .top .ttl{color:var(--shouba-text-muted)}
+.per.brk.now{background:rgba(22,69,110,.10)}
+
+/* طيّ الحصص الماضية — الجدول يتقلّص كلّما تقدّم اليوم (قرار المستخدم 2026-09-01) */
+.per.past{padding:7px 13px;opacity:.72;cursor:pointer}
+.per.past .pairs{display:none}
+.per.past .top .cnt::after{content:" ⌄";color:var(--shouba-hint)}
+.per.past.open{opacity:1;padding:10px 13px}
+.per.past.open .pairs{display:flex}
+.per.past.open .top .cnt::after{content:" ⌃"}
+
+/* تنبيه المراقبة داخل صفّ الفرصة — «مراقبة الشعبة اليوم» */
+.per .duty{display:flex;align-items:center;gap:7px;margin-top:7px;padding:7px 10px;border-radius:10px;
+  background:rgba(232,163,61,.14);border-inline-start:3px solid var(--shouba-amber);
+  font-size:11.5px;font-weight:700;color:var(--shouba-amber-deep)}
+.per .duty a{margin-inline-start:auto;font-size:11px;font-weight:700;color:var(--shouba-link);cursor:pointer}
+/* حالة الحصة: «انتهت» للماضية · «الجارية الآن» للحالية (قرار المستخدم 2026-09-01) */
+.per .state{font-size:10.5px;font-weight:700;color:var(--shouba-label);
+  background:rgba(120,98,66,.10);border-radius:7px;padding:2px 7px}
+.per.now .state{color:#fff;background:var(--shouba-navy)}
+/* استواء أعمدة صفّ الحصة: العنوان والوقت والحالة بعروض ثابتة فتصطفّ رأسياً في كل الجدول */
+.per .top .ttl{width:88px;flex:none}
+.per .top .tm{width:42px;flex:none}
+.per .top .state{width:66px;flex:none;text-align:center}
+.per .top .state.is-empty{background:transparent}
+/* الحصة الجارية: وقتها مظلَّل بالكحلي و«الآن» بجانبه (قرار المستخدم 2026-09-01) */
+.per.now .top .tm{background:var(--shouba-navy);color:var(--shouba-cream);border-radius:7px;padding:2px 0;font-weight:700}
+.per.now .top .state{background:transparent;color:var(--shouba-navy);width:auto;padding:0}
+/* «الآن» داخل تظليل الوقت لا بجانبه — والحافّة اليمنى تبقى مستوية مع بقيّة الصفوف */
+.per.now .top .tm{width:auto;padding:3px 9px;display:inline-flex;align-items:center;gap:6px}
+.per.now .top .tm em{font-style:normal;font-family:var(--font-ar);font-size:10.5px;font-weight:700;opacity:.92}
+/* عدد المعلّمين في موضع واحد بكل الصفوف — المنتهية والقادمة والجارية سواء */
+.per .top .cnt{flex:none;width:88px;text-align:start;margin-inline-start:auto}   /* flex:none وإلا انكمشت في الصفّ الجاري فاختلّ الموضع */
+/* الصفّ الجاري يحمل عناصر أكثر (شارة الوقت + العدّاد) فكان يفيض فيختلّ الاصطفاف:
+   نُخفي خانة الحالة الفارغة فيه، ونضبط عرض العدّاد والعدد. */
+.per.now .top .state.is-empty{display:none}
+.per .top .left{flex:none;font-size:10.5px}
+.per .top .ttl{width:82px}
+.per .top .cnt{width:80px}
+/* ضبط نهائي لعرض الأعمدة كي لا يفيض الصفّ الجاري (المتاح ٢٩٧px) */
+.per .top{gap:6px}
+.per .top .ttl{width:80px}
+.per .top .cnt{width:74px}
+
+/* ===== توحيد صفّ الجدول نهائياً (قرار المستخدم 2026-09-01) =====
+   [العنوان] [الوقت — يُظلَّل للجارية وحدها ومعه «الآن»] [الحالة: «باقي …» ← «انتهت»] [العدد أقصى اليسار] */
+.per .top{gap:5px}
+.per .top .ttl{width:78px}
+.per .top .state{width:70px;flex:none;text-align:center}
+.per .top .cnt{width:66px;flex:none;text-align:end;margin-inline-start:auto}
+.per.now .top .tm{padding:3px 7px}
+.per.now .top .state{display:inline-block;width:70px;background:transparent;color:var(--shouba-amber-deep);padding:0;font-weight:700}
+/* عرض ثابت لعمود الوقت في كل الصفوف (حتى المظلَّل) وإلّا أزاح عمود الحالة */
+.per .top .tm{width:72px;text-align:center;padding:2px 0}
+.per.now .top .tm{width:72px;padding:3px 0;justify-content:center}
+.per .top .state{width:64px}
+.per.now .top .state{width:64px}   /* توحيد عرض عمود الحالة حتى في الصفّ الجاري */
+/* سهم الطيّ يُحجز مكانه في كل الصفوف (مخفيّ حيث لا طيّ) وإلّا أزاح نصّ العدد ٩px
+   في الصفوف المنتهية وحدها — رصده المستخدم على جهازه. */
+.per .top .cnt::after{content:" ⌄";visibility:hidden;color:var(--shouba-hint)}
+.per.past .top .cnt::after{visibility:visible}
+.per.past.open .top .cnt::after{content:" ⌃";visibility:visible}
+
+/* توحيد عمود الوقت: الأرقام في خانة فرعية ثابتة، و«الآن» في خانتها — فتتحاذى الأرقام
+   في كل الصفوف سواء ظُلِّل الصفّ أم لا (قرار المستخدم 2026-09-01). */
+.per .top .tm{display:flex;align-items:center;gap:0;width:72px;padding:2px 0;text-align:initial}
+.per .top .tm .hh{width:46px;flex:none;text-align:center}
+.per .top .tm em{width:26px;flex:none;font-style:normal;font-family:var(--font-ar);
+  font-size:10.5px;font-weight:700;text-align:center}
+.per.now .top .tm{width:72px;padding:3px 0;justify-content:flex-start}
+/* عمود الوقت يقترب من عنوان الحصة، ويُترك فراغ واضح قبل عمود الحالة كي لا يتداخل
+   التظليل مع «انتهت / باقي» عند إضافة «الآن» (قرار المستخدم 2026-09-01). */
+.per .top{gap:0}
+.per .top .ttl{width:76px;margin-inline-end:2px}
+.per .top .tm{margin-inline-end:16px}
+/* «الآن» تُزاح عن حافّة التظليل اليسرى قليلاً (عرض الخانة الكلّي ٧٢px كما هو) */
+.per .top .tm .hh{width:41px}
+.per .top .tm em{margin-inline-end:5px}
+.per .top .tm em{width:24px}   /* يترك ~٧px بين «الآن» وحافّة التظليل اليسرى */

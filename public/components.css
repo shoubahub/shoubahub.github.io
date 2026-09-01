@@ -437,16 +437,23 @@
    تنزل في الهامش بمحاذاة البطاقة ثم تتلاشى: عنوان ← رافدة ← بطاقة كتلة واحدة.
    لا تضيف ارتفاعاً ولا تقتطع من عرض البطاقة (المبدأ: الوظيفة قبل الشكل).
    وفائدة تبعية: نصّ العنوان صار على محاذاة حافّة البطاقة تماماً.
+
+   **لون لكل قسم (2026-09-01):** اللون هنا **دلالة لا زينة** — كحلي لليوم الجاري ·
+   أزرق فاتح للأسبوع (مدى أوسع) · عنبري لإنجاز المنهج · أحمر لما ينتظر إجراءً،
+   ويهدأ إلى الترابي حين لا شيء ينتظر (فلا ينذر الأحمرُ بلا سبب).
+   التلاشي بقناع لا بتدرّج ألوان — فيبقى اللون واحداً متغيّراً واحداً.
    =================================================================== */
-.board > section{position:relative}
+.board > section{position:relative;--rail:var(--shouba-navy)}
+.board > section[data-rail="week"]{--rail:var(--shouba-link)}
+.board > section[data-rail="plan"]{--rail:var(--shouba-amber-deep)}
+.board > section[data-rail="todo"]{--rail:var(--shouba-error)}
+.board > section[data-rail="todo"].calm{--rail:var(--shouba-hint)}
 .board .sect .h::before{display:none}          /* الشريط انتقل إلى رأس الرافدة */
 .board > section::before{
   content:"";position:absolute;pointer-events:none;
   inset-inline-start:12px;                     /* في الهامش الفارغ — بعيداً عن البطاقة ١٢px */
   top:2px;bottom:6px;width:2.5px;border-radius:2px;
-  background:linear-gradient(180deg,
-    var(--shouba-amber-deep) 0, var(--shouba-amber-deep) 18px,   /* الرأس بمحاذاة سطر العنوان */
-    rgba(160,116,44,.24) 32px,
-    rgba(190,172,140,.30) 60px,
-    rgba(190,172,140,0) 100%);
+  background:var(--rail);
+  -webkit-mask-image:linear-gradient(180deg,#000 0,#000 18px,rgba(0,0,0,.34) 32px,rgba(0,0,0,.30) 60px,rgba(0,0,0,0) 100%);
+          mask-image:linear-gradient(180deg,#000 0,#000 18px,rgba(0,0,0,.34) 32px,rgba(0,0,0,.30) 60px,rgba(0,0,0,0) 100%);
 }

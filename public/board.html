@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/identity/tokens.css?v=202608291819" />
 <link rel="stylesheet" href="/shell.css?v=202608291819" />
-<link rel="stylesheet" href="/components.css?v=202609011354" />
+<link rel="stylesheet" href="/components.css?v=202609011359" />
 <link rel="stylesheet" href="/frame.css?v=202608291819" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
@@ -60,26 +60,26 @@
       <div class="board">
 
         <!-- ① جدول حصص اليوم (مصفوف بأعمدة — أولوية النظرة الأولى) -->
-        <section>
+        <section data-rail="today">
           <div class="sect"><div class="h" id="todayTtl">حصص اليوم</div><div class="a" id="toSchedule">الجدول الكامل ›</div></div>
           <div class="tbl" id="periods"></div>
         </section>
 
         <!-- ② مصفوفة الأسبوع — تلي الجدول مباشرةً (قرار المستخدم: أعمال الأسبوع أهمّ) -->
-        <section>
+        <section data-rail="week">
           <div class="sect"><div class="h">هذا الأسبوع</div><div class="a" id="toWeek">الرزنامة الكاملة ›</div></div>
           <div class="wmx" id="week"></div>
         </section>
 
         <!-- ③ إنجاز المنهج -->
-        <section>
+        <section data-rail="plan">
           <div class="sect"><div class="h">إنجاز المنهج</div><div class="a" id="planPct">—</div></div>
           <div class="slices" id="slices"></div>
           <div class="planline" id="planLine"></div>
         </section>
 
         <!-- ④ بحاجة إلى إجراء -->
-        <section>
+        <section data-rail="todo">
           <div class="sect"><div class="h">بحاجة إلى إجراء</div><div class="a" id="todoCount">—</div></div>
           <div class="todo" id="todo"></div>
           <div class="more" id="todoMore"></div>
@@ -360,6 +360,7 @@
   }
   document.getElementById('todoCount').textContent = items.length ? items.length : 'لا شيء';
   if(!items.length){
+    todoEl.closest('section').classList.add('calm');
     todoEl.innerHTML='<div class="invite">لا شيء ينتظر إجراءً الآن — شعبتك منضبطة.</div>';
   } else {
     items.slice(0,2).forEach(function(it){

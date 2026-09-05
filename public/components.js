@@ -142,7 +142,7 @@ Shouba.returnTo = function () {
   };
 
   /* قائمة الإعدادات — سلوك مشترك لكل الشاشات ذات الرأس الكحلي.
-     تحمل ما يحتاجه المجرّب: مراجعة بياناته · إرسال ملاحظة · حدود النسخة ورقمها. */
+     تحمل ما يحتاجه المجرّب: مراجعة بياناته · حدود النسخة ورقمها. */
   Shouba.settings = function () {
     var n = document.createElement('div');
     n.className = 'setlist';
@@ -160,14 +160,6 @@ Shouba.returnTo = function () {
     item('مراجعة بيانات شعبتك', 'المدرسة · الشعبة · العام · الإشراف', function () {
       location.href = '/setup-wizard-7.html';
     });
-
-    var wa = window.SHOUBA_FEEDBACK_WA;
-    if (wa) {
-      item('أرسل ملاحظة', 'ما أعجبك وما أزعجك — يصل مباشرةً', function () {
-        var msg = 'ملاحظة على منصّة شعبة (نسخة ' + (window.SHOUBA_BUILD || '?') + '):\n';
-        window.open('https://wa.me/' + wa + '?text=' + encodeURIComponent(msg), '_blank');
-      });
-    }
 
     var note = document.createElement('div');
     note.className = 'setnote';

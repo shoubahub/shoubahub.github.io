@@ -354,13 +354,36 @@
 .per.brk .top .ttl{color:var(--shouba-text-muted)}
 .per.brk.now{background:rgba(22,69,110,.10)}
 
-/* طيّ الحصص الماضية — الجدول يتقلّص كلّما تقدّم اليوم (قرار المستخدم 2026-09-01) */
-.per.past{padding:7px 13px;opacity:.72;cursor:pointer}
-.per.past .pairs{display:none}
-.per.past .top .cnt::after{content:" ⌄";color:var(--shouba-hint)}
-.per.past.open{opacity:1;padding:10px 13px}
-.per.past.open .pairs{display:flex}
-.per.past.open .top .cnt::after{content:" ⌃"}
+/* طيّ الجدول (معتمد 2026-09-05) — لا يُفتح إلّا ما يعني المستخدم الآن:
+   قبل الدوام: لقاء الصباح والحصة الأولى · أثناءه: الجارية وحدها، فتُطوى
+   السابقةُ فوقها والتاليةُ تحتها. وزرٌّ أسفل الجدول يفرده كاملاً.
+   الطيّ حالةٌ عامّة (.fold)، و«الماضية» (.past) وصفٌ زمنيّ يبهت وحده. */
+.per.fold{padding:7px 13px;cursor:pointer}
+.per.fold .pairs{display:none}
+.per.fold .top .cnt::after{content:" ⌄";color:var(--shouba-hint)}
+.per.fold.open{padding:10px 13px}
+.per.fold.open .pairs{display:flex}
+.per.fold.open .top .cnt::after{content:" ⌃"}
+.per.past{opacity:.72}
+.per.past.open{opacity:1}
+
+/* زرّ فرد الجدول — شريط أسفل الجدول لا زرٌّ عائم، فلا يأخذ مساحة من العمل */
+.tblmore{width:100%;border:0;cursor:pointer;font-family:var(--font-ar);
+  font-size:12px;font-weight:700;color:var(--shouba-link);
+  background:rgba(120,98,66,.06);padding:11px 13px;text-align:center}
+
+/* لون لكل معلّم — ليُتتبَّع في الجدول المفرود بنظرة (طلب المستخدم 2026-09-05).
+   ألوان خافتة من عالم الورق، والتمييز بحافّة الشارة واسم المعلّم لا بمساحة صارخة. */
+.per .ch{border-inline-start:2.5px solid var(--tc, transparent);background:var(--tb, rgba(22,69,110,.08))}
+.per .ch .nm{color:var(--tc, var(--shouba-navy))}
+.per .ch.t0{--tc:#16456E;--tb:rgba(22,69,110,.10)}
+.per .ch.t1{--tc:#3E7FB4;--tb:rgba(62,127,180,.13)}
+.per .ch.t2{--tc:#A9701B;--tb:rgba(169,112,27,.14)}
+.per .ch.t3{--tc:#5E7A4A;--tb:rgba(94,122,74,.14)}
+.per .ch.t4{--tc:#A2553C;--tb:rgba(162,85,60,.13)}
+.per .ch.t5{--tc:#6B5B8A;--tb:rgba(107,91,138,.14)}
+.per .ch.t6{--tc:#2F7D74;--tb:rgba(47,125,116,.13)}
+.per .ch.t7{--tc:#7A5C3A;--tb:rgba(122,92,58,.14)}
 
 /* تنبيه المراقبة داخل صفّ الفرصة — «مراقبة الشعبة اليوم» */
 .per .duty{display:flex;align-items:center;gap:7px;margin-top:7px;padding:7px 10px;border-radius:10px;
@@ -411,8 +434,8 @@
 /* سهم الطيّ يُحجز مكانه في كل الصفوف (مخفيّ حيث لا طيّ) وإلّا أزاح نصّ العدد ٩px
    في الصفوف المنتهية وحدها — رصده المستخدم على جهازه. */
 .per .top .cnt::after{content:" ⌄";visibility:hidden;color:var(--shouba-hint)}
-.per.past .top .cnt::after{visibility:visible}
-.per.past.open .top .cnt::after{content:" ⌃";visibility:visible}
+.per.fold .top .cnt::after{visibility:visible}
+.per.fold.open .top .cnt::after{content:" ⌃";visibility:visible}
 
 /* توحيد عمود الوقت: الأرقام في خانة فرعية ثابتة، و«الآن» في خانتها — فتتحاذى الأرقام
    في كل الصفوف سواء ظُلِّل الصفّ أم لا (قرار المستخدم 2026-09-01). */

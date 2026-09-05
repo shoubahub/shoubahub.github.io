@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/identity/tokens.css?v=202608291819" />
 <link rel="stylesheet" href="/shell.css?v=202608291819" />
-<link rel="stylesheet" href="/components.css?v=202609052340" />
+<link rel="stylesheet" href="/components.css?v=202609052347" />
 <link rel="stylesheet" href="/frame.css?v=202608291819" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
@@ -182,13 +182,20 @@
      الاسم الأخير · تحته المادة والصف · والحصة الجارية مظلَّلة بكاملها مع الوقت المتبقّي.
      يقبل صفوف الفرص: أي عنصر في periodTimes يحمل break:true يُعرض صفَّ فرصة. */
   /* عنوان الجدول: «جدول حصص اليوم الأحد · ٦/٩» — اليوم وتاريخه بلا سنة (قرار المستخدم) */
+  /* التاريخ يرافق العنوان دائماً — وفي العطلة تاريخ الأحد القادم لا تاريخ اليوم */
+  var viewDate = new Date(now);
+  if(isWeekend) viewDate.setDate(now.getDate() + (7 - dayIdx));
+  var dateTxt = viewDate.getDate() + '/' + (viewDate.getMonth()+1);
   document.getElementById('todayTtl').textContent = isWeekend
-    ? 'جدول حصص الأحد'
-    : 'جدول حصص اليوم ' + todayName + ' · ' + now.getDate() + '/' + (now.getMonth()+1);
+    ? 'جدول حصص الأحد · ' + dateTxt
+    : 'جدول حصص اليوم ' + todayName + ' · ' + dateTxt;
   var tbl = document.getElementById('periods');
 
   var ORD = ['الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة'];
   var lastName  = Shouba.lastName;
+  /* لون ثابت لكل معلّم بحسب ترتيبه في الشعبة — لا يتبدّل بين الحصص ولا بين الأيام */
+  var ROSTER = Shouba.roster();
+  function toneOf(name){ var i = ROSTER.indexOf(name); return ' t' + ((i < 0 ? 0 : i) % 8); }
   var splitSlot = Shouba.splitSlot;   /* «١١/٢ · الفلسفة» ← { cls, subject } */
   /* الوقت المتبقّي في الحصة/الفرصة الجارية */
   function leftIn(t){
@@ -198,19 +205,26 @@
     return 'باقي ' + mm + ':' + (ss < 10 ? '0' : '') + ss;
   }
 
+  var expandAll = false;      /* حالة زرّ «افرد الجدول» */
   function paintTable(){
     if(!hasSchedules){
       tbl.innerHTML = '<div class="empty">جداول معلّميك لم تُدخل بعد — وبها يُعرف مَن يدرّس في كل حصة ومَن متفرّغ.</div>';
       return;
     }
     var html = '', pIdx = -1;                       // pIdx: ترقيم الحصص وحدها (الفرص لا تُرقَّم)
+    /* ما الذي يُفتح؟ أثناء الدوام: الجارية وحدها · قبله وفي العطلة: أوّل صفَّين
+       (لقاء الصباح والحصة الأولى) · وبالزرّ: الجدول كلّه. */
+    var dayRunning = !isWeekend && currentIdx > -1;
+    var dayEnded   = !isWeekend && currentIdx === -1 && nextIdx === -1;   // انقضى الدوام: يُطوى كلّه
     times.forEach(function(t, i){
       var isBreak = !!t.brk;
       var isNow = (i === currentIdx) && !isWeekend;
       if(!isBreak) pIdx++;
 
       var title = isBreak ? (t.label || 'فرصة') : ('الحصة ' + (ORD[pIdx] || (pIdx+1)));
-      var isPastRow = !isWeekend && currentIdx > -1 && i < currentIdx;
+      /* «انتهت» بانقضاء وقتها فعلاً — لا بوجود حصة جارية (فبعد نهاية الدوام كلّها منتهية) */
+      var isPastRow = !isWeekend && m >= toMin(t.to);
+      var isOpen    = expandAll || (dayRunning ? isNow : (dayEnded ? false : i <= 1));
       /* الحالة تُحجز لها خانة ثابتة حتى في الصفوف القادمة، فتستوي الأعمدة (قرار المستخدم) */
       /* عمود واحد للحالة: «باقي mm:ss» أثناء الحصة ← «انتهت» بعد انتهائها (قرار المستخدم 2026-09-01) */
       var stateTxt = isNow ? leftIn(t) : isPastRow ? 'انتهت' : '';
@@ -226,32 +240,38 @@
           ? '<div class="duty"><span>مراقبة الشعبة اليوم</span>'
             + '<a id="dutyLink">جدول المراقبة ›</a></div>'
           : '';
-        html += '<div class="per brk' + (isNow ? ' now' : '') + '">' + head + '</div>' + dutyHtml + '</div>';
+        html += '<div class="per brk' + (isNow ? ' now' : '') + (isPastRow ? ' past' : '')
+             + (isOpen ? '' : ' fold') + '">' + head + '</div>' + dutyHtml + '</div>';
         return;
       }
 
       var slotIdx = (t.n || (pIdx+1)) - 1;              // الفهرس بحسب رقم الحصة لا ترتيب الصف (الفرصة تُزيحه)
       var busy = busyAt(slotIdx), free = teachers.length - busy.length;
-      var isPast = !isWeekend && currentIdx > -1 && i < currentIdx;   // تُطوى الحصص الماضية
-      html += '<div class="per' + (isNow ? ' now' : '') + (isPast ? ' past' : '') + '">'
+      html += '<div class="per' + (isNow ? ' now' : '') + (isPastRow ? ' past' : '')
+            + (isOpen ? '' : ' fold') + '">'
             + head + '<span class="cnt">' + busy.length + ' يدرّسون</span></div>'
             + '<div class="pairs">';
       busy.forEach(function(name){
         var s = splitSlot(slotOf(name, slotIdx));
-        html += '<span class="ch"><span class="nm">' + lastName(name) + '</span>'
+        html += '<span class="ch' + toneOf(name) + '"><span class="nm">' + lastName(name) + '</span>'
               + '<span class="l2"><span class="sub">' + s.subject + '</span>'
               + '<span class="cl">' + s.cls + '</span></span></span>';
       });
       if(free) html += '<span class="freechip">' + free + ' متفرّغ</span>';
       html += '</div></div>';
     });
+    html += '<button class="tblmore" id="tblMore">'
+          + (expandAll ? 'اطوِ الجدول' : 'افرد الجدول كاملاً') + '</button>';
     tbl.innerHTML = html;
+    document.getElementById('tblMore').addEventListener('click', function(e){
+      e.stopPropagation(); expandAll = !expandAll; paintTable();
+    });
   }
   paintTable();
 
   /* الحصة الماضية تُفتح بالضغط عليها */
   tbl.addEventListener('click', function(e){
-    var row = e.target.closest && e.target.closest('.per.past');
+    var row = e.target.closest && e.target.closest('.per.fold');
     if(row) row.classList.toggle('open');
   });
   /* العدّاد يتجدّد كل ثانية ما دامت هناك حصة جارية */

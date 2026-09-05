@@ -111,7 +111,7 @@
 
 <script src="/build.js?v=202609060012"></script>
 <script src="/refdata.js?v=202609060012"></script>
-<script src="/derive.js?v=202609060023"></script>
+<script src="/derive.js?v=202609060028"></script>
 <script src="/icons.js?v=202609060012"></script>
 <script src="/components.js?v=202609060012"></script>
 <script>
@@ -153,6 +153,24 @@
     else if(c && c.type === 'icon' && window.SHOUBA_ICONS) el.innerHTML = SHOUBA_ICONS.svg(c.id, 22);
     else el.innerHTML = '<img src="/identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
   })();
+
+  /* ===== أسبوع العرض وتواريخ أيامه — يُحسب مبكّراً لأن البطاقة والرزنامة كليهما
+     تقرآن المواعيد **بالتاريخ**. وفي العطلة يتقدّم إلى الأسبوع القادم كعنوان الجدول. */
+  var sunday = new Date(now);
+  sunday.setDate(now.getDate() + (isWeekend ? (7 - dayIdx) : -dayIdx));
+  var viewWeek = Shouba.weekNo(sunday);
+  function iso(dt){
+    return dt.getFullYear() + '-' + ('0'+(dt.getMonth()+1)).slice(-2) + '-' + ('0'+dt.getDate()).slice(-2);
+  }
+  var DAY_DATE = {};
+  R.days.forEach(function(day, i){
+    var dt = new Date(sunday); dt.setDate(sunday.getDate() + i); DAY_DATE[day] = dt;
+  });
+  /* مواعيد يومٍ من الأسبوع المعروض: بتاريخه، ومعها القديمة بلا تاريخ */
+  function evOf(day){
+    var dt = DAY_DATE[day];
+    return (dt ? Shouba.eventsOnDate(iso(dt)) : []).concat(Shouba.legacyEventsOfDay(day));
+  }
 
   /* ===== الحصص ===== */
   var times = R.periodTimes[d.stage] || R.periodTimes['ثانوي'];
@@ -296,7 +314,7 @@
   }
   function paintCard(){
     var kicker, left='', ttl, sub;
-    var todayEvents = events.filter(function(e){ return e.day===todayName; });
+    var todayEvents = todayName ? evOf(todayName) : [];
     if(currentIdx>-1 && hasSchedules){
       /* ⚠ الفهرس بحسب **رقم الحصة** لا ترتيب الصفّ — الفرص تُزيح الترتيب،
          فكانت البطاقة تقول «الحصة ٦» والجدول «الرابعة»، وتقرأ خانات حصة أخرى
@@ -324,7 +342,7 @@
       sub='لم تبدأ الحصص بعد.';
     } else {
       kicker='انتهى اليوم'; ttl='انتهى دوام اليوم';
-      var up = events.filter(function(e){ return R.days.indexOf(e.day) > dayIdx; })[0];
+      var up = (function(){ var r=[]; R.days.forEach(function(dy,i){ if(i>dayIdx) r=r.concat(evOf(dy)); }); return r[0]; })();
       sub = up ? 'التالي: ' + up.title + ' · ' + up.day : 'لا مواعيد متبقّية هذا الأسبوع.';
     }
     card.innerHTML = '<div class="top"><div class="kicker"><span class="pulse"></span>' + kicker + '</div>'
@@ -341,18 +359,13 @@
   /* ===== ③ مصفوفة الأسبوع: عمود لكل يوم — وهي بابُ إدخال المواعيد =====
      ⚠ في العطلة تتقدّم المصفوفة إلى الأسبوع القادم كما يتقدّم عنوان الجدول،
        وإلّا عرضت اللوحةُ أحدَين مختلفين في شاشة واحدة (رُصد 2026-09-06). */
-  var sunday=new Date(now);
-  sunday.setDate(now.getDate() + (isWeekend ? (7 - dayIdx) : -dayIdx));
-  var viewWeek = Shouba.weekNo(sunday);          // رقم الأسبوع المعروض لا أسبوع اليوم
   var weekEl=document.getElementById('week');
-  var DAY_DATE={};
 
   function paintWeek(){
     weekEl.innerHTML='';
     R.days.forEach(function(day,i){
-      var dt=new Date(sunday); dt.setDate(sunday.getDate()+i);
-      DAY_DATE[day]=dt;
-      var list=Shouba.eventsOfDay(day, viewWeek);
+      var dt = DAY_DATE[day];
+      var list = evOf(day);
       var col=document.createElement('div');
       col.className='wcol' + (day===todayName && !isWeekend ? ' today' : '');
       var inner='<div class="wh">' + SHORT[i] + '<b>' + dt.getDate() + '</b></div>';
@@ -379,7 +392,7 @@
     var n = document.createElement('div');
     n.className = 'vlist'; n.style.padding = '0';
 
-    var list = Shouba.eventsOfDay(day, viewWeek);
+    var list = evOf(day);
     if(!list.length){
       var e0 = document.createElement('div');
       e0.className = 'soon-note';
@@ -410,11 +423,13 @@
   function addSheet(day){
     var n = document.createElement('div');
     var chosen = EV_TYPES[0];
-    n.innerHTML = '<div class="field" style="padding-bottom:4px"><label>نوع الموعد</label>'
+    n.innerHTML = '<div class="field" style="padding-bottom:4px"><label for="evd">تاريخ الموعد</label>'
+      + '<div class="paper"><input id="evd" type="date" value="' + iso(DAY_DATE[day]) + '" /></div>'
+      + '<div class="hint">غيّره لموعدٍ قادم — اختبارٍ بعد أسابيع مثلاً.</div></div>'
+      + '<div class="field" style="padding-bottom:4px"><label>نوع الموعد</label>'
       + '<div class="segs" id="evsegs"></div></div>'
       + '<div class="field" style="padding-bottom:6px"><label for="evt">العنوان</label>'
-      + '<div class="paper"><input id="evt" type="text" maxlength="60" placeholder="مثال: اختبار قصير — الفلسفة" /></div>'
-      + '<div class="hint">يظهر في رزنامة ' + dayLabel(day) + '.</div></div>';
+      + '<div class="paper"><input id="evt" type="text" maxlength="60" placeholder="مثال: اختبار قصير — الفلسفة" /></div></div>';
     var segs = n.querySelector('#evsegs');
     EV_TYPES.forEach(function(t, i){
       var b = document.createElement('button');
@@ -432,10 +447,13 @@
     var inp = n.querySelector('#evt');
     setTimeout(function(){ inp.focus(); }, 80);
     function submit(){
-      var v = inp.value.trim();
-      if(v.length < 2) return;
-      Shouba.addEvent({ week: viewWeek, day: day, type: chosen, title: v });
-      paintWeek(); paintCard(); daySheet(day);
+      var v = inp.value.trim(), dv = n.querySelector('#evd').value;
+      if(v.length < 2 || !dv) return;
+      Shouba.addEvent({ date: dv, type: chosen, title: v });
+      paintWeek(); paintCard();
+      /* موعدٌ خارج الأسبوع المعروض ⟵ نُريه في «القادمة» لا في يومٍ لا يظهر */
+      if(dv >= iso(DAY_DATE[R.days[0]]) && dv <= iso(DAY_DATE[R.days[4]])) daySheet(day);
+      else weekSheet();
     }
     save.addEventListener('click', submit);
     inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') submit(); });
@@ -446,7 +464,7 @@
     var n = document.createElement('div');
     n.className = 'vlist'; n.style.padding = '0';
     R.days.forEach(function(day){
-      var list = Shouba.eventsOfDay(day, viewWeek);
+      var list = evOf(day);
       var b = document.createElement('button');
       b.className = 'titem';
       b.innerHTML = '<div class="tx"><b>' + dayLabel(day) + '</b><small>'
@@ -455,6 +473,27 @@
       b.addEventListener('click', function(){ daySheet(day); });
       n.appendChild(b);
     });
+
+    /* المواعيد بعد هذا الأسبوع — وإلّا اختفى الموعد المستقبليّ عن العين تماماً */
+    var later = Shouba.eventsAfter(iso(DAY_DATE[R.days[4]]));
+    var head = document.createElement('div');
+    head.className = 'sheet-note';
+    head.textContent = later.length ? 'مواعيد قادمة' : 'لا مواعيد بعد هذا الأسبوع.';
+    n.appendChild(head);
+    later.forEach(function(ev){
+      var p = ev.date.split('-');
+      var wd = R.days[new Date(+p[0], +p[1]-1, +p[2]).getDay()] || '';
+      var r = document.createElement('div');
+      r.className = 'evrow ' + (TYPE_CLASS[ev.type] || '');
+      r.innerHTML = '<b>' + ev.title + '</b><span class="ty">'
+        + (wd ? wd + ' · ' : '') + (+p[2]) + '/' + (+p[1]) + '</span>';
+      var x = document.createElement('button');
+      x.className = 'del'; x.setAttribute('aria-label','حذف'); x.textContent = '×';
+      x.addEventListener('click', function(){ Shouba.removeEvent(ev.id); paintWeek(); weekSheet(); });
+      r.appendChild(x);
+      n.appendChild(r);
+    });
+
     Shouba.sheet.open('رزنامة ' + (Shouba.weekLabel() || 'الأسبوع'), n);
   }
   document.getElementById('toWeek').addEventListener('click', weekSheet);

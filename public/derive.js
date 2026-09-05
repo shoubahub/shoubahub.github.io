@@ -188,13 +188,21 @@
      { id, week, day, type, title } — **والأسبوع جزءٌ من الموعد**، وإلّا ظهر
      اجتماعُ هذا الأسبوع في كل أسبوع من العام. والموعد القديم بلا أسبوع
      (من بذرة المعاينة) يُعرض في كل أسبوع ولا يُسقَط. */
-  S.events = function (week) {
-    var all = S.data().events || [];
-    if (week === undefined || week === null) return all.slice();
-    return all.filter(function (e) { return e.week == null || e.week === week; });
+  /* ⚠ الموعد يُخزَّن **بتاريخه** (`date` بصيغة YYYY-MM-DD) لا برقم أسبوعه:
+     التاريخ أصلٌ يُشتقّ منه اليوم والأسبوع معاً، **وبه وحده يمكن إدخال موعد
+     مستقبليّ** — اختبارٌ بعد ثلاثة أسابيع مثلاً (رصده المستخدم 2026-09-06).
+     ومواعيد قديمة بصيغة {week, day} تُقرأ كما هي ولا تُسقَط. */
+  S.events = function () { return (S.data().events || []).slice(); };
+  S.eventsOnDate = function (iso) {
+    return S.events().filter(function (e) { return e.date === iso; });
   };
-  S.eventsOfDay = function (day, week) {
-    return S.events(week).filter(function (e) { return e.day === day; });
+  /* المواعيد التي لا تاريخ لها (صيغة قديمة) تُنسب إلى يومها في الأسبوع المعروض */
+  S.legacyEventsOfDay = function (day) {
+    return S.events().filter(function (e) { return !e.date && e.day === day; });
+  };
+  S.eventsAfter = function (iso) {
+    return S.events().filter(function (e) { return e.date && e.date > iso; })
+      .sort(function (a, b) { return a.date < b.date ? -1 : 1; });
   };
   S.addEvent = function (ev) {
     var d = S.data();

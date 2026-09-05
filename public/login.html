@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>شعبة · تسجيل الدخول</title>
+<title>شعبة · البداية</title>
 <link rel="manifest" href="/manifest.webmanifest" />
 <meta name="theme-color" content="#EFE6D6" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -48,7 +48,7 @@
 </head>
 <body class="framed">
  <div class="device"><div class="viewport">
-  <div class="screen">
+  <div class="screen has-foot">
     <!-- الوحدة كاملة (شعار + محتوى) تتوسّط رأسياً ككتلة واحدة -->
     <div class="content center">
     <div class="brand">
@@ -57,91 +57,57 @@
         <span class="divider"></span>
         <img class="word" src="/identity/assets/lockup-word-mansa-color.svg" alt="منصّة شعبة" />
       </div>
-      <div class="sub">إدارة شُعب المدارس · وزارة التربية</div>
+      <div class="sub">منصّة رئيس الشعبة · نسخة تجريبية</div>
     </div>
 
-    <!-- المتن: خطوتان -->
+    <!-- المتن: خطوة واحدة — لا مصادقة اليوم، فلا نَعِد بها.
+         حُذف زرّ جوجل وزرّ الوزارة وبطاقة «دخول آمن» (2026-09-05): كانت تَعِد
+         بحساب وحماية كلمة مرور لا وجود لهما. تعود حين يصير التسجيل حقيقياً. -->
     <div class="body">
-      <!-- خطوة ١: الدخول -->
-      <div id="stepLogin">
-        <div class="title">تسجيل الدخول</div>
-        <div class="card" style="margin-top:16px">
-          <div class="lead">ادخل بحساب جوجل للبدء. سيُربط لاحقاً بحسابك في نظام الوزارة.</div>
-          <div class="row">
-            <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2.6" stroke="#16456E" stroke-width="1.8"/><path d="M8.5 10 V7.5 C8.5 5.6 10 4 12 4 C14 4 15.5 5.6 15.5 7.5 V10" stroke="#16456E" stroke-width="1.8" stroke-linecap="round"/></svg></span>
-            <div class="tx"><b>دخول آمن</b><small>بياناتك محمية، ولا نصل إلى كلمة مرورك</small></div>
-          </div>
-        </div>
+      <div class="title">أهلاً بك في شعبة</div>
+      <div class="lead">أداةُ رئيس الشعبة اليومية: جدول شعبتك، ومَن يدرّس الآن، ومَن متفرّغ.
+        اكتب اسمك ثم أعِدّ شعبتك في خطوات قصيرة.</div>
+
+      <div class="field">
+        <label for="uname">الاسم الكامل</label>
+        <div class="paper"><input id="uname" type="text" placeholder="مثال: محمد عبدالله سالم البراك" maxlength="60" autocomplete="name" /></div>
+        <div class="hint">كما يظهر في النماذج الرسمية — يظهر في ترويسة سجلّاتك.</div>
       </div>
 
-      <!-- خطوة ٢: أكمل اسمك -->
-      <div id="stepName" class="hide">
-        <div class="title">أكمل بياناتك</div>
-        <div class="lead" style="margin:8px 0 20px">اكتب اسمك الرباعي كما يظهر في النماذج الرسمية — يظهر في ترويسة سجلاتك.</div>
-        <div class="field">
-          <label for="uname">الاسم الكامل</label>
-          <div class="paper"><input id="uname" type="text" placeholder="مثال: محمد عبدالله سالم البراك" maxlength="60" autocomplete="name" /></div>
+      <div class="card">
+        <div class="row">
+          <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="4.5" y="3" width="15" height="18" rx="2.6" stroke="#16456E" stroke-width="1.8"/><path d="M9 21h6" stroke="#16456E" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <div class="tx"><b>بياناتك على جهازك</b><small>لا تُرسَل إلى خادم، ولا نراها نحن ولا غيرنا</small></div>
+        </div>
+        <div class="lead" style="font-size:12.5px;margin:0">
+          وثمنُ ذلك: إن مسحتَ متصفّحك أو بدّلت جهازك بدأتَ من جديد — فلا تعتمدها سجلّاً وحيداً في هذه التجربة.
         </div>
       </div>
     </div>
 
-    <!-- أزرار الإجراء: تتبدّل مع الخطوة (تتدفّق أسفل البطاقة مباشرة) -->
-    <div class="actions">
-      <div id="footLogin">
-        <button class="cta gbtn" id="google">
-          <span class="gchip"><svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35 24 35c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c11 0 20-8 20-21 0-1.2-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16 4 9.1 8.6 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 34.9 26.7 36 24 36c-5.3 0-9.7-2.6-11.3-6.8l-6.5 5C9.1 39.4 16 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.6l6.2 5.2C40.9 36.9 44 31.3 44 24c0-1.2-.1-2.3-.4-3.5z"/></svg></span>
-          المتابعة بحساب جوجل
-        </button>
-        <div class="links" style="margin-top:18px">
-          <a id="ministry">الدخول بحساب الوزارة</a>
-          <span class="sep"></span>
-          <a>المساعدة</a>
-        </div>
-      </div>
-
-      <div id="footName" class="hide">
-        <button class="cta" id="continue" disabled>متابعة</button>
-        <div class="links" style="margin-top:18px"><a id="backLogin">الدخول بحساب آخر</a></div>
-      </div>
-    </div>
     </div><!-- /content -->
+  </div>
+
+  <div class="foot">
+    <button class="cta" id="continue" disabled>ابدأ إعداد شعبتك</button>
   </div>
  </div></div>
 
 <script>
   var KEY = 'shouba.user';
-  var stepLogin = document.getElementById('stepLogin');
-  var stepName  = document.getElementById('stepName');
-  var footLogin = document.getElementById('footLogin');
-  var footName  = document.getElementById('footName');
-  var uname     = document.getElementById('uname');
-  var cont      = document.getElementById('continue');
+  var uname = document.getElementById('uname');
+  var cont  = document.getElementById('continue');
 
-  // لو سبق الدخول، عبّئ الاسم
   try{ var u = JSON.parse(localStorage.getItem(KEY)||'{}'); if(u.name) uname.value = u.name; }catch(e){}
 
-  function toName(){
-    stepLogin.classList.add('hide'); footLogin.classList.add('hide');
-    stepName.classList.remove('hide'); footName.classList.remove('hide');
-    setTimeout(function(){ uname.focus(); }, 60);
-    validate();
-  }
-  function toLogin(){
-    stepName.classList.add('hide'); footName.classList.add('hide');
-    stepLogin.classList.remove('hide'); footLogin.classList.remove('hide');
-  }
   function validate(){ cont.disabled = uname.value.trim().length < 3; }
-
-  document.getElementById('google').addEventListener('click', toName);
-  document.getElementById('backLogin').addEventListener('click', toLogin);
-  document.getElementById('ministry').addEventListener('click', function(){
-    // ربط الوزارة (مايكروسوفت) مؤجّل — انتقل لنفس مسار الاسم مؤقتاً
-    toName();
-  });
   uname.addEventListener('input', validate);
+  validate();
+
   cont.addEventListener('click', function(){
     if(cont.disabled) return;
-    localStorage.setItem(KEY, JSON.stringify({ name: uname.value.trim(), method: 'google' }));
+    /* لا method هنا: لا مصادقة بعد، فلا نكتب في البيانات ما ليس صحيحاً */
+    localStorage.setItem(KEY, JSON.stringify({ name: uname.value.trim() }));
     location.href = '/setup-wizard.html';
   });
 </script>

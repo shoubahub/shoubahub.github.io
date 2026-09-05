@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/identity/tokens.css?v=202609011359" />
 <link rel="stylesheet" href="/shell.css?v=202609011359" />
-<link rel="stylesheet" href="/components.css?v=202609052308" />
+<link rel="stylesheet" href="/components.css?v=202609052326" />
 <link rel="stylesheet" href="/frame.css?v=202609011359" />
 <style>
   /* خاص بشاشة الجداول — الرأس والشريط السفلي واللوحة السفلية من components.css.
@@ -133,10 +133,11 @@
   </div>
  </div></div>
 
-<script src="/refdata.js?v=202609011304"></script>
-<script src="/derive.js?v=202609052320"></script>
+<script src="/build.js?v=202609052326"></script>
+<script src="/refdata.js?v=202609052326"></script>
+<script src="/derive.js?v=202609052326"></script>
 <script src="/icons.js?v=202608291819"></script>
-<script src="/components.js?v=202609052309"></script>
+<script src="/components.js?v=202609052328"></script>
 <script>
   var R=window.SHOUBA_REF;
   var d = Shouba.data();          /* المصدر الواحد — القراءة والكتابة من طبقة الاشتقاق */
@@ -185,7 +186,7 @@
         var n = filledCount(t);
         var b = document.createElement('button');
         b.className = 'tch' + (t===cur ? ' on' : '') + (n ? '' : ' none');
-        b.innerHTML = '<b>'+lastName(t)+'</b><small>' + (n ? n + ' حصة' : 'بلا جدول') + '</small>';
+        b.innerHTML = '<b>'+lastName(t)+'</b><small>' + (n ? Shouba.count(n,{one:'حصة',two:'حصتان',few:'حصص',many:'حصة'}) : 'بلا جدول') + '</small>';
         b.addEventListener('click', function(){ cur=t; paintAll(); });
         tsel.appendChild(b);
       });
@@ -343,8 +344,11 @@
         + ' · ' + (blank
             ? Shouba.count(blank,{one:'جدول',two:'جدولان',few:'جداول',many:'جدولاً'}) + ' بلا إدخال'
             : 'كل الجداول مُدخلة');
-      document.getElementById('hintline').textContent =
-        'اضغط أي مربّع لإسناد حصة · وبعد كل اعتماد تُفتح الحصة التالية في اليوم نفسه.';
+      /* إرشادٌ يتقاعد بنفسه: نصيحة البداية لمن لم يُدخل شيئاً، ثم طريقة العمل. */
+      var anyLoad = teachers.some(function(t){ return filledCount(t) > 0; });
+      document.getElementById('hintline').textContent = anyLoad
+        ? 'اضغط أي مربّع لإسناد حصة · وبعد كل اعتماد تُفتح الحصة التالية في اليوم نفسه.'
+        : 'ابدأ بعمود يومٍ واحد لكل معلّم — سبع ضغطات تكفي، وتضيء لوحتك في حينها. ثم أكمل بقيّة الأيام متى شئت.';
     }
     paintAll();
   }

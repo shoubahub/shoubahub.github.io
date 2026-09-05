@@ -25,7 +25,9 @@ Shouba.unit = function (n, f) {
   return n === 1 ? f.one : n === 2 ? f.two : (n >= 3 && n <= 10) ? f.few : f.many;
 };
 Shouba.count = function (n, f) {
-  if (n === 1) return f.one + ' واحد';
+  /* ⚠ «واحد» تُؤنَّث تبعاً للمعدود: «معلّم واحد» و«حصة واحدة».
+     كانت مذكّرةً دائماً فأنتجت «حصة واحد» (رُصد 2026-09-05). */
+  if (n === 1) return f.one + (/ة$/.test(f.one) ? ' واحدة' : ' واحد');
   if (n === 2) return f.two;
   return n + ' ' + Shouba.unit(n, f);
 };
@@ -137,6 +139,48 @@ Shouba.returnTo = function () {
       requestAnimationFrame(function () { if (sheetPending) sheet.classList.add('open'); });
     },
     close: function () { close(); }
+  };
+
+  /* قائمة الإعدادات — سلوك مشترك لكل الشاشات ذات الرأس الكحلي.
+     تحمل ما يحتاجه المجرّب: مراجعة بياناته · إرسال ملاحظة · حدود النسخة ورقمها. */
+  Shouba.settings = function () {
+    var n = document.createElement('div');
+    n.className = 'setlist';
+
+    function item(title, sub, onClick) {
+      var b = document.createElement('button');
+      b.className = 'setitem';
+      b.innerHTML = '<b>' + title + '</b>' + (sub ? '<small>' + sub + '</small>' : '');
+      if (onClick) b.addEventListener('click', onClick);
+      else b.disabled = true;
+      n.appendChild(b);
+      return b;
+    }
+
+    item('مراجعة بيانات شعبتك', 'المدرسة · الشعبة · العام · الإشراف', function () {
+      location.href = '/setup-wizard-7.html';
+    });
+
+    var wa = window.SHOUBA_FEEDBACK_WA;
+    if (wa) {
+      item('أرسل ملاحظة', 'ما أعجبك وما أزعجك — يصل مباشرةً', function () {
+        var msg = 'ملاحظة على منصّة شعبة (نسخة ' + (window.SHOUBA_BUILD || '?') + '):\n';
+        window.open('https://wa.me/' + wa + '?text=' + encodeURIComponent(msg), '_blank');
+      });
+    }
+
+    var note = document.createElement('div');
+    note.className = 'setnote';
+    note.innerHTML = '<b>بياناتك على جهازك</b> — لا تُرسَل إلى خادم، ولا نراها.'
+                   + ' وإن مسحتَ متصفّحك أو بدّلت جهازك بدأتَ من جديد.';
+    n.appendChild(note);
+
+    var ver = document.createElement('div');
+    ver.className = 'setver';
+    ver.textContent = 'نسخة تجريبية · رقم ' + (window.SHOUBA_BUILD || '؟');
+    n.appendChild(ver);
+
+    Shouba.sheet.open('الإعدادات', n);
   };
 
   /* تبويب قيد الإعداد: يبقى ظاهراً ليُعرف شكل المنصّة، والضغطة تصرّح بحاله

@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/identity/tokens.css?v=202608291819" />
 <link rel="stylesheet" href="/shell.css?v=202608291819" />
-<link rel="stylesheet" href="/components.css?v=202609052308" />
+<link rel="stylesheet" href="/components.css?v=202609052326" />
 <link rel="stylesheet" href="/frame.css?v=202608291819" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
@@ -116,10 +116,11 @@
   </div>
  </div></div>
 
-<script src="/refdata.js?v=202609011304"></script>
-<script src="/derive.js?v=202609052320"></script>
+<script src="/build.js?v=202609052326"></script>
+<script src="/refdata.js?v=202609052326"></script>
+<script src="/derive.js?v=202609052326"></script>
 <script src="/icons.js?v=202608291819"></script>
-<script src="/components.js?v=202609052309"></script>
+<script src="/components.js?v=202609052328"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -283,7 +284,7 @@
     } else if(todayEvents.length){
       kicker='اليوم'; ttl=todayEvents[0].title; sub=todayEvents[0].type + ' · ' + todayName;
     } else if(!hasSchedules){
-      kicker='ابدأ من هنا'; ttl='أدخِل جداول معلّميك'; sub='بها تعرف اللوحة مَن يدرّس الآن، وتُحسب الأنصبة والتغطية.';
+      kicker='ابدأ من هنا'; ttl='أدخِل جداول معلّميك'; sub='ابدأ بيومٍ واحد لكل معلّميك — تضيء لوحتك في دقائق، وأكمل بقيّة الأيام على مهلك.';
     } else if(isWeekend){
       kicker='التالي'; ttl='عطلة نهاية الأسبوع'; sub='يبدأ الدوام الأحد · أوّل حصة ' + times[0].from;
     } else if(nextIdx>-1){
@@ -368,7 +369,7 @@
     b.addEventListener('click', function(){ if(!b.classList.contains('on')) location.href=b.dataset.go; });
   });
   document.getElementById('toSchedule').addEventListener('click', function(){ location.href='/schedule.html'; });
-  document.getElementById('settings').addEventListener('click', function(){ location.href='/setup-wizard-7.html'; });
+  document.getElementById('settings').addEventListener('click', function(){ Shouba.settings(); });
 </script>
 </body>
 </html>

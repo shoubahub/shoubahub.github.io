@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · معلّموك</title>
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#1B5183" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/identity/tokens.css?v=202609060012" />
+<link rel="stylesheet" href="/shell.css?v=202609060012" />
+<link rel="stylesheet" href="/components.css?v=202609060012" />
+<link rel="stylesheet" href="/frame.css?v=202609060012" />
+<style>
+  /* خاص بهذه الشاشة — القائمة والسطور من components.css */
+  .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
+  .addrow{padding:0 var(--gap-side)}
+  .addrow .cta{width:100%}
+  .note{padding:0 var(--gap-side);font-size:12px;font-weight:600;color:var(--shouba-hint);line-height:1.8}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+    <div class="topbar">
+      <div class="tbcrest" id="tbCrest"></div>
+      <div class="tt">
+        <b>معلّمو شعبتك</b>
+        <span id="headLine">—</span>
+      </div>
+      <div class="iconbtn" id="toBoard" title="اللوحة">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M8 4 L14 10 L8 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+  <div class="screen has-topbar has-tabbar">
+    <div class="content">
+      <div class="wrap">
+        <div class="vlist" id="list"></div>
+        <div class="addrow"><button class="cta" id="add2">أضِف معلّماً</button></div>
+        <div class="note" id="note"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabbar">
+    <button class="tab" data-go="/board.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 8.4 10 3l7 5.4V16a1 1 0 0 1-1 1h-3.5v-4.5h-5V17H4a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      اللوحة
+    </button>
+    <button class="tab on" data-go="/teachers.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 17c0-3 2.7-4.6 6-4.6S16 14 16 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      معلّموك
+    </button>
+    <button class="tab-add" id="add" aria-label="إضافة">
+      <svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#241D06" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </button>
+    <button class="tab soon" data-soon="سجلّاتك">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 9h6M7 12.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      سجلّاتك
+    </button>
+    <button class="tab" data-go="/schedule.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3.5" y="4.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 8.5h13M7 3v3M13 3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      جدولك
+    </button>
+  </div>
+ </div></div>
+
+<script src="/build.js?v=202609060012"></script>
+<script src="/refdata.js?v=202609060012"></script>
+<script src="/derive.js?v=202609060012"></script>
+<script src="/icons.js?v=202609060012"></script>
+<script src="/components.js?v=202609060012"></script>
+<script>
+  var d = Shouba.data();
+
+  (function paintTopCrest(){
+    var el=document.getElementById('tbCrest'), c=d.crest;
+    if(c && c.type==='image') el.innerHTML='<img src="'+c.data+'" alt="شعار المدرسة" />';
+    else if(c && c.type==='icon' && window.SHOUBA_ICONS) el.innerHTML=SHOUBA_ICONS.svg(c.id,22);
+    else el.innerHTML='<img src="/identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
+  })();
+
+  var listEl = document.getElementById('list');
+
+  function paint(){
+    var teachers = Shouba.teachers();
+    listEl.innerHTML = '';
+
+    if(!teachers.length){
+      listEl.innerHTML = '<div class="invite">لم تُضِف معلّمي شعبتك بعد — وعليهم تُبنى الجداول والسجلّات.</div>';
+    }
+    teachers.forEach(function(t){
+      var load = Shouba.loadOf(t), subs = Shouba.subjectsOfTeacher(t);
+      var b = document.createElement('button');
+      b.className = 'titem' + (load ? '' : ' none');
+      b.innerHTML = '<span class="ini">' + t.charAt(0) + '</span>'
+        + '<div class="tx"><b>أ. ' + t + '</b><small>'
+        + (load ? Shouba.count(load,{one:'حصة',two:'حصتان',few:'حصص',many:'حصة'})
+                  + ' · ' + Shouba.count(subs.length,{one:'مادة',two:'مادّتان',few:'مواد',many:'مادة'})
+                : 'لم يُدخل جدوله بعد')
+        + '</small></div><span class="chev">‹</span>';
+      b.addEventListener('click', function(){ location.href = '/teacher.html?t=' + encodeURIComponent(t); });
+      listEl.appendChild(b);
+    });
+
+    var blank = teachers.filter(function(t){ return !Shouba.hasSchedule(t); }).length;
+    document.getElementById('headLine').textContent = teachers.length
+      ? Shouba.count(teachers.length,{one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'})
+        + ' · ' + (blank ? Shouba.count(blank,{one:'جدول',two:'جدولان',few:'جداول',many:'جدولاً'}) + ' بلا إدخال'
+                         : 'كل الجداول مُدخلة')
+      : 'بانتظار أسمائهم';
+    document.getElementById('note').textContent = teachers.length
+      ? 'اضغط اسم المعلّم لفتح ملفّه: مواده وجدوله وتقاريره وإنجازاته.' : '';
+  }
+
+  /* الإضافة في لوحة سفلية — لا التفاف إلى شاشة المعالج */
+  function addSheet(){
+    var n = document.createElement('div');
+    n.innerHTML = '<div class="field" style="padding-bottom:6px">'
+      + '<label for="nm">اسم المعلّم</label>'
+      + '<div class="paper"><input id="nm" type="text" maxlength="60" placeholder="مثال: أحمد عبدالله الفهد" /></div>'
+      + '<div class="hint" id="warn">اكتبه كما يظهر في النماذج الرسمية.</div></div>';
+    var btn = document.createElement('button');
+    btn.className = 'cta'; btn.textContent = 'أضِف';
+    n.appendChild(btn);
+    Shouba.sheet.open('معلّم جديد', n);
+    var inp = n.querySelector('#nm'), warn = n.querySelector('#warn');
+    setTimeout(function(){ inp.focus(); }, 80);
+    function submit(){
+      var v = inp.value.trim().replace(/\s+/g,' ');
+      if(v.length < 3) return;
+      if(Shouba.teachers().indexOf(v) > -1){ warn.textContent = 'هذا الاسم مُضاف سلفاً.'; return; }
+      var list = Shouba.teachers(); list.push(v);
+      Shouba.save({ teachers: list });
+      Shouba.sheet.close(); paint();
+    }
+    btn.addEventListener('click', submit);
+    inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') submit(); });
+  }
+
+  document.getElementById('add2').addEventListener('click', addSheet);
+  document.getElementById('add').addEventListener('click', addSheet);
+  [].forEach.call(document.querySelectorAll('.tab[data-go]'), function(b){
+    b.addEventListener('click', function(){ if(!b.classList.contains('on')) location.href = b.dataset.go; });
+  });
+  document.getElementById('toBoard').addEventListener('click', function(){ location.href='/board.html'; });
+
+  paint();
+</script>
+</body>
+</html>

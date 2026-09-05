@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/identity/tokens.css?v=202609011359" />
-<link rel="stylesheet" href="/shell.css?v=202609011359" />
-<link rel="stylesheet" href="/components.css?v=202609052340" />
-<link rel="stylesheet" href="/frame.css?v=202609011359" />
+<link rel="stylesheet" href="/identity/tokens.css?v=202609060012" />
+<link rel="stylesheet" href="/shell.css?v=202609060012" />
+<link rel="stylesheet" href="/components.css?v=202609060012" />
+<link rel="stylesheet" href="/frame.css?v=202609060012" />
 <style>
   /* خاص بشاشة الجداول — الرأس والشريط السفلي واللوحة السفلية من components.css.
      الهامش الجانبي هنا أضيق من الموحّد عمداً: المصفوفة تحتاج كل بكسل (الوظيفة قبل الشكل). */
@@ -115,7 +115,7 @@
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 8.4 10 3l7 5.4V16a1 1 0 0 1-1 1h-3.5v-4.5h-5V17H4a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
       اللوحة
     </button>
-    <button class="tab soon" data-soon="معلّموك">
+    <button class="tab" data-go="/teachers.html">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 17c0-3 2.7-4.6 6-4.6S16 14 16 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       معلّموك
     </button>
@@ -133,11 +133,11 @@
   </div>
  </div></div>
 
-<script src="/build.js?v=202609052332"></script>
-<script src="/refdata.js?v=202609052326"></script>
-<script src="/derive.js?v=202609052342"></script>
-<script src="/icons.js?v=202608291819"></script>
-<script src="/components.js?v=202609052332"></script>
+<script src="/build.js?v=202609060012"></script>
+<script src="/refdata.js?v=202609060012"></script>
+<script src="/derive.js?v=202609060012"></script>
+<script src="/icons.js?v=202609060012"></script>
+<script src="/components.js?v=202609060012"></script>
 <script>
   var R=window.SHOUBA_REF;
   var d = Shouba.data();          /* المصدر الواحد — القراءة والكتابة من طبقة الاشتقاق */
@@ -176,7 +176,9 @@
     document.getElementById('headLine').textContent = 'بانتظار أسماء معلّميك';
     document.getElementById('toTeachers').addEventListener('click', function(){ location.href='/setup-wizard-5.html'; });
   } else {
-    var cur = teachers[0];
+    /* ?t=اسم ⟵ تُفتح على معلّم بعينه (قادماً من ملفّه) */
+    var want = new URLSearchParams(location.search).get('t');
+    var cur  = (want && teachers.indexOf(want) > -1) ? want : teachers[0];
     var lastSlot = null;                       /* آخر إدخال — لزرّ التكرار السريع */
 
     /* ===== شريط المعلّمين ===== */

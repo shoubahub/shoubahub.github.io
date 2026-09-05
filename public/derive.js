@@ -110,6 +110,23 @@
   S.freeAt = function (day, pIdx) {
     return S.scheduled().filter(function (t) { return !S.slot(t, day, pIdx); });
   };
+  /* المواد التي يدرّسها معلّم فعلاً — تُشتقّ من جدوله لا تُدخَل:
+     [{ name:'الفلسفة', classes:['12/2','12/3'], periods:6 }] مرتّبةً بالأكثر حصصاً. */
+  S.subjectsOfTeacher = function (teacher) {
+    var map = {};
+    S.days().forEach(function (day) {
+      S.daySlots(teacher, day).forEach(function (v) {
+        if (!v) return;
+        var s = S.splitSlot(v);
+        var e = map[s.subject] || (map[s.subject] = { name: s.subject, classes: [], periods: 0 });
+        e.periods++;
+        if (s.cls && e.classes.indexOf(s.cls) === -1) e.classes.push(s.cls);
+      });
+    });
+    return Object.keys(map).map(function (k) { return map[k]; })
+      .sort(function (a, b) { return b.periods - a.periods; });
+  };
+
   /* نصاب المعلّم: مجموع حصصه في الأسبوع (الفراغ تفرّغٌ لا نقص) */
   S.loadOf = function (teacher) {
     var n = 0;

@@ -504,3 +504,36 @@
   font-family:var(--font-num);padding:4px 0 2px}
 /* شارة رئيس الشعبة في شريط الجداول — يدرّس أيضاً، ويتميّز عن معلّميه بلا ضجيج */
 .tch.me small{color:var(--shouba-amber-deep)}
+
+/* سطر شخص (معلّم/بند) — مشترك بين اللوحة وشاشة «معلّموك» */
+.titem{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;padding:10px 13px;
+  display:flex;align-items:center;gap:10px;width:100%;border:0;text-align:right;font-family:var(--font-ar);
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+.titem .ini{width:30px;height:30px;border-radius:999px;flex:none;display:grid;place-items:center;
+  background:var(--shouba-navy);color:var(--shouba-cream);font-size:12.5px;font-weight:700}
+.titem .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.titem .tx b{font-size:13px;font-weight:700;color:var(--shouba-navy)}
+.titem .tx small{font-size:11px;color:var(--shouba-label)}
+button.titem{cursor:pointer}
+.titem .chev{flex:none;color:var(--shouba-hint);font-size:15px;font-weight:700}
+.titem.none .tx small{color:var(--shouba-amber-deep)}
+
+/* قائمة عمودية بفجوة موحّدة (معلّمون · مداخل ملفّ المعلّم) */
+.vlist{display:flex;flex-direction:column;gap:8px;padding:0 var(--gap-side)}
+/* مدخل في ملفّ المعلّم: عنوان + عدّاده — فيُعرف قبل الضغط أفيه شيء */
+.entry{width:100%;border:0;cursor:pointer;text-align:right;font-family:var(--font-ar);
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;
+  padding:14px 15px;display:flex;align-items:center;gap:10px;
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+.entry b{flex:1;font-size:14.5px;font-weight:700;color:var(--shouba-navy)}
+.entry .val{font-size:11.5px;font-weight:700;color:var(--shouba-label);font-family:var(--font-num)}
+.entry .chev{color:var(--shouba-hint);font-size:15px;font-weight:700}
+.entry.soon b{color:var(--shouba-text-muted)}
+.entry.soon .val{color:var(--shouba-hint);font-family:var(--font-ar)}
+/* قائمة المواد داخل اللوحة السفلية */
+.subrow{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+.subrow b{flex:1;font-size:13.5px;font-weight:700;color:var(--shouba-navy)}
+.subrow .cls{font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+.subrow .pc{font-size:11px;font-weight:700;color:var(--shouba-label);white-space:nowrap}

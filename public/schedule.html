@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/identity/tokens.css?v=202609060012" />
 <link rel="stylesheet" href="/shell.css?v=202609060012" />
-<link rel="stylesheet" href="/components.css?v=202609060012" />
+<link rel="stylesheet" href="/components.css?v=202609060019" />
 <link rel="stylesheet" href="/frame.css?v=202609060012" />
 <style>
   /* خاص بشاشة الجداول — الرأس والشريط السفلي واللوحة السفلية من components.css.
@@ -176,9 +176,15 @@
     document.getElementById('headLine').textContent = 'بانتظار أسماء معلّميك';
     document.getElementById('toTeachers').addEventListener('click', function(){ location.href='/setup-wizard-5.html'; });
   } else {
-    /* ?t=اسم ⟵ تُفتح على معلّم بعينه (قادماً من ملفّه) */
+    /* ?t=اسم ⟵ **وضع المعلّم الواحد**: قادمٌ من ملفّه، فيُفرَد جدوله وحده
+       بلا شريط المعلّمين ولا تنقّل بينهم (قرار المستخدم 2026-09-06). */
     var want = new URLSearchParams(location.search).get('t');
-    var cur  = (want && teachers.indexOf(want) > -1) ? want : teachers[0];
+    var solo = !!(want && teachers.indexOf(want) > -1);
+    var cur  = solo ? want : teachers[0];
+    if(solo){
+      document.body.classList.add('solo');
+      document.querySelector('.topbar .tt b').textContent = 'جدول أ. ' + Shouba.shortName(cur);
+    }
     var lastSlot = null;                       /* آخر إدخال — لزرّ التكرار السريع */
 
     /* ===== شريط المعلّمين ===== */
@@ -346,6 +352,15 @@
       /* العدّاد عن **معلّميه** لا عن الشريط: رئيس الشعبة ليس من معلّمي نفسه */
       var mine  = Shouba.teachers();
       var blank = mine.filter(function(t){ return filledCount(t)===0; }).length;
+      if(solo){                                  /* رأسٌ عن صاحب الجدول وحده */
+        var sn = filledCount(cur);
+        document.getElementById('headLine').textContent = sn
+          ? Shouba.count(sn,{one:'حصة',two:'حصتان',few:'حصص',many:'حصة'}) + ' في الأسبوع'
+          : 'لم يُدخل جدوله بعد';
+        document.getElementById('hintline').textContent =
+          'اضغط أي مربّع لإسناد حصة — والتغيير يُحفظ فوراً.';
+        return;
+      }
       document.getElementById('headLine').textContent =
         Shouba.count(mine.length,{one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'})
         + ' · ' + (blank
@@ -364,7 +379,12 @@
   [].forEach.call(document.querySelectorAll('.tab[data-go]'), function(b){
     b.addEventListener('click', function(){ location.href = b.dataset.go; });
   });
-  document.getElementById('toBoard').addEventListener('click', function(){ location.href='/board.html'; });
+  /* الرجوع يعود من حيث جئت: من ملفّ المعلّم إليه، ومن التبويب إلى اللوحة.
+     ⚠ مستمعٌ واحد لا onclick فوقه — اجتماعهما ينفّذ السلوكين فيغلب الأخير. */
+  document.getElementById('toBoard').addEventListener('click', function(){
+    location.href = (typeof solo !== 'undefined' && solo)
+      ? '/teacher.html?t=' + encodeURIComponent(cur) : '/board.html';
+  });
   document.getElementById('add').addEventListener('click', function(){ location.href='/setup-wizard-5.html'; });
 </script>
 </body>

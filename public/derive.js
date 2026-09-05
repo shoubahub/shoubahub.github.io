@@ -118,11 +118,42 @@
     });
     return scope ? out.filter(function (c) { return c.teachers.indexOf(scope) > -1; }) : out;
   };
+  /* ── الأسبوع الدراسي (2026-09-05) ────────────────────────────────
+     يُحتسب من **أوّل يوم دراسي للطلاب** الذي أدخله رئيس الشعبة في ش③،
+     لا من يوم مباشرة المعلّمين (يسبقه بأسبوع، ومن خلط بينهما اختلّ عدّه كلّه).
+     الإرجاع: null = لا تاريخ · 0 = الأسبوع التمهيدي (ما قبل بدء الطلاب) · n ≥ 1.
+     ⚠ الأسبوع يبدأ الأحد: نردّ التاريخ إلى أحدِ أسبوعه كي تقع الحدود على الآحاد
+       مهما كان اليوم الذي أدخله. */
+  S.termStart = function () {
+    var d = S.data(), t = d.term, m = d.termStart;
+    return (m && t && m[t]) ? m[t] : '';
+  };
+  S.weekNo = function (today) {
+    var iso = S.termStart();
+    if (!iso) return null;
+    var p = iso.split('-');
+    if (p.length !== 3) return null;
+    var start = new Date(+p[0], +p[1] - 1, +p[2]);
+    if (isNaN(start.getTime())) return null;
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() - start.getDay());        // أحد أسبوع البداية
+    var now = today ? new Date(today) : new Date();
+    now.setHours(0, 0, 0, 0);
+    now.setDate(now.getDate() - now.getDay());              // أحد الأسبوع الجاري
+    var weeks = Math.round((now - start) / 604800000);
+    return weeks < 0 ? 0 : weeks + 1;
+  };
+  /* نصّ الأسبوع للعرض — مصدر واحد فلا تختلف الشاشات في صياغته */
+  S.weekLabel = function () {
+    var n = S.weekNo();
+    return n === null ? '' : n === 0 ? 'الأسبوع التمهيدي' : 'الأسبوع ' + n;
+  };
+
   /* المواد التي لها خطة منهج */
   S.planSubjects = function () { return Object.keys(S.data().plan || {}); };
   /* تقدّم المنهج: { total, done, pct, cells:[{done,now}] } */
   S.planProgress = function () {
-    var d = S.data(), plan = d.plan || {}, progress = d.progress || {}, week = d.weekNo || 1;
+    var d = S.data(), plan = d.plan || {}, progress = d.progress || {}, week = S.weekNo() || 1;
     var total = 0, done = 0, cells = [];
     S.planSubjects().forEach(function (s) {
       plan[s].forEach(function (L) {
@@ -138,7 +169,7 @@
   };
   /* مَن تأخّر عن الخطة: له درس في أسبوع مضى لم يُؤشَّر */
   S.behindPlan = function (limit) {
-    var d = S.data(), plan = d.plan || {}, progress = d.progress || {}, week = d.weekNo || 1;
+    var d = S.data(), plan = d.plan || {}, progress = d.progress || {}, week = S.weekNo() || 1;
     var names = S.planSubjects();
     if (!names.length) return [];
     var pool = S.teachers();

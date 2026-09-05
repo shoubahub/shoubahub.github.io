@@ -117,7 +117,7 @@
  </div></div>
 
 <script src="/refdata.js?v=202609011304"></script>
-<script src="/derive.js?v=202609011503"></script>
+<script src="/derive.js?v=202609052320"></script>
 <script src="/icons.js?v=202608291819"></script>
 <script src="/components.js?v=202609052309"></script>
 <script>
@@ -132,7 +132,7 @@
   /* ===== الرأس المضغوط ===== */
   var now=new Date(), dayIdx=now.getDay(), isWeekend=dayIdx>4;
   var todayName = isWeekend ? null : R.days[dayIdx];
-  var weekNo = d.weekNo || 1;
+  var weekNo = Shouba.weekNo();     /* null = لا تاريخ · 0 = تمهيدي */
   document.getElementById('deptName').textContent = d.department || 'شعبتك';
 
   /* سطر الرأس الثاني (معتمد 2026-08-27): اسم رئيس الشعبة · عدد المعلّمين · الفصل · الأسبوع.
@@ -145,7 +145,9 @@
     if(head)   parts.push('أ. ' + Shouba.shortName(head));
     if(tcount) parts.push('<b class="num">' + tcount + '</b> ' + Shouba.unit(tcount, {one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'}));
     if(term)   parts.push(term);
-    parts.push('الأسبوع <b class="num">' + weekNo + '</b>');
+    /* الأسبوع لا يُذكر إلّا بسند: بلا تاريخ بداية لا يُعرض شيء، وقبل بدء الطلاب «تمهيدي» */
+    if(weekNo === 0)      parts.push('الأسبوع التمهيدي');
+    else if(weekNo)       parts.push('الأسبوع <b class="num">' + weekNo + '</b>');
     document.getElementById('dateLine').innerHTML = parts.join(' · ');
   })();
 
@@ -334,7 +336,7 @@
     });
     document.getElementById('planPct').textContent = pr.pct + '%';
     document.getElementById('planLine').innerHTML =
-      Shouba.count(done,{one:'درس',two:'درسان',few:'دروس',many:'درساً'}) + ' من <b>' + total + '</b> · الأسبوع ' + weekNo + ' جارٍ';
+      Shouba.count(done,{one:'درس',two:'درسان',few:'دروس',many:'درساً'}) + ' من <b>' + total + '</b> · ' + (Shouba.weekLabel() || '') + (weekNo ? ' جارٍ' : '');
   }
 
   /* ===== ⑤ بحاجة إلى إجراء ===== */

@@ -51,20 +51,29 @@
   </div>
  </div></div>
 
-<script src="/components.js"></script>
+<script src="/refdata.js"></script>
+<script src="/derive.js?v=202609052320"></script>
+<script src="/components.js?v=202609052320"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
 
   var d = load();
   var DASH = '—';
+  /* تاريخ أوّل يوم دراسي للطلاب — يُعرض في المراجعة ليُكتشف الخطأ فيه مبكّراً */
+  function startText(d){
+    var v = (d.termStart && d.term) ? d.termStart[d.term] : '';
+    if(!v) return '';
+    var p = v.split('-');
+    return 'تبدأ الدراسة ' + (+p[2]) + '/' + (+p[1]);
+  }
   function j(){ return [].slice.call(arguments).filter(function(x){ return x && String(x).trim(); }).join(' · '); }
 
   // كل سطر يعيد لشاشته بـ ret=review فيعود إلى هنا بعد التعديل
   var ROWS = [
     { to:'/setup-wizard.html',   main: d.schoolName || DASH,                    sub: j('المدرسة', d.region, d.schoolType) },
     { to:'/setup-wizard-2.html', main: d.department || DASH,                    sub: j('الشعبة', d.stage, (d.subjects && d.subjects.length) ? d.subjects.length + ' مواد' : '') },
-    { to:'/setup-wizard-3.html', main: d.year || DASH,                          sub: j('العام الدراسي', d.term) },
+    { to:'/setup-wizard-3.html', main: d.year || DASH,                          sub: j('العام الدراسي', d.term, startText(d)) },
     { to:'/setup-wizard-4.html', main: d.principal || 'لم تُضِف الإشراف بعد',   sub: j('الإشراف', d.supervisor || 'اختياري — لك إكماله لاحقاً') }
   ];
 

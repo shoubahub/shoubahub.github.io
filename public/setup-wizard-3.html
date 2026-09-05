@@ -60,6 +60,15 @@
         <label>الفصل الدراسي</label>
         <div class="segs" id="segs"></div>
       </div>
+
+      <!-- أوّل يوم دراسي للطلاب — منه تُحسب الأسابيع.
+           التنبيه جزء من الحقل: دوام المعلّمين يسبق دوام الطلاب بأسبوع،
+           فمن أدخل يوم مباشرته اختلّ عدّ أسابيعه كلّه بلا أن يشعر. -->
+      <div class="field">
+        <label>أوّل يوم دراسي للطلاب</label>
+        <div class="paper"><input id="tstart" type="date" /></div>
+        <div class="hint">منه تُحسب الأسابيع الدراسية — <b>لا</b> يوم مباشرة المعلّمين.</div>
+      </div>
     </form>
     </div><!-- /content -->
   </div>
@@ -78,6 +87,7 @@
 
   var yearSel = document.getElementById('year');
   var segs    = document.getElementById('segs');
+  var tstart  = document.getElementById('tstart');
   var next    = document.getElementById('next');
   var state   = { term: '' };
 
@@ -103,12 +113,14 @@
   });
 
   function validate(){
-    var ok = !!(yearSel.value && state.term);
+    var ok = !!(yearSel.value && state.term && tstart.value);
     next.disabled = !ok;
     return ok;
   }
 
   yearSel.addEventListener('change', validate);   // تُطلَق من اللوحة السفلية
+  tstart.addEventListener('change', validate);
+  tstart.addEventListener('input',  validate);
 
   // استرجاع ما أُدخل سابقاً (components.js يعرض نصّ المنسدلة تلقائياً من selected)
   (function prefill(){
@@ -118,12 +130,16 @@
       state.term = s.term;
       [].forEach.call(segs.children, function(b){ b.classList.toggle('on', b.dataset.val === s.term); });
     }
+    /* تاريخ البدء محفوظ لكل فصل على حدة — للفصل الثاني بدايته الخاصّة */
+    if(s.term && s.termStart && s.termStart[s.term]) tstart.value = s.termStart[s.term];
     validate();
   })();
 
   next.addEventListener('click', function(){
     if(!validate()) return;
-    save({ year: yearSel.value, term: state.term });
+    var starts = load().termStart || {};
+    starts[state.term] = tstart.value;
+    save({ year: yearSel.value, term: state.term, termStart: starts });
     // ret=review: قادم من شاشة المراجعة لتعديل سطر ⟵ يعود إليها بعد الحفظ
     location.href = Shouba.returnTo() || '/setup-wizard-4.html';
   });

@@ -184,6 +184,32 @@
     return n === null ? '' : n === 0 ? 'الأسبوع التمهيدي' : 'الأسبوع ' + n;
   };
 
+  /* ── مواعيد الأسبوع (2026-09-06) ──────────────────────────────────
+     { id, week, day, type, title } — **والأسبوع جزءٌ من الموعد**، وإلّا ظهر
+     اجتماعُ هذا الأسبوع في كل أسبوع من العام. والموعد القديم بلا أسبوع
+     (من بذرة المعاينة) يُعرض في كل أسبوع ولا يُسقَط. */
+  S.events = function (week) {
+    var all = S.data().events || [];
+    if (week === undefined || week === null) return all.slice();
+    return all.filter(function (e) { return e.week == null || e.week === week; });
+  };
+  S.eventsOfDay = function (day, week) {
+    return S.events(week).filter(function (e) { return e.day === day; });
+  };
+  S.addEvent = function (ev) {
+    var d = S.data();
+    d.events = d.events || [];
+    ev.id = 'e' + Date.now() + '-' + d.events.length;
+    d.events.push(ev);
+    S.save();
+    return ev;
+  };
+  S.removeEvent = function (id) {
+    var d = S.data();
+    d.events = (d.events || []).filter(function (e) { return e.id !== id; });
+    S.save();
+  };
+
   /* المواد التي لها خطة منهج */
   S.planSubjects = function () { return Object.keys(S.data().plan || {}); };
   /* تقدّم المنهج: { total, done, pct, cells:[{done,now}] } */

@@ -539,3 +539,19 @@ button.titem{cursor:pointer}
 .subrow .pc{font-size:11px;font-weight:700;color:var(--shouba-label);white-space:nowrap}
 /* وضع المعلّم الواحد: يُفتح جدوله من ملفّه، فلا شريط معلّمين ولا تنقّل بينهم */
 body.solo .tsel{display:none}
+
+/* موعد في لوحة الرزنامة — نوعه بلونه وحافّته، وحذفه بضغطة */
+.evrow{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+  border-inline-start:3px solid var(--shouba-navy);
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+.evrow b{flex:1;font-size:13.5px;font-weight:700;color:var(--shouba-navy)}
+.evrow .ty{font-size:11px;font-weight:700;color:var(--shouba-label)}
+.evrow .del{flex:none;width:26px;height:26px;border:0;cursor:pointer;border-radius:8px;
+  background:rgba(183,68,58,.10);color:var(--shouba-error);font-size:16px;font-weight:700;line-height:1}
+.evrow.t-exam{border-inline-start-color:var(--shouba-error)}
+.evrow.t-meet{border-inline-start-color:var(--shouba-navy)}
+.evrow.t-act{border-inline-start-color:var(--shouba-amber)}
+/* خانة اليوم الفارغة تدعو إلى الإضافة بدل أن تكون شرطة صمّاء */
+.wcol{cursor:pointer}
+.wcol .wq{color:var(--shouba-hint);font-weight:700}

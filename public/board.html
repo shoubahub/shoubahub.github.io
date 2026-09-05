@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/identity/tokens.css?v=202609060012" />
 <link rel="stylesheet" href="/shell.css?v=202609060012" />
-<link rel="stylesheet" href="/components.css?v=202609060019" />
+<link rel="stylesheet" href="/components.css?v=202609060023" />
 <link rel="stylesheet" href="/frame.css?v=202609060012" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
@@ -111,7 +111,7 @@
 
 <script src="/build.js?v=202609060012"></script>
 <script src="/refdata.js?v=202609060012"></script>
-<script src="/derive.js?v=202609060012"></script>
+<script src="/derive.js?v=202609060023"></script>
 <script src="/icons.js?v=202609060012"></script>
 <script src="/components.js?v=202609060012"></script>
 <script>
@@ -338,21 +338,127 @@
   paintCard();
   if(currentIdx>-1 && hasSchedules) setInterval(function(){ var l=card.querySelector('.left'); if(l) l.textContent=remain(); }, 1000);
 
-  /* ===== ③ مصفوفة الأسبوع: عمود لكل يوم ===== */
-  var sunday=new Date(now); sunday.setDate(now.getDate() - (isWeekend ? dayIdx : dayIdx));
+  /* ===== ③ مصفوفة الأسبوع: عمود لكل يوم — وهي بابُ إدخال المواعيد =====
+     ⚠ في العطلة تتقدّم المصفوفة إلى الأسبوع القادم كما يتقدّم عنوان الجدول،
+       وإلّا عرضت اللوحةُ أحدَين مختلفين في شاشة واحدة (رُصد 2026-09-06). */
+  var sunday=new Date(now);
+  sunday.setDate(now.getDate() + (isWeekend ? (7 - dayIdx) : -dayIdx));
+  var viewWeek = Shouba.weekNo(sunday);          // رقم الأسبوع المعروض لا أسبوع اليوم
   var weekEl=document.getElementById('week');
-  R.days.forEach(function(day,i){
-    var dt=new Date(sunday); dt.setDate(sunday.getDate()+i);
-    var list=events.filter(function(e){ return e.day===day; });
-    var col=document.createElement('div');
-    col.className='wcol' + (day===todayName ? ' today' : '');
-    var inner='<div class="wh">' + SHORT[i] + '<b>' + dt.getDate() + '</b></div>';
-    if(list.length){
-      list.forEach(function(e){ inner += '<div class="wi ' + (TYPE_CLASS[e.type]||'') + '">' + e.title + '</div>'; });
-    } else inner += '<div class="wq">—</div>';
-    col.innerHTML=inner;
-    weekEl.appendChild(col);
-  });
+  var DAY_DATE={};
+
+  function paintWeek(){
+    weekEl.innerHTML='';
+    R.days.forEach(function(day,i){
+      var dt=new Date(sunday); dt.setDate(sunday.getDate()+i);
+      DAY_DATE[day]=dt;
+      var list=Shouba.eventsOfDay(day, viewWeek);
+      var col=document.createElement('div');
+      col.className='wcol' + (day===todayName && !isWeekend ? ' today' : '');
+      var inner='<div class="wh">' + SHORT[i] + '<b>' + dt.getDate() + '</b></div>';
+      if(list.length){
+        list.forEach(function(e){ inner += '<div class="wi ' + (TYPE_CLASS[e.type]||'') + '">' + e.title + '</div>'; });
+      } else inner += '<div class="wq">+</div>';
+      col.innerHTML=inner;
+      col.addEventListener('click', function(){ daySheet(day); });
+      weekEl.appendChild(col);
+    });
+  }
+
+  /* ===== مواعيد الأسبوع: الإدخال من الرزنامة نفسها (2026-09-06) =====
+     الضغط على عمود اليوم يفتح مواعيده، والإضافة خطوتان في لوحة واحدة:
+     النوع ثم العنوان. والحذف بضغطة على الموعد. */
+  var EV_TYPES = ['اختبار','اجتماع','فعالية'];
+
+  function dayLabel(day){
+    var dt = DAY_DATE[day];
+    return day + (dt ? ' · ' + dt.getDate() + '/' + (dt.getMonth()+1) : '');
+  }
+
+  function daySheet(day){
+    var n = document.createElement('div');
+    n.className = 'vlist'; n.style.padding = '0';
+
+    var list = Shouba.eventsOfDay(day, viewWeek);
+    if(!list.length){
+      var e0 = document.createElement('div');
+      e0.className = 'soon-note';
+      e0.textContent = 'لا مواعيد في هذا اليوم بعد.';
+      n.appendChild(e0);
+    }
+    list.forEach(function(ev){
+      var r = document.createElement('div');
+      r.className = 'evrow ' + (TYPE_CLASS[ev.type] || '');
+      r.innerHTML = '<b>' + ev.title + '</b><span class="ty">' + ev.type + '</span>';
+      var x = document.createElement('button');
+      x.className = 'del'; x.setAttribute('aria-label','حذف'); x.textContent = '×';
+      x.addEventListener('click', function(){
+        Shouba.removeEvent(ev.id); paintWeek(); paintCard(); daySheet(day);
+      });
+      r.appendChild(x);
+      n.appendChild(r);
+    });
+
+    var add = document.createElement('button');
+    add.className = 'cta'; add.textContent = 'أضِف موعداً';
+    add.addEventListener('click', function(){ addSheet(day); });
+    n.appendChild(add);
+
+    Shouba.sheet.open('مواعيد ' + dayLabel(day), n);
+  }
+
+  function addSheet(day){
+    var n = document.createElement('div');
+    var chosen = EV_TYPES[0];
+    n.innerHTML = '<div class="field" style="padding-bottom:4px"><label>نوع الموعد</label>'
+      + '<div class="segs" id="evsegs"></div></div>'
+      + '<div class="field" style="padding-bottom:6px"><label for="evt">العنوان</label>'
+      + '<div class="paper"><input id="evt" type="text" maxlength="60" placeholder="مثال: اختبار قصير — الفلسفة" /></div>'
+      + '<div class="hint">يظهر في رزنامة ' + dayLabel(day) + '.</div></div>';
+    var segs = n.querySelector('#evsegs');
+    EV_TYPES.forEach(function(t, i){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'seg' + (i === 0 ? ' on' : ''); b.textContent = t;
+      b.addEventListener('click', function(){
+        chosen = t;
+        [].forEach.call(segs.children, function(x){ x.classList.toggle('on', x === b); });
+      });
+      segs.appendChild(b);
+    });
+    var save = document.createElement('button');
+    save.className = 'cta'; save.textContent = 'أضِف';
+    n.appendChild(save);
+    Shouba.sheet.open('موعد جديد · ' + dayLabel(day), n);
+    var inp = n.querySelector('#evt');
+    setTimeout(function(){ inp.focus(); }, 80);
+    function submit(){
+      var v = inp.value.trim();
+      if(v.length < 2) return;
+      Shouba.addEvent({ week: viewWeek, day: day, type: chosen, title: v });
+      paintWeek(); paintCard(); daySheet(day);
+    }
+    save.addEventListener('click', submit);
+    inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') submit(); });
+  }
+
+  /* «الرزنامة الكاملة ›» — كان رابطاً ميّتاً، فصار رزنامة الأسبوع كلّها */
+  function weekSheet(){
+    var n = document.createElement('div');
+    n.className = 'vlist'; n.style.padding = '0';
+    R.days.forEach(function(day){
+      var list = Shouba.eventsOfDay(day, viewWeek);
+      var b = document.createElement('button');
+      b.className = 'titem';
+      b.innerHTML = '<div class="tx"><b>' + dayLabel(day) + '</b><small>'
+        + (list.length ? list.map(function(e){ return e.title; }).join(' · ') : 'لا مواعيد')
+        + '</small></div><span class="chev">‹</span>';
+      b.addEventListener('click', function(){ daySheet(day); });
+      n.appendChild(b);
+    });
+    Shouba.sheet.open('رزنامة ' + (Shouba.weekLabel() || 'الأسبوع'), n);
+  }
+  document.getElementById('toWeek').addEventListener('click', weekSheet);
+  paintWeek();
 
   /* ===== ④ إنجاز المنهج ===== */
   var subjectNames=Shouba.planSubjects();

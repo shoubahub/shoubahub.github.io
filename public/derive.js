@@ -44,15 +44,33 @@
   S.teachers   = function () { return (S.data().teachers || []).slice(); };
   /* مَن أُدخل جدوله فقط — وعليه تُحسب أعداد «يدرّسون / متفرّغون»،
      لأن مَن لا جدول له لا يُعرف موضعه فلا يُعدّ متفرّغاً. */
-  S.scheduled  = function () { return Object.keys(S.data().schedules || {}); };
-  S.withoutSchedule = function () {
-    var sc = S.data().schedules || {};
-    return S.teachers().filter(function (t) { return !sc[t]; });
+  /* ⚠ «له جدول» = فيه خانة واحدة مملوءة على الأقلّ — لا مجرّد وجود المفتاح.
+     فتح شاشة الجداول يُنشئ مصفوفات فارغة لكل اسم، فكان مجرّد المرور بها يُسقط
+     تذكير «لم يُدخل جدوله بعد» ويَعُدّ المعلّم «متفرّغاً» ونحن لا نعرف جدوله
+     أصلاً — وهو اختلاقٌ من جنس بند الاتّهام المحذوف (رُصد 2026-09-05). */
+  S.hasSchedule = function (t) {
+    var day = (S.data().schedules || {})[t];
+    if (!day) return false;
+    return Object.keys(day).some(function (k) {
+      return (day[k] || []).some(function (v) { return !!v; });
+    });
   };
-  /* كل مَن له وجود في الشعبة: المسجَّلون + مَن له جدول (احتياطاً لاسم لم يعد في القائمة) */
+  S.scheduled  = function () { return Object.keys(S.data().schedules || {}).filter(S.hasSchedule); };
+  S.withoutSchedule = function () { return S.teachers().filter(function (t) { return !S.hasSchedule(t); }); };
+  /* رئيس الشعبة نفسه — يدرّس أيضاً، فله جدول ونصاب ويدخل في حساب التعارض.
+     ⚠ ولا يُدرَج في teachers(): ليس من معلّميه بل رئيسهم، فلا يُعدّ في «معلّموك»
+       ولا يُذكَّر بنفسه في «بحاجة إلى إجراء» (قرار المستخدم 2026-09-05). */
+  S.self = function () {
+    try { return (JSON.parse(localStorage.getItem('shouba.user')) || {}).name || ''; }
+    catch (e) { return ''; }
+  };
+  /* كل مَن يظهر في الجدول: رئيس الشعبة أولاً · ثم معلّموه · ثم كل من له جدول
+     (احتياطاً لاسم لم يعد في القائمة). بلا تكرار. */
   S.roster = function () {
-    var all = S.teachers();
-    S.scheduled().forEach(function (t) { if (all.indexOf(t) === -1) all.push(t); });
+    var all = [], add = function (n) { if (n && all.indexOf(n) === -1) all.push(n); };
+    add(S.self());
+    S.teachers().forEach(add);
+    S.scheduled().forEach(add);
     return all;
   };
 

@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/identity/tokens.css?v=202609011359" />
 <link rel="stylesheet" href="/shell.css?v=202609011359" />
-<link rel="stylesheet" href="/components.css?v=202609052326" />
+<link rel="stylesheet" href="/components.css?v=202609052340" />
 <link rel="stylesheet" href="/frame.css?v=202609011359" />
 <style>
   /* خاص بشاشة الجداول — الرأس والشريط السفلي واللوحة السفلية من components.css.
@@ -135,7 +135,7 @@
 
 <script src="/build.js?v=202609052332"></script>
 <script src="/refdata.js?v=202609052326"></script>
-<script src="/derive.js?v=202609052326"></script>
+<script src="/derive.js?v=202609052342"></script>
 <script src="/icons.js?v=202608291819"></script>
 <script src="/components.js?v=202609052332"></script>
 <script>
@@ -152,7 +152,8 @@
   var days     = Shouba.days();
   var times    = Shouba.periods();
   var subjects = Shouba.subjects();
-  var teachers = Shouba.teachers();
+  var teachers = Shouba.roster();     /* رئيس الشعبة أولاً ثم معلّموه — يدرّس هو أيضاً */
+  var SELF     = Shouba.self();
 
   var lastName    = Shouba.lastName;
   var slotsOf     = function(t, day){ return Shouba.daySlots(t, day); };
@@ -185,8 +186,10 @@
       teachers.forEach(function(t){
         var n = filledCount(t);
         var b = document.createElement('button');
-        b.className = 'tch' + (t===cur ? ' on' : '') + (n ? '' : ' none');
-        b.innerHTML = '<b>'+lastName(t)+'</b><small>' + (n ? Shouba.count(n,{one:'حصة',two:'حصتان',few:'حصص',many:'حصة'}) : 'بلا جدول') + '</small>';
+        var isMe = (t === SELF);
+        b.className = 'tch' + (t===cur ? ' on' : '') + (n ? '' : ' none') + (isMe ? ' me' : '');
+        var load = n ? Shouba.count(n,{one:'حصة',two:'حصتان',few:'حصص',many:'حصة'}) : 'بلا جدول';
+        b.innerHTML = '<b>'+lastName(t)+'</b><small>' + (isMe ? 'أنت · ' : '') + load + '</small>';
         b.addEventListener('click', function(){ cur=t; paintAll(); });
         tsel.appendChild(b);
       });
@@ -338,9 +341,11 @@
 
     function paintAll(){
       paintTsel(); paintGrid();
-      var blank = teachers.filter(function(t){ return filledCount(t)===0; }).length;
+      /* العدّاد عن **معلّميه** لا عن الشريط: رئيس الشعبة ليس من معلّمي نفسه */
+      var mine  = Shouba.teachers();
+      var blank = mine.filter(function(t){ return filledCount(t)===0; }).length;
       document.getElementById('headLine').textContent =
-        Shouba.count(teachers.length,{one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'})
+        Shouba.count(mine.length,{one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'})
         + ' · ' + (blank
             ? Shouba.count(blank,{one:'جدول',two:'جدولان',few:'جداول',many:'جدولاً'}) + ' بلا إدخال'
             : 'كل الجداول مُدخلة');

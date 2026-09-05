@@ -1,15 +1,15 @@
 {
-  "name": "شعبة",
+  "name": "شعبة — منصّة رئيس الشعبة",
   "short_name": "شعبة",
   "lang": "ar",
   "dir": "rtl",
-  "start_url": "/login.html",
-  "scope": "/",
+  "start_url": "./login.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#EFE6D6",
   "theme_color": "#16456E",
   "icons": [
-    { "src": "/identity/assets/app-icon-approved.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "identity/assets/app-icon-approved.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

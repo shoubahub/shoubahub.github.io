@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>شعبة · [اسم الشاشة]</title>
 <!-- PWA -->
-<link rel="manifest" href="/manifest.webmanifest" />
+<link rel="manifest" href="manifest.webmanifest" />
 <meta name="theme-color" content="#16456E" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="شعبة" />
-<link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <!-- الأساس المشترك — لا تُعِد كتابة أي هيكل هنا -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/identity/tokens.css?v=3" />
-<link rel="stylesheet" href="/shell.css?v=3" />
-<link rel="stylesheet" href="/components.css?v=3" />
-<link rel="stylesheet" href="/frame.css?v=3" />
+<link rel="stylesheet" href="identity/tokens.css?v=6" />
+<link rel="stylesheet" href="shell.css?v=6" />
+<link rel="stylesheet" href="components.css?v=6" />
+<link rel="stylesheet" href="frame.css?v=6" />
 <style>
   /* أنماط خاصّة بهذه الشاشة فقط — لا body ولا .screen ولا هوامش عامّة (كلّها في shell.css) */
   .head{ padding:30px var(--gap-side) 0; display:flex; flex-direction:column; gap:8px }
@@ -41,7 +41,7 @@
          في نمط المعالج تندمج في شريط التنقّل بجانب نقاط المراحل: -->
     <div class="navrow">
       <div class="brand">
-        <img src="/identity/assets/logo-vec-color.svg" alt="شعبة" />
+        <img src="identity/assets/logo-vec-color.svg" alt="شعبة" />
         <span class="vsep"></span>
         <div class="prog">
           <div class="lbl">إعداد الشعبة · <b>خطوة <span class="num">١</span> من <span class="num">٤</span></b></div>
@@ -72,7 +72,7 @@
   </div>
  </div></div>
 
-<script src="/components.js?v=3"></script>
+<script src="components.js?v=6"></script>
 <script>
   // منطق الشاشة هنا. الاسم المحفوظ: JSON.parse(localStorage.getItem('shouba.user')||'{}').name
 </script>

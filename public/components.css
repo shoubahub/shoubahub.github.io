@@ -27,7 +27,7 @@
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.18)}
 /* صدى المجلّد على الحقول — همسة من الطرف (نفس توقيع الأزرار) */
 .paper::before{content:"";position:absolute;left:-34px;bottom:-12px;width:180px;height:62px;pointer-events:none;
-  background:url('/identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.08}
+  background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.08}
 
 /* ---------- حقل نصّي ---------- */
 .paper > input{width:100%;border:0;background:transparent;font-family:var(--font-ar);font-size:15px;font-weight:600;
@@ -43,7 +43,7 @@
   transition:transform .06s}
 /* صدى المجلّد على المنسدلة — نفس توقيع الحقول */
 .sdrop .trigger::before{content:"";position:absolute;left:-34px;bottom:-12px;width:180px;height:62px;pointer-events:none;
-  background:url('/identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.08}
+  background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.08}
 .sdrop .trigger .val,.sdrop .trigger .chev{position:relative;z-index:1}
 .sdrop .trigger:active{transform:translateY(1px)}
 .sdrop .trigger .val{font-size:15px;font-weight:600;color:var(--shouba-navy)}
@@ -80,7 +80,7 @@
   box-shadow:inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16)}
 /* صدى المجلّد على الورقي — نبرة داكنة خفيفة (كصدى المجلّدات على قماش الهوية) */
 .btn-ghost::before{content:"";position:absolute;left:-42px;bottom:-16px;width:225px;height:78px;pointer-events:none;
-  background:url('/identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.11}
+  background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.11}
 
 /* ---------- شريط التقدّم + رجوع ---------- */
 .prog{display:flex;flex-direction:column;gap:7px;align-items:flex-start}
@@ -323,7 +323,7 @@
   box-shadow:0 6px 16px rgba(18,58,94,.28);position:fixed;overflow:hidden}
 /* صدى المجلّد — توقيع العلامة، من الطرف الأيسر بعيداً عن الشعار (شفافية ١٦٪ ضمن حدّ الدليل) */
 .topbar::before{content:"";position:absolute;left:-30px;bottom:-18px;width:200px;height:78px;pointer-events:none;
-  background:url('/identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(3);opacity:.16}
+  background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(3);opacity:.16}
 .topbar > *{position:relative;z-index:1}
 .topbar .tbcrest{box-shadow:0 0 0 2px var(--shouba-amber)}
 /* فسحة بين عنوان القسم وبطاقته — كان ملتصقاً بها (لاحظه المستخدم على جهازه 2026-08-27) */

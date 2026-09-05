@@ -4,17 +4,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>شعبة · البداية</title>
-<link rel="manifest" href="/manifest.webmanifest" />
+<link rel="manifest" href="manifest.webmanifest" />
 <meta name="theme-color" content="#EFE6D6" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="شعبة" />
-<link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/identity/tokens.css?v=3" />
-<link rel="stylesheet" href="/shell.css?v=3" />
-<link rel="stylesheet" href="/components.css?v=3" />
-<link rel="stylesheet" href="/frame.css?v=3" />
+<link rel="stylesheet" href="identity/tokens.css?v=6" />
+<link rel="stylesheet" href="shell.css?v=6" />
+<link rel="stylesheet" href="components.css?v=6" />
+<link rel="stylesheet" href="frame.css?v=6" />
 <style>
   /* أنماط خاصّة بشاشة الدخول فقط — الهيكل من shell.css -->*/
   .brand{display:flex;flex-direction:column;align-items:center;gap:13px;padding:0 30px}
@@ -53,9 +53,9 @@
     <div class="content center">
     <div class="brand">
       <div class="lockup">
-        <img class="mark" src="/identity/assets/logo-vec-color.svg" alt="شعبة" />
+        <img class="mark" src="identity/assets/logo-vec-color.svg" alt="شعبة" />
         <span class="divider"></span>
-        <img class="word" src="/identity/assets/lockup-word-mansa-color.svg" alt="منصّة شعبة" />
+        <img class="word" src="identity/assets/lockup-word-mansa-color.svg" alt="منصّة شعبة" />
       </div>
       <div class="sub">منصّة رئيس الشعبة · نسخة تجريبية</div>
     </div>
@@ -108,7 +108,7 @@
     if(cont.disabled) return;
     /* لا method هنا: لا مصادقة بعد، فلا نكتب في البيانات ما ليس صحيحاً */
     localStorage.setItem(KEY, JSON.stringify({ name: uname.value.trim() }));
-    location.href = '/setup-wizard.html';
+    location.href = 'setup-wizard.html';
   });
 </script>
 </body>

@@ -22,8 +22,15 @@ for (const f of fs.readdirSync(DIR).filter(x => x.endsWith('.html'))) {
   let s = before;
   for (const a of ASSETS) {
     const esc = a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    s = s.replace(new RegExp(`(["'])/${esc}(\\?v=[^"']*)?\\1`, 'g'), `$1/${a}?v=${next}$1`);
+    /* المسارات نسبية (شرط العمل تحت مسار فرعي)، ونقبل المطلقة احتياطاً */
+    s = s.replace(new RegExp(`(["'])(?:\\.?/)?${esc}(\\?v=[^"']*)?\\1`, 'g'), `$1${a}?v=${next}$1`);
   }
   if (s !== before) { fs.writeFileSync(p, s); touched++; }
 }
-console.log(`النسخة ${cur} ← ${next} · بُصمت ${touched} شاشة`);
+/* ④ عامل الخدمة: رقم البناء واسم المخزن — وإلّا خدم المستخدمَ نسخةً قديمة من مخزنه */
+const swPath = `${DIR}/sw.js`;
+if (fs.existsSync(swPath)) {
+  const sw = fs.readFileSync(swPath, 'utf8').replace(/var BUILD = \d+;/, `var BUILD = ${next};`);
+  fs.writeFileSync(swPath, sw);
+}
+console.log(`النسخة ${cur} ← ${next} · بُصمت ${touched} شاشة · وعامل الخدمة`);

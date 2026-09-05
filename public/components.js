@@ -189,6 +189,34 @@ Shouba.returnTo = function () {
     });
   }
 
-  if (document.readyState !== 'loading') { init(); bindSoon(); }
-  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); });
+  /* ── عامل الخدمة والتحديث الذاتي (2026-09-06) ─────────────────────
+     التطبيق يسأل version.json عند **كل فتح**؛ فإن كان المنشور أحدث من النسخة
+     العاملة، مسح المخازن وألغى عامل الخدمة وأعاد التحميل **مرّة واحدة**.
+     فيصل التحديث إلى أجهزة الزملاء بلا أن يفعلوا شيئاً — وهو الطقس المنقول
+     من مشروع الملاعب حيث بقي جهازٌ على نسخة قديمة ولم يُدرَ. */
+  function updater() {
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+
+    var FLAG = 'shouba.reloaded';
+    fetch('version.json?t=' + Math.random(), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (v) {
+        var mine = window.SHOUBA_BUILD || 0;
+        if (!v || !v.build || v.build <= mine) { sessionStorage.removeItem(FLAG); return; }
+        if (sessionStorage.getItem(FLAG)) return;          // حارس: إعادة تحميل واحدة لا حلقة
+        sessionStorage.setItem(FLAG, '1');
+        Promise.resolve()
+          .then(function () { return caches.keys().then(function (ks) {
+            return Promise.all(ks.map(function (k) { return caches.delete(k); })); }); })
+          .then(function () { return navigator.serviceWorker.getRegistrations(); })
+          .then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); })
+          .catch(function () {})
+          .then(function () { location.reload(); });
+      })
+      .catch(function () {});
+  }
+
+  if (document.readyState !== 'loading') { init(); bindSoon(); updater(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); updater(); });
 })();

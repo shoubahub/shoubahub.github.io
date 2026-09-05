@@ -4,17 +4,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>شعبة · ملفّ المعلّم</title>
-<link rel="manifest" href="/manifest.webmanifest" />
+<link rel="manifest" href="manifest.webmanifest" />
 <meta name="theme-color" content="#1B5183" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="شعبة" />
-<link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/identity/tokens.css?v=3" />
-<link rel="stylesheet" href="/shell.css?v=3" />
-<link rel="stylesheet" href="/components.css?v=3" />
-<link rel="stylesheet" href="/frame.css?v=3" />
+<link rel="stylesheet" href="identity/tokens.css?v=6" />
+<link rel="stylesheet" href="shell.css?v=6" />
+<link rel="stylesheet" href="components.css?v=6" />
+<link rel="stylesheet" href="frame.css?v=6" />
 <style>
   .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
   .rm{padding:0 var(--gap-side)}
@@ -45,11 +45,11 @@
   </div>
 
   <div class="tabbar">
-    <button class="tab" data-go="/board.html">
+    <button class="tab" data-go="board.html">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 8.4 10 3l7 5.4V16a1 1 0 0 1-1 1h-3.5v-4.5h-5V17H4a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
       اللوحة
     </button>
-    <button class="tab on" data-go="/teachers.html">
+    <button class="tab on" data-go="teachers.html">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 17c0-3 2.7-4.6 6-4.6S16 14 16 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       معلّموك
     </button>
@@ -60,18 +60,18 @@
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 9h6M7 12.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       سجلّاتك
     </button>
-    <button class="tab" data-go="/schedule.html">
+    <button class="tab" data-go="schedule.html">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3.5" y="4.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 8.5h13M7 3v3M13 3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       جدولك
     </button>
   </div>
  </div></div>
 
-<script src="/build.js?v=3"></script>
-<script src="/refdata.js?v=3"></script>
-<script src="/derive.js?v=3"></script>
-<script src="/icons.js?v=3"></script>
-<script src="/components.js?v=3"></script>
+<script src="build.js?v=6"></script>
+<script src="refdata.js?v=6"></script>
+<script src="derive.js?v=6"></script>
+<script src="icons.js?v=6"></script>
+<script src="components.js?v=6"></script>
 <script>
   var d = Shouba.data();
   var T = new URLSearchParams(location.search).get('t') || '';
@@ -80,11 +80,11 @@
     var el=document.getElementById('tbCrest'), c=d.crest;
     if(c && c.type==='image') el.innerHTML='<img src="'+c.data+'" alt="شعار المدرسة" />';
     else if(c && c.type==='icon' && window.SHOUBA_ICONS) el.innerHTML=SHOUBA_ICONS.svg(c.id,22);
-    else el.innerHTML='<img src="/identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
+    else el.innerHTML='<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
   })();
 
   /* اسمٌ غير موجود ⟵ لا نعرض ملفّاً فارغاً بل نعيده إلى القائمة */
-  if(!T || Shouba.teachers().indexOf(T) === -1){ location.replace('/teachers.html'); }
+  if(!T || Shouba.teachers().indexOf(T) === -1){ location.replace('teachers.html'); }
 
   var load = Shouba.loadOf(T), subs = Shouba.subjectsOfTeacher(T);
   document.getElementById('tName').textContent = 'أ. ' + Shouba.shortName(T);
@@ -124,7 +124,7 @@
   /* ② جدوله — يفتح شاشة الجداول عليه مباشرةً */
   entry('جدوله الدراسي',
         load ? Shouba.count(load,{one:'حصة',two:'حصتان',few:'حصص',many:'حصة'}) : 'لم يُدخل',
-        false, function(){ location.href = '/schedule.html?t=' + encodeURIComponent(T); });
+        false, function(){ location.href = 'schedule.html?t=' + encodeURIComponent(T); });
 
   /* ③④ قيد الإعداد — يظهران ليُعرف شكل الملفّ، ويصرّحان بحالهما */
   function soonEntry(title){
@@ -153,7 +153,7 @@
       var dd = Shouba.data();
       if(dd.schedules) delete dd.schedules[T];
       Shouba.save({ teachers: list });
-      location.replace('/teachers.html');
+      location.replace('teachers.html');
     });
     n.appendChild(yes);
     Shouba.sheet.open('تأكيد الإزالة', n);
@@ -162,8 +162,8 @@
   [].forEach.call(document.querySelectorAll('.tab[data-go]'), function(b){
     b.addEventListener('click', function(){ location.href = b.dataset.go; });
   });
-  document.getElementById('back').addEventListener('click', function(){ location.href='/teachers.html'; });
-  document.getElementById('add').addEventListener('click', function(){ location.href='/teachers.html'; });
+  document.getElementById('back').addEventListener('click', function(){ location.href='teachers.html'; });
+  document.getElementById('add').addEventListener('click', function(){ location.href='teachers.html'; });
 </script>
 </body>
 </html>

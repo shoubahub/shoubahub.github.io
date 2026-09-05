@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/identity/tokens.css?v=202609060012" />
 <link rel="stylesheet" href="/shell.css?v=202609060012" />
-<link rel="stylesheet" href="/components.css?v=202609060023" />
+<link rel="stylesheet" href="/components.css?v=202609060031" />
 <link rel="stylesheet" href="/frame.css?v=202609060012" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
@@ -60,7 +60,7 @@
 
         <!-- ② مصفوفة الأسبوع — تلي الجدول مباشرةً (قرار المستخدم: أعمال الأسبوع أهمّ) -->
         <section data-rail="week">
-          <div class="sect"><div class="h">هذا الأسبوع</div><div class="a" id="toWeek">الرزنامة الكاملة ›</div></div>
+          <div class="sect"><div class="h">هذا الأسبوع</div><div class="a" id="toWeek">تقويمك الدراسي ›</div></div>
           <div class="wmx" id="week"></div>
         </section>
 
@@ -414,18 +414,24 @@
 
     var add = document.createElement('button');
     add.className = 'cta'; add.textContent = 'أضِف موعداً';
-    add.addEventListener('click', function(){ addSheet(day); });
+    add.addEventListener('click', function(){
+      /* الرجوع إلى يوم الموعد إن بقي في الأسبوع المعروض، وإلّا إلى التقويم */
+      addSheet(iso(DAY_DATE[day]), function(dv){
+        if(dv >= iso(DAY_DATE[R.days[0]]) && dv <= iso(DAY_DATE[R.days[4]])) daySheet(day);
+        else calendarSheet();
+      });
+    });
     n.appendChild(add);
 
     Shouba.sheet.open('مواعيد ' + dayLabel(day), n);
   }
 
-  function addSheet(day){
+  function addSheet(startIso, back){
     var n = document.createElement('div');
     var chosen = EV_TYPES[0];
     n.innerHTML = '<div class="field" style="padding-bottom:4px"><label for="evd">تاريخ الموعد</label>'
-      + '<div class="paper"><input id="evd" type="date" value="' + iso(DAY_DATE[day]) + '" /></div>'
-      + '<div class="hint">غيّره لموعدٍ قادم — اختبارٍ بعد أسابيع مثلاً.</div></div>'
+      + '<div class="paper"><input id="evd" type="date" value="' + startIso + '" /></div>'
+      + '<div class="hint">أيّ يوم في عامك الدراسي — لا هذا الأسبوع وحده.</div></div>'
       + '<div class="field" style="padding-bottom:4px"><label>نوع الموعد</label>'
       + '<div class="segs" id="evsegs"></div></div>'
       + '<div class="field" style="padding-bottom:6px"><label for="evt">العنوان</label>'
@@ -443,7 +449,7 @@
     var save = document.createElement('button');
     save.className = 'cta'; save.textContent = 'أضِف';
     n.appendChild(save);
-    Shouba.sheet.open('موعد جديد · ' + dayLabel(day), n);
+    Shouba.sheet.open('موعد جديد', n);
     var inp = n.querySelector('#evt');
     setTimeout(function(){ inp.focus(); }, 80);
     function submit(){
@@ -451,52 +457,63 @@
       if(v.length < 2 || !dv) return;
       Shouba.addEvent({ date: dv, type: chosen, title: v });
       paintWeek(); paintCard();
-      /* موعدٌ خارج الأسبوع المعروض ⟵ نُريه في «القادمة» لا في يومٍ لا يظهر */
-      if(dv >= iso(DAY_DATE[R.days[0]]) && dv <= iso(DAY_DATE[R.days[4]])) daySheet(day);
-      else weekSheet();
+      back(dv);
     }
     save.addEventListener('click', submit);
     inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') submit(); });
   }
 
-  /* «الرزنامة الكاملة ›» — كان رابطاً ميّتاً، فصار رزنامة الأسبوع كلّها */
-  function weekSheet(){
+  /* «الرزنامة الكاملة ›» ⟵ **تقويمك الدراسي**: بابٌ أماميّ لإدخال مواعيد العام
+     كلّه من أوّله إن شاء، ثم عرضها مجموعةً بالشهر. أيام الأسبوع تُرى في المصفوفة
+     فوقه، فلا تُكرَّر هنا (سؤال المستخدم 2026-09-06). */
+  function calendarSheet(){
     var n = document.createElement('div');
     n.className = 'vlist'; n.style.padding = '0';
-    R.days.forEach(function(day){
-      var list = evOf(day);
-      var b = document.createElement('button');
-      b.className = 'titem';
-      b.innerHTML = '<div class="tx"><b>' + dayLabel(day) + '</b><small>'
-        + (list.length ? list.map(function(e){ return e.title; }).join(' · ') : 'لا مواعيد')
-        + '</small></div><span class="chev">‹</span>';
-      b.addEventListener('click', function(){ daySheet(day); });
-      n.appendChild(b);
-    });
 
-    /* المواعيد بعد هذا الأسبوع — وإلّا اختفى الموعد المستقبليّ عن العين تماماً */
-    var later = Shouba.eventsAfter(iso(DAY_DATE[R.days[4]]));
-    var head = document.createElement('div');
-    head.className = 'sheet-note';
-    head.textContent = later.length ? 'مواعيد قادمة' : 'لا مواعيد بعد هذا الأسبوع.';
-    n.appendChild(head);
-    later.forEach(function(ev){
-      var p = ev.date.split('-');
-      var wd = R.days[new Date(+p[0], +p[1]-1, +p[2]).getDay()] || '';
+    var add = document.createElement('button');
+    add.className = 'cta'; add.textContent = 'أضِف موعداً';
+    add.addEventListener('click', function(){ addSheet(iso(now), function(){ calendarSheet(); }); });
+    n.appendChild(add);
+
+    /* من اليوم فصاعداً — الماضي مضى، وقد ظهر في أسبوعه */
+    var todayIso = iso(now);
+    var list = Shouba.events().filter(function(e){ return e.date && e.date >= todayIso; })
+      .sort(function(a,b){ return a.date < b.date ? -1 : 1; });
+
+    if(!list.length){
+      var e0 = document.createElement('div');
+      e0.className = 'soon-note';
+      e0.textContent = 'لا مواعيد بعد. أضِف اختباراتك واجتماعاتك وأنشطتك — من اليوم إلى آخر العام.';
+      n.appendChild(e0);
+    }
+
+    var lastMonth = '';
+    list.forEach(function(ev){
+      var p  = ev.date.split('-');
+      var dt = new Date(+p[0], +p[1]-1, +p[2]);
+      var mk = p[0] + '-' + p[1];
+      if(mk !== lastMonth){
+        lastMonth = mk;
+        var h = document.createElement('div');
+        h.className = 'sheet-note';
+        h.textContent = MONTHS[+p[1]-1] + ' ' + p[0];
+        n.appendChild(h);
+      }
+      var wd = R.days[dt.getDay()] || '';
       var r = document.createElement('div');
       r.className = 'evrow ' + (TYPE_CLASS[ev.type] || '');
       r.innerHTML = '<b>' + ev.title + '</b><span class="ty">'
         + (wd ? wd + ' · ' : '') + (+p[2]) + '/' + (+p[1]) + '</span>';
       var x = document.createElement('button');
       x.className = 'del'; x.setAttribute('aria-label','حذف'); x.textContent = '×';
-      x.addEventListener('click', function(){ Shouba.removeEvent(ev.id); paintWeek(); weekSheet(); });
+      x.addEventListener('click', function(){ Shouba.removeEvent(ev.id); paintWeek(); paintCard(); calendarSheet(); });
       r.appendChild(x);
       n.appendChild(r);
     });
 
-    Shouba.sheet.open('رزنامة ' + (Shouba.weekLabel() || 'الأسبوع'), n);
+    Shouba.sheet.open('تقويمك الدراسي', n);
   }
-  document.getElementById('toWeek').addEventListener('click', weekSheet);
+  document.getElementById('toWeek').addEventListener('click', calendarSheet);
   paintWeek();
 
   /* ===== ④ إنجاز المنهج ===== */

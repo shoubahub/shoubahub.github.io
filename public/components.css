@@ -562,3 +562,9 @@ body.solo .tsel{display:none}
   color:var(--shouba-link);font-size:17px;font-weight:700;line-height:1;
   width:26px;height:26px;border-radius:9px;display:grid;place-items:center}
 .wkarrow:active{background:rgba(62,127,180,.12)}
+
+/* صفّ الأسبوع: سهمان على جانبيه دلالةً على السحب، والمصفوفة تملأ ما بينهما */
+.wkrow{display:flex;align-items:center;gap:2px;padding:0 6px}
+.wkrow .wmx{flex:1;min-width:0;padding:0}
+.wkrow .wkarrow{flex:none}
+.wmx{touch-action:pan-y;user-select:none;-webkit-user-select:none}

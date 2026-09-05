@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/identity/tokens.css?v=202609060012" />
 <link rel="stylesheet" href="/shell.css?v=202609060012" />
-<link rel="stylesheet" href="/components.css?v=202609060035" />
+<link rel="stylesheet" href="/components.css?v=202609060039" />
 <link rel="stylesheet" href="/frame.css?v=202609060012" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
@@ -60,8 +60,13 @@
 
         <!-- ② مصفوفة الأسبوع — تلي الجدول مباشرةً (قرار المستخدم: أعمال الأسبوع أهمّ) -->
         <section data-rail="week">
-          <div class="sect"><div class="h wknav"><button class="wkarrow" id="wkPrev" aria-label="الأسبوع السابق">›</button><span id="weekTtl">هذا الأسبوع</span><button class="wkarrow" id="wkNext" aria-label="الأسبوع التالي">‹</button></div><div class="a" id="toWeek">تقويمك الدراسي ›</div></div>
-          <div class="wmx" id="week"></div>
+          <div class="sect"><div class="h" id="weekTtl">هذا الأسبوع</div><div class="a" id="toWeek">تقويمك الدراسي ›</div></div>
+          <!-- السهمان على جانبَي الأسبوع دلالةً على السحب: اليمين ماضٍ واليسار قادم -->
+          <div class="wkrow">
+            <button class="wkarrow" id="wkPrev" aria-label="الأسبوع السابق">›</button>
+            <div class="wmx" id="week"></div>
+            <button class="wkarrow" id="wkNext" aria-label="الأسبوع التالي">‹</button>
+          </div>
         </section>
 
         <!-- ③ إنجاز المنهج -->
@@ -541,8 +546,41 @@
   }
   document.getElementById('toWeek').addEventListener('click', calendarSheet);
   /* ⚠ في RTL: اليمين رجوعٌ إلى الماضي، واليسار تقدّمٌ إلى القادم */
-  document.getElementById('wkPrev').addEventListener('click', function(){ setWeek(weekOffset - 1); paintWeek(); });
-  document.getElementById('wkNext').addEventListener('click', function(){ setWeek(weekOffset + 1); paintWeek(); });
+  function goWeek(step){ setWeek(weekOffset + step); paintWeek(); }
+  document.getElementById('wkPrev').addEventListener('click', function(){ goWeek(-1); });
+  document.getElementById('wkNext').addEventListener('click', function(){ goWeek(1); });
+
+  /* سحب الأسبوع كاملاً (طلب المستخدم 2026-09-06): تُسحب المصفوفة فتتبع الإصبع،
+     وعند الإفلات تُقلَّب إن جاوز السحب العتبة. الاتّجاه كاتّجاه السهمين:
+     سحبٌ يميناً ⟵ الماضي · سحبٌ يساراً ⟵ القادم.
+     ⚠ ويُكبَح نقرُ العمود بعد سحبٍ فعليّ، وإلّا فتحت اللوحةُ في كل تقليب. */
+  (function swipe(){
+    var x0 = 0, dx = 0, on = false, moved = false;
+    var TH = 45;
+    function start(x){ x0 = x; dx = 0; on = true; moved = false; weekEl.style.transition = 'none'; }
+    function move(x){
+      if(!on) return;
+      dx = x - x0;
+      if(Math.abs(dx) > 6) moved = true;
+      weekEl.style.transform = 'translateX(' + (dx * 0.4) + 'px)';
+    }
+    function end(){
+      if(!on) return;
+      on = false;
+      weekEl.style.transition = 'transform .18s';
+      weekEl.style.transform = '';
+      if(dx > TH)       goWeek(-1);        // سُحب يميناً ⟵ الأسبوع الماضي
+      else if(dx < -TH) goWeek(1);         // سُحب يساراً ⟵ الأسبوع القادم
+    }
+    weekEl.addEventListener('touchstart', function(e){ start(e.touches[0].clientX); }, {passive:true});
+    weekEl.addEventListener('touchmove',  function(e){ move(e.touches[0].clientX); }, {passive:true});
+    weekEl.addEventListener('touchend',   end);
+    weekEl.addEventListener('mousedown',  function(e){ start(e.clientX); });
+    window.addEventListener('mousemove',  function(e){ move(e.clientX); });
+    window.addEventListener('mouseup',    end);
+    /* حارس النقر: يمنع فتح لوحة اليوم إن كانت الحركة سحباً */
+    weekEl.addEventListener('click', function(e){ if(moved){ e.stopPropagation(); moved = false; } }, true);
+  })();
   paintWeek();
 
   /* ===== ④ إنجاز المنهج ===== */

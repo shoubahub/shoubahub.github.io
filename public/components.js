@@ -44,7 +44,10 @@ Shouba.shortName = function (full) {
    ?ret=review ⟵ مراجعة المنتصف · ?ret=final ⟵ المراجعة النهائية · بلا وسم = المسار الأمامي */
 Shouba.returnTo = function () {
   var r = new URLSearchParams(location.search).get('ret');
-  return r === 'final' ? '/setup-wizard-7.html' : r === 'review' ? '/setup-review.html' : '';
+  /* ret=board يُستعمل بعد الإعداد: شاشة معالج تُفتح من اللوحة لتعديل بيانات، ثم تعود إليها */
+  return r === 'final'  ? '/setup-wizard-7.html'
+       : r === 'review' ? '/setup-review.html'
+       : r === 'board'  ? '/board.html' : '';
 };
 
 (function () {
@@ -136,6 +139,20 @@ Shouba.returnTo = function () {
     close: function () { close(); }
   };
 
-  if (document.readyState !== 'loading') init();
-  else document.addEventListener('DOMContentLoaded', init);
+  /* تبويب قيد الإعداد: يبقى ظاهراً ليُعرف شكل المنصّة، والضغطة تصرّح بحاله
+     بدل أن تفتح صفحة ناقصة. سلوك مشترك ⟵ موضعه هنا لا في الشاشات. */
+  function bindSoon() {
+    [].forEach.call(document.querySelectorAll('.tab[data-soon]'), function (b) {
+      b.addEventListener('click', function () {
+        var n = document.createElement('div');
+        n.className = 'soon-note';
+        n.textContent = 'قسم «' + b.dataset.soon + '» قيد الإعداد، ويصل في تحديث قادم.'
+                      + ' وحتى ذلك الحين، اللوحة وجدولك يعملان كاملَين.';
+        Shouba.sheet.open('قيد الإعداد', n);
+      });
+    });
+  }
+
+  if (document.readyState !== 'loading') { init(); bindSoon(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); });
 })();

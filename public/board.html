@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/identity/tokens.css?v=202608291819" />
 <link rel="stylesheet" href="/shell.css?v=202608291819" />
-<link rel="stylesheet" href="/components.css?v=202609011359" />
+<link rel="stylesheet" href="/components.css?v=202609052308" />
 <link rel="stylesheet" href="/frame.css?v=202608291819" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
@@ -73,7 +73,7 @@
 
         <!-- ③ إنجاز المنهج -->
         <section data-rail="plan">
-          <div class="sect"><div class="h">إنجاز المنهج</div><div class="a" id="planPct">—</div></div>
+          <div class="sect"><div class="h">خطة المنهج</div><div class="a" id="planPct">—</div></div>
           <div class="slices" id="slices"></div>
           <div class="planline" id="planLine"></div>
         </section>
@@ -98,14 +98,14 @@
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 8.4 10 3l7 5.4V16a1 1 0 0 1-1 1h-3.5v-4.5h-5V17H4a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
       اللوحة
     </button>
-    <button class="tab" data-go="/teachers.html">
+    <button class="tab soon" data-soon="معلّموك">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 17c0-3 2.7-4.6 6-4.6S16 14 16 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       معلّموك
     </button>
     <button class="tab-add" id="add" aria-label="إضافة">
       <svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#241D06" stroke-width="2.6" stroke-linecap="round"/></svg>
     </button>
-    <button class="tab" data-go="/records.html">
+    <button class="tab soon" data-soon="سجلّاتك">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 9h6M7 12.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       سجلّاتك
     </button>
@@ -119,7 +119,7 @@
 <script src="/refdata.js?v=202609011304"></script>
 <script src="/derive.js?v=202609011503"></script>
 <script src="/icons.js?v=202608291819"></script>
-<script src="/components.js?v=202609011421"></script>
+<script src="/components.js?v=202609052309"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -297,7 +297,7 @@
       + '<div class="acts"><button class="cta" id="cardCta">الجدول الكامل</button>'
       + '<button class="ghost2" id="cardGhost">معلّموك</button></div>';
     document.getElementById('cardCta').addEventListener('click', function(){ location.href='/schedule.html'; });
-    document.getElementById('cardGhost').addEventListener('click', function(){ location.href='/teachers.html'; });
+    document.getElementById('cardGhost').addEventListener('click', function(){ location.href='/setup-wizard-5.html?ret=board'; });
   }
   paintCard();
   if(currentIdx>-1 && hasSchedules) setInterval(function(){ var l=card.querySelector('.left'); if(l) l.textContent=remain(); }, 1000);
@@ -324,7 +324,7 @@
   if(!subjectNames.length){
     document.getElementById('planPct').textContent='';
     slicesEl.style.display='none';
-    document.getElementById('planLine').textContent='بانتظار خطة المنهج — تُضاف من الإدارة أو من سجلّ «ما قُطع من المنهج».';
+    document.getElementById('planLine').textContent='رفع توزيع المنهج قيد الإعداد — يصل في تحديث قادم، ولا يلزمك شيء الآن.';
   } else {
     var pr=Shouba.planProgress(), total=pr.total, done=pr.done, cells=pr.cells;
     cells.slice(0,40).forEach(function(c){
@@ -340,7 +340,9 @@
   /* ===== ⑤ بحاجة إلى إجراء ===== */
   var todoEl=document.getElementById('todo'), items=[];
   Shouba.withoutSchedule().forEach(function(t){ items.push({name:t,badge:'تذكير',text:'لم يُدخل جدوله بعد'}); });
-  Shouba.behindPlan(3).forEach(function(t){ items.push({name:t,badge:'متابعة',text:'دروس سابقة لم تُؤشَّر في خطة المنهج'}); });
+  /* ⚠ حُذف بند «دروس سابقة لم تُؤشَّر» (2026-09-05): اتّهامٌ بلا دليل — لا باب تأشير
+     أصلاً، فكان كلّ معلّم متأخّراً بحكم البناء. يعود يوم يصير للإنجاز مصدرٌ حقيقي
+     (تأشير المعلّم بنفسه). والدالّة Shouba.behindPlan باقية في طبقة الاشتقاق تنتظره. */
   document.getElementById('todoCount').textContent = items.length ? items.length : 'لا شيء';
   if(!items.length){
     todoEl.closest('section').classList.add('calm');
@@ -358,7 +360,9 @@
   }
 
   /* ===== التنقّل ===== */
-  [].forEach.call(document.querySelectorAll('.tab'), function(b){
+  /* ⚠ `.tab[data-go]` لا `.tab` المطلقة: تبويب «قيد الإعداد» بلا وجهة، فكان ينتقل
+     إلى undefined فيرتدّ المستخدم إلى شاشة الدخول (رُصد بالفحص 2026-09-05). */
+  [].forEach.call(document.querySelectorAll('.tab[data-go]'), function(b){
     b.addEventListener('click', function(){ if(!b.classList.contains('on')) location.href=b.dataset.go; });
   });
   document.getElementById('toSchedule').addEventListener('click', function(){ location.href='/schedule.html'; });

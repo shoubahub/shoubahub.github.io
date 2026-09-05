@@ -144,7 +144,9 @@
     countEl.textContent = n === 0 ? 'لم تُضِف معلّماً بعد'
                         : Shouba.count(n, { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً' });
     emptyEl.classList.toggle('hide', n > 0);
-    next.textContent = n > 0 ? 'التالي' : 'تخطّي الآن';
+    /* تُفتح هذه الشاشة من اللوحة أيضاً (ret=board) — فالزرّ يصرّح بوجهته لا يقول «التالي» */
+    next.textContent = Shouba.returnTo() === '/board.html' ? 'عودة إلى اللوحة'
+                     : n > 0 ? 'التالي' : 'تخطّي الآن';
   }
 
   function persist(){ save({ teachers: teachers }); }

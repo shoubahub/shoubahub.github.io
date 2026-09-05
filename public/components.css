@@ -556,8 +556,7 @@ body.solo .tsel{display:none}
 .wcol{cursor:pointer}
 .wcol .wq{color:var(--shouba-hint);font-weight:700}
 
-/* تقليب الأسابيع في رزنامة اللوحة — سهمان حول عنوان القسم */
-.sect .h.wknav{display:flex;align-items:center;gap:2px}
+/* تقليب الأسابيع في رزنامة اللوحة — سهمان على جانبَي الأسبوع */
 .wkarrow{border:0;cursor:pointer;background:transparent;font-family:var(--font-ar);
   color:var(--shouba-link);font-size:17px;font-weight:700;line-height:1;
   width:26px;height:26px;border-radius:9px;display:grid;place-items:center}
@@ -568,3 +567,5 @@ body.solo .tsel{display:none}
 .wkrow .wmx{flex:1;min-width:0;padding:0}
 .wkrow .wkarrow{flex:none}
 .wmx{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+/* رقم النسخة في مربّع الرأس — يُقرأ دائماً فيُسأل عنه عند أي شكوى */
+.topbar .iconbtn.ver{font-family:var(--font-num);font-size:13.5px;font-weight:700;color:var(--shouba-cream)}

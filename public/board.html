@@ -11,17 +11,13 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/identity/tokens.css?v=202609060012" />
-<link rel="stylesheet" href="/shell.css?v=202609060012" />
-<link rel="stylesheet" href="/components.css?v=202609060039" />
-<link rel="stylesheet" href="/frame.css?v=202609060012" />
+<link rel="stylesheet" href="/identity/tokens.css?v=3" />
+<link rel="stylesheet" href="/shell.css?v=3" />
+<link rel="stylesheet" href="/components.css?v=3" />
+<link rel="stylesheet" href="/frame.css?v=3" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
-  .card-navy{padding:14px 16px;gap:10px}
-  .card-navy .ttl{font-size:15.5px}
-  .card-navy .acts .cta{padding:11px 14px;font-size:14px}
-  .card-navy .acts .ghost2{padding:11px 15px;font-size:13.5px}
   .planline{padding:0 var(--gap-side);font-size:12px;color:var(--shouba-text-muted);font-weight:600}
   .planline b{color:var(--shouba-navy)}
   .todo{padding:0 var(--gap-side);display:flex;flex-direction:column;gap:7px}
@@ -38,13 +34,10 @@
         <b id="deptName">شعبتك</b>
         <span id="dateLine">—</span>
       </div>
-      <div class="iconbtn" id="settings" title="الإعدادات">
-        <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
-          <circle cx="10" cy="10" r="2.6" stroke="#5F5648" stroke-width="1.8"/>
-          <path d="M10 2.6v2M10 15.4v2M17.4 10h-2M4.6 10h-2M15.2 4.8l-1.4 1.4M6.2 13.8l-1.4 1.4M15.2 15.2l-1.4-1.4M6.2 6.2L4.8 4.8"
-                stroke="#5F5648" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </div>
+      <!-- المربّع أعلى اليسار يحمل **رقم النسخة** بدل رمز الإعدادات (قرار المستخدم
+           2026-09-06): يراه المستخدم دائماً، فأوّل سؤال عند أي شكوى «ما الرقم عندك؟».
+           والضغط يفتح الإعدادات كما كان. -->
+      <div class="iconbtn ver" id="settings" title="الإعدادات ورقم النسخة"><span id="verNo">—</span></div>
     </div>
   <div class="screen has-topbar has-tabbar">
 
@@ -114,11 +107,11 @@
   </div>
  </div></div>
 
-<script src="/build.js?v=202609060012"></script>
-<script src="/refdata.js?v=202609060012"></script>
-<script src="/derive.js?v=202609060028"></script>
-<script src="/icons.js?v=202609060012"></script>
-<script src="/components.js?v=202609060012"></script>
+<script src="/build.js?v=3"></script>
+<script src="/refdata.js?v=3"></script>
+<script src="/derive.js?v=3"></script>
+<script src="/icons.js?v=3"></script>
+<script src="/components.js?v=3"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -631,6 +624,7 @@
     b.addEventListener('click', function(){ if(!b.classList.contains('on')) location.href=b.dataset.go; });
   });
   document.getElementById('toSchedule').addEventListener('click', function(){ location.href='/schedule.html'; });
+  document.getElementById('verNo').textContent = window.SHOUBA_BUILD || '؟';
   document.getElementById('settings').addEventListener('click', function(){ Shouba.settings(); });
 </script>
 </body>

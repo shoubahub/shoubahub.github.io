@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/identity/tokens.css?v=202608291819" />
 <link rel="stylesheet" href="/shell.css?v=202608291819" />
-<link rel="stylesheet" href="/components.css?v=202609052347" />
+<link rel="stylesheet" href="/components.css?v=202609052353" />
 <link rel="stylesheet" href="/frame.css?v=202608291819" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
@@ -212,10 +212,16 @@
       return;
     }
     var html = '', pIdx = -1;                       // pIdx: ترقيم الحصص وحدها (الفرص لا تُرقَّم)
-    /* ما الذي يُفتح؟ أثناء الدوام: الجارية وحدها · قبله وفي العطلة: أوّل صفَّين
-       (لقاء الصباح والحصة الأولى) · وبالزرّ: الجدول كلّه. */
+    /* ما الذي **يُعرض** أصلاً؟ (قرار المستخدم 2026-09-05: الجدول لا يأكل مساحة
+       اللوحة، فتظهر بقيّة أقسامها.) أثناء الدوام: الجارية مفتوحةً والتالية مطويّةً
+       بتوقيتها وحده · قبل الدوام: التاليتان مطويّتان · بعده: سطرٌ واحد.
+       وما عداها لا يُرسَم إطلاقاً حتى يُضغط «افرد الجدول كاملاً». */
     var dayRunning = !isWeekend && currentIdx > -1;
-    var dayEnded   = !isWeekend && currentIdx === -1 && nextIdx === -1;   // انقضى الدوام: يُطوى كلّه
+    var dayEnded   = !isWeekend && currentIdx === -1 && nextIdx === -1;
+    var upcoming   = isWeekend ? 0 : nextIdx;          // في العطلة نعرض بداية جدول الأحد
+    var shown      = {};
+    if(dayRunning){ shown[currentIdx] = 1; if(nextIdx > -1) shown[nextIdx] = 1; }
+    else if(!dayEnded){ shown[upcoming] = 1; if(times[upcoming + 1]) shown[upcoming + 1] = 1; }
     times.forEach(function(t, i){
       var isBreak = !!t.brk;
       var isNow = (i === currentIdx) && !isWeekend;
@@ -224,7 +230,8 @@
       var title = isBreak ? (t.label || 'فرصة') : ('الحصة ' + (ORD[pIdx] || (pIdx+1)));
       /* «انتهت» بانقضاء وقتها فعلاً — لا بوجود حصة جارية (فبعد نهاية الدوام كلّها منتهية) */
       var isPastRow = !isWeekend && m >= toMin(t.to);
-      var isOpen    = expandAll || (dayRunning ? isNow : (dayEnded ? false : i <= 1));
+      var isOpen    = isNow;                       /* لا يُفتح بتفاصيله إلّا الجاري */
+      if(!expandAll && !shown[i]) return;           /* وما عداه لا يُرسَم أصلاً */
       /* الحالة تُحجز لها خانة ثابتة حتى في الصفوف القادمة، فتستوي الأعمدة (قرار المستخدم) */
       /* عمود واحد للحالة: «باقي mm:ss» أثناء الحصة ← «انتهت» بعد انتهائها (قرار المستخدم 2026-09-01) */
       var stateTxt = isNow ? leftIn(t) : isPastRow ? 'انتهت' : '';
@@ -257,9 +264,11 @@
               + '<span class="l2"><span class="sub">' + s.subject + '</span>'
               + '<span class="cl">' + s.cls + '</span></span></span>';
       });
-      if(free) html += '<span class="freechip">' + free + ' متفرّغ</span>';
+      if(free) html += '<span class="freechip">' + Shouba.count(free,{one:'متفرّغ',two:'متفرّغان',few:'متفرّغون',many:'متفرّغاً'}) + '</span>';
       html += '</div></div>';
     });
+    if(dayEnded && !expandAll)
+      html = '<div class="empty">انتهى دوام اليوم — افرد الجدول لمراجعته.</div>';
     html += '<button class="tblmore" id="tblMore">'
           + (expandAll ? 'اطوِ الجدول' : 'افرد الجدول كاملاً') + '</button>';
     tbl.innerHTML = html;
@@ -294,13 +303,19 @@
     var kicker, left='', ttl, sub;
     var todayEvents = events.filter(function(e){ return e.day===todayName; });
     if(currentIdx>-1 && hasSchedules){
-      var busy=busyAt(currentIdx), free=teachers.length-busy.length;
-      kicker='الآن · الحصة ' + (currentIdx+1); left=remain();
+      /* ⚠ الفهرس بحسب **رقم الحصة** لا ترتيب الصفّ — الفرص تُزيح الترتيب،
+         فكانت البطاقة تقول «الحصة ٦» والجدول «الرابعة»، وتقرأ خانات حصة أخرى
+         فيختلف عدد المدرّسين بينهما (رُصد 2026-09-05). */
+      var cur = times[currentIdx], curNo = cur.n || null;
+      var curSlot = curNo ? curNo - 1 : currentIdx;
+      var busy = curNo ? busyAt(curSlot) : [], free = teachers.length - busy.length;
+      kicker = curNo ? 'الآن · الحصة ' + (ORD[curNo-1] || curNo) : 'الآن · ' + (cur.label || 'فرصة');
+      left = remain();
       ttl = busy.length ? Shouba.count(busy.length,{one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'}) + ' يدرّسون الآن'
                         : 'لا أحد يدرّس الآن';
-      sub = busy.length ? busy.slice(0,2).map(function(t){ return 'أ. '+firstName(t)+' · '+slotOf(t,currentIdx); }).join('   ')
-                          + (busy.length>2 ? '  +'+(busy.length-2) : '') + (free ? '  ·  '+free+' متفرّغون' : '')
-                        : 'كل معلّميك متفرّغون في هذه الحصة.';
+      sub = busy.length ? busy.slice(0,2).map(function(t){ return 'أ. '+firstName(t)+' · '+slotOf(t,curSlot); }).join('   ')
+                          + (busy.length>2 ? '  +'+(busy.length-2) : '') + (free ? '  ·  ' + Shouba.count(free,{one:'متفرّغ',two:'متفرّغان',few:'متفرّغون',many:'متفرّغاً'}) : '')
+                        : (curNo ? 'كل معلّميك متفرّغون في هذه الحصة.' : 'وقت راحة — لا حصص الآن.');
     } else if(todayEvents.length){
       kicker='اليوم'; ttl=todayEvents[0].title; sub=todayEvents[0].type + ' · ' + todayName;
     } else if(!hasSchedules){
@@ -308,7 +323,10 @@
     } else if(isWeekend){
       kicker='التالي'; ttl='عطلة نهاية الأسبوع'; sub='يبدأ الدوام الأحد · أوّل حصة ' + times[0].from;
     } else if(nextIdx>-1){
-      kicker='التالي'; ttl='الحصة ' + (nextIdx+1) + ' تبدأ ' + times[nextIdx].from; sub='لم تبدأ الحصص بعد.';
+      var nx = times[nextIdx];
+      kicker='التالي';
+      ttl = (nx.n ? 'الحصة ' + (ORD[nx.n-1] || nx.n) : (nx.label || 'فرصة')) + ' تبدأ ' + nx.from;
+      sub='لم تبدأ الحصص بعد.';
     } else {
       kicker='انتهى اليوم'; ttl='انتهى دوام اليوم';
       var up = events.filter(function(e){ return R.days.indexOf(e.day) > dayIdx; })[0];

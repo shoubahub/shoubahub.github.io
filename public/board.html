@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/identity/tokens.css?v=202609060012" />
 <link rel="stylesheet" href="/shell.css?v=202609060012" />
-<link rel="stylesheet" href="/components.css?v=202609060031" />
+<link rel="stylesheet" href="/components.css?v=202609060035" />
 <link rel="stylesheet" href="/frame.css?v=202609060012" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
@@ -60,7 +60,7 @@
 
         <!-- ② مصفوفة الأسبوع — تلي الجدول مباشرةً (قرار المستخدم: أعمال الأسبوع أهمّ) -->
         <section data-rail="week">
-          <div class="sect"><div class="h">هذا الأسبوع</div><div class="a" id="toWeek">تقويمك الدراسي ›</div></div>
+          <div class="sect"><div class="h wknav"><button class="wkarrow" id="wkPrev" aria-label="الأسبوع السابق">›</button><span id="weekTtl">هذا الأسبوع</span><button class="wkarrow" id="wkNext" aria-label="الأسبوع التالي">‹</button></div><div class="a" id="toWeek">تقويمك الدراسي ›</div></div>
           <div class="wmx" id="week"></div>
         </section>
 
@@ -156,20 +156,30 @@
 
   /* ===== أسبوع العرض وتواريخ أيامه — يُحسب مبكّراً لأن البطاقة والرزنامة كليهما
      تقرآن المواعيد **بالتاريخ**. وفي العطلة يتقدّم إلى الأسبوع القادم كعنوان الجدول. */
-  var sunday = new Date(now);
-  sunday.setDate(now.getDate() + (isWeekend ? (7 - dayIdx) : -dayIdx));
-  var viewWeek = Shouba.weekNo(sunday);
   function iso(dt){
     return dt.getFullYear() + '-' + ('0'+(dt.getMonth()+1)).slice(-2) + '-' + ('0'+dt.getDate()).slice(-2);
   }
-  var DAY_DATE = {};
-  R.days.forEach(function(day, i){
-    var dt = new Date(sunday); dt.setDate(sunday.getDate() + i); DAY_DATE[day] = dt;
-  });
+  var baseSunday = new Date(now);
+  baseSunday.setDate(now.getDate() + (isWeekend ? (7 - dayIdx) : -dayIdx));
+  /* تقليب الأسابيع من اللوحة (طلب المستخدم 2026-09-06): الإزاحة تمسّ **الرزنامة
+     وحدها** — جدول اليوم والبطاقة يبقيان على اليوم الحقيقي. */
+  var weekOffset = 0, sunday, viewWeek, DAY_DATE = {};
+  function setWeek(off){
+    weekOffset = off;
+    sunday = new Date(baseSunday); sunday.setDate(baseSunday.getDate() + off * 7);
+    viewWeek = Shouba.weekNo(sunday);
+    DAY_DATE = {};
+    R.days.forEach(function(day, i){
+      var dt = new Date(sunday); dt.setDate(sunday.getDate() + i); DAY_DATE[day] = dt;
+    });
+  }
+  setWeek(0);
   /* مواعيد يومٍ من الأسبوع المعروض: بتاريخه، ومعها القديمة بلا تاريخ */
   function evOf(day){
     var dt = DAY_DATE[day];
-    return (dt ? Shouba.eventsOnDate(iso(dt)) : []).concat(Shouba.legacyEventsOfDay(day));
+    var list = dt ? Shouba.eventsOnDate(iso(dt)) : [];
+    /* ⚠ القديمة بلا تاريخ تُنسب إلى **الأسبوع الجاري وحده** — وإلّا ظهرت في كل أسبوع تقلّبه */
+    return weekOffset === 0 ? list.concat(Shouba.legacyEventsOfDay(day)) : list;
   }
 
   /* ===== الحصص ===== */
@@ -314,7 +324,9 @@
   }
   function paintCard(){
     var kicker, left='', ttl, sub;
-    var todayEvents = todayName ? evOf(todayName) : [];
+    /* ⚠ البطاقة عن اليوم الحقيقي — لا تتأثّر بتقليب الرزنامة */
+    var todayEvents = todayName
+      ? Shouba.eventsOnDate(iso(now)).concat(Shouba.legacyEventsOfDay(todayName)) : [];
     if(currentIdx>-1 && hasSchedules){
       /* ⚠ الفهرس بحسب **رقم الحصة** لا ترتيب الصفّ — الفرص تُزيح الترتيب،
          فكانت البطاقة تقول «الحصة ٦» والجدول «الرابعة»، وتقرأ خانات حصة أخرى
@@ -342,8 +354,10 @@
       sub='لم تبدأ الحصص بعد.';
     } else {
       kicker='انتهى اليوم'; ttl='انتهى دوام اليوم';
-      var up = (function(){ var r=[]; R.days.forEach(function(dy,i){ if(i>dayIdx) r=r.concat(evOf(dy)); }); return r[0]; })();
-      sub = up ? 'التالي: ' + up.title + ' · ' + up.day : 'لا مواعيد متبقّية هذا الأسبوع.';
+      var up = Shouba.eventsAfter(iso(now))[0];
+      sub = up ? 'التالي: ' + up.title + ' · ' + (function(){ var p=up.date.split('-');
+             return (R.days[new Date(+p[0],+p[1]-1,+p[2]).getDay()] || '') + ' ' + (+p[2]) + '/' + (+p[1]); })()
+               : 'لا مواعيد قادمة في تقويمك.';
     }
     card.innerHTML = '<div class="top"><div class="kicker"><span class="pulse"></span>' + kicker + '</div>'
       + '<div class="left">' + left + '</div></div>'
@@ -361,13 +375,25 @@
        وإلّا عرضت اللوحةُ أحدَين مختلفين في شاشة واحدة (رُصد 2026-09-06). */
   var weekEl=document.getElementById('week');
 
+  /* عنوان الأسبوع المعروض: قريبُه بالاسم، وبعيدُه برقمه أو بمداه */
+  function weekTitle(){
+    if(weekOffset === 0)  return 'هذا الأسبوع';
+    if(weekOffset === 1)  return 'الأسبوع القادم';
+    if(weekOffset === -1) return 'الأسبوع الماضي';
+    var lbl = Shouba.weekNo(sunday);
+    if(lbl !== null && lbl > 0) return 'الأسبوع ' + lbl;
+    var a = DAY_DATE[R.days[0]], b = DAY_DATE[R.days[4]];
+    return a.getDate() + '/' + (a.getMonth()+1) + ' – ' + b.getDate() + '/' + (b.getMonth()+1);
+  }
+
   function paintWeek(){
+    document.getElementById('weekTtl').textContent = weekTitle();
     weekEl.innerHTML='';
     R.days.forEach(function(day,i){
       var dt = DAY_DATE[day];
       var list = evOf(day);
       var col=document.createElement('div');
-      col.className='wcol' + (day===todayName && !isWeekend ? ' today' : '');
+      col.className='wcol' + (weekOffset === 0 && day===todayName && !isWeekend ? ' today' : '');
       var inner='<div class="wh">' + SHORT[i] + '<b>' + dt.getDate() + '</b></div>';
       if(list.length){
         list.forEach(function(e){ inner += '<div class="wi ' + (TYPE_CLASS[e.type]||'') + '">' + e.title + '</div>'; });
@@ -514,6 +540,9 @@
     Shouba.sheet.open('تقويمك الدراسي', n);
   }
   document.getElementById('toWeek').addEventListener('click', calendarSheet);
+  /* ⚠ في RTL: اليمين رجوعٌ إلى الماضي، واليسار تقدّمٌ إلى القادم */
+  document.getElementById('wkPrev').addEventListener('click', function(){ setWeek(weekOffset - 1); paintWeek(); });
+  document.getElementById('wkNext').addEventListener('click', function(){ setWeek(weekOffset + 1); paintWeek(); });
   paintWeek();
 
   /* ===== ④ إنجاز المنهج ===== */

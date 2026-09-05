@@ -555,3 +555,10 @@ body.solo .tsel{display:none}
 /* خانة اليوم الفارغة تدعو إلى الإضافة بدل أن تكون شرطة صمّاء */
 .wcol{cursor:pointer}
 .wcol .wq{color:var(--shouba-hint);font-weight:700}
+
+/* تقليب الأسابيع في رزنامة اللوحة — سهمان حول عنوان القسم */
+.sect .h.wknav{display:flex;align-items:center;gap:2px}
+.wkarrow{border:0;cursor:pointer;background:transparent;font-family:var(--font-ar);
+  color:var(--shouba-link);font-size:17px;font-weight:700;line-height:1;
+  width:26px;height:26px;border-radius:9px;display:grid;place-items:center}
+.wkarrow:active{background:rgba(62,127,180,.12)}

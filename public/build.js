@@ -19,5 +19,5 @@
       node public/_dev/stamp.mjs            ⟵ يرفع البناء وحده
       node public/_dev/stamp.mjs 9 0.2      ⟵ يرفع الاثنين
    =================================================================== */
-window.SHOUBA_VERSION = '0.5';
-window.SHOUBA_BUILD   = 18;
+window.SHOUBA_VERSION = '0.5.1';
+window.SHOUBA_BUILD   = 19;

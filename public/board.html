@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=18" />
-<link rel="stylesheet" href="shell.css?v=18" />
-<link rel="stylesheet" href="components.css?v=18" />
-<link rel="stylesheet" href="frame.css?v=18" />
+<link rel="stylesheet" href="identity/tokens.css?v=19" />
+<link rel="stylesheet" href="shell.css?v=19" />
+<link rel="stylesheet" href="components.css?v=19" />
+<link rel="stylesheet" href="frame.css?v=19" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -34,10 +34,19 @@
         <b id="deptName">شعبتك</b>
         <span id="dateLine">—</span>
       </div>
-      <!-- المربّع أعلى اليسار يحمل **رقم النسخة** بدل رمز الإعدادات (قرار المستخدم
-           2026-09-06): يراه المستخدم دائماً، فأوّل سؤال عند أي شكوى «ما الرقم عندك؟».
-           والضغط يفتح الإعدادات كما كان. -->
-      <div class="iconbtn ver" id="settings" title="الإعدادات ورقم النسخة"><span id="verNo">—</span></div>
+      <!-- زرّ الإعدادات برمزه، ورقم النسخة تحته **ملصقاً لا زرّاً** (قرار المستخدم
+           2026-09-06): لمّا حمل المربّعُ الرقمَ وحده فقد دلالته على أنه يُضغط،
+           فلم يجد المستخدم الإعدادات. فاستقلّ كلٌّ بوظيفته. -->
+      <div class="tbend">
+        <button class="iconbtn" id="settings" aria-label="الإعدادات">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="2.6" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M10 2.6v2M10 15.4v2M17.4 10h-2M4.6 10h-2M15.2 4.8l-1.4 1.4M6.2 13.8l-1.4 1.4M15.2 15.2l-1.4-1.4M6.2 6.2L4.8 4.8"
+                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <span class="verlbl" id="verNo">—</span>
+      </div>
     </div>
   <div class="screen has-topbar has-tabbar">
 
@@ -107,11 +116,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=18"></script>
-<script src="refdata.js?v=18"></script>
-<script src="derive.js?v=18"></script>
-<script src="icons.js?v=18"></script>
-<script src="components.js?v=18"></script>
+<script src="build.js?v=19"></script>
+<script src="refdata.js?v=19"></script>
+<script src="derive.js?v=19"></script>
+<script src="icons.js?v=19"></script>
+<script src="components.js?v=19"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -544,35 +553,61 @@
   }
   document.getElementById('toWeek').addEventListener('click', calendarSheet);
   /* ⚠ في RTL: اليمين رجوعٌ إلى الماضي، واليسار تقدّمٌ إلى القادم */
-  function goWeek(step){ setWeek(weekOffset + step); paintWeek(); }
+  /* انزلاق الأسبوع (قرار المستخدم 2026-09-06): كان يتبع اليد بأربعة أعشار
+     الحركة ثم يقفز المحتوى، فيبدو **ومضةً** لا انزلاقاً. الآن يتبع اليد
+     **كاملاً**، وعند الحسم ينزلق الأسبوع خارجاً ويدخل التالي من الجهة المقابلة. */
+  var sliding = false;
+  function goWeek(step){
+    if(sliding) return;
+    sliding = true;
+    var w = weekEl.offsetWidth || 320;
+    var out = step > 0 ? -w : w;            // القادم يخرج يساراً · الماضي يميناً
+    weekEl.style.transition = 'transform .17s ease-out, opacity .17s ease-out';
+    weekEl.style.transform  = 'translateX(' + out + 'px)';
+    weekEl.style.opacity    = '0';
+    setTimeout(function(){
+      setWeek(weekOffset + step);
+      paintWeek();
+      weekEl.style.transition = 'none';
+      weekEl.style.transform  = 'translateX(' + (-out) + 'px)';
+      weekEl.style.opacity    = '0';
+      void weekEl.offsetHeight;             // إجبار إعادة التخطيط قبل الحركة العائدة
+      weekEl.style.transition = 'transform .19s ease-out, opacity .19s ease-out';
+      weekEl.style.transform  = '';
+      weekEl.style.opacity    = '';
+      setTimeout(function(){ weekEl.style.transition = ''; sliding = false; }, 200);
+    }, 175);
+  }
   document.getElementById('wkPrev').addEventListener('click', function(){ goWeek(-1); });
   document.getElementById('wkNext').addEventListener('click', function(){ goWeek(1); });
 
-  /* سحب الأسبوع كاملاً (طلب المستخدم 2026-09-06): تُسحب المصفوفة فتتبع الإصبع،
-     وعند الإفلات تُقلَّب إن جاوز السحب العتبة. الاتّجاه كاتّجاه السهمين:
-     سحبٌ يميناً ⟵ الماضي · سحبٌ يساراً ⟵ القادم.
-     ⚠ ويُكبَح نقرُ العمود بعد سحبٍ فعليّ، وإلّا فتحت اللوحةُ في كل تقليب. */
+  /* السحب: المصفوفة تتبع الإصبع بمقدار حركته كاملاً، وتخفت تدريجياً دلالةً
+     على قرب الحسم. وعند الإفلات دون العتبة تعود إلى موضعها بلين. */
   (function swipe(){
     var x0 = 0, dx = 0, on = false, moved = false;
-    var TH = 45;
-    function start(x){ x0 = x; dx = 0; on = true; moved = false; weekEl.style.transition = 'none'; }
+    var TH = 55;
+    function start(x){ if(sliding) return; x0 = x; dx = 0; on = true; moved = false; weekEl.style.transition = 'none'; }
     function move(x){
       if(!on) return;
       dx = x - x0;
       if(Math.abs(dx) > 6) moved = true;
-      weekEl.style.transform = 'translateX(' + (dx * 0.4) + 'px)';
+      var w = weekEl.offsetWidth || 320;
+      weekEl.style.transform = 'translateX(' + dx + 'px)';
+      weekEl.style.opacity   = String(Math.max(0.25, 1 - Math.abs(dx) / w));
     }
     function end(){
       if(!on) return;
       on = false;
-      weekEl.style.transition = 'transform .18s';
-      weekEl.style.transform = '';
-      if(dx > TH)       goWeek(-1);        // سُحب يميناً ⟵ الأسبوع الماضي
-      else if(dx < -TH) goWeek(1);         // سُحب يساراً ⟵ الأسبوع القادم
+      if(dx > TH)       { goWeek(-1); return; }      // سُحب يميناً ⟵ الماضي
+      if(dx < -TH)      { goWeek(1);  return; }      // سُحب يساراً ⟵ القادم
+      weekEl.style.transition = 'transform .18s ease-out, opacity .18s';
+      weekEl.style.transform  = '';
+      weekEl.style.opacity    = '';
     }
     weekEl.addEventListener('touchstart', function(e){ start(e.touches[0].clientX); }, {passive:true});
     weekEl.addEventListener('touchmove',  function(e){ move(e.touches[0].clientX); }, {passive:true});
     weekEl.addEventListener('touchend',   end);
+    weekEl.addEventListener('touchcancel',end);
     weekEl.addEventListener('mousedown',  function(e){ start(e.clientX); });
     window.addEventListener('mousemove',  function(e){ move(e.clientX); });
     window.addEventListener('mouseup',    end);

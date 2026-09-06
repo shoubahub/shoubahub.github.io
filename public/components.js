@@ -204,6 +204,29 @@ Shouba.returnTo = function () {
     navigator.serviceWorker.register('sw.js').catch(function () {});
   }
 
-  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); }
-  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); });
+  /* ── تنبيه المخزن المستقلّ (2026-09-06) ──────────────────────────
+     ⚠ في iOS: التطبيق المثبَّت على الشاشة الرئيسية له **مخزنٌ مستقلّ عن سفاري**
+       وإن كان العنوان واحداً. فمن أدخل بياناته في سفاري ثم ثبّت الأيقونة، فتحها
+       فوجدها فارغة — **فيظنّ عمله ضاع ويترك المنصّة**، وهو أسوأ انطباع ممكن.
+       لا حيلة في الجمع بينهما ما دامت البيانات على الجهاز؛ يحلّه الخادم لاحقاً.
+       فنُصرّح بالسبب بدل أن يُترك للظنّ (رصده المستخدم على جهازه). */
+  function standaloneNote() {
+    var standalone = window.matchMedia('(display-mode: standalone)').matches
+                  || window.navigator.standalone === true;
+    if (!standalone) return;
+    var fresh = !localStorage.getItem('shouba.setup') && !localStorage.getItem('shouba.user');
+    if (!fresh) return;
+    /* داخل .content لا في body — وإلّا خرج التنبيه عن إطار الشاشة */
+    var host = document.querySelector('.screen .content') || document.querySelector('.screen');
+    if (!host) return;
+    var n = document.createElement('div');
+    n.className = 'sepnote';
+    n.innerHTML = '<b>بدأتَ في المتصفّح؟ بياناتك هناك.</b>'
+                + ' التطبيق المثبَّت على الشاشة الرئيسية له مخزنٌ مستقلّ عن المتصفّح —'
+                + ' فأكمِل حيث بدأت، أو ابدأ من هنا وألزَمْه.';
+    host.appendChild(n);
+  }
+
+  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); });
 })();

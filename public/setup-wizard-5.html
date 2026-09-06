@@ -12,10 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=11" />
-<link rel="stylesheet" href="shell.css?v=11" />
-<link rel="stylesheet" href="components.css?v=11" />
-<link rel="stylesheet" href="frame.css?v=11" />
+<link rel="stylesheet" href="identity/tokens.css?v=12" />
+<link rel="stylesheet" href="shell.css?v=12" />
+<link rel="stylesheet" href="components.css?v=12" />
+<link rel="stylesheet" href="frame.css?v=12" />
 <style>
   /* خاص بهذه الشاشة فقط: صفّ الإضافة (حقل + زرّ) وحرفا المعلّم — لا هيكل ولا هوامش عامّة */
   .addrow{display:flex;gap:12px;align-items:stretch}
@@ -90,7 +90,7 @@
   </div>
  </div></div>
 
-<script src="components.js?v=11"></script>
+<script src="components.js?v=12"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -145,7 +145,7 @@
                         : Shouba.count(n, { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً' });
     emptyEl.classList.toggle('hide', n > 0);
     /* تُفتح هذه الشاشة من اللوحة أيضاً (ret=board) — فالزرّ يصرّح بوجهته لا يقول «التالي» */
-    next.textContent = Shouba.returnTo() === '/board.html' ? 'عودة إلى اللوحة'
+    next.textContent = Shouba.returnTo() === 'board.html' ? 'عودة إلى اللوحة'
                      : n > 0 ? 'التالي' : 'تخطّي الآن';
   }
 
@@ -179,7 +179,7 @@
   next.addEventListener('click', function(){
     persist();
     // ret=review: قادم من شاشة المراجعة لتعديل سطر ⟵ يعود إليها بعد الحفظ
-    location.href = Shouba.returnTo() || '/setup-wizard-6.html';   // ش⑥ شكل السجلات — تُبنى تالياً
+    location.href = Shouba.returnTo() || 'setup-wizard-6.html';   // ش⑥ شكل السجلات — تُبنى تالياً
   });
 
   render(); validate();

@@ -12,10 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=11" />
-<link rel="stylesheet" href="shell.css?v=11" />
-<link rel="stylesheet" href="components.css?v=11" />
-<link rel="stylesheet" href="frame.css?v=11" />
+<link rel="stylesheet" href="identity/tokens.css?v=12" />
+<link rel="stylesheet" href="shell.css?v=12" />
+<link rel="stylesheet" href="components.css?v=12" />
+<link rel="stylesheet" href="frame.css?v=12" />
 <style>
   /* خاص بهذه الشاشة فقط — لا هيكل ولا هوامش عامّة */
   .tally{display:flex;gap:9px}
@@ -71,7 +71,7 @@
   </div>
  </div></div>
 
-<script src="components.js?v=11"></script>
+<script src="components.js?v=12"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -99,16 +99,16 @@
 
   /* كل سطر يعيد لشاشته بـ ret=final فيعود إلى هذه المراجعة بعد التعديل (لا إلى مراجعة المنتصف) */
   var ROWS = [
-    { to:'/setup-wizard.html',   main: d.schoolName || DASH, sub: j('المدرسة', d.region, d.schoolType) },
-    { to:'/setup-wizard-2.html', main: d.department || DASH, sub: j('الشعبة', d.stage, subjects.length ? subjects.length + ' مواد' : '') },
-    { to:'/setup-wizard-3.html', main: d.year || DASH,       sub: j('العام الدراسي', d.term) },
-    { to:'/setup-wizard-4.html', main: d.principal || 'لم تُضِف الإشراف بعد', sub: j('الإشراف', d.supervisor || 'اختياري — لك إكماله لاحقاً') },
-    { to:'/setup-wizard-5.html', main: teachers.length
+    { to:'setup-wizard.html',   main: d.schoolName || DASH, sub: j('المدرسة', d.region, d.schoolType) },
+    { to:'setup-wizard-2.html', main: d.department || DASH, sub: j('الشعبة', d.stage, subjects.length ? subjects.length + ' مواد' : '') },
+    { to:'setup-wizard-3.html', main: d.year || DASH,       sub: j('العام الدراسي', d.term) },
+    { to:'setup-wizard-4.html', main: d.principal || 'لم تُضِف الإشراف بعد', sub: j('الإشراف', d.supervisor || 'اختياري — لك إكماله لاحقاً') },
+    { to:'setup-wizard-5.html', main: teachers.length
                                    ? teachers.slice(0,2).map(function(t){ return 'أ. ' + t; }).join(' · ')
                                      + (teachers.length > 2 ? ' وآخرون' : '')
                                    : 'لم تُضِف معلّماً',
                                  sub: j('معلّموك', teachers.length ? Shouba.count(teachers.length, { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً' }) : '') },
-    { to:'/setup-wizard-6.html', main: records.length ? Shouba.count(records.length, { one:'سجلّ', two:'سجلّان', few:'سجلّات', many:'سجلاً' }) + ' مختاراً' : 'لم تختر سجلاً',
+    { to:'setup-wizard-6.html', main: records.length ? Shouba.count(records.length, { one:'سجلّ', two:'سجلّان', few:'سجلّات', many:'سجلاً' }) + ' مختاراً' : 'لم تختر سجلاً',
                                  sub: j('سجلّاتك', records.length === 15 ? 'الحزمة الجاهزة كاملة' : 'الحزمة معدَّلة') }
   ];
 

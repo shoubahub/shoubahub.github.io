@@ -12,10 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=11" />
-<link rel="stylesheet" href="shell.css?v=11" />
-<link rel="stylesheet" href="components.css?v=11" />
-<link rel="stylesheet" href="frame.css?v=11" />
+<link rel="stylesheet" href="identity/tokens.css?v=12" />
+<link rel="stylesheet" href="shell.css?v=12" />
+<link rel="stylesheet" href="components.css?v=12" />
+<link rel="stylesheet" href="frame.css?v=12" />
 <!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصّة لهذه الشاشة -->
 </head>
 <body class="framed">
@@ -101,8 +101,8 @@
   </div>
  </div></div>
 
-<script src="icons.js?v=11"></script>
-<script src="components.js?v=11"></script>
+<script src="icons.js?v=12"></script>
+<script src="components.js?v=12"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -143,7 +143,7 @@
     if(!validate()) return;
     save({ region: region.value, schoolType: state.schoolType, schoolName: school.value.trim() });
     // ret=review: قادم من شاشة المراجعة لتعديل سطر ⟵ يعود إليها بعد الحفظ
-    location.href = Shouba.returnTo() || '/setup-wizard-2.html';
+    location.href = Shouba.returnTo() || 'setup-wizard-2.html';
   });
 
   validate();

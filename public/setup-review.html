@@ -12,10 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=11" />
-<link rel="stylesheet" href="shell.css?v=11" />
-<link rel="stylesheet" href="components.css?v=11" />
-<link rel="stylesheet" href="frame.css?v=11" />
+<link rel="stylesheet" href="identity/tokens.css?v=12" />
+<link rel="stylesheet" href="shell.css?v=12" />
+<link rel="stylesheet" href="components.css?v=12" />
+<link rel="stylesheet" href="frame.css?v=12" />
 <!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصّة لهذه الشاشة -->
 </head>
 <body class="framed">
@@ -51,9 +51,9 @@
   </div>
  </div></div>
 
-<script src="refdata.js?v=11"></script>
-<script src="derive.js?v=11"></script>
-<script src="components.js?v=11"></script>
+<script src="refdata.js?v=12"></script>
+<script src="derive.js?v=12"></script>
+<script src="components.js?v=12"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -71,10 +71,10 @@
 
   // كل سطر يعيد لشاشته بـ ret=review فيعود إلى هنا بعد التعديل
   var ROWS = [
-    { to:'/setup-wizard.html',   main: d.schoolName || DASH,                    sub: j('المدرسة', d.region, d.schoolType) },
-    { to:'/setup-wizard-2.html', main: d.department || DASH,                    sub: j('الشعبة', d.stage, (d.subjects && d.subjects.length) ? d.subjects.length + ' مواد' : '') },
-    { to:'/setup-wizard-3.html', main: d.year || DASH,                          sub: j('العام الدراسي', d.term, startText(d)) },
-    { to:'/setup-wizard-4.html', main: d.principal || 'لم تُضِف الإشراف بعد',   sub: j('الإشراف', d.supervisor || 'اختياري — لك إكماله لاحقاً') }
+    { to:'setup-wizard.html',   main: d.schoolName || DASH,                    sub: j('المدرسة', d.region, d.schoolType) },
+    { to:'setup-wizard-2.html', main: d.department || DASH,                    sub: j('الشعبة', d.stage, (d.subjects && d.subjects.length) ? d.subjects.length + ' مواد' : '') },
+    { to:'setup-wizard-3.html', main: d.year || DASH,                          sub: j('العام الدراسي', d.term, startText(d)) },
+    { to:'setup-wizard-4.html', main: d.principal || 'لم تُضِف الإشراف بعد',   sub: j('الإشراف', d.supervisor || 'اختياري — لك إكماله لاحقاً') }
   ];
 
   var CHEV = '<svg width="15" height="15" viewBox="0 0 20 20" fill="none">'

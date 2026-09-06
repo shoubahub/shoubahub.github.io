@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=11" />
-<link rel="stylesheet" href="shell.css?v=11" />
-<link rel="stylesheet" href="components.css?v=11" />
-<link rel="stylesheet" href="frame.css?v=11" />
+<link rel="stylesheet" href="identity/tokens.css?v=12" />
+<link rel="stylesheet" href="shell.css?v=12" />
+<link rel="stylesheet" href="components.css?v=12" />
+<link rel="stylesheet" href="frame.css?v=12" />
 <style>
   /* خاص بهذه الشاشة فقط */
   .sdrop.locked{opacity:.5;pointer-events:none;filter:grayscale(.3)}
@@ -87,8 +87,8 @@
   </div>
  </div></div>
 
-<script src="refdata.js?v=11"></script>
-<script src="components.js?v=11"></script>
+<script src="refdata.js?v=12"></script>
+<script src="components.js?v=12"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{return JSON.parse(localStorage.getItem(KEY))||{};}catch(e){return {};} }
@@ -155,7 +155,7 @@
   next.addEventListener('click', function(){
     if(next.disabled) return;
     // ret=review: قادم من شاشة المراجعة لتعديل سطر ⟵ يعود إليها بعد الحفظ
-    location.href = Shouba.returnTo() || '/setup-wizard-3.html';
+    location.href = Shouba.returnTo() || 'setup-wizard-3.html';
   });
 </script>
 </body>

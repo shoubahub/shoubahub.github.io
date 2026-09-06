@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=14" />
-<link rel="stylesheet" href="shell.css?v=14" />
-<link rel="stylesheet" href="components.css?v=14" />
-<link rel="stylesheet" href="frame.css?v=14" />
+<link rel="stylesheet" href="identity/tokens.css?v=15" />
+<link rel="stylesheet" href="shell.css?v=15" />
+<link rel="stylesheet" href="components.css?v=15" />
+<link rel="stylesheet" href="frame.css?v=15" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -107,11 +107,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=14"></script>
-<script src="refdata.js?v=14"></script>
-<script src="derive.js?v=14"></script>
-<script src="icons.js?v=14"></script>
-<script src="components.js?v=14"></script>
+<script src="build.js?v=15"></script>
+<script src="refdata.js?v=15"></script>
+<script src="derive.js?v=15"></script>
+<script src="icons.js?v=15"></script>
+<script src="components.js?v=15"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -135,7 +135,10 @@
     var term  = d.term === 'الفصل الثاني' ? 'ف٢' : d.term === 'الفصل الأول' ? 'ف١' : '';
     var parts = [];
     if(head)   parts.push('أ. ' + Shouba.shortName(head));
-    if(tcount) parts.push('<b class="num">' + tcount + '</b> ' + Shouba.unit(tcount, {one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'}));
+    /* «معلّم واحد» لا «١ معلّم» — العدد يُصرَّف، والرقم يبرز حيث يكون عدداً */
+    if(tcount === 1)      parts.push('معلّم واحد');
+    else if(tcount === 2) parts.push('معلّمان');
+    else if(tcount)       parts.push('<b class="num">' + tcount + '</b> ' + Shouba.unit(tcount, {one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'}));
     if(term)   parts.push(term);
     /* الأسبوع لا يُذكر إلّا بسند: بلا تاريخ بداية لا يُعرض شيء، وقبل بدء الطلاب «تمهيدي» */
     if(weekNo === 0)      parts.push('الأسبوع التمهيدي');

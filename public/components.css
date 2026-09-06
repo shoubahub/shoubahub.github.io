@@ -568,9 +568,10 @@ body.solo .tsel{display:none}
 .wkrow .wkarrow{flex:none}
 .wmx{touch-action:pan-y;user-select:none;-webkit-user-select:none}
 /* رقم النسخة في مربّع الرأس — يُقرأ دائماً فيُسأل عنه عند أي شكوى */
-.topbar .iconbtn.ver{font-family:var(--font-num);font-size:13.5px;font-weight:700;color:var(--shouba-cream)}
-/* الدلالة على موضع الإدخال داخل حالة الفراغ */
-.empty .goto{display:inline-block;margin-top:8px;color:var(--shouba-navy);font-weight:700}
+.topbar .iconbtn.ver{font-family:var(--font-num);font-size:9.5px;font-weight:700;
+  letter-spacing:.2px;color:var(--shouba-cream)}
+/* الدلالة على موضع الإدخال داخل حالة الفراغ — بلون النصّ فوقها لا أبرز منه */
+.empty .goto{display:inline-block;margin-top:8px;color:var(--shouba-text-muted);font-weight:600}
 
 /* تنبيه المخزن المستقلّ — يظهر في التطبيق المثبَّت وحده حين يكون فارغاً */
 .sepnote{margin:16px var(--gap-side) 0;font-size:12.5px;font-weight:500;

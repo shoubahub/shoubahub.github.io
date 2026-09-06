@@ -11,8 +11,13 @@ const buildFile = `${DIR}/build.js`;
 let build = fs.readFileSync(buildFile, 'utf8');
 const cur  = +(build.match(/SHOUBA_BUILD\s*=\s*(\d+)/) || [0, 0])[1];
 const next = process.argv[2] ? +process.argv[2] : cur + 1;
+/* الوسيط الثاني (اختياري) يرفع الترقيم الدلالي معه: node stamp.mjs 9 0.2 */
+const ver  = process.argv[3];
+const curV = (build.match(/SHOUBA_VERSION\s*=\s*'([^']+)'/) || [0, '?'])[1];
 
-fs.writeFileSync(buildFile, build.replace(/SHOUBA_BUILD\s*=\s*\d+/, 'SHOUBA_BUILD = ' + next));
+build = build.replace(/SHOUBA_BUILD\s*=\s*\d+/, 'SHOUBA_BUILD   = ' + next);
+if (ver) build = build.replace(/SHOUBA_VERSION\s*=\s*'[^']*'/, `SHOUBA_VERSION = '${ver}'`);
+fs.writeFileSync(buildFile, build);
 fs.writeFileSync(`${DIR}/version.json`, JSON.stringify({ build: next }) + '\n');
 
 let touched = 0;
@@ -33,4 +38,4 @@ if (fs.existsSync(swPath)) {
   const sw = fs.readFileSync(swPath, 'utf8').replace(/var BUILD = \d+;/, `var BUILD = ${next};`);
   fs.writeFileSync(swPath, sw);
 }
-console.log(`النسخة ${cur} ← ${next} · بُصمت ${touched} شاشة · وعامل الخدمة`);
+console.log(`بناء ${cur} ← ${next} · دلالي ${curV}${ver ? ' ← ' + ver : ''} · بُصمت ${touched} شاشة · وعامل الخدمة`);

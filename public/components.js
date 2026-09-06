@@ -47,9 +47,9 @@ Shouba.shortName = function (full) {
 Shouba.returnTo = function () {
   var r = new URLSearchParams(location.search).get('ret');
   /* ret=board يُستعمل بعد الإعداد: شاشة معالج تُفتح من اللوحة لتعديل بيانات، ثم تعود إليها */
-  return r === 'final'  ? '/setup-wizard-7.html'
-       : r === 'review' ? '/setup-review.html'
-       : r === 'board'  ? '/board.html' : '';
+  return r === 'final'  ? 'setup-wizard-7.html'
+       : r === 'review' ? 'setup-review.html'
+       : r === 'board'  ? 'board.html' : '';
 };
 
 (function () {
@@ -158,7 +158,7 @@ Shouba.returnTo = function () {
     }
 
     item('مراجعة بيانات شعبتك', 'المدرسة · الشعبة · العام · الإشراف', function () {
-      location.href = '/setup-wizard-7.html';
+      location.href = 'setup-wizard-7.html';
     });
 
     var note = document.createElement('div');
@@ -169,7 +169,9 @@ Shouba.returnTo = function () {
 
     var ver = document.createElement('div');
     ver.className = 'setver';
-    ver.textContent = 'نسخة تجريبية · رقم ' + (window.SHOUBA_BUILD || '؟');
+    /* الدلالي للمستخدم والبناء لنا — في سطر واحد */
+    ver.textContent = 'نسخة تجريبية ' + (window.SHOUBA_VERSION || '؟')
+                    + ' · بناء ' + (window.SHOUBA_BUILD || '؟');
     n.appendChild(ver);
 
     Shouba.sheet.open('الإعدادات', n);

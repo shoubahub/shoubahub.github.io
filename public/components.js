@@ -49,7 +49,8 @@ Shouba.returnTo = function () {
   /* ret=board يُستعمل بعد الإعداد: شاشة معالج تُفتح من اللوحة لتعديل بيانات، ثم تعود إليها */
   return r === 'final'  ? 'setup-wizard-7.html'
        : r === 'review' ? 'setup-review.html'
-       : r === 'board'  ? 'board.html' : '';
+       : r === 'board'  ? 'board.html'
+       : r === 'records'? 'records.html' : '';
 };
 
 (function () {
@@ -175,6 +176,35 @@ Shouba.returnTo = function () {
     n.appendChild(ver);
 
     Shouba.sheet.open('الإعدادات', n);
+  };
+
+  /* زرّ «+» الأوسط — باب الإجراءات السريعة (قرار المستخدم 2026-09-06).
+     كان يفتح شاشة المعلّمين ولها تبويبها بجانبه، فكان يكرّر موجوداً؛ وصار
+     يحمل ما لا موضع له في الشريط — وفيه **الإعدادات** التي كانت مخفيّة خلف
+     مربّع رقم النسخة، فلمّا صار الرقمُ ملصقاً فقد الزرُّ دلالته. */
+  Shouba.quickAdd = function () {
+    var n = document.createElement('div');
+    n.className = 'setlist';
+
+    function row(title, sub, go) {
+      var b = document.createElement('button');
+      b.className = 'setitem';
+      b.innerHTML = '<b>' + title + '</b><small>' + sub + '</small>';
+      b.addEventListener('click', go);
+      n.appendChild(b);
+    }
+
+    row('أضِف معلّماً', 'اسمه فقط — وجدوله يُدخل بعده', function () {
+      location.href = 'teachers.html?add=1';
+    });
+    row('أضِف موعداً', 'اختبار · اجتماع · فعالية — في أيّ يوم من عامك', function () {
+      location.href = 'board.html?add=event';
+    });
+    row('الإعدادات', 'مراجعة بيانات شعبتك ونسختها', function () {
+      Shouba.settings();
+    });
+
+    Shouba.sheet.open('إضافة سريعة', n);
   };
 
   /* تبويب قيد الإعداد: يبقى ظاهراً ليُعرف شكل المنصّة، والضغطة تصرّح بحاله

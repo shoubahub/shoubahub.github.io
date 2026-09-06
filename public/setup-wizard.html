@@ -12,10 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=16" />
-<link rel="stylesheet" href="shell.css?v=16" />
-<link rel="stylesheet" href="components.css?v=16" />
-<link rel="stylesheet" href="frame.css?v=16" />
+<link rel="stylesheet" href="identity/tokens.css?v=17" />
+<link rel="stylesheet" href="shell.css?v=17" />
+<link rel="stylesheet" href="components.css?v=17" />
+<link rel="stylesheet" href="frame.css?v=17" />
 <!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصّة لهذه الشاشة -->
 </head>
 <body class="framed">
@@ -101,8 +101,8 @@
   </div>
  </div></div>
 
-<script src="icons.js?v=16"></script>
-<script src="components.js?v=16"></script>
+<script src="icons.js?v=17"></script>
+<script src="components.js?v=17"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -151,7 +151,7 @@
   /* ===== شعار المدرسة أو رمز الشعبة — اختياري، للواجهة فقط =====
      (ترويسات النماذج الرسمية لها إعداداتها الخاصة لاحقاً — قرار المستخدم 2026-08-20) */
   var crestBtn = document.getElementById('crestBtn');
-  var DEFAULT_CREST = '/identity/assets/school-crest-default.svg';
+  var DEFAULT_CREST = 'identity/assets/school-crest-default.svg';
 
   function paintCrest(){
     var c = load().crest;
@@ -160,7 +160,13 @@
     else { crestBtn.innerHTML = '<img src="' + DEFAULT_CREST + '" alt="شعار افتراضي" style="width:46px;height:46px;object-fit:contain" />'; }
   }
 
-  /* يصغّر الصورة المرفوعة إلى ٢٥٦px — مخزن المتصفّح محدود، والتصغير شرط ألّا ينكسر الحفظ */
+  /* يصغّر الصورة المرفوعة إلى ٢٥٦px — مخزن المتصفّح محدود، والتصغير شرط ألّا ينكسر الحفظ.
+     ⚠ عيبان أُصلحا (2026-09-06، رصدهما المستخدم على شعار مدرسته):
+     ① كانت اللوحة **شفّافة**، وأكثر الشعارات PNG بخلفية شفّافة — فيظهر الكحليُّ
+        من خلفها في الرأس فتبدو باهتةً كأن خلفيتها سُحبت. الآن **تُملأ بالأبيض**
+        كما صُمّم الشعار أصلاً على الورق.
+     ② وكانت تقتصّ مربّعاً من الوسط، والشعارات نادراً ما تكون مربّعة — فتُقصّ
+        أطرافها. الآن **تُحتوى كاملةً** داخل المربّع بلا قصّ. */
   function shrink(file, cb){
     var fr = new FileReader();
     fr.onload = function(){
@@ -168,8 +174,11 @@
       img.onload = function(){
         var s = 256, cv = document.createElement('canvas'); cv.width = s; cv.height = s;
         var ctx = cv.getContext('2d');
-        var side = Math.min(img.width, img.height);
-        ctx.drawImage(img, (img.width-side)/2, (img.height-side)/2, side, side, 0, 0, s, s);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, s, s);
+        var k = Math.min(s / img.width, s / img.height);        // احتواء لا اقتصاص
+        var w = Math.round(img.width * k), h = Math.round(img.height * k);
+        ctx.drawImage(img, Math.round((s - w) / 2), Math.round((s - h) / 2), w, h);
         cb(cv.toDataURL('image/png'));
       };
       img.src = fr.result;

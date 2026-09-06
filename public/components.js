@@ -191,34 +191,19 @@ Shouba.returnTo = function () {
     });
   }
 
-  /* ── عامل الخدمة والتحديث الذاتي (2026-09-06) ─────────────────────
-     التطبيق يسأل version.json عند **كل فتح**؛ فإن كان المنشور أحدث من النسخة
-     العاملة، مسح المخازن وألغى عامل الخدمة وأعاد التحميل **مرّة واحدة**.
-     فيصل التحديث إلى أجهزة الزملاء بلا أن يفعلوا شيئاً — وهو الطقس المنقول
-     من مشروع الملاعب حيث بقي جهازٌ على نسخة قديمة ولم يُدرَ. */
-  function updater() {
+  /* ── عامل الخدمة (2026-09-06) ────────────────────────────────────
+     يجلب **الصفحات من الشبكة أولاً** والأصول المبصومة من المخزن، ويعمل بلا
+     إنترنت. فالتحديث يصل بمجرّد الفتح: صفحةٌ جديدة تشير إلى أصولٍ ببصمة جديدة.
+
+     ⚠ كان هنا «تحديثٌ ذاتي» يمسح المخازن ويُعيد التحميل عند كل نسخة أحدث —
+       فأنتج **تحميلاً مزدوجاً مرئياً** يظنّه المستخدم بطئاً أو ضياعاً للبيانات
+       (رصده المستخدم بعد عشر نسخ في يوم 2026-09-06). وهو زائدٌ ما دام العامل
+       يجلب الصفحات من الشبكة. **ولا يمسّ localStorage بحال — البيانات آمنة.** */
+  function serviceWorker() {
     if (!('serviceWorker' in navigator)) return;
     navigator.serviceWorker.register('sw.js').catch(function () {});
-
-    var FLAG = 'shouba.reloaded';
-    fetch('version.json?t=' + Math.random(), { cache: 'no-store' })
-      .then(function (r) { return r.json(); })
-      .then(function (v) {
-        var mine = window.SHOUBA_BUILD || 0;
-        if (!v || !v.build || v.build <= mine) { sessionStorage.removeItem(FLAG); return; }
-        if (sessionStorage.getItem(FLAG)) return;          // حارس: إعادة تحميل واحدة لا حلقة
-        sessionStorage.setItem(FLAG, '1');
-        Promise.resolve()
-          .then(function () { return caches.keys().then(function (ks) {
-            return Promise.all(ks.map(function (k) { return caches.delete(k); })); }); })
-          .then(function () { return navigator.serviceWorker.getRegistrations(); })
-          .then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); })
-          .catch(function () {})
-          .then(function () { location.reload(); });
-      })
-      .catch(function () {});
   }
 
-  if (document.readyState !== 'loading') { init(); bindSoon(); updater(); }
-  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); updater(); });
+  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); });
 })();

@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=13" />
-<link rel="stylesheet" href="shell.css?v=13" />
-<link rel="stylesheet" href="components.css?v=13" />
-<link rel="stylesheet" href="frame.css?v=13" />
+<link rel="stylesheet" href="identity/tokens.css?v=14" />
+<link rel="stylesheet" href="shell.css?v=14" />
+<link rel="stylesheet" href="components.css?v=14" />
+<link rel="stylesheet" href="frame.css?v=14" />
 <style>
   /* أنماط خاصّة بشاشة الدخول فقط — الهيكل من shell.css -->*/
   .brand{display:flex;flex-direction:column;align-items:center;gap:13px;padding:0 30px}
@@ -96,8 +96,8 @@
 <!-- ⚠ شاشة الدخول أوّل ما يُفتح، فهي التي تُسجّل عامل الخدمة وتفحص التحديث:
      بلا هذين يبقى الزائر الجديد بلا عملٍ دون إنترنت، وقد يرى نسخة قديمة
      (GitHub Pages يخزّن الصفحات عشر دقائق) — رُصد بعد النشر الأول 2026-09-06. -->
-<script src="build.js?v=13"></script>
-<script src="components.js?v=13"></script>
+<script src="build.js?v=14"></script>
+<script src="components.js?v=14"></script>
 <script>
   var KEY = 'shouba.user';
   var uname = document.getElementById('uname');
@@ -109,11 +109,18 @@
   uname.addEventListener('input', validate);
   validate();
 
+  /* من أتمّ إعداده لا يُعاد إلى المعالج — يدخل لوحته، والزرّ يصرّح بوجهته */
+  function setupDone(){
+    try { return !!(JSON.parse(localStorage.getItem('shouba.setup')) || {}).setupDone; }
+    catch(e){ return false; }
+  }
+  if(setupDone()) cont.textContent = 'ادخل إلى لوحتك';
+
   cont.addEventListener('click', function(){
     if(cont.disabled) return;
     /* لا method هنا: لا مصادقة بعد، فلا نكتب في البيانات ما ليس صحيحاً */
     localStorage.setItem(KEY, JSON.stringify({ name: uname.value.trim() }));
-    location.href = 'setup-wizard.html';
+    location.href = setupDone() ? 'board.html' : 'setup-wizard.html';
   });
 </script>
 </body>

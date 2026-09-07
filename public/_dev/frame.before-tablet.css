@@ -1,10 +1,6 @@
-/* طبقة المقاس — المجسّم لا يظهر إلّا حيث **يسع فعلاً**:
-   المجسّم ٣٩٠×٨٤٤ يحتاج ≈٩٤٠ بكسل ارتفاعاً بعد الحشو والشارة.
-   · ≤ ٤٦٠ عرضاً            ⟵ جوّال: ملء الشاشة بلا إطار
-   · ٤٦١+ لكن ضيّق أو قصير  ⟵ لوح/نافذة قصيرة: بلا إطار، وعمودٌ متمركز بعرض --screen-max
-     (يشمل الآيباد عمودياً ٨٣٤×١١٩٤ **وأفقياً ١١٩٤×٨٣٤** — والأفقي كان يفيض عن الشاشة)
-   · ≥ ١٠٢٤ عرضاً و≥ ٩٤٠ ارتفاعاً ⟵ كمبيوتر واسع: مجسّم الهاتف للمعاينة أثناء البناء
-   ولا تُمَسّ أيّ شاشة من الخمس عشرة — التخطيط كلّه في هذه الطبقة. */
+/* إطار الهاتف التوضيحي — يحدّد مقاس الشاشة المرجعي (390×844) على الكمبيوتر
+   وعلى الجوّال الفعلي يملأ الشاشة بلا إطار. */
+
 /* منع أي تمرير/تحرّك أفقي على كل الأجهزة */
 html,body{overflow-x:hidden;max-width:100%}
 body.framed{overscroll-behavior-x:none}
@@ -47,7 +43,7 @@ body.framed .foot{position:absolute !important;left:0;right:0;bottom:0;max-width
 /* على الجوّال الحقيقي: بلا إطار، الشاشة كاملة
    ملاحظة حاسمة: نستخدم dvh (الارتفاع المرئي الفعلي) لا vh — لأن vh في متصفّحات الجوّال
    يحسب المساحة تحت شريط المتصفّح، فيقع الزرّ السفلي تحت الطيّة ويضطر المستخدم للتمرير. */
-@media (max-width:1023px), (max-height:939px){
+@media (max-width:460px){
   body.framed{background:var(--shouba-canvas,#EFE6D6);padding:0;display:block;overflow-x:hidden;min-height:100dvh}
   body.framed .device{width:100%;max-width:100%;height:auto;min-height:100vh;min-height:100dvh;border-radius:0;padding:0;box-shadow:none}
   body.framed .device::before,body.framed .device::after{display:none}
@@ -62,12 +58,12 @@ body.framed .foot{position:absolute !important;left:0;right:0;bottom:0;max-width
 /* الرأس الثابت داخل الإطار (كالأشرطة السفلية) */
 body.framed .topbar{position:absolute !important;top:0;left:0;right:0;max-width:none !important;margin:0 !important;
   padding-top:32px}   /* مساحة النوتش داخل الإطار */
-@media (max-width:1023px), (max-height:939px){
+@media (max-width:460px){
   body.framed .topbar{position:fixed !important;padding-top:calc(9px + env(safe-area-inset-top))}
 }
 /* الشاشة ذات الرأس الثابت تحجز مساحته (تتقدّم على قاعدة النوتش العامّة) */
 body.framed .screen.has-topbar{padding-top:96px}
-@media (max-width:1023px), (max-height:939px){
+@media (max-width:460px){
   body.framed .screen.has-topbar{padding-top:calc(62px + env(safe-area-inset-top)) !important}
 }
 
@@ -75,39 +71,11 @@ body.framed .screen.has-topbar{padding-top:96px}
    في تبويب سفاري تبدأ الصفحة **تحت** شريط الحالة أصلاً، فإضافة env(safe-area-inset-top)
    تحسب المساحة مرّتين ⇒ شريط فارغ داخل الرأس (رآه المستخدم على جهازه).
    أمّا في وضع التطبيق (أُضيف للشاشة الرئيسية) فالصفحة تمتدّ تحت شريط الحالة فتلزم المساحة. */
-@media (max-width:1023px), (max-height:939px){
+@media (max-width:460px){
   body.framed .topbar{padding-top:10px}
   body.framed .screen.has-topbar{padding-top:72px !important}
 }
-@media (display-mode: standalone) and (max-width:1023px), (display-mode: standalone) and (max-height:939px){
+@media (max-width:460px) and (display-mode: standalone){
   body.framed .topbar{padding-top:calc(10px + env(safe-area-inset-top))}
   body.framed .screen.has-topbar{padding-top:calc(72px + env(safe-area-inset-top)) !important}
-}
-
-/* ===== نطاق اللوح (آيباد) — ٤٦١ إلى ١٠٢٣ =====================
-   قواعد الجوّال أعلاه أسقطت الإطار والنوتش والشارة أصلاً؛ يبقى أن **نحدّ لا نمطّ**:
-   عمودٌ متمركز بعرض --screen-max على خلفية المنصّة، والأشرطة المثبّتة تُقصر على عرضه
-   (وإلّا امتدّت على ٨٣٤ بكسل لأن قواعد الجوّال تُطلقها إلى ١٠٠٪).
-   ولا تُمَسّ أيّ شاشة — التخطيط كلّه في هذه الطبقة. */
-@media (min-width:461px) and (max-width:1023px), (min-width:461px) and (max-height:939px){
-  body.framed .device{
-    max-width:var(--screen-max);
-    margin:0 auto;
-    /* حدٌّ خفيف يفصل العمود عن الخلفية دون أن يوحي بجهاز */
-    box-shadow:0 0 0 1px rgba(190,172,140,.55);
-  }
-  /* الرأس والأشرطة مثبّتة بالمساحة المرئية ⇒ تُقصر بالعرض الأقصى وتُتمركز يدوياً */
-  body.framed .topbar{
-    max-width:var(--screen-max) !important;
-    margin:0 auto !important;
-  }
-  body.framed .foot{
-    max-width:var(--screen-max) !important;
-    margin:0 auto !important;
-  }
-  body.framed .tabbar{
-    left:16px !important; right:16px !important;
-    max-width:calc(var(--screen-max) - 32px) !important;
-    margin:0 auto !important;
-  }
 }

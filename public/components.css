@@ -583,3 +583,7 @@ body.solo .tsel{display:none}
   background:rgba(232,163,61,.13);border-inline-start:3px solid var(--shouba-amber);
   border-radius:12px;padding:12px 14px}
 .sepnote b{display:block;color:var(--shouba-amber-deep);font-weight:700;margin-bottom:2px}
+
+/* رقم النسخة داخل سطر نصّي (شاشة الدخول) — باهتٌ صغير لا يزاحم العنوان */
+.vernum{font-family:var(--font-num);font-size:11px;font-weight:700;letter-spacing:.2px;
+  color:var(--shouba-navy-light);opacity:.75}

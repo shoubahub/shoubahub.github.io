@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=29" />
-<link rel="stylesheet" href="shell.css?v=29" />
-<link rel="stylesheet" href="components.css?v=29" />
-<link rel="stylesheet" href="frame.css?v=29" />
+<link rel="stylesheet" href="identity/tokens.css?v=32" />
+<link rel="stylesheet" href="shell.css?v=32" />
+<link rel="stylesheet" href="components.css?v=32" />
+<link rel="stylesheet" href="frame.css?v=32" />
 <style>
   /* خاص بشاشة الجداول — الرأس والشريط السفلي واللوحة السفلية من components.css.
      الهامش الجانبي هنا أضيق من الموحّد عمداً: المصفوفة تحتاج كل بكسل (الوظيفة قبل الشكل). */
@@ -94,8 +94,8 @@
         <b>جداول شعبتك</b>
         <span id="headLine">—</span>
       </div>
-      <div class="iconbtn" id="toBoard" title="اللوحة">
-        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M8 4 L14 10 L8 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="iconbtn" id="toBoard" data-home title="اللوحة">
+        
       </div>
     </div>
 
@@ -133,11 +133,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=29"></script>
-<script src="refdata.js?v=29"></script>
-<script src="derive.js?v=29"></script>
-<script src="icons.js?v=29"></script>
-<script src="components.js?v=29"></script>
+<script src="build.js?v=32"></script>
+<script src="refdata.js?v=32"></script>
+<script src="derive.js?v=32"></script>
+<script src="icons.js?v=32"></script>
+<script src="components.js?v=32"></script>
 <script>
   var R=window.SHOUBA_REF;
   var d = Shouba.data();          /* المصدر الواحد — القراءة والكتابة من طبقة الاشتقاق */
@@ -389,10 +389,10 @@
   });
   /* الرجوع يعود من حيث جئت: من ملفّ المعلّم إليه، ومن التبويب إلى اللوحة.
      ⚠ مستمعٌ واحد لا onclick فوقه — اجتماعهما ينفّذ السلوكين فيغلب الأخير. */
-  document.getElementById('toBoard').addEventListener('click', function(){
-    location.href = (typeof solo !== 'undefined' && solo)
-      ? 'teacher.html?t=' + encodeURIComponent(cur) : 'board.html';
-  });
+  /* كان مشروطاً: في وضع المفرد يرجع إلى ملفّ المعلّم، وإلّا إلى اللوحة.
+     صار منزلاً واحداً يعيد إلى اللوحة دائماً — والشرط هو الذي أربك المستخدم:
+     زرٌّ واحد بمقصدين. وتبويب «المعلّمون» في الشريط السفلي يكفي للرجوع
+     إلى القائمة. ويتولّاه bindHome في الطبقة المشتركة. */
   document.getElementById('add').addEventListener('click', Shouba.quickAdd);
 </script>
 </body>

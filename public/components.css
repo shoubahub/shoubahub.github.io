@@ -620,3 +620,21 @@ body.solo .tsel{display:none}
    انزلاقها مبنيّ عليه، فالرفع بـbottom في كليهما. */
 .foot{bottom:var(--kb, 0px)}
 .sheet{bottom:var(--kb, 0px)}
+
+/* شريط النسخة الأحدث — ينتظر ضغطةً ولا يقاطع، ويُوضع أسفل الرأس لا فوقه */
+.newver{position:fixed;left:50%;transform:translateX(-50%);z-index:80;
+  display:flex;align-items:center;gap:10px;border:0;
+  padding:9px 12px 9px 16px;border-radius:999px;font-family:var(--font-ar);
+  background:var(--shouba-navy);color:var(--shouba-cream);
+  box-shadow:0 6px 20px rgba(20,50,80,.32), inset 0 1px 0 rgba(255,255,255,.14);
+  animation:newverIn .32s cubic-bezier(.2,.85,.25,1) both}
+.newver span{font-size:12.5px;font-weight:600}
+.newver b{font-size:12.5px;font-weight:700;color:var(--shouba-navy);cursor:pointer;
+  background:var(--shouba-amber);border-radius:999px;padding:6px 14px}
+.newver b:active{transform:translateY(1px)}
+.newver .x{font-style:normal;font-size:17px;font-weight:700;line-height:1;cursor:pointer;
+  color:var(--shouba-navy-light);padding:0 4px;position:relative}
+.newver .x::after{content:"";position:absolute;inset:-12px}   /* هدف لمسٍ ٤٤ */
+.newver.busy{opacity:.7;pointer-events:none}
+@keyframes newverIn{from{opacity:0;transform:translateX(-50%) translateY(-10px)}}
+@media (prefers-reduced-motion:reduce){.newver{animation:none}}

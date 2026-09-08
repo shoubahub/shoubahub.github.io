@@ -11,16 +11,20 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=29" />
-<link rel="stylesheet" href="shell.css?v=29" />
-<link rel="stylesheet" href="components.css?v=29" />
-<link rel="stylesheet" href="frame.css?v=29" />
+<link rel="stylesheet" href="identity/tokens.css?v=32" />
+<link rel="stylesheet" href="shell.css?v=32" />
+<link rel="stylesheet" href="components.css?v=32" />
+<link rel="stylesheet" href="frame.css?v=32" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
   .planline{padding:0 var(--gap-side);font-size:12px;color:var(--shouba-text-muted);font-weight:600}
   .planline b{color:var(--shouba-navy)}
   .todo{padding:0 var(--gap-side);display:flex;flex-direction:column;gap:7px}
+  .calopt{display:flex;align-items:flex-start;gap:10px;padding:10px 2px 14px;cursor:pointer}
+  .calopt input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:var(--shouba-navy)}
+  .calopt span{font-size:13px;font-weight:600;color:var(--shouba-ink);line-height:1.5}
+  .calopt small{display:block;font-size:11px;font-weight:500;color:var(--shouba-hint);margin-top:2px}
   .more{font-size:11.5px;color:var(--shouba-hint);padding:0 var(--gap-side)}
   /* السطر ذاته شكلاً، وزرٌّ فعلاً: ارتفاع ٤٤ للمس ولون أوضح قليلاً كي يُقرأ أنه يُضغط */
   .more.tappable{display:flex;align-items:center;gap:6px;min-height:44px;cursor:pointer;
@@ -124,11 +128,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=29"></script>
-<script src="refdata.js?v=29"></script>
-<script src="derive.js?v=29"></script>
-<script src="icons.js?v=29"></script>
-<script src="components.js?v=29"></script>
+<script src="build.js?v=32"></script>
+<script src="refdata.js?v=32"></script>
+<script src="derive.js?v=32"></script>
+<script src="icons.js?v=32"></script>
+<script src="components.js?v=32"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -473,6 +477,36 @@
     Shouba.sheet.open('مواعيد ' + dayLabel(day), n);
   }
 
+  /* بطاقة موعدٍ قياسية (RFC 5545) — يومٌ كامل، فالمواعيد المدرسية بلا ساعة.
+     تُبنى في المتصفّح وتُنزَّل، بلا خادم ولا حساب ولا إذن. */
+  function toDeviceCalendar(dateIso, type, title){
+    var p = dateIso.split('-');
+    if(p.length !== 3) return;
+    var d0 = p.join('');
+    var nx = new Date(+p[0], +p[1]-1, +p[2] + 1);          /* DTEND يومٌ بعده */
+    var pad = function(x){ return (x < 10 ? '0' : '') + x; };
+    var d1 = nx.getFullYear() + pad(nx.getMonth()+1) + pad(nx.getDate());
+    var esc = function(t){ return String(t).replace(/([,;\\])/g,'\\$1').replace(/\n/g,'\\n'); };
+    var uid = 'shouba-' + d0 + '-' + Math.abs(hash(title + type)) + '@shoubahub';
+    var ics = [
+      'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//شعبة//AR','CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT','UID:' + uid,
+      'DTSTAMP:' + d0 + 'T000000Z',
+      'DTSTART;VALUE=DATE:' + d0,
+      'DTEND;VALUE=DATE:' + d1,
+      'SUMMARY:' + esc(title),
+      'DESCRIPTION:' + esc(type + ' — من منصّة شعبة'),
+      'END:VEVENT','END:VCALENDAR'
+    ].join('\r\n');
+    var blob = new Blob([ics], { type:'text/calendar;charset=utf-8' });
+    var url  = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'موعد.ics';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+  }
+  function hash(t){ var h=0,i; for(i=0;i<t.length;i++){ h=(h*31 + t.charCodeAt(i))|0; } return h; }
+
   function addSheet(startIso, back){
     var n = document.createElement('div');
     var chosen = EV_TYPES[0];
@@ -496,6 +530,19 @@
     var save = document.createElement('button');
     save.className = 'cta'; save.textContent = 'أضِف';
     n.appendChild(save);
+
+    /* ═══ إلى رزنامة الجهاز — باتجاهٍ واحد (قرار المستخدم 2026-09-08) ═══
+       خيارٌ يُؤشَّر قبل الإضافة، فتنزل بطاقةُ موعدٍ قياسية (.ics) يفتحها
+       الجهاز فيسأل «إضافة إلى التقويم؟».
+       ⚠ **نسخةٌ لا رابط**: تعديلُ الموعد في المنصّة لاحقاً أو حذفُه لا يتبعه
+         تغييرٌ في رزنامتك. والربط الحقيقيّ يحتاج رابط اشتراك، ويحتاج خادماً.
+         فنقولها في الشاشة ولا نَعِد بما لا يقوم. */
+    var calRow = document.createElement('label');
+    calRow.className = 'calopt';
+    calRow.innerHTML = '<input type="checkbox" id="tocal" /><span></span>';
+    calRow.querySelector('span').innerHTML =
+      'أضِفه إلى رزنامة جهازي <small>نسخةٌ لا ترتبط — تعديلُه هنا لاحقاً لا يتبعه تغييرٌ هناك</small>';
+    n.insertBefore(calRow, save);
     Shouba.sheet.open('موعد جديد', n);
     var inp = n.querySelector('#evt');
     setTimeout(function(){ inp.focus(); }, 80);
@@ -507,6 +554,7 @@
       var v = inp.value.trim(), dv = n.querySelector('#evd').value;
       if(v.length < 2 || !dv) return;
       Shouba.addEvent({ date: dv, type: chosen, title: v });
+      if(n.querySelector('#tocal').checked) toDeviceCalendar(dv, chosen, v);
       var far = dv < iso(DAY_DATE[R.days[0]]) || dv > iso(DAY_DATE[R.days[4]]);
       if(far) setWeek(weekOffset);      /* موعدٌ خارج الأسبوع المعروض: نُبقي العرض كما هو */
       paintWeek(); paintCard();

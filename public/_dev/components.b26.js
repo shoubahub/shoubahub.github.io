@@ -99,15 +99,9 @@ Shouba.returnTo = function () {
      rAF لا يُطلَق في تبويبٍ غير مرئيّ ولا حين يخنقه المتصفّح، فكانت الخلفية
      تسودّ واللوحة لا تظهر — رُصد بالقياس: backdrop.open=true و sheet.open=false.
      وقراءة offsetWidth تُجبر إعادة التخطيط فيبقى الانتقال سلساً بلا مؤقّت. */
-  /* الإظهار متزامن: نُجبر إعادة التخطيط ليُحسب الانتقال من الحالة المغلقة،
-     ثم نضيف الصنف في النبضة نفسها.
-     ⚠ كان هنا حارسُ سباق (sheetPending) بقي من زمن requestAnimationFrame؛
-       ولمّا صار الإظهار متزامناً لم يبقَ سباقٌ يُحرس منه، **وصار الحارس هو العلّة**:
-       مسار المنسدلات لا يرفع الراية، فترفض اللوحةُ الظهور وتبقى الخلفية سوداء وحدها
-       (رصده المستخدم في «اختيار الشعبة» 2026-09-08). فأُزيل من أصله. */
   function reveal() {
     void sheet.offsetWidth;
-    sheet.classList.add('open');
+    if (sheetPending !== false) sheet.classList.add('open');
   }
 
   function choose(drop, val, txt) {
@@ -120,8 +114,10 @@ Shouba.returnTo = function () {
     close();
   }
 
+  var sheetPending = false;   /* حارس السباق: فتح ثم إغلاق في الدورة نفسها كان يترك اللوحة مفتوحة بلا خلفية */
   function close() {
     if (!sheet) return;
+    sheetPending = false;
     sheet.classList.remove('open');
     backdrop.classList.remove('open');
     document.body.style.overflow = '';
@@ -149,6 +145,7 @@ Shouba.returnTo = function () {
       list.scrollTop = 0;
       document.body.style.overflow = 'hidden';
       backdrop.classList.add('open');
+      sheetPending = true;
       reveal();
     },
     close: function () { close(); }

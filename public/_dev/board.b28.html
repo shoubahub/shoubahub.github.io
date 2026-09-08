@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=29" />
-<link rel="stylesheet" href="shell.css?v=29" />
-<link rel="stylesheet" href="components.css?v=29" />
-<link rel="stylesheet" href="frame.css?v=29" />
+<link rel="stylesheet" href="identity/tokens.css?v=28" />
+<link rel="stylesheet" href="shell.css?v=28" />
+<link rel="stylesheet" href="components.css?v=28" />
+<link rel="stylesheet" href="frame.css?v=28" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -22,14 +22,6 @@
   .planline b{color:var(--shouba-navy)}
   .todo{padding:0 var(--gap-side);display:flex;flex-direction:column;gap:7px}
   .more{font-size:11.5px;color:var(--shouba-hint);padding:0 var(--gap-side)}
-  /* السطر ذاته شكلاً، وزرٌّ فعلاً: ارتفاع ٤٤ للمس ولون أوضح قليلاً كي يُقرأ أنه يُضغط */
-  .more.tappable{display:flex;align-items:center;gap:6px;min-height:44px;cursor:pointer;
-    color:var(--shouba-link);font-weight:600;-webkit-tap-highlight-color:transparent}
-  .more.tappable .chev{font-size:15px;font-weight:700;line-height:1}
-  .more.tappable:active{opacity:.6}
-  /* سطر الطلب صار باباً: مؤشّر ونبضة ضغط، بلا تغيير في شكله */
-  .titem.go{cursor:pointer;-webkit-tap-highlight-color:transparent}
-  .titem.go:active{transform:translateY(1px);opacity:.85}
   .invite{margin:0 var(--gap-side);font-size:12.5px;color:var(--shouba-text-muted);line-height:1.8;
     background:rgba(120,98,66,.06);border-radius:14px;padding:12px 14px}
 </style>
@@ -124,11 +116,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=29"></script>
-<script src="refdata.js?v=29"></script>
-<script src="derive.js?v=29"></script>
-<script src="icons.js?v=29"></script>
-<script src="components.js?v=29"></script>
+<script src="build.js?v=28"></script>
+<script src="refdata.js?v=28"></script>
+<script src="derive.js?v=28"></script>
+<script src="icons.js?v=28"></script>
+<script src="components.js?v=28"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -661,51 +653,15 @@
     todoEl.closest('section').classList.add('calm');
     todoEl.innerHTML='<div class="invite">لا شيء ينتظر إجراءً الآن — شعبتك منضبطة.</div>';
   } else {
-    /* بانٍ واحد للسطر — تستعمله البطاقة واللوحة معاً فلا يفترق شكلُهما.
-       والسطر **باب الإجراء نفسه**: الطلب «لم يُدخل جدوله»، فالضغطة تفتح
-       جدول ذلك المعلّم وحده. وإلّا كانت البطاقة إخباراً بالعمل لا طريقاً إليه
-       (قرار المستخدم 2026-09-08). */
-    function titem(it){
-      var el=document.createElement('div'); el.className='titem go';
-      el.setAttribute('role','button'); el.setAttribute('tabindex','0');
-      el.innerHTML='<span class="ini"></span><div class="tx"><b></b><small></small></div>'
-                 + '<span class="chip"></span><span class="chev">›</span>';
-      el.querySelector('.ini').textContent = it.name.charAt(0);
-      el.querySelector('b').textContent = 'أ. ' + it.name;
-      el.querySelector('small').textContent = it.text;
-      el.querySelector('.chip').textContent = it.badge;
-      function go(){ location.href = 'schedule.html?t=' + encodeURIComponent(it.name); }
-      el.addEventListener('click', go);
-      el.addEventListener('keydown', function(e){
-        if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); }
-      });
-      return el;
-    }
-    /* البطاقة تعرض اثنين — لا تطول فتزاحم ما تحتها */
-    items.slice(0,2).forEach(function(it){ todoEl.appendChild(titem(it)); });
-
-    /* والبقيّة خلف ضغطة: السطرُ السفلي صار زرّاً يفتح القائمة كاملةً
-       بالتنسيق نفسه (قرار المستخدم 2026-09-08). كان نصّاً جامداً يُخبر
-       بالعدد ولا يوصل إليه. */
-    if(items.length>2){
-      var more=document.getElementById('todoMore');
-      more.classList.add('tappable');
-      more.setAttribute('role','button');
-      more.setAttribute('tabindex','0');
-      var rest = items.length - 2;
-      more.innerHTML = '<span></span><span class="chev">›</span>';
-      more.querySelector('span').textContent =
-        'و' + Shouba.count(rest,{one:'طلب',two:'طلبان',few:'طلبات',many:'طلباً'}) + ' في الانتظار';
-      function openAll(){
-        var n=document.createElement('div'); n.className='todo';
-        items.forEach(function(it){ n.appendChild(titem(it)); });
-        Shouba.sheet.open('بحاجة إلى إجراء', n);
-      }
-      more.addEventListener('click', openAll);
-      more.addEventListener('keydown', function(e){
-        if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openAll(); }
-      });
-    }
+    items.slice(0,2).forEach(function(it){
+      var el=document.createElement('div'); el.className='titem';
+      el.innerHTML='<span class="ini">'+it.name.charAt(0)+'</span>'
+        + '<div class="tx"><b>أ. '+it.name+'</b><small>'+it.text+'</small></div>'
+        + '<span class="chip">'+it.badge+'</span>';
+      todoEl.appendChild(el);
+    });
+    if(items.length>2) document.getElementById('todoMore').textContent =
+      'و' + Shouba.count(items.length-2,{one:'طلب',two:'طلبان',few:'طلبات',many:'طلباً'}) + ' في الانتظار';
   }
 
   /* ===== التنقّل ===== */

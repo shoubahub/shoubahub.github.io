@@ -286,24 +286,6 @@ Shouba.returnTo = function () {
     host.appendChild(t);
   }
 
-  /* ═══ لوحة المفاتيح لا تحجب زرّ الإجراء (مراجعة الآيباد 2026-09-08) ═══
-     على iOS يبقى العنصر الثابت في مكانه حين تُفتح لوحة المفاتيح فتغطّيه —
-     ويقع ذلك في كل شاشةٍ فيها حقلُ كتابةٍ وزرٌّ سفلي، وفي لوحات الإدخال.
-     نقيس ما تشغله من المساحة المرئية ونكتبه في --kb، فترتفع بمقداره.
-     ⚠ العتبة ٩٠px: انكماشُ شريط العنوان وحده لا يُحسب لوحةَ مفاتيح. */
-  function keyboardInset() {
-    var vv = window.visualViewport;
-    if (!vv) return;                        /* متصفّح قديم: يبقى السلوك كما كان */
-    var root = document.documentElement;
-    function fit() {
-      var gap = Math.round(window.innerHeight - vv.height - vv.offsetTop);
-      root.style.setProperty('--kb', gap > 90 ? gap + 'px' : '0px');
-    }
-    vv.addEventListener('resize', fit);
-    vv.addEventListener('scroll', fit);
-    fit();
-  }
-
-  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); }
-  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); });
+  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); });
 })();

@@ -30,7 +30,7 @@
   background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.08}
 
 /* ---------- حقل نصّي ---------- */
-.paper > input{width:100%;border:0;background:transparent;font-family:var(--font-ar);font-size:16px;font-weight:600;
+.paper > input{width:100%;border:0;background:transparent;font-family:var(--font-ar);font-size:15px;font-weight:600;
   color:var(--shouba-navy);padding:16px;outline:none;text-align:right;position:relative;z-index:1}
 .paper > input::placeholder{color:var(--shouba-hint);font-weight:500}
 
@@ -601,22 +601,3 @@ body.solo .tsel{display:none}
   box-shadow:inset 0 0 0 1px var(--shouba-line)}
 .subj .free.shared{color:var(--shouba-link);box-shadow:inset 0 0 0 1px rgba(62,127,180,.35)}
 .subj .gt{order:3}
-
-
-/* ═══ استجابة اللمس (مراجعة الآيباد 2026-09-08) ═══════════════════════
-   معيار آبل ٤٤×٤٤ نقطة. وأزرارنا الصغيرة تمرّ على الجوّال لضيق الشاشة،
-   وتصعب على اللوح لأن اليد أبعد والإصبع أعرض على شاشةٍ ممسوكة.
-   ⚠ نوسّع **منطقة اللمس** بعنصرٍ زائف شفّاف، ولا نوسّع الزرّ:
-     فيبقى الشكل كما اعتُمد ويكبر الهدف. */
-.wkarrow, .evrow .del, .topbar .tbend .iconbtn{position:relative}
-.wkarrow::after, .evrow .del::after, .topbar .tbend .iconbtn::after{
-  content:""; position:absolute; inset:-9px; border-radius:inherit}
-.topbar .tbend .iconbtn::after{inset:-7px}
-
-/* ═══ لوحة المفاتيح لا تحجب زرّ الإجراء ═══════════════════════════════
-   على iOS يبقى الثابت (fixed) في مكانه حين تُفتح لوحة المفاتيح فتغطّيه.
-   نرفع الزرَّ واللوحةَ السفلية بمقدار ما تشغله — يُقاس من المساحة المرئية
-   في components.js ويُكتب في --kb. و‍.sheet لا تُحرَّك بـtransform لأن
-   انزلاقها مبنيّ عليه، فالرفع بـbottom في كليهما. */
-.foot{bottom:var(--kb, 0px)}
-.sheet{bottom:var(--kb, 0px)}

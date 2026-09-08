@@ -12,10 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=27" />
-<link rel="stylesheet" href="shell.css?v=27" />
-<link rel="stylesheet" href="components.css?v=27" />
-<link rel="stylesheet" href="frame.css?v=27" />
+<link rel="stylesheet" href="identity/tokens.css?v=28" />
+<link rel="stylesheet" href="shell.css?v=28" />
+<link rel="stylesheet" href="components.css?v=28" />
+<link rel="stylesheet" href="frame.css?v=28" />
 <style>
   /* خاص بهذه الشاشة فقط: صفّ الإضافة (حقل + زرّ) وحرفا المعلّم — لا هيكل ولا هوامش عامّة */
   .addrow{display:flex;gap:12px;align-items:stretch}
@@ -28,8 +28,10 @@
   .count{font-size:12px;font-weight:700;color:var(--shouba-label)}
   .ini{width:38px;height:38px;border-radius:999px;flex:none;display:grid;place-items:center;background:var(--shouba-navy);
     color:var(--shouba-cream);font-size:13px;font-weight:700}
-  .del{width:34px;height:34px;border-radius:12px;flex:none;border:0;cursor:pointer;display:grid;place-items:center;
+  /* ٣٤ مرئية و٤٤ ملموسة — العنصر الزائف يوسّع الهدف لا الزرّ (مراجعة الآيباد) */
+  .del{position:relative;width:34px;height:34px;border-radius:12px;flex:none;border:0;cursor:pointer;display:grid;place-items:center;
     background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);box-shadow:0 2px 0 rgba(190,172,140,.5)}
+  .del::after{content:"";position:absolute;inset:-5px;border-radius:inherit}
   .del:active{transform:translateY(1px)}
   .empty{font-size:12.5px;color:var(--shouba-hint);padding:2px}
   .warn{font-size:12px;font-weight:600;color:var(--shouba-error)}
@@ -90,8 +92,8 @@
   </div>
  </div></div>
 
-<script src="build.js?v=27"></script>
-<script src="components.js?v=27"></script>
+<script src="build.js?v=28"></script>
+<script src="components.js?v=28"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }

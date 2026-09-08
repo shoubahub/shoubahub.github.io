@@ -587,3 +587,10 @@ body.solo .tsel{display:none}
 /* رقم النسخة داخل سطر نصّي (شاشة الدخول) — باهتٌ صغير لا يزاحم العنوان */
 .vernum{font-family:var(--font-num);font-size:11px;font-weight:700;letter-spacing:.2px;
   color:var(--shouba-navy-light);opacity:.75}
+
+/* رقم النسخة في شريط كل شاشة — وسمٌ باهت صغير لا يزاحم شيئاً.
+   في الشريط العلويّ (كحل) عنصرٌ مستقلّ في طرفه؛ وفي شريط المعالج ملحقٌ بسطر الخطوة. */
+.vertag{font-family:var(--font-num);font-size:9px;font-weight:700;letter-spacing:.2px;
+  line-height:1;flex:none;color:var(--shouba-hint);opacity:.85;pointer-events:none}
+.topbar .vertag{color:var(--shouba-navy-light);opacity:.7}
+.prog .lbl .vertag{margin-inline-start:8px;font-size:10px;color:var(--shouba-hint)}

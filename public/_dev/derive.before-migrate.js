@@ -31,23 +31,6 @@
     return d;
   };
 
-  /* ===== ①ب الترحيل: أسماء الأقسام تبدّلت مع بيانات الوزارة (2026-09-07) =====
-     مَن أعدّ شعبته على الأسماء القديمة يجدها باسمها الجديد بلا أن يفعل شيئاً.
-     ⚠ ويُمحى **مخزون المواد** المحفوظ لحظةَ الإعداد: أسماء المقرّرات تبدّلت
-       كلّها إلى أسماء الوزارة، فالمخزون القديم يحجب الجديد لو بقي.
-     يُنفَّذ مرّة واحدة ويترك أثراً (refDataVersion) فلا يتكرّر. */
-  var REF_VERSION = 2;
-  (function migrate () {
-    var d = S.data();
-    if (!d.stage || d.refDataVersion === REF_VERSION) return;
-    var now = SHOUBA_REF.departmentOf(d.stage, d.department || '');
-    if (now !== d.department) d.department = now;
-    delete d.subjects;                       // تُشتقّ من جديد
-    d.refDataVersion = REF_VERSION;
-    localStorage.setItem(KEY, JSON.stringify(d));
-    cache = d;
-  })();
-
   /* ===== ② بنية الشعبة ===== */
   S.stage      = function () { return S.data().stage || 'ثانوي'; };
   S.days       = function () { return SHOUBA_REF.days; };

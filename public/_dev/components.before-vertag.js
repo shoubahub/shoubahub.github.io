@@ -257,23 +257,6 @@ Shouba.returnTo = function () {
     host.appendChild(n);
   }
 
-  /* رقم النسخة في كل شاشة — طلب المستخدم (2026-09-07): من يعثر على خلل في
-     أيّ شاشة يجب أن يقرأ نسخته دون أن يعود إلى البداية.
-     ⚠ يُحقن عنصرٌ مستقلّ لا نصٌّ داخل سطرٍ قائم: أسطر الشريط تُكتب بـtextContent
-       من كل شاشة، فأيّ عنصر بداخلها يُمحى عند أوّل تحديث لها.
-     واللوحة وشاشة الدخول لهما موضعهما الخاصّ (#verNo) فتُترَكان. */
-  function versionTag() {
-    if (document.getElementById('verNo')) return;
-    var host = document.querySelector('.topbar')
-            || document.querySelector('.navrow .prog .lbl')
-            || document.querySelector('.navrow');
-    if (!host || host.querySelector('.vertag')) return;
-    var t = document.createElement('span');
-    t.className = 'vertag';
-    t.textContent = window.SHOUBA_VERSION || '';
-    host.appendChild(t);
-  }
-
-  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); }
-  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); });
+  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); });
 })();

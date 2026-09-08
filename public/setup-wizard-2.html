@@ -11,17 +11,17 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=23" />
-<link rel="stylesheet" href="shell.css?v=23" />
-<link rel="stylesheet" href="components.css?v=23" />
-<link rel="stylesheet" href="frame.css?v=23" />
+<link rel="stylesheet" href="identity/tokens.css?v=26" />
+<link rel="stylesheet" href="shell.css?v=26" />
+<link rel="stylesheet" href="components.css?v=26" />
+<link rel="stylesheet" href="frame.css?v=26" />
 <style>
   /* خاص بهذه الشاشة فقط */
   .sdrop.locked{opacity:.5;pointer-events:none;filter:grayscale(.3)}
   .subjects{display:flex;flex-direction:column;gap:9px}
   .subj{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:15px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px;
     box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
-  .subj b{font-size:14.5px;font-weight:700;color:var(--shouba-ink)}
+  .subj b{flex:1;min-width:0;font-size:14.5px;font-weight:700;color:var(--shouba-ink)}
   .subj .gt{font-size:11.5px;font-weight:600;color:var(--shouba-amber-deep);background:rgba(169,112,27,.1);border-radius:999px;padding:5px 11px;white-space:nowrap}
   .subj-empty{font-size:12.5px;color:var(--shouba-hint);padding:4px 2px}
   .hide{display:none !important}
@@ -87,9 +87,9 @@
   </div>
  </div></div>
 
-<script src="refdata.js?v=23"></script>
-<script src="build.js?v=23"></script>
-<script src="components.js?v=23"></script>
+<script src="refdata.js?v=26"></script>
+<script src="build.js?v=26"></script>
+<script src="components.js?v=26"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{return JSON.parse(localStorage.getItem(KEY))||{};}catch(e){return {};} }
@@ -128,7 +128,20 @@
       list.forEach(function(s){
         var row=document.createElement('div'); row.className='subj';
         // المرحلة بلا مسارات ⇒ لا فاصل معلّق بعد الصف
-        row.innerHTML='<b>'+s.name+'</b><span class="gt">'+(s.track ? s.grade+' · '+s.track : s.grade)+'</span>';
+        // ومادّة الاختيار الحرّ تُثبت بصفٍّ واحد بلا مسار، ويُقال ذلك بجانبها
+        // بدل تكرارها للأدبي والعلمي (قرار المستخدم 2026-09-08)
+        var meta = s.track ? s.grade + ' · ' + s.track : s.grade;
+        row.innerHTML='<b></b><span class="gt"></span>';
+        row.querySelector('b').textContent = s.name;
+        row.querySelector('.gt').textContent = meta;
+        if(s.elective){
+          var tag=document.createElement('span'); tag.className='free';
+          tag.textContent='اختيار حرّ'; row.appendChild(tag);
+        }
+        if(s.shared){
+          var sh=document.createElement('span'); sh.className='free shared';
+          sh.textContent='مشتركة'; row.appendChild(sh);
+        }
         subjects.appendChild(row);
       });
     } else {

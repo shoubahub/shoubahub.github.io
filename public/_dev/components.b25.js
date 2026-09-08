@@ -92,16 +92,7 @@ Shouba.returnTo = function () {
     list.scrollTop = 0;
     document.body.style.overflow = 'hidden';
     backdrop.classList.add('open');
-    reveal();
-  }
-
-  /* إظهار اللوحة — **بلا requestAnimationFrame** (إصلاح 2026-09-08):
-     rAF لا يُطلَق في تبويبٍ غير مرئيّ ولا حين يخنقه المتصفّح، فكانت الخلفية
-     تسودّ واللوحة لا تظهر — رُصد بالقياس: backdrop.open=true و sheet.open=false.
-     وقراءة offsetWidth تُجبر إعادة التخطيط فيبقى الانتقال سلساً بلا مؤقّت. */
-  function reveal() {
-    void sheet.offsetWidth;
-    if (sheetPending !== false) sheet.classList.add('open');
+    requestAnimationFrame(function () { sheet.classList.add('open'); });
   }
 
   function choose(drop, val, txt) {
@@ -146,7 +137,7 @@ Shouba.returnTo = function () {
       document.body.style.overflow = 'hidden';
       backdrop.classList.add('open');
       sheetPending = true;
-      reveal();
+      requestAnimationFrame(function () { if (sheetPending) sheet.classList.add('open'); });
     },
     close: function () { close(); }
   };

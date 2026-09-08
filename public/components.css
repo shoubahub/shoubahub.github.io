@@ -594,3 +594,10 @@ body.solo .tsel{display:none}
   line-height:1;flex:none;color:var(--shouba-hint);opacity:.85;pointer-events:none}
 .topbar .vertag{color:var(--shouba-navy-light);opacity:.7}
 .prog .lbl .vertag{margin-inline-start:8px;font-size:10px;color:var(--shouba-hint)}
+
+/* وسمٌ بجانب المادّة: «اختيار حرّ» أو «مشتركة» — بدل تكرار السطر لكل مسار */
+.subj .free{flex:none;order:2;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:999px;
+  white-space:nowrap;background:transparent;color:var(--shouba-label);
+  box-shadow:inset 0 0 0 1px var(--shouba-line)}
+.subj .free.shared{color:var(--shouba-link);box-shadow:inset 0 0 0 1px rgba(62,127,180,.35)}
+.subj .gt{order:3}

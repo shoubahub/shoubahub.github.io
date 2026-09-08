@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=26" />
-<link rel="stylesheet" href="shell.css?v=26" />
-<link rel="stylesheet" href="components.css?v=26" />
-<link rel="stylesheet" href="frame.css?v=26" />
+<link rel="stylesheet" href="identity/tokens.css?v=24" />
+<link rel="stylesheet" href="shell.css?v=24" />
+<link rel="stylesheet" href="components.css?v=24" />
+<link rel="stylesheet" href="frame.css?v=24" />
 <style>
   /* خاص بشاشة الجداول — الرأس والشريط السفلي واللوحة السفلية من components.css.
      الهامش الجانبي هنا أضيق من الموحّد عمداً: المصفوفة تحتاج كل بكسل (الوظيفة قبل الشكل). */
@@ -133,11 +133,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=26"></script>
-<script src="refdata.js?v=26"></script>
-<script src="derive.js?v=26"></script>
-<script src="icons.js?v=26"></script>
-<script src="components.js?v=26"></script>
+<script src="build.js?v=24"></script>
+<script src="refdata.js?v=24"></script>
+<script src="derive.js?v=24"></script>
+<script src="icons.js?v=24"></script>
+<script src="components.js?v=24"></script>
 <script>
   var R=window.SHOUBA_REF;
   var d = Shouba.data();          /* المصدر الواحد — القراءة والكتابة من طبقة الاشتقاق */
@@ -267,22 +267,19 @@
 
     /* ===== اللوحة السفلية: المادة ← الشعبة ← حفظ فوري ← الحصة التالية ===== */
     function openCell(day, pIdx, pNo){
-      /* حال الخانة **قبل** اللمس هو الذي يقرّر: أهذه سلسلةُ إدخال أم تعديلٌ مفرد؟
-         يُقرأ هنا مرّة ويُمرَّر إلى advance في كل مسارات الاعتماد. */
-      var wasFilled = !!Shouba.slot(cur, day, pIdx);
       var node = document.createElement('div');
 
       var quick = document.createElement('div');
       quick.className='quick';
       var bFree = document.createElement('button');
       bFree.textContent = 'أفرِغ الخانة';
-      bFree.addEventListener('click', function(){ setSlot(day, pIdx, ''); advance(day, pIdx, wasFilled); });
+      bFree.addEventListener('click', function(){ setSlot(day, pIdx, ''); advance(day, pIdx); });
       quick.appendChild(bFree);
       if(lastSlot){
         var bRep = document.createElement('button');
         bRep.className='amber';
         bRep.textContent = 'كرّر: ' + lastSlot;
-        bRep.addEventListener('click', function(){ setSlot(day, pIdx, lastSlot); advance(day, pIdx, wasFilled); });
+        bRep.addEventListener('click', function(){ setSlot(day, pIdx, lastSlot); advance(day, pIdx); });
         quick.appendChild(bRep);
       }
       node.appendChild(quick);
@@ -298,7 +295,7 @@
         var b = document.createElement('button');
         b.className='sheet-opt';
         b.innerHTML='<span>'+s.name+' — '+s.grade+(s.track?' '+s.track:'')+'</span>';
-        b.addEventListener('click', function(){ pickSection(day, pIdx, pNo, s.name, g, wasFilled); });
+        b.addEventListener('click', function(){ pickSection(day, pIdx, pNo, s.name, g); });
         node.appendChild(b);
       });
 
@@ -313,7 +310,7 @@
     }
 
     /* الخطوة الثانية داخل اللوحة نفسها: رقم الشعبة */
-    function pickSection(day, pIdx, pNo, subject, grade, wasFilled){
+    function pickSection(day, pIdx, pNo, subject, grade){
       var node = document.createElement('div');
       var note = document.createElement('div');
       note.className='sheet-note';
@@ -327,7 +324,7 @@
           b.className='secbtn'; b.textContent=n;
           b.addEventListener('click', function(){
             setSlot(day, pIdx, grade + '/' + n + ' · ' + subject);
-            advance(day, pIdx, wasFilled);
+            advance(day, pIdx);
           });
           secs.appendChild(b);
         })(i);
@@ -342,13 +339,8 @@
       paintAll();
     }
 
-    /* الإدخال المتتابع — **مشروطاً بحال الخانة قبل اللمس** (قرار المستخدم 2026-09-08):
-       · خانة **ممتلئة** ⟵ تعديلٌ مفرد، فتُغلق اللوحة فور الاعتماد.
-       · خانة **فارغة**  ⟵ بدايةُ سلسلة، فتُفتح الحصة التالية بلا رجوع.
-       فتُقرأ النيّة من الخانة نفسها بلا سؤالٍ ولا إعداد؛ وإدخال الجدول أوّل مرّة
-       يبقى متتابعاً، والتعديل اللاحق لا يحبس المستخدم في اللوحة. */
-    function advance(day, pIdx, wasFilled){
-      if(wasFilled){ Shouba.sheet.close(); return; }
+    /* الإدخال المتتابع: بعد كل اعتماد تُفتح الحصة التالية في اليوم نفسه بلا رجوع */
+    function advance(day, pIdx){
       var next = null;
       times.forEach(function(t){ if(!t.brk && t.n-1 > pIdx && next===null) next = t.n; });
       if(next === null){ Shouba.sheet.close(); return; }

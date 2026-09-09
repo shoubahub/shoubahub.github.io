@@ -18,16 +18,8 @@
   window.Shouba = window.Shouba || {};
   var S = window.Shouba;
 
-  /* ===== ① المصدر: نقطة قراءة وكتابة واحدة =====
-     ⚠ **الجهاز أوّلاً، والخادم بعده** — وهذا هو الترتيب لا العكس:
-       الكتابة تُحفظ محلّياً في الحال فتظهر فوراً بلا انتظار شبكة، ثم تُرسَل
-       بعد سكونٍ قصير. فالإدخال لا يتغيّر إحساسه، ويعمل بلا إنترنت،
-       وشبكة المدرسة تنقطع فلا يقف العمل.
-     ⚠ والوثيقة **كاملةٌ** في كل إرسال — لا حقلاً حقلاً. ولذلك تغلب آخرُ
-       كتابة عند التحرير المتزامن من جهازين، ويحرسه guard الأحدثية أدناه. */
+  /* ===== ① المصدر: نقطة قراءة وكتابة واحدة ===== */
   var cache = null;
-  var SYNC  = 'shouba.sync';               /* آخر تاريخ خادمٍ عرفناه */
-
   S.data = function (fresh) {
     if (fresh || !cache) { try { cache = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { cache = {}; } }
     return cache;
@@ -36,92 +28,8 @@
     var d = S.data();
     if (patch) Object.keys(patch).forEach(function (k) { d[k] = patch[k]; });
     localStorage.setItem(KEY, JSON.stringify(d));
-    push();                                 /* إلى الخادم بعد سكون */
     return d;
   };
-
-  /* ===== ①ب الخادم ==========================================
-     يُفعَّل حين يكون ثمّة خادم وجلسة. وبلا ذلك تعمل المنصّة على الجهاز
-     كما كانت — فلا تنكسر نسخةٌ ساكنة ولا تطوير محلّي بلا خادم. */
-  var online = false;                       /* هل ثبتت جلسةٌ على خادم؟ */
-  var timer = null, sending = false, again = false;
-
-  function stamp(t) { try { localStorage.setItem(SYNC, t || ''); } catch (e) {} }
-  function lastSync() { try { return localStorage.getItem(SYNC) || ''; } catch (e) { return ''; } }
-
-  function push() {
-    if (!online) return;
-    clearTimeout(timer);
-    timer = setTimeout(send, 1200);         /* سكونٌ قصير — لا مع كل حرف */
-  }
-  function send() {
-    if (!online) return;
-    if (sending) { again = true; return; }
-    sending = true;
-    fetch('api/data', {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin', body: JSON.stringify({ data: S.data() })
-    }).then(function (r) {
-      if (!r.ok) throw new Error();
-      stamp(new Date().toISOString());
-      note(false);
-    }).catch(function () {
-      note(true);                           /* صامتٌ حين ينجح، صريحٌ حين يفشل */
-      setTimeout(function () { if (online) send(); }, 15000);
-    }).then(function () {
-      sending = false;
-      if (again) { again = false; send(); }
-    });
-  }
-
-  /* شريط الفشل — يُبنى مرّةً ويُخفى ويُظهر */
-  var bar = null;
-  function note(bad) {
-    if (!bad) { if (bar) bar.remove(), bar = null; return; }
-    if (bar) return;
-    bar = document.createElement('div');
-    bar.className = 'syncbar';
-    bar.textContent = 'لم يصل الحفظ إلى الخادم — عملُك محفوظ في جهازك وسيُرسَل تلقائياً.';
-    document.body.appendChild(bar);
-  }
-
-  /* الإقلاع: يُنادى من components.js بعد تحميل الصفحة.
-     يجلب وثيقة الخادم ويقرّر بينها وبين المحلّية. */
-  S.connect = function () {
-    if (!window.fetch) return Promise.resolve(false);
-    return fetch('api/data', { credentials: 'same-origin' })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (res) {
-        if (!res) return false;             /* لا جلسة ⟵ نبقى على الجهاز */
-        online = true;
-        var mine = S.data(true);
-        var has  = mine && Object.keys(mine).length > 0;
-
-        /* ⚠ الترحيل: مَن أعدّ شعبته على جهازه لا يفقدها.
-           والمحلّية تبقى حتى ينجح الرفع — لا تُمحى قبل التأكّد. */
-        if (!res.data && has) { send(); return true; }
-
-        if (res.data && !has) {             /* الخادم وحده يملك ⟵ ننزلها */
-          cache = res.data;
-          localStorage.setItem(KEY, JSON.stringify(cache));
-          stamp(res.updatedAt || '');
-          return true;
-        }
-        if (res.data && has) {
-          /* الاثنان يملكان: الأحدث يقود، ولا نطمس عملاً */
-          var srv = res.updatedAt || '';
-          if (srv && srv > lastSync().slice(0, 19).replace('T', ' ')) {
-            cache = res.data;
-            localStorage.setItem(KEY, JSON.stringify(cache));
-            stamp(res.updatedAt);
-            S.serverWasNewer = true;        /* تقرؤه اللوحة فتخبر المستخدم */
-          } else { send(); }
-        }
-        return true;
-      })
-      .catch(function () { return false; });
-  };
-  S.online = function () { return online; };
 
   /* ===== ①ب الترحيل: أسماء الأقسام تبدّلت مع بيانات الوزارة (2026-09-07) =====
      مَن أعدّ شعبته على الأسماء القديمة يجدها باسمها الجديد بلا أن يفعل شيئاً.

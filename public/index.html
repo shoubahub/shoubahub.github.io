@@ -22,11 +22,42 @@
    =================================================================== */
 (function () {
   function j(k){ try { return JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { return {}; } }
-  var setup = j('shouba.setup'), user = j('shouba.user');
-  var to = setup.setupDone ? 'board.html'
-         : user.name       ? 'setup-wizard.html'
-                           : 'login.html';
-  location.replace(to);
+
+  function route() {
+    var setup = j('shouba.setup'), user = j('shouba.user');
+    var to = setup.setupDone ? 'board.html'
+           : user.name       ? 'setup-wizard.html'
+                             : 'login.html';
+    location.replace(to);
+  }
+
+  /* ⚠ الموجِّه ينزّل بيانات الخادم **قبل** أن يوجّه (2026-09-08):
+     على جهازٍ جديد كانت اللوحة تُرسَم فارغةً ثم تصل البيانات بعدها،
+     فيرى الزميل «شعبتك» بلا اسمٍ ويظنّها لم تصل — ولا يصلحه إلّا تحديث.
+     والموجِّه هو الموضع الطبيعي: شاشةٌ خاطفة لا محتوى فيها يُنتظر.
+     وبلا خادمٍ أو جلسةٍ أو إنترنت يوجّه فوراً كما كان — بمهلةٍ قصيرة تحرسه. */
+  if (!window.fetch) { route(); return; }
+
+  var done = false;
+  function once() { if (!done) { done = true; route(); } }
+  setTimeout(once, 2500);                       /* لا يعلّق المستخدم إن تعذّرت الشبكة */
+
+  fetch('api/data', { credentials: 'same-origin' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (res) {
+      if (res && res.data) {
+        var mine = j('shouba.setup');
+        var empty = !mine || Object.keys(mine).length === 0;
+        /* لا نطمس عملاً محلّياً: ننزّلها حين لا يكون عندنا شيء.
+           والمقارنة بالأحدثية تتولّاها طبقة الاشتقاق بعد التوجيه. */
+        if (empty) {
+          localStorage.setItem('shouba.setup', JSON.stringify(res.data));
+          localStorage.setItem('shouba.sync', new Date().toISOString());
+        }
+      }
+    })
+    .catch(function () {})
+    .then(once);
 })();
 </script>
 <noscript><a href="login.html">افتح منصّة شعبة</a></noscript>

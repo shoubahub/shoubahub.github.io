@@ -372,6 +372,27 @@ Shouba.returnTo = function () {
       .catch(function () {});                                 /* بلا إنترنت: لا شيء */
   }
 
-  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); updateBanner(); }
-  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); updateBanner(); });
+  /* ═══ الوصل بالخادم (2026-09-08) ═══════════════════════════════════
+     يُنادى بعد تحميل كل شاشة. وطبقة الاشتقاق هي التي تقرّر:
+     بجلسةٍ تعمل على الخادم، وبلا جلسةٍ تبقى على الجهاز كما كانت.
+     ⚠ ولا تُمسّ شاشةٌ من الخمس عشرة — كما وُعد في ترويسة derive.js. */
+  function connectServer() {
+    if (!window.Shouba || !Shouba.connect) return;
+    Shouba.connect().then(function (ok) {
+      if (!ok || !Shouba.serverWasNewer) return;
+      /* بياناتك تبدّلت من جهازٍ آخر — تُخبَر ولا تُفاجأ */
+      var b = document.createElement('div');
+      b.className = 'newver';
+      var bar = document.querySelector('.topbar');
+      b.style.top = (bar ? Math.round(bar.getBoundingClientRect().height) + 8 : 12) + 'px';
+      b.innerHTML = '<span>حُدّثت شعبتك من جهازٍ آخر</span><b role="button" tabindex="0">اعرض</b>'
+                  + '<i class="x" role="button" tabindex="0" aria-label="أغلق">×</i>';
+      b.querySelector('.x').addEventListener('click', function (e) { e.stopPropagation(); b.remove(); });
+      b.querySelector('b').addEventListener('click', function () { location.reload(); });
+      document.body.appendChild(b);
+    });
+  }
+
+  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); updateBanner(); connectServer(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); updateBanner(); connectServer(); });
 })();

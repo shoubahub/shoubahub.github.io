@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · الإدارة</title>
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#1B5183" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=34" />
+<link rel="stylesheet" href="shell.css?v=34" />
+<link rel="stylesheet" href="components.css?v=34" />
+<link rel="stylesheet" href="frame.css?v=34" />
+<style>
+  /* خاصٌّ بالإدارة: صفّ الحساب وجدوله. لا هيكل ولا هوامش عامّة. */
+  .urow{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;
+    padding:12px 14px;display:flex;align-items:center;gap:11px;
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .urow .ini{width:34px;height:34px;border-radius:999px;flex:none;display:grid;place-items:center;
+    background:var(--shouba-navy);color:var(--shouba-cream);font-size:13px;font-weight:700}
+  .urow .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .urow .tx b{font-size:13.5px;font-weight:700;color:var(--shouba-navy)}
+  .urow .tx small{font-size:11px;color:var(--shouba-label)}
+  .urow .rst{flex:none;border:0;cursor:pointer;font-family:var(--font-ar);font-size:11.5px;font-weight:700;
+    padding:7px 12px;border-radius:999px;background:rgba(22,69,110,.09);color:var(--shouba-navy)}
+  .urow .rst:active{transform:translateY(1px)}
+  .dot{width:7px;height:7px;border-radius:999px;flex:none}
+  .dot.on{background:#2E7D57} .dot.off{background:var(--shouba-hint)}
+
+  .inv{display:flex;align-items:center;gap:10px;background:var(--shouba-navy);border-radius:14px;padding:13px 15px}
+  .inv .k{font-size:11.5px;font-weight:600;color:var(--shouba-navy-light)}
+  .inv .v{flex:1;font-family:var(--font-num);font-size:18px;font-weight:700;letter-spacing:.1em;color:var(--shouba-cream)}
+  .inv button{border:0;cursor:pointer;font-family:var(--font-ar);font-size:11.5px;font-weight:700;
+    padding:7px 12px;border-radius:999px;background:rgba(244,241,234,.16);color:var(--shouba-cream)}
+
+  .note{font-size:12px;color:var(--shouba-text-muted);line-height:1.8;background:var(--shouba-sand);
+    border-radius:12px;padding:13px 15px}
+  .note b{color:var(--shouba-ink)}
+  .msg{font-size:12.5px;font-weight:600;min-height:18px;color:var(--shouba-error)}
+  .msg.ok{color:var(--shouba-navy)}
+  .hide{display:none !important}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+
+  <div class="topbar">
+    <div class="tt"><b>إدارة المنصّة</b><span id="head">أدخل رقم الإدارة</span></div>
+    <div class="iconbtn" data-home title="اللوحة"></div>
+  </div>
+
+  <div class="screen has-topbar">
+    <div class="content">
+
+      <!-- ① البوّابة -->
+      <div class="fields" id="gate">
+        <div class="field">
+          <label for="apin">رقم الإدارة</label>
+          <div class="paper"><input id="apin" type="password" inputmode="numeric" placeholder="اكتب الرقم" maxlength="24" /></div>
+          <div class="hint">لا يُحفظ في المتصفّح — يُطلب في كل مرّة.</div>
+        </div>
+        <button class="cta" id="enter">ادخل</button>
+        <div class="msg" id="gmsg"></div>
+      </div>
+
+      <!-- ② اللوحة -->
+      <div class="fields hide" id="panel">
+        <div class="field">
+          <label>رمز الدعوة</label>
+          <div class="inv">
+            <div class="v" id="code">—</div>
+            <button type="button" id="newcode">رمزٌ جديد</button>
+          </div>
+          <div class="hint">بلا هذا الرمز لا يُنشئ أحدٌ حساباً، مهما عرف الرابط.</div>
+        </div>
+
+        <div class="field">
+          <label id="count">الحسابات</label>
+          <div class="stack" id="users"></div>
+        </div>
+
+        <div class="note">
+          <b>ما تراه هنا وصفٌ لا محتوى.</b> تعرف مَن سجّل ومتى دخل وهل أتمّ إعداد شعبته —
+          <b>ولا تعرض هذه اللوحة جدول أحدٍ ولا معلّميه ولا سجلّاته</b>، ولا مسارَ في الخادم يعيدها.
+          وقد صُمِّمت هكذا عمداً لا سهواً.
+          <br><br>
+          <b>والرقم السرّي لا يُعرض</b> — يُخزَّن مُجزَّأً فلا يُقرأ. ومَن نسيه تُعيّن له رقماً جديداً وتُسلّمه إيّاه،
+          وتُغلق جلساته كلّها فوراً.
+        </div>
+        <div class="msg" id="pmsg"></div>
+      </div>
+
+    </div>
+  </div>
+ </div></div>
+
+<script src="build.js?v=34"></script>
+<script src="components.js?v=34"></script>
+<script>
+  /* لوحة الإدارة — شاشةٌ مستقلّة لا رابط إليها من أيّ مكان (قرار المستخدم 2026-09-08).
+     ⚠ رقم الإدارة **لا يُحفظ**: يبقى في الذاكرة ما دامت الصفحة مفتوحة فقط.
+       حفظُه في المتصفّح يجعل جهازاً مُعاراً باباً مفتوحاً. */
+  var PIN = null;
+  var gate = document.getElementById('gate'), panel = document.getElementById('panel');
+  var gmsg = document.getElementById('gmsg'), pmsg = document.getElementById('pmsg');
+
+  function say(el, t, ok){ el.textContent = t || ''; el.className = 'msg' + (ok ? ' ok' : ''); }
+  function api(path, opt){
+    opt = opt || {};
+    opt.headers = Object.assign({ 'x-admin-pin': PIN, 'Content-Type': 'application/json' }, opt.headers || {});
+    opt.credentials = 'same-origin';
+    return fetch(path, opt).then(function(r){
+      return r.json().then(function(j){ if(!r.ok) throw new Error(j.error || 'خطأ'); return j; });
+    });
+  }
+
+  document.getElementById('enter').addEventListener('click', function(){
+    var v = document.getElementById('apin').value.trim();
+    if(!v) return;
+    PIN = v;
+    say(gmsg, 'يجري التحقّق…', true);
+    api('api/admin/invite').then(function(j){
+      gate.classList.add('hide'); panel.classList.remove('hide');
+      document.getElementById('head').textContent = 'الحسابات ورمز الدعوة';
+      document.getElementById('code').textContent = j.code;
+      load();
+    }).catch(function(e){ PIN = null; say(gmsg, e.message); });
+  });
+  document.getElementById('apin').addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('enter').click(); }
+  });
+
+  document.getElementById('newcode').addEventListener('click', function(){
+    api('api/admin/invite', { method: 'POST' })
+      .then(function(j){ document.getElementById('code').textContent = j.code; say(pmsg, 'رمزٌ جديد — والقديم بطل.', true); })
+      .catch(function(e){ say(pmsg, e.message); });
+  });
+
+  function when(t){
+    if(!t) return 'لم يدخل بعد';
+    var d = new Date(t.replace(' ', 'T') + 'Z');
+    return isNaN(d) ? t : d.toLocaleDateString('ar-KW', { day:'numeric', month:'long' });
+  }
+
+  function load(){
+    api('api/admin/users').then(function(j){
+      var box = document.getElementById('users');
+      box.innerHTML = '';
+      document.getElementById('count').textContent = j.users.length
+        ? Shouba.count(j.users.length, { one:'حساب', two:'حسابان', few:'حسابات', many:'حساباً' })
+        : 'لا حسابات بعد';
+      j.users.forEach(function(u){
+        var el = document.createElement('div'); el.className = 'urow';
+        el.innerHTML = '<span class="ini"></span>'
+          + '<div class="tx"><b></b><small></small></div>'
+          + '<span class="dot"></span>'
+          + '<button type="button" class="rst">إعادة تعيين</button>';
+        el.querySelector('.ini').textContent = (u.display_name || u.username).charAt(0);
+        el.querySelector('b').textContent = u.display_name;
+        /* وصفٌ فقط: الاسم · آخر دخول · هل أتمّ إعداده. ولا شيء من محتواه. */
+        el.querySelector('small').textContent =
+          '@' + u.username + ' · آخر دخول: ' + when(u.last_login) + (u.has_data ? ' · أتمّ إعداده' : ' · لم يُعِدّ شعبته');
+        el.querySelector('.dot').className = 'dot ' + (u.has_data ? 'on' : 'off');
+        el.querySelector('.rst').addEventListener('click', function(){ reset(u); });
+        box.appendChild(el);
+      });
+    }).catch(function(e){ say(pmsg, e.message); });
+  }
+
+  function reset(u){
+    var n = document.createElement('div');
+    n.innerHTML = '<div class="field" style="padding-bottom:6px">'
+      + '<label for="np">الرقم الجديد لـ' + '</label>'
+      + '<div class="paper"><input id="np" type="text" inputmode="numeric" maxlength="6" placeholder="ستّة أرقام" /></div>'
+      + '<div class="hint">سلّمه إيّاه بنفسك — ولا يُرسَل تلقائياً.</div></div>';
+    n.querySelector('label').textContent = 'الرقم الجديد لـ' + u.display_name;
+    var b = document.createElement('button');
+    b.className = 'cta'; b.textContent = 'عيّن';
+    n.appendChild(b);
+    Shouba.sheet.open('إعادة تعيين', n);
+    var inp = n.querySelector('#np');
+    setTimeout(function(){ inp.focus(); }, 80);
+    inp.addEventListener('input', function(){ inp.value = inp.value.replace(/[^0-9]/g,'').slice(0,6); });
+    b.addEventListener('click', function(){
+      if(!/^[0-9]{6}$/.test(inp.value)) return;
+      api('api/admin/users/' + u.id + '/reset-pin', { method:'POST', body: JSON.stringify({ pin: inp.value }) })
+        .then(function(){
+          Shouba.sheet.close();
+          say(pmsg, 'عُيّن رقمٌ جديد لـ' + u.display_name + ' — وأُغلقت جلساته.', true);
+          load();
+        })
+        .catch(function(e){ say(pmsg, e.message); });
+    });
+  }
+</script>
+</body>
+</html>

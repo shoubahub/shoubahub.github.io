@@ -638,3 +638,10 @@ body.solo .tsel{display:none}
 .newver.busy{opacity:.7;pointer-events:none}
 @keyframes newverIn{from{opacity:0;transform:translateX(-50%) translateY(-10px)}}
 @media (prefers-reduced-motion:reduce){.newver{animation:none}}
+
+/* شريط فشل الحفظ — صامتٌ حين ينجح، صريحٌ حين يفشل */
+.syncbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + var(--kb, 0px));z-index:85;
+  max-width:calc(var(--screen-max) - 32px);width:calc(100% - 32px);
+  font-family:var(--font-ar);font-size:12px;font-weight:600;line-height:1.6;text-align:center;
+  padding:10px 14px;border-radius:14px;background:var(--shouba-error);color:#FFF3F1;
+  box-shadow:0 8px 22px rgba(140,50,40,.28)}

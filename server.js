@@ -21,7 +21,19 @@ app.use((req, res, next) => {
 
 app.use(express.static(path.join(__dirname, 'public'), { etag: false, lastModified: false, maxAge: 0 }));
 
-app.get('/health', (_req, res) => res.json({ ok: true, stage: 'ui-only' }));
+/* ⚠ رقم الإدارة بلا بديلٍ افتراضي: إن لم يُضبط **رفض الخادم أن يبدأ**.
+   في موقع التوقّعات يعود إلى «1234» صامتاً — فيعمل الموقع ويبدو سليماً
+   وبابُ الإدارة مفتوح. والخطأ الصامت أخطر من الخطأ الصائح. */
+if (!process.env.ADMIN_PIN) {
+  console.error('\n⛔ ADMIN_PIN غير مضبوط — الخادم لا يبدأ بلا رقم إدارة.');
+  console.error('   محلّياً:  ADMIN_PIN=123456 node server.js');
+  console.error('   على Railway: أضِفه متغيّرَ بيئةٍ في إعدادات الخدمة.\n');
+  process.exit(1);
+}
+
+require('./auth').routes(app);
+
+app.get('/health', (_req, res) => res.json({ ok: true, stage: 'server' }));
 
 // SPA fallback — أي مسار غير معروف يعيد index.html
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));

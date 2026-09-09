@@ -1,0 +1,13 @@
+# نشر منصّة شعبة على Railway
+# ⚠ متغيّرات البيئة تُضبط في لوحة Railway لا هنا — فلا يدخل سرٌّ إلى المستودع:
+#     ADMIN_PIN   رقم الإدارة (بلا بديلٍ افتراضي — والخادم يرفض الإقلاع بدونه)
+#     DB_PATH     مسار القرص الدائم (Volume) — وإلّا مُحيت القاعدة مع كل نشرة
+#     NODE_ENV    production — فتصير كعكة الجلسة Secure
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "node server.js"
+healthcheckPath = "/health"
+restartPolicyType = "on_failure"

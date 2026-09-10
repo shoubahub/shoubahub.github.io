@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>شعبة · الإعداد · معلّمو الشعبة</title>
+<title>شعبة · الإعداد · معلمو الشعبة</title>
 <!-- PWA -->
 <link rel="manifest" href="manifest.webmanifest" />
 <meta name="theme-color" content="#EFE6D6" />
@@ -12,12 +12,12 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=40" />
-<link rel="stylesheet" href="shell.css?v=40" />
-<link rel="stylesheet" href="components.css?v=40" />
-<link rel="stylesheet" href="frame.css?v=40" />
+<link rel="stylesheet" href="identity/tokens.css?v=41" />
+<link rel="stylesheet" href="shell.css?v=41" />
+<link rel="stylesheet" href="components.css?v=41" />
+<link rel="stylesheet" href="frame.css?v=41" />
 <style>
-  /* خاص بهذه الشاشة فقط: صفّ الإضافة (حقل + زرّ) وحرفا المعلّم — لا هيكل ولا هوامش عامّة */
+  /* خاص بهذه الشاشة فقط: صف الإضافة (حقل + زر) وحرفا المعلم — لا هيكل ولا هوامش عامة */
   .addrow{display:flex;gap:12px;align-items:stretch}
   .addrow .paper{flex:1}
   .addbtn{flex:none;width:54px;border:0;border-radius:var(--r-input);cursor:pointer;background:var(--shouba-navy);
@@ -28,7 +28,7 @@
   .count{font-size:12px;font-weight:700;color:var(--shouba-label)}
   .ini{width:38px;height:38px;border-radius:999px;flex:none;display:grid;place-items:center;background:var(--shouba-navy);
     color:var(--shouba-cream);font-size:13px;font-weight:700}
-  /* ٣٤ مرئية و٤٤ ملموسة — العنصر الزائف يوسّع الهدف لا الزرّ (مراجعة الآيباد) */
+  /* ٣٤ مرئية و٤٤ ملموسة — العنصر الزائف يوسع الهدف لا الزر (مراجعة الآيباد) */
   .del{position:relative;width:34px;height:34px;border-radius:12px;flex:none;border:0;cursor:pointer;display:grid;place-items:center;
     background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);box-shadow:0 2px 0 rgba(190,172,140,.5)}
   .del::after{content:"";position:absolute;inset:-5px;border-radius:inherit}
@@ -57,43 +57,43 @@
 
     <!-- العنوان خارج .content — موضعه ثابت في كل الشاشات (قاعدة LAYOUT) -->
     <div class="head">
-      <div class="h">معلّمو الشعبة</div>
-      <div class="s">أضِف أسماءهم الآن فقط — وجداولهم وبياناتهم تُكمَّل لاحقاً من ملفّ كل معلّم.</div>
+      <div class="h">معلمو الشعبة</div>
+      <div class="s">أضف أسماءهم الآن فقط — وجداولهم وبياناتهم تكمل لاحقا من ملف كل معلم.</div>
     </div>
 
     <div class="content">
       <div class="fields">
-        <!-- صفّ الإضافة -->
+        <!-- صف الإضافة -->
         <div class="field">
-          <label for="tname">اسم المعلّم</label>
+          <label for="tname">اسم المعلم</label>
           <div class="addrow">
             <div class="paper">
-              <input id="tname" type="text" placeholder="اكتب الاسم ثم أضِف" maxlength="60" />
+              <input id="tname" type="text" placeholder="اكتب الاسم ثم أضف" maxlength="60" />
             </div>
-            <button type="button" class="addbtn" id="add" disabled aria-label="أضِف المعلّم">
+            <button type="button" class="addbtn" id="add" disabled aria-label="أضف المعلم">
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#F4F1EA" stroke-width="2.4" stroke-linecap="round"/></svg>
             </button>
           </div>
-          <div class="hint" id="msg">اكتب الاسم الرباعي إن أمكن — كما يُكتب في النماذج الرسمية.</div>
+          <div class="hint" id="msg">اكتب الاسم الرباعي إن أمكن — كما يكتب في النماذج الرسمية.</div>
         </div>
 
         <!-- القائمة -->
         <div class="field">
-          <label id="count" class="count">لم تُضِف معلّماً بعد</label>
+          <label id="count" class="count">لم تضف معلما بعد</label>
           <div class="stack" id="list"></div>
-          <div class="empty" id="empty">تظهر هنا أسماء معلّميك بمجرّد إضافتهم.</div>
+          <div class="empty" id="empty">تظهر هنا أسماء معلميك بمجرد إضافتهم.</div>
         </div>
       </div>
     </div>
   </div>
 
   <div class="foot">
-    <button class="cta" id="next">تخطّي الآن</button>
+    <button class="cta" id="next">تخطي الآن</button>
   </div>
  </div></div>
 
-<script src="build.js?v=40"></script>
-<script src="components.js?v=40"></script>
+<script src="build.js?v=41"></script>
+<script src="components.js?v=41"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -110,15 +110,15 @@
 
   var teachers = (load().teachers || []).slice();
 
-  /* اللقب لا يُخزَّن — يُنزع من المُدخَل ويُضاف عند العرض فلا يتكرّر «أ. أ.»
-     ⚠ الحرف المفرد يُنزع **بشرط النقطة** («أ.» لقب · «أحمد» اسم)، واللقب التامّ بشرط مسافة بعده. */
+  /* اللقب لا يخزن — ينزع من المدخل ويضاف عند العرض فلا يتكرر «أ. أ.»
+     ⚠ الحرف المفرد ينزع **بشرط النقطة** («أ.» لقب · «أحمد» اسم)، واللقب التام بشرط مسافة بعده. */
   function stripTitle(n){
     return n.replace(/^\s*(?:[أاد]\s*\.\s*|(?:الأستاذ|أستاذ|الدكتور|دكتور)\s+)/, '').trim();
   }
   function clean(n){ return stripTitle(String(n||'').replace(/\s+/g,' ').trim()); }
 
-  /* حرف واحد فقط — أوّل الاسم الأول (قرار المستخدم 2026-08-16):
-     الحرفان قد يكوّنان كلمة ذات معنى سيّئ بالمصادفة؛ والحرف المفرد يمنع ذلك من أصله.
+  /* حرف واحد فقط — أول الاسم الأول (قرار المستخدم 2026-08-16):
+     الحرفان قد يكونان كلمة ذات معنى سيئ بالمصادفة؛ والحرف المفرد يمنع ذلك من أصله.
      والتمييز الحقيقي بالاسم المجاور — وظيفة الدائرة إيقاع بصري لا تعريف. */
   function initial(name){
     var first = name.split(' ').filter(Boolean)[0] || '';
@@ -144,12 +144,12 @@
     });
 
     var n = teachers.length;
-    countEl.textContent = n === 0 ? 'لم تُضِف معلّماً بعد'
-                        : Shouba.count(n, { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً' });
+    countEl.textContent = n === 0 ? 'لم تضف معلما بعد'
+                        : Shouba.count(n, { one:'معلم', two:'معلمان', few:'معلمين', many:'معلما' });
     emptyEl.classList.toggle('hide', n > 0);
-    /* تُفتح هذه الشاشة من اللوحة أيضاً (ret=board) — فالزرّ يصرّح بوجهته لا يقول «التالي» */
+    /* تفتح هذه الشاشة من اللوحة أيضا (ret=board) — فالزر يصرح بوجهته لا يقول «التالي» */
     next.textContent = Shouba.returnTo() === 'board.html' ? 'عودة إلى اللوحة'
-                     : n > 0 ? 'التالي' : 'تخطّي الآن';
+                     : n > 0 ? 'التالي' : 'تخطي الآن';
   }
 
   function persist(){ save({ teachers: teachers }); }
@@ -157,9 +157,9 @@
   function addName(){
     var name = clean(input.value);
     if(!name) return;
-    // حارس التكرار: الاسم الكامل المطابق لا يُضاف مرّتين
+    // حارس التكرار: الاسم الكامل المطابق لا يضاف مرتين
     if(teachers.some(function(t){ return t === name; })){
-      msgEl.textContent = 'هذا الاسم مُضاف بالفعل.';
+      msgEl.textContent = 'هذا الاسم مضاف بالفعل.';
       msgEl.className = 'warn';
       return;
     }
@@ -182,7 +182,7 @@
   next.addEventListener('click', function(){
     persist();
     // ret=review: قادم من شاشة المراجعة لتعديل سطر ⟵ يعود إليها بعد الحفظ
-    location.href = Shouba.returnTo() || 'setup-wizard-6.html';   // ش⑥ شكل السجلات — تُبنى تالياً
+    location.href = Shouba.returnTo() || 'setup-wizard-6.html';   // ش⑥ شكل السجلات — تبنى تاليا
   });
 
   render(); validate();

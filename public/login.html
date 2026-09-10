@@ -11,12 +11,12 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=40" />
-<link rel="stylesheet" href="shell.css?v=40" />
-<link rel="stylesheet" href="components.css?v=40" />
-<link rel="stylesheet" href="frame.css?v=40" />
+<link rel="stylesheet" href="identity/tokens.css?v=41" />
+<link rel="stylesheet" href="shell.css?v=41" />
+<link rel="stylesheet" href="components.css?v=41" />
+<link rel="stylesheet" href="frame.css?v=41" />
 <style>
-  /* أنماط خاصّة بشاشة الدخول فقط — الهيكل من shell.css -->*/
+  /* أنماط خاصة بشاشة الدخول فقط — الهيكل من shell.css -->*/
   .brand{display:flex;flex-direction:column;align-items:center;gap:13px;padding:0 30px}
   .lockup{display:flex;align-items:center;gap:16px}
   .lockup .mark{width:132px;height:auto;flex:none}
@@ -35,7 +35,7 @@
   .card .row .tx b{font-size:14px;font-weight:700}
   .card .row .tx small{font-size:11.5px;color:var(--shouba-hint)}
 
-  /* زرّ جوجل يرث .cta (ومعه صدى الهوية) — هنا تخطيطه الداخلي فقط */
+  /* زر جوجل يرث .cta (ومعه صدى الهوية) — هنا تخطيطه الداخلي فقط */
   .gbtn{display:flex;align-items:center;justify-content:center;gap:11px}
   .gbtn .gchip{width:26px;height:26px;border-radius:50%;background:#fff;display:grid;place-items:center;flex:none;box-shadow:0 1px 2px rgba(0,0,0,.15);position:relative;z-index:1}
   .gchip svg{width:15px;height:15px}
@@ -45,7 +45,7 @@
 
   .msg{font-size:12.5px;font-weight:600;min-height:18px;color:var(--shouba-error)}
   .msg.ok{color:var(--shouba-navy)}
-  /* بطاقة ما لم يُدرَج بعد: باهتة ولا تُضغط — تُعلم ولا تَعِد */
+  /* بطاقة ما لم يدرج بعد: باهتة ولا تضغط — تعلم ولا تعد */
   .soonc{opacity:.62;box-shadow:inset 0 1.5px 0 rgba(255,255,255,.7), 0 2px 0 rgba(190,172,140,.35)}
   .soonc .row{background:transparent;box-shadow:none;padding:2px 0}
   .soontag{margin-inline-start:auto;flex:none;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;
@@ -56,22 +56,22 @@
 <body class="framed">
  <div class="device"><div class="viewport">
   <div class="screen has-foot">
-    <!-- الوحدة كاملة (شعار + محتوى) تتوسّط رأسياً ككتلة واحدة -->
+    <!-- الوحدة كاملة (شعار + محتوى) تتوسط رأسيا ككتلة واحدة -->
     <div class="content center">
     <div class="brand">
       <div class="lockup">
         <img class="mark" src="identity/assets/logo-vec-color.svg" alt="شعبة" />
         <span class="divider"></span>
-        <img class="word" src="identity/assets/lockup-word-mansa-color.svg" alt="منصّة شعبة" />
+        <img class="word" src="identity/assets/lockup-word-mansa-color.svg" alt="منصة شعبة" />
       </div>
-      <div class="sub">منصّة رئيس الشعبة · نسخة تجريبية <b class="vernum" id="verNo"></b></div>
+      <div class="sub">منصة رئيس الشعبة · نسخة تجريبية <b class="vernum" id="verNo"></b></div>
     </div>
 
-    <!-- المتن: دخولٌ حقيقيّ (2026-09-08) — اسم مستخدم ورقم سرّي.
-         وقبله كانت خطوةً واحدة بلا مصادقة، لأن البيانات كانت على الجهاز. -->
+    <!-- المتن: دخول حقيقي (2026-09-08) — اسم مستخدم ورقم سري.
+         وقبله كانت خطوة واحدة بلا مصادقة، لأن البيانات كانت على الجهاز. -->
     <div class="body">
       <div class="segs" id="mode">
-        <button type="button" class="seg on" data-m="in">لديّ حساب</button>
+        <button type="button" class="seg on" data-m="in">لدي حساب</button>
         <button type="button" class="seg" data-m="up">حساب جديد</button>
       </div>
 
@@ -82,16 +82,16 @@
       </div>
 
       <div class="field">
-        <label for="pin">الرقم السرّي</label>
+        <label for="pin">الرقم السري</label>
         <div class="paper"><input id="pin" type="password" inputmode="numeric" pattern="[0-9]*"
-          placeholder="ستّة أرقام" maxlength="6" autocomplete="current-password" /></div>
+          placeholder="ستة أرقام" maxlength="6" autocomplete="current-password" /></div>
       </div>
 
       <!-- حقول التسجيل وحده -->
       <div class="field up hide">
         <label for="full">اسمك الكامل</label>
         <div class="paper"><input id="full" type="text" placeholder="كما يظهر في النماذج الرسمية" maxlength="60" /></div>
-        <div class="hint">يظهر في ترويسة سجلّاتك.</div>
+        <div class="hint">يظهر في ترويسة سجلاتك.</div>
       </div>
       <div class="field up hide">
         <label for="inv">رمز الدعوة</label>
@@ -101,23 +101,23 @@
 
       <div class="msg" id="msg"></div>
 
-      <!-- بطاقة الصدق: تبدّلت مع تبدّل الحقيقة. كانت «بياناتك على جهازك». -->
+      <!-- بطاقة الصدق: تبدلت مع تبدل الحقيقة. كانت «بياناتك على جهازك». -->
       <div class="card">
         <div class="row">
           <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M12 3 L19.5 6.2 V11.4 C19.5 15.9 16.3 19.7 12 21 C7.7 19.7 4.5 15.9 4.5 11.4 V6.2 Z" stroke="#16456E" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
-          <div class="tx"><b>رقمك السرّي لا يراه أحد</b><small>يُخزَّن مُجزَّأً — ولا يظهر لرئيس الشعبة ولا لنا</small></div>
+          <div class="tx"><b>رقمك السري لا يراه أحد</b><small>يخزن مجزأ — ولا يظهر لرئيس الشعبة ولا لنا</small></div>
         </div>
         <div class="lead" style="font-size:12.5px;margin:0">
-          وبيانات شعبتك على خادم المنصّة لتصل من أيّ جهاز — <b>ولوحة الإدارة لا تعرض محتواها</b>:
-          لا جدولك ولا معلّميك ولا سجلّاتك. تعرض أنك سجّلت ومتى دخلت، لا غير.
+          وبيانات شعبتك على خادم المنصة لتصل من أي جهاز — <b>ولوحة الإدارة لا تعرض محتواها</b>:
+          لا جدولك ولا معلميك ولا سجلاتك. تعرض أنك سجلت ومتى دخلت، لا غير.
         </div>
       </div>
 
-      <!-- بطاقة البريد: موسومةٌ صراحةً بأنها لم تُدرَج بعد (قرار المستخدم 2026-09-08) -->
+      <!-- بطاقة البريد: موسومة صراحة بأنها لم تدرج بعد (قرار المستخدم 2026-09-08) -->
       <div class="card soonc">
         <div class="row">
           <span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="3" y="5.5" width="18" height="13" rx="2.4" stroke="#8A7F6E" stroke-width="1.7"/><path d="M3.6 6.8 L12 12.8 L20.4 6.8" stroke="#8A7F6E" stroke-width="1.7" stroke-linecap="round"/></svg></span>
-          <div class="tx"><b>الدخول بالبريد الإلكتروني</b><small>رمزٌ يصلك فتدخل بلا رقم سرّي</small></div>
+          <div class="tx"><b>الدخول بالبريد الإلكتروني</b><small>رمز يصلك فتدخل بلا رقم سري</small></div>
           <span class="soontag">بعد التجربة</span>
         </div>
       </div>
@@ -131,15 +131,15 @@
   </div>
  </div></div>
 
-<!-- ⚠ شاشة الدخول أوّل ما يُفتح، فهي التي تُسجّل عامل الخدمة وتفحص التحديث:
-     بلا هذين يبقى الزائر الجديد بلا عملٍ دون إنترنت، وقد يرى نسخة قديمة
-     (GitHub Pages يخزّن الصفحات عشر دقائق) — رُصد بعد النشر الأول 2026-09-06. -->
-<script src="build.js?v=40"></script>
-<script src="components.js?v=40"></script>
+<!-- ⚠ شاشة الدخول أول ما يفتح، فهي التي تسجل عامل الخدمة وتفحص التحديث:
+     بلا هذين يبقى الزائر الجديد بلا عمل دون إنترنت، وقد يرى نسخة قديمة
+     (GitHub Pages يخزن الصفحات عشر دقائق) — رصد بعد النشر الأول 2026-09-06. -->
+<script src="build.js?v=41"></script>
+<script src="components.js?v=41"></script>
 <script>
-  /* شاشة الدخول — دخولٌ حقيقيّ إلى خادم المنصّة (2026-09-08).
-     ⚠ لا يُخزَّن سرٌّ هنا: الجلسة كعكةٌ httpOnly لا يبلغها كود الصفحة.
-       والاسم يُحفظ محلّياً للعرض فقط (ترويسة اللوحة) لا للمصادقة. */
+  /* شاشة الدخول — دخول حقيقي إلى خادم المنصة (2026-09-08).
+     ⚠ لا يخزن سر هنا: الجلسة كعكة httpOnly لا يبلغها كود الصفحة.
+       والاسم يحفظ محليا للعرض فقط (ترويسة اللوحة) لا للمصادقة. */
   document.getElementById('verNo').textContent = window.SHOUBA_VERSION || '';
 
   var mode = 'in';
@@ -153,9 +153,9 @@
 
   function say(t, ok){ msg.textContent = t || ''; msg.className = 'msg' + (ok ? ' ok' : ''); }
 
-  /* بعد الدخول: إلى الموجِّه (ينزّل البيانات قبل أن يوجّه)، ومعه الوجهة إن جاء
-     الزميل من رابطٍ مباشر — فيصل إلى الشاشة التي فتحها لا إلى اللوحة دائماً.
-     والموجِّه وحده يتحقّق من الوجهة؛ فلا تُكرَّر القاعدة هنا. */
+  /* بعد الدخول: إلى الموجه (ينزل البيانات قبل أن يوجه)، ومعه الوجهة إن جاء
+     الزميل من رابط مباشر — فيصل إلى الشاشة التي فتحها لا إلى اللوحة دائما.
+     والموجه وحده يتحقق من الوجهة؛ فلا تكرر القاعدة هنا. */
   var NEXT = null;
   try { NEXT = new URLSearchParams(location.search).get('next'); } catch (e) {}
   function onward(){ return 'index.html' + (NEXT ? '?next=' + encodeURIComponent(NEXT) : ''); }
@@ -174,9 +174,9 @@
     });
   });
 
-  /* ⚠ لوحة المفاتيح العربية تكتب ٠١٢٣ — فكان الحقل يمحو كل رقمٍ يُكتب فيه.
-     التنظيف قبل الفحص في مستمعٍ واحد: كانا مستمعَين فجرى الفحص على القيمة قبل تنظيفها.
-     ولا يُعاد تعيين القيمة إلّا إن تغيّرت، فلا يقفز المؤشّر أثناء الكتابة. */
+  /* ⚠ لوحة المفاتيح العربية تكتب ٠١٢٣ — فكان الحقل يمحو كل رقم يكتب فيه.
+     التنظيف قبل الفحص في مستمع واحد: كانا مستمعين فجرى الفحص على القيمة قبل تنظيفها.
+     ولا يعاد تعيين القيمة إلا إن تغيرت، فلا يقفز المؤشر أثناء الكتابة. */
   function clean(){
     var p = Shouba.latinDigits(pin.value).replace(/[^0-9]/g,'').slice(0,6);
     if(pin.value !== p) pin.value = p;
@@ -189,9 +189,9 @@
   var USER_RE = /^[A-Za-z0-9_.\-]{3,24}$/;          /* كما في الخادم (auth.js) */
   function validate(){
     var u = usr.value.trim();
-    /* يُقال له فوراً ما الخطأ، لا بعد أن يضغط ويُردّ */
-    if(/[؀-ۿ]/.test(u))       say('اسم المستخدم بأحرفٍ إنجليزية — بدّل لغة لوحة المفاتيح.');
-    else if(/[^A-Za-z0-9_.\-]/.test(u)) say('اسم المستخدم: أحرفٌ إنجليزية وأرقام، بلا مسافات.');
+    /* يقال له فورا ما الخطأ، لا بعد أن يضغط ويرد */
+    if(/[؀-ۿ]/.test(u))       say('اسم المستخدم بأحرف إنجليزية — بدل لغة لوحة المفاتيح.');
+    else if(/[^A-Za-z0-9_.\-]/.test(u)) say('اسم المستخدم: أحرف إنجليزية وأرقام، بلا مسافات.');
     var ok = USER_RE.test(u) && /^[0-9]{6}$/.test(pin.value);
     if(mode === 'up') ok = ok && full.value.trim().length >= 3 && inv.value.trim().length >= 4;
     cont.disabled = !ok;
@@ -206,28 +206,28 @@
     var body = up
       ? { username: usr.value.trim(), pin: pin.value, displayName: full.value.trim(), inviteCode: inv.value.trim() }
       : { username: usr.value.trim(), pin: pin.value };
-    say(up ? 'يُنشأ الحساب…' : 'يجري الدخول…', true);
+    say(up ? 'ينشأ الحساب…' : 'يجري الدخول…', true);
     fetch(up ? 'api/register' : 'api/login', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin', body: JSON.stringify(body)
     }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
       .then(function(res){
-        if(!res.ok){ say(res.j.error || 'تعذّر الدخول'); cont.disabled = false; return; }
+        if(!res.ok){ say(res.j.error || 'تعذر الدخول'); cont.disabled = false; return; }
         localStorage.setItem('shouba.user', JSON.stringify({ name: res.j.displayName }));
         location.href = onward();
       })
-      .catch(function(){ say('لا اتصال بالخادم — تحقّق من الشبكة وأعِد المحاولة.'); cont.disabled = false; });
+      .catch(function(){ say('لا اتصال بالخادم — تحقق من الشبكة وأعد المحاولة.'); cont.disabled = false; });
   }
   cont.addEventListener('click', go);
   [usr, pin, full, inv].forEach(function(i){
     i.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); go(); } });
   });
 
-  /* مَن جلسته قائمة لا يُسأل مرّتين */
+  /* من جلسته قائمة لا يسأل مرتين */
   fetch('api/me', { credentials: 'same-origin' })
     .then(function(r){
-      /* نسخةٌ ساكنة بلا خادم (العنوان القديم) ⟵ الوافد الجديد يُوجَّه إلى المنصّة،
-         فلا يُنشئ حساباً في مكانٍ لا يحفظ شيئاً. والتطوير المحلّي مستثنى. */
+      /* نسخة ساكنة بلا خادم (العنوان القديم) ⟵ الوافد الجديد يوجه إلى المنصة،
+         فلا ينشئ حسابا في مكان لا يحفظ شيئا. والتطوير المحلي مستثنى. */
       var home = r.status === 404 && Shouba.movedTarget && Shouba.movedTarget();
       if(home){ location.replace(home + '/login.html'); return null; }
       return r.ok ? r.json() : null;

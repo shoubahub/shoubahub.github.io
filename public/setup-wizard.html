@@ -12,11 +12,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=40" />
-<link rel="stylesheet" href="shell.css?v=40" />
-<link rel="stylesheet" href="components.css?v=40" />
-<link rel="stylesheet" href="frame.css?v=40" />
-<!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصّة لهذه الشاشة -->
+<link rel="stylesheet" href="identity/tokens.css?v=41" />
+<link rel="stylesheet" href="shell.css?v=41" />
+<link rel="stylesheet" href="components.css?v=41" />
+<link rel="stylesheet" href="frame.css?v=41" />
+<!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصة لهذه الشاشة -->
 </head>
 <body class="framed">
  <div class="device"><div class="viewport">
@@ -38,7 +38,7 @@
     <!-- العنوان خارج .content — موضعه ثابت في كل الشاشات (قاعدة LAYOUT) -->
     <div class="head">
       <div class="h" data-hi>أنشئ شعبتك</div>
-      <div class="s">لنبدأ بإنشاء شعبتك — مدرستك أولاً، ثلاث معلومات فقط.</div>
+      <div class="s">لنبدأ بإنشاء شعبتك — مدرستك أولا، ثلاث معلومات فقط.</div>
     </div>
 
     <div class="content center">
@@ -84,17 +84,17 @@
       </div>
 
       <!-- شعار المدرسة أو رمز الشعبة — بعد اسم المدرسة · اختياري · للواجهة فقط
-           (ترويسات النماذج الرسمية لها إعداداتها الخاصة لاحقاً — قرار المستخدم) -->
+           (ترويسات النماذج الرسمية لها إعداداتها الخاصة لاحقا — قرار المستخدم) -->
       <div class="field">
         <label>شعار مدرستك أو رمز شعبتك</label>
         <div class="crestpick">
-          <button type="button" class="crest" id="crestBtn" aria-label="اختر شعاراً"></button>
+          <button type="button" class="crest" id="crestBtn" aria-label="اختر شعارا"></button>
           <div class="cap"><b>اختياري</b> · اضغط للاختيار أو لرفع شعار مدرستك</div>
         </div>
       </div>
     </form>
-      <!-- قابلية النقل (2026-09-10): مَن معه ملفّ شعبة لا يعيد الإعداد من أوّله -->
-      <div class="impentry"><span>عندك ملفّ شعبةٍ محفوظ؟</span><button type="button" class="linkbtn" id="importFile">استورده</button></div>
+      <!-- قابلية النقل (2026-09-10): من معه ملف شعبة لا يعيد الإعداد من أوله -->
+      <div class="impentry"><span>عندك ملف شعبة محفوظ؟</span><button type="button" class="linkbtn" id="importFile">استورده</button></div>
     </div><!-- /content -->
   </div>
 
@@ -103,11 +103,11 @@
   </div>
  </div></div>
 
-<script src="icons.js?v=40"></script>
-<script src="build.js?v=40"></script>
-<script src="refdata.js?v=40"></script>
-<script src="derive.js?v=40"></script>
-<script src="components.js?v=40"></script>
+<script src="icons.js?v=41"></script>
+<script src="build.js?v=41"></script>
+<script src="refdata.js?v=41"></script>
+<script src="derive.js?v=41"></script>
+<script src="components.js?v=41"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -119,7 +119,7 @@
   var next   = document.getElementById('next');
   var state  = { schoolType: '' };
 
-  // استرجاع ما أُدخل سابقاً (components.js يعرض نصّ المنسدلة تلقائياً من selected)
+  // استرجاع ما أدخل سابقا (components.js يعرض نص المنسدلة تلقائيا من selected)
   var saved = load();
   if(saved.region){ region.value = saved.region; }
   if(saved.schoolName){ school.value = saved.schoolName; }
@@ -134,7 +134,7 @@
     return ok;
   }
 
-  region.addEventListener('change', validate);   // تُطلَق من اللوحة السفلية
+  region.addEventListener('change', validate);   // تطلق من اللوحة السفلية
   school.addEventListener('input', validate);
   [].forEach.call(segs.children, function(b){
     b.addEventListener('click', function(){
@@ -154,7 +154,7 @@
   validate();
 
   /* ===== شعار المدرسة أو رمز الشعبة — اختياري، للواجهة فقط =====
-     (ترويسات النماذج الرسمية لها إعداداتها الخاصة لاحقاً — قرار المستخدم 2026-08-20) */
+     (ترويسات النماذج الرسمية لها إعداداتها الخاصة لاحقا — قرار المستخدم 2026-08-20) */
   var crestBtn = document.getElementById('crestBtn');
   var DEFAULT_CREST = 'identity/assets/school-crest-default.svg';
 
@@ -165,13 +165,13 @@
     else { crestBtn.innerHTML = '<img src="' + DEFAULT_CREST + '" alt="شعار افتراضي" style="width:46px;height:46px;object-fit:contain" />'; }
   }
 
-  /* يصغّر الصورة المرفوعة إلى ٢٥٦px — مخزن المتصفّح محدود، والتصغير شرط ألّا ينكسر الحفظ.
-     ⚠ عيبان أُصلحا (2026-09-06، رصدهما المستخدم على شعار مدرسته):
-     ① كانت اللوحة **شفّافة**، وأكثر الشعارات PNG بخلفية شفّافة — فيظهر الكحليُّ
-        من خلفها في الرأس فتبدو باهتةً كأن خلفيتها سُحبت. الآن **تُملأ بالأبيض**
-        كما صُمّم الشعار أصلاً على الورق.
-     ② وكانت تقتصّ مربّعاً من الوسط، والشعارات نادراً ما تكون مربّعة — فتُقصّ
-        أطرافها. الآن **تُحتوى كاملةً** داخل المربّع بلا قصّ. */
+  /* يصغر الصورة المرفوعة إلى ٢٥٦px — مخزن المتصفح محدود، والتصغير شرط ألا ينكسر الحفظ.
+     ⚠ عيبان أصلحا (2026-09-06، رصدهما المستخدم على شعار مدرسته):
+     ① كانت اللوحة **شفافة**، وأكثر الشعارات PNG بخلفية شفافة — فيظهر الكحلي
+        من خلفها في الرأس فتبدو باهتة كأن خلفيتها سحبت. الآن **تملأ بالأبيض**
+        كما صمم الشعار أصلا على الورق.
+     ② وكانت تقتص مربعا من الوسط، والشعارات نادرا ما تكون مربعة — فتقص
+        أطرافها. الآن **تحتوى كاملة** داخل المربع بلا قص. */
   function shrink(file, cb){
     var fr = new FileReader();
     fr.onload = function(){
@@ -196,7 +196,7 @@
     var wrap = document.createElement('div');
     wrap.className = 'stack';
 
-    /* ① خيار الرفع — صفّ كامل العرض في الأعلى، متميّز عن الرموز لا واحداً منها */
+    /* ① خيار الرفع — صف كامل العرض في الأعلى، متميز عن الرموز لا واحدا منها */
     var up = document.createElement('button');
     up.type = 'button'; up.className = 'btn-ghost wupload';
     up.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24">'
@@ -220,7 +220,7 @@
     /* ② فاصل ثم شبكة الرموز */
     var note = document.createElement('div');
     note.className = 'sheet-note';
-    note.textContent = 'أو اختر رمزاً لشعبتك';
+    note.textContent = 'أو اختر رمزا لشعبتك';
     wrap.appendChild(note);
 
     var grid = document.createElement('div');
@@ -238,10 +238,10 @@
     });
     wrap.appendChild(grid);
 
-    /* ③ الإزالة — صفّ كامل العرض في الأسفل */
+    /* ③ الإزالة — صف كامل العرض في الأسفل */
     var clr = document.createElement('button');
     clr.type = 'button'; clr.className = 'btn-ghost';
-    clr.textContent = 'بلا شعار — أعِد الافتراضي';
+    clr.textContent = 'بلا شعار — أعد الافتراضي';
     clr.addEventListener('click', function(){
       var d2 = load(); delete d2.crest; localStorage.setItem(KEY, JSON.stringify(d2));
       paintCrest(); Shouba.sheet.close();
@@ -254,7 +254,7 @@
   paintCrest();
 </script>
 <script>
-  /* الاستيراد من أوّل شاشة: الملفّ يحمل setupDone فيذهب الموجِّه إلى اللوحة */
+  /* الاستيراد من أول شاشة: الملف يحمل setupDone فيذهب الموجه إلى اللوحة */
   document.getElementById('importFile').addEventListener('click', function(){
     Shouba.importData(function(){ location.href = 'index.html'; });
   });

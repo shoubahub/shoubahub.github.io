@@ -12,11 +12,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=40" />
-<link rel="stylesheet" href="shell.css?v=40" />
-<link rel="stylesheet" href="components.css?v=40" />
-<link rel="stylesheet" href="frame.css?v=40" />
-<!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصّة لهذه الشاشة -->
+<link rel="stylesheet" href="identity/tokens.css?v=41" />
+<link rel="stylesheet" href="shell.css?v=41" />
+<link rel="stylesheet" href="components.css?v=41" />
+<link rel="stylesheet" href="frame.css?v=41" />
+<!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصة لهذه الشاشة -->
 </head>
 <body class="framed">
  <div class="device"><div class="viewport">
@@ -38,7 +38,7 @@
     <!-- العنوان خارج .content — موضعه ثابت في كل الشاشات (قاعدة LAYOUT) -->
     <div class="head">
       <div class="h">عامك الدراسي</div>
-      <div class="s">عليهما تُبنى سجلّاتك وأرشيفك — ويبدأ كل عام جديد بمعلّميك وسجلّاتك جاهزة.</div>
+      <div class="s">عليهما تبنى سجلاتك وأرشيفك — ويبدأ كل عام جديد بمعلميك وسجلاتك جاهزة.</div>
     </div>
 
     <div class="content center">
@@ -61,13 +61,13 @@
         <div class="segs" id="segs"></div>
       </div>
 
-      <!-- أوّل يوم دراسي للطلاب — منه تُحسب الأسابيع.
-           التنبيه جزء من الحقل: دوام المعلّمين يسبق دوام الطلاب بأسبوع،
-           فمن أدخل يوم مباشرته اختلّ عدّ أسابيعه كلّه بلا أن يشعر. -->
+      <!-- أول يوم دراسي للطلاب — منه تحسب الأسابيع.
+           التنبيه جزء من الحقل: دوام المعلمين يسبق دوام الطلاب بأسبوع،
+           فمن أدخل يوم مباشرته اختل عد أسابيعه كله بلا أن يشعر. -->
       <div class="field">
-        <label>أوّل يوم دراسي للطلاب</label>
+        <label>أول يوم دراسي للطلاب</label>
         <div class="paper"><input id="tstart" type="date" /></div>
-        <div class="hint">منه تُحسب الأسابيع الدراسية — <b>لا</b> يوم مباشرة المعلّمين.</div>
+        <div class="hint">منه تحسب الأسابيع الدراسية — <b>لا</b> يوم مباشرة المعلمين.</div>
       </div>
     </form>
     </div><!-- /content -->
@@ -78,9 +78,9 @@
   </div>
  </div></div>
 
-<script src="refdata.js?v=40"></script>
-<script src="build.js?v=40"></script>
-<script src="components.js?v=40"></script>
+<script src="refdata.js?v=41"></script>
+<script src="build.js?v=41"></script>
+<script src="components.js?v=41"></script>
 <script>
   var KEY = 'shouba.setup', R = window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -119,11 +119,11 @@
     return ok;
   }
 
-  yearSel.addEventListener('change', validate);   // تُطلَق من اللوحة السفلية
+  yearSel.addEventListener('change', validate);   // تطلق من اللوحة السفلية
   tstart.addEventListener('change', validate);
   tstart.addEventListener('input',  validate);
 
-  // استرجاع ما أُدخل سابقاً (components.js يعرض نصّ المنسدلة تلقائياً من selected)
+  // استرجاع ما أدخل سابقا (components.js يعرض نص المنسدلة تلقائيا من selected)
   (function prefill(){
     var s = load();
     if(s.year){ yearSel.value = s.year; }
@@ -131,7 +131,7 @@
       state.term = s.term;
       [].forEach.call(segs.children, function(b){ b.classList.toggle('on', b.dataset.val === s.term); });
     }
-    /* تاريخ البدء محفوظ لكل فصل على حدة — للفصل الثاني بدايته الخاصّة */
+    /* تاريخ البدء محفوظ لكل فصل على حدة — للفصل الثاني بدايته الخاصة */
     if(s.term && s.termStart && s.termStart[s.term]) tstart.value = s.termStart[s.term];
     validate();
   })();

@@ -11,14 +11,14 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
-<!-- الأساس المشترك — لا تُعِد كتابة أي هيكل هنا -->
+<!-- الأساس المشترك — لا تعد كتابة أي هيكل هنا -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=40" />
-<link rel="stylesheet" href="shell.css?v=40" />
-<link rel="stylesheet" href="components.css?v=40" />
-<link rel="stylesheet" href="frame.css?v=40" />
+<link rel="stylesheet" href="identity/tokens.css?v=41" />
+<link rel="stylesheet" href="shell.css?v=41" />
+<link rel="stylesheet" href="components.css?v=41" />
+<link rel="stylesheet" href="frame.css?v=41" />
 <style>
-  /* أنماط خاصّة بهذه الشاشة فقط — لا body ولا .screen ولا هوامش عامّة (كلّها في shell.css) */
+  /* أنماط خاصة بهذه الشاشة فقط — لا body ولا .screen ولا هوامش عامة (كلها في shell.css) */
   .head{ padding:30px var(--gap-side) 0; display:flex; flex-direction:column; gap:8px }
   .head .h{ font-size:25px; font-weight:700 }
   .head .s{ font-size:13.5px; color:var(--shouba-label); line-height:1.7 }
@@ -27,8 +27,8 @@
 </head>
 <!--
   اختر نمط الشاشة (احذف ما لا يلزم):
-   • ترحيب/دخول  → منطقة الإجراء <div class="actions">…</div>  (متدفّقة)
-   • معالج/إدخال → أضف class="has-foot" على .screen + <div class="foot">…</div> (مثبّت)
+   • ترحيب/دخول  → منطقة الإجراء <div class="actions">…</div>  (متدفقة)
+   • معالج/إدخال → أضف class="has-foot" على .screen + <div class="foot">…</div> (مثبت)
    • تبويب رئيسي → <div class="tabbar">…</div> (شريط تبويبات)
 -->
 <body class="framed">
@@ -37,8 +37,8 @@
     <!-- لا شريط حالة وهمي ولا زخرفة صفحة (قاعدة 2026-08-15):
          الجهاز يعرض شريطه الحقيقي، ولغة الهوية عبر الشعار + توقيع الصدى على الأسطح. -->
 
-    <!-- علامة المنصّة — حضور دائم بكل شاشة (قاعدة معتمدة):
-         في نمط المعالج تندمج في شريط التنقّل بجانب نقاط المراحل: -->
+    <!-- علامة المنصة — حضور دائم بكل شاشة (قاعدة معتمدة):
+         في نمط المعالج تندمج في شريط التنقل بجانب نقاط المراحل: -->
     <div class="navrow">
       <div class="brand">
         <img src="identity/assets/logo-vec-color.svg" alt="شعبة" />
@@ -53,27 +53,27 @@
       </div>
     </div>
 
-    <!-- العنوان — يبقى **خارج** .content دائماً كي يثبت موضعه في كل الشاشات.
-         (وضعه داخل .content center يجعله يتحرّك رأسياً بحسب طول المحتوى.) -->
+    <!-- العنوان — يبقى **خارج** .content دائما كي يثبت موضعه في كل الشاشات.
+         (وضعه داخل .content center يجعله يتحرك رأسيا بحسب طول المحتوى.) -->
     <div class="head">
       <div class="h">عنوان الشاشة</div>
       <div class="s">وصف قصير.</div>
     </div>
 
-    <!-- المحتوى — هو وحده ما يبتلع الفراغ ويُوزَّع -->
+    <!-- المحتوى — هو وحده ما يبتلع الفراغ ويوزع -->
     <div class="content">
-      <!-- ضع مكوّناتك من components.css هنا -->
+      <!-- ضع مكوناتك من components.css هنا -->
     </div>
 
-    <!-- منطقة الإجراء (نمط متدفّق افتراضياً) -->
+    <!-- منطقة الإجراء (نمط متدفق افتراضيا) -->
     <div class="actions">
       <button class="cta">إجراء</button>
     </div>
   </div>
  </div></div>
 
-<script src="build.js?v=40"></script>
-<script src="components.js?v=40"></script>
+<script src="build.js?v=41"></script>
+<script src="components.js?v=41"></script>
 <script>
   // منطق الشاشة هنا. الاسم المحفوظ: JSON.parse(localStorage.getItem('shouba.user')||'{}').name
 </script>

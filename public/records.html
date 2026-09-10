@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>شعبة · سجلّاتك</title>
+<title>شعبة · سجلاتك</title>
 <link rel="manifest" href="manifest.webmanifest" />
 <meta name="theme-color" content="#1B5183" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=40" />
-<link rel="stylesheet" href="shell.css?v=40" />
-<link rel="stylesheet" href="components.css?v=40" />
-<link rel="stylesheet" href="frame.css?v=40" />
+<link rel="stylesheet" href="identity/tokens.css?v=41" />
+<link rel="stylesheet" href="shell.css?v=41" />
+<link rel="stylesheet" href="components.css?v=41" />
+<link rel="stylesheet" href="frame.css?v=41" />
 <style>
   .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
   .note{padding:0 var(--gap-side);font-size:12px;font-weight:600;color:var(--shouba-hint);line-height:1.8}
@@ -28,7 +28,7 @@
     <div class="topbar">
       <div class="tbcrest" id="tbCrest"></div>
       <div class="tt">
-        <b>سجلّاتك</b>
+        <b>سجلاتك</b>
         <span id="headLine">—</span>
       </div>
       <div class="iconbtn" id="toBoard" data-home title="اللوحة">
@@ -40,7 +40,7 @@
     <div class="content">
       <div class="wrap">
         <div class="vlist" id="list"></div>
-        <div class="editrow"><button id="edit">عدّل قائمة سجلّاتك</button></div>
+        <div class="editrow"><button id="edit">عدل قائمة سجلاتك</button></div>
         <div class="note" id="note"></div>
       </div>
     </div>
@@ -53,14 +53,14 @@
     </button>
     <button class="tab" data-go="teachers.html">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 17c0-3 2.7-4.6 6-4.6S16 14 16 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      المعلّمون
+      المعلمون
     </button>
     <button class="tab-add" id="add" aria-label="إضافة">
       <svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#241D06" stroke-width="2.6" stroke-linecap="round"/></svg>
     </button>
     <button class="tab on" data-go="records.html">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 9h6M7 12.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      سجلّاتك
+      سجلاتك
     </button>
     <button class="tab" data-go="schedule.html">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3.5" y="4.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 8.5h13M7 3v3M13 3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -69,11 +69,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=40"></script>
-<script src="refdata.js?v=40"></script>
-<script src="derive.js?v=40"></script>
-<script src="icons.js?v=40"></script>
-<script src="components.js?v=40"></script>
+<script src="build.js?v=41"></script>
+<script src="refdata.js?v=41"></script>
+<script src="derive.js?v=41"></script>
+<script src="icons.js?v=41"></script>
+<script src="components.js?v=41"></script>
 <script>
   var d = Shouba.data();
 
@@ -84,14 +84,14 @@
     else el.innerHTML='<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
   })();
 
-  /* السجلّات التي اعتمدها رئيس الشعبة في ش⑥ — تُرصّ هنا قوالبَ تُملأ لاحقاً.
-     لا تُخترع قائمة هنا: المصدر ما اختاره في الإعداد، وتعديلها من هناك. */
+  /* السجلات التي اعتمدها رئيس الشعبة في ش⑥ — ترص هنا قوالب تملأ لاحقا.
+     لا تخترع قائمة هنا: المصدر ما اختاره في الإعداد، وتعديلها من هناك. */
   var listEl = document.getElementById('list');
   var records = (d.records || []).slice();
 
   if(!records.length){
-    listEl.innerHTML = '<div class="invite">لم تعتمد سجلّات في الإعداد بعد —'
-      + ' وهي قوالب رسمية جاهزة تختار منها ما يخصّ شعبتك.</div>';
+    listEl.innerHTML = '<div class="invite">لم تعتمد سجلات في الإعداد بعد —'
+      + ' وهي قوالب رسمية جاهزة تختار منها ما يخص شعبتك.</div>';
   }
   records.forEach(function(name){
     var b = document.createElement('button');
@@ -100,18 +100,18 @@
     b.addEventListener('click', function(){
       var n = document.createElement('div');
       n.className = 'soon-note';
-      n.textContent = 'سجلّ «' + name + '» قيد الإعداد — يصل في تحديث قادم بحقوله الرسمية،'
-                    + ' وما تُدخله اليوم في اللوحة والجداول يغذّيه حين يجهز.';
+      n.textContent = 'سجل «' + name + '» قيد الإعداد — يصل في تحديث قادم بحقوله الرسمية،'
+                    + ' وما تدخله اليوم في اللوحة والجداول يغذيه حين يجهز.';
       Shouba.sheet.open(name, n);
     });
     listEl.appendChild(b);
   });
 
   document.getElementById('headLine').textContent = records.length
-    ? Shouba.count(records.length,{one:'سجلّ',two:'سجلّان',few:'سجلّات',many:'سجلّاً'}) + ' · قوالب قيد الإعداد'
-    : 'لم تعتمد سجلّات بعد';
+    ? Shouba.count(records.length,{one:'سجل',two:'سجلان',few:'سجلات',many:'سجلا'}) + ' · قوالب قيد الإعداد'
+    : 'لم تعتمد سجلات بعد';
   document.getElementById('note').textContent = records.length
-    ? 'هذه السجلّات التي اعتمدتها في الإعداد — تُبنى حقولها تباعاً، سجلّاً بعد سجلّ.' : '';
+    ? 'هذه السجلات التي اعتمدتها في الإعداد — تبنى حقولها تباعا، سجلا بعد سجل.' : '';
 
   document.getElementById('edit').addEventListener('click', function(){
     location.href = 'setup-wizard-6.html?ret=records';
@@ -119,7 +119,7 @@
   [].forEach.call(document.querySelectorAll('.tab[data-go]'), function(b){
     b.addEventListener('click', function(){ if(!b.classList.contains('on')) location.href = b.dataset.go; });
   });
-  /* المنزل يتولّاه bindHome في الطبقة المشتركة — لا مستمع هنا */
+  /* المنزل يتولاه bindHome في الطبقة المشتركة — لا مستمع هنا */
   document.getElementById('add').addEventListener('click', Shouba.quickAdd);
 </script>
 </body>

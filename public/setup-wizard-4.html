@@ -12,11 +12,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=40" />
-<link rel="stylesheet" href="shell.css?v=40" />
-<link rel="stylesheet" href="components.css?v=40" />
-<link rel="stylesheet" href="frame.css?v=40" />
-<!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصّة لهذه الشاشة -->
+<link rel="stylesheet" href="identity/tokens.css?v=41" />
+<link rel="stylesheet" href="shell.css?v=41" />
+<link rel="stylesheet" href="components.css?v=41" />
+<link rel="stylesheet" href="frame.css?v=41" />
+<!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصة لهذه الشاشة -->
 </head>
 <body class="framed">
  <div class="device"><div class="viewport">
@@ -37,8 +37,8 @@
 
     <!-- العنوان خارج .content — موضعه ثابت في كل الشاشات (قاعدة LAYOUT) -->
     <div class="head">
-      <div class="h">مَن يُشرف على شعبتك</div>
-      <div class="s">اسمان يُطبعان في تذييل نماذجك الرسمية — لك تخطّيهما الآن وإكمالهما متى شئت من الإعدادات.</div>
+      <div class="h">من يشرف على شعبتك</div>
+      <div class="s">اسمان يطبعان في تذييل نماذجك الرسمية — لك تخطيهما الآن وإكمالهما متى شئت من الإعدادات.</div>
     </div>
 
     <div class="content center">
@@ -49,28 +49,28 @@
         <div class="paper">
           <input id="principal" type="text" placeholder="اكتب الاسم" maxlength="60" />
         </div>
-        <div class="hint"><b>اختياري</b> · كما يُكتب في توقيع النماذج الرسمية.</div>
+        <div class="hint"><b>اختياري</b> · كما يكتب في توقيع النماذج الرسمية.</div>
       </div>
 
-      <!-- الموجّه الفني -->
+      <!-- الموجه الفني -->
       <div class="field">
-        <label for="supervisor">موجّهك الفنّي</label>
+        <label for="supervisor">موجهك الفني</label>
         <div class="paper">
           <input id="supervisor" type="text" placeholder="اكتب الاسم" maxlength="60" />
         </div>
-        <div class="hint"><b>اختياري</b> · موجّه تخصّصك، لا موجّه المدرسة.</div>
+        <div class="hint"><b>اختياري</b> · موجه تخصصك، لا موجه المدرسة.</div>
       </div>
     </form>
     </div><!-- /content -->
   </div>
 
   <div class="foot">
-    <button class="cta" id="next">تخطّي الآن</button>
+    <button class="cta" id="next">تخطي الآن</button>
   </div>
  </div></div>
 
-<script src="build.js?v=40"></script>
-<script src="components.js?v=40"></script>
+<script src="build.js?v=41"></script>
+<script src="components.js?v=41"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -80,13 +80,13 @@
   var supervisor = document.getElementById('supervisor');
   var next       = document.getElementById('next');
 
-  // الحقلان اختياريان — الزرّ مفتوح دائماً، ونصّه يوضّح أثر تركهما فارغين
+  // الحقلان اختياريان — الزر مفتوح دائما، ونصه يوضح أثر تركهما فارغين
   function refresh(){
     var any = principal.value.trim() || supervisor.value.trim();
-    next.textContent = any ? 'التالي' : 'تخطّي الآن';
+    next.textContent = any ? 'التالي' : 'تخطي الآن';
   }
 
-  // استرجاع ما أُدخل سابقاً
+  // استرجاع ما أدخل سابقا
   (function prefill(){
     var s = load();
     if(s.principal)  principal.value  = s.principal;
@@ -99,7 +99,7 @@
 
   next.addEventListener('click', function(){
     save({ principal: principal.value.trim(), supervisor: supervisor.value.trim() });
-    // بعد ش④ تأتي مراجعة المنتصف — وإن كان التعديل قادماً من المراجعة النهائية عاد إليها
+    // بعد ش④ تأتي مراجعة المنتصف — وإن كان التعديل قادما من المراجعة النهائية عاد إليها
     location.href = Shouba.returnTo() || 'setup-review.html';
   });
 </script>

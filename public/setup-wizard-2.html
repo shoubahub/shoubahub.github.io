@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=40" />
-<link rel="stylesheet" href="shell.css?v=40" />
-<link rel="stylesheet" href="components.css?v=40" />
-<link rel="stylesheet" href="frame.css?v=40" />
+<link rel="stylesheet" href="identity/tokens.css?v=41" />
+<link rel="stylesheet" href="shell.css?v=41" />
+<link rel="stylesheet" href="components.css?v=41" />
+<link rel="stylesheet" href="frame.css?v=41" />
 <style>
   /* خاص بهذه الشاشة فقط */
   .sdrop.locked{opacity:.5;pointer-events:none;filter:grayscale(.3)}
@@ -46,7 +46,7 @@
 
     <div class="head">
       <div class="h">شعبتك</div>
-      <div class="s">حدّد مرحلتك ثم تخصّصك — وتظهر مواد شعبتك تلقائياً.</div>
+      <div class="s">حدد مرحلتك ثم تخصصك — وتظهر مواد شعبتك تلقائيا.</div>
     </div>
 
     <form class="fields" autocomplete="off" onsubmit="return false">
@@ -64,7 +64,7 @@
 
       <!-- الشعبة -->
       <div class="field">
-        <label>الشعبة (التخصّص)</label>
+        <label>الشعبة (التخصص)</label>
         <div class="sdrop locked" id="deptDrop" data-label="الشعبة">
           <button type="button" class="trigger">
             <span class="val ph">اختر الشعبة</span>
@@ -74,7 +74,7 @@
         </div>
       </div>
 
-      <!-- مواد الشعبة (معاينة حيّة) -->
+      <!-- مواد الشعبة (معاينة حية) -->
       <div class="field hide" id="subjectsWrap">
         <label>مواد شعبتك</label>
         <div class="subjects" id="subjects"></div>
@@ -87,9 +87,9 @@
   </div>
  </div></div>
 
-<script src="refdata.js?v=40"></script>
-<script src="build.js?v=40"></script>
-<script src="components.js?v=40"></script>
+<script src="refdata.js?v=41"></script>
+<script src="build.js?v=41"></script>
+<script src="components.js?v=41"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{return JSON.parse(localStorage.getItem(KEY))||{};}catch(e){return {};} }
@@ -127,8 +127,8 @@
     if(list.length){
       list.forEach(function(s){
         var row=document.createElement('div'); row.className='subj';
-        // المرحلة بلا مسارات ⇒ لا فاصل معلّق بعد الصف
-        // ومادّة الاختيار الحرّ تُثبت بصفٍّ واحد بلا مسار، ويُقال ذلك بجانبها
+        // المرحلة بلا مسارات ⇒ لا فاصل معلق بعد الصف
+        // ومادة الاختيار الحر تثبت بصف واحد بلا مسار، ويقال ذلك بجانبها
         // بدل تكرارها للأدبي والعلمي (قرار المستخدم 2026-09-08)
         var meta = s.track ? s.grade + ' · ' + s.track : s.grade;
         row.innerHTML='<b></b><span class="gt"></span>';
@@ -136,7 +136,7 @@
         row.querySelector('.gt').textContent = meta;
         if(s.elective){
           var tag=document.createElement('span'); tag.className='free';
-          tag.textContent='اختيار حرّ'; row.appendChild(tag);
+          tag.textContent='اختيار حر'; row.appendChild(tag);
         }
         if(s.shared){
           var sh=document.createElement('span'); sh.className='free shared';
@@ -145,7 +145,7 @@
         subjects.appendChild(row);
       });
     } else {
-      subjects.innerHTML='<div class="subj-empty">مواد هذه الشعبة تُضاف لاحقاً من الإدارة.</div>';
+      subjects.innerHTML='<div class="subj-empty">مواد هذه الشعبة تضاف لاحقا من الإدارة.</div>';
     }
     subjectsWrap.classList.remove('hide');
     save({ department: dp, subjects: list });
@@ -156,7 +156,7 @@
   stageSel.addEventListener('change', onStage);
   deptSel.addEventListener('change', onDept);
 
-  // استرجاع ما أُدخل سابقاً
+  // استرجاع ما أدخل سابقا
   (function prefill(){
     var s=load();
     if(s.stage){ stageSel.value=s.stage; setTrigger(stageSel, s.stage, false);

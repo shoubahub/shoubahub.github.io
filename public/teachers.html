@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>شعبة · المعلّمون</title>
+<title>شعبة · المعلمون</title>
 <link rel="manifest" href="manifest.webmanifest" />
 <meta name="theme-color" content="#1B5183" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=40" />
-<link rel="stylesheet" href="shell.css?v=40" />
-<link rel="stylesheet" href="components.css?v=40" />
-<link rel="stylesheet" href="frame.css?v=40" />
+<link rel="stylesheet" href="identity/tokens.css?v=41" />
+<link rel="stylesheet" href="shell.css?v=41" />
+<link rel="stylesheet" href="components.css?v=41" />
+<link rel="stylesheet" href="frame.css?v=41" />
 <style>
   /* خاص بهذه الشاشة — القائمة والسطور من components.css */
   .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
@@ -28,7 +28,7 @@
     <div class="topbar">
       <div class="tbcrest" id="tbCrest"></div>
       <div class="tt">
-        <b>معلّمو شعبتك</b>
+        <b>معلمو شعبتك</b>
         <span id="headLine">—</span>
       </div>
       <div class="iconbtn" id="toBoard" data-home title="اللوحة">
@@ -40,7 +40,7 @@
     <div class="content">
       <div class="wrap">
         <div class="vlist" id="list"></div>
-        <div class="addrow"><button class="cta" id="add2">أضِف معلّماً</button></div>
+        <div class="addrow"><button class="cta" id="add2">أضف معلما</button></div>
         <div class="note" id="note"></div>
       </div>
     </div>
@@ -53,14 +53,14 @@
     </button>
     <button class="tab on" data-go="teachers.html">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 17c0-3 2.7-4.6 6-4.6S16 14 16 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      المعلّمون
+      المعلمون
     </button>
     <button class="tab-add" id="add" aria-label="إضافة">
       <svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#241D06" stroke-width="2.6" stroke-linecap="round"/></svg>
     </button>
     <button class="tab" data-go="records.html">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 9h6M7 12.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      سجلّاتك
+      سجلاتك
     </button>
     <button class="tab" data-go="schedule.html">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3.5" y="4.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 8.5h13M7 3v3M13 3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -69,11 +69,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=40"></script>
-<script src="refdata.js?v=40"></script>
-<script src="derive.js?v=40"></script>
-<script src="icons.js?v=40"></script>
-<script src="components.js?v=40"></script>
+<script src="build.js?v=41"></script>
+<script src="refdata.js?v=41"></script>
+<script src="derive.js?v=41"></script>
+<script src="icons.js?v=41"></script>
+<script src="components.js?v=41"></script>
 <script>
   var d = Shouba.data();
 
@@ -91,7 +91,7 @@
     listEl.innerHTML = '';
 
     if(!teachers.length){
-      listEl.innerHTML = '<div class="invite">لم تُضِف معلّمي شعبتك بعد — وعليهم تُبنى الجداول والسجلّات.</div>';
+      listEl.innerHTML = '<div class="invite">لم تضف معلمي شعبتك بعد — وعليهم تبنى الجداول والسجلات.</div>';
     }
     teachers.forEach(function(t){
       var load = Shouba.loadOf(t), subs = Shouba.subjectsOfTeacher(t);
@@ -100,8 +100,8 @@
       b.innerHTML = '<span class="ini">' + t.charAt(0) + '</span>'
         + '<div class="tx"><b>أ. ' + t + '</b><small>'
         + (load ? Shouba.count(load,{one:'حصة',two:'حصتان',few:'حصص',many:'حصة'})
-                  + ' · ' + Shouba.count(subs.length,{one:'مادة',two:'مادّتان',few:'مواد',many:'مادة'})
-                : 'لم يُدخل جدوله بعد')
+                  + ' · ' + Shouba.count(subs.length,{one:'مادة',two:'مادتان',few:'مواد',many:'مادة'})
+                : 'لم يدخل جدوله بعد')
         + '</small></div><span class="chev">‹</span>';
       b.addEventListener('click', function(){ location.href = 'teacher.html?t=' + encodeURIComponent(t); });
       listEl.appendChild(b);
@@ -109,31 +109,31 @@
 
     var blank = teachers.filter(function(t){ return !Shouba.hasSchedule(t); }).length;
     document.getElementById('headLine').textContent = teachers.length
-      ? Shouba.count(teachers.length,{one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'})
-        + ' · ' + (blank ? Shouba.count(blank,{one:'جدول',two:'جدولان',few:'جداول',many:'جدولاً'}) + ' بلا إدخال'
-                         : 'كل الجداول مُدخلة')
+      ? Shouba.count(teachers.length,{one:'معلم',two:'معلمان',few:'معلمين',many:'معلما'})
+        + ' · ' + (blank ? Shouba.count(blank,{one:'جدول',two:'جدولان',few:'جداول',many:'جدولا'}) + ' بلا إدخال'
+                         : 'كل الجداول مدخلة')
       : 'بانتظار أسمائهم';
     document.getElementById('note').textContent = teachers.length
-      ? 'اضغط اسم المعلّم لفتح ملفّه: مواده وجدوله وتقاريره وإنجازاته.' : '';
+      ? 'اضغط اسم المعلم لفتح ملفه: مواده وجدوله وتقاريره وإنجازاته.' : '';
   }
 
   /* الإضافة في لوحة سفلية — لا التفاف إلى شاشة المعالج */
   function addSheet(){
     var n = document.createElement('div');
     n.innerHTML = '<div class="field" style="padding-bottom:6px">'
-      + '<label for="nm">اسم المعلّم</label>'
-      + '<div class="paper"><input id="nm" type="text" maxlength="60" placeholder="اكتب اسم المعلّم" /></div>'
+      + '<label for="nm">اسم المعلم</label>'
+      + '<div class="paper"><input id="nm" type="text" maxlength="60" placeholder="اكتب اسم المعلم" /></div>'
       + '<div class="hint" id="warn">اكتبه كما يظهر في النماذج الرسمية.</div></div>';
     var btn = document.createElement('button');
-    btn.className = 'cta'; btn.textContent = 'أضِف';
+    btn.className = 'cta'; btn.textContent = 'أضف';
     n.appendChild(btn);
-    Shouba.sheet.open('معلّم جديد', n);
+    Shouba.sheet.open('معلم جديد', n);
     var inp = n.querySelector('#nm'), warn = n.querySelector('#warn');
     setTimeout(function(){ inp.focus(); }, 80);
     function submit(){
       var v = inp.value.trim().replace(/\s+/g,' ');
       if(v.length < 3) return;
-      if(Shouba.teachers().indexOf(v) > -1){ warn.textContent = 'هذا الاسم مُضاف سلفاً.'; return; }
+      if(Shouba.teachers().indexOf(v) > -1){ warn.textContent = 'هذا الاسم مضاف سلفا.'; return; }
       var list = Shouba.teachers(); list.push(v);
       Shouba.save({ teachers: list });
       Shouba.sheet.close(); paint();
@@ -147,10 +147,10 @@
   [].forEach.call(document.querySelectorAll('.tab[data-go]'), function(b){
     b.addEventListener('click', function(){ if(!b.classList.contains('on')) location.href = b.dataset.go; });
   });
-  /* المنزل يتولّاه bindHome في الطبقة المشتركة — لا مستمع هنا */
+  /* المنزل يتولاه bindHome في الطبقة المشتركة — لا مستمع هنا */
 
   paint();
-  /* ?add=1 ⟵ قادمٌ من الإضافة السريعة: تفتح لوحة إضافة المعلّم مباشرةً */
+  /* ?add=1 ⟵ قادم من الإضافة السريعة: تفتح لوحة إضافة المعلم مباشرة */
   if(new URLSearchParams(location.search).get('add')) addSheet();
 </script>
 </body>

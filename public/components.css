@@ -1,13 +1,13 @@
 /* ===================================================================
-   شعبة · مكتبة المكوّنات المشتركة
-   كل لبنة تُعرّف هنا مرّة واحدة، وكل الشاشات تستهلكها.
-   يعتمد على: tokens.css (المتغيّرات) + frame.css (الهيكل/الإطار).
+   شعبة · مكتبة المكونات المشتركة
+   كل لبنة تعرف هنا مرة واحدة، وكل الشاشات تستهلكها.
+   يعتمد على: tokens.css (المتغيرات) + frame.css (الهيكل/الإطار).
    =================================================================== */
 
 /* ---------- تخطيطات نمط المعالج/الإدخال (مشتركة) ---------- */
 .navrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:20px var(--gap-side) 0}
 
-/* علامة المنصّة داخل شريط التنقّل — بجانب نقاط المراحل (حضور دائم، احترافي) */
+/* علامة المنصة داخل شريط التنقل — بجانب نقاط المراحل (حضور دائم، احترافي) */
 .navrow .brand{display:flex;align-items:center;gap:13px;min-width:0}
 .navrow .brand img{width:50px;height:auto;flex:none}
 .navrow .brand .vsep{width:2px;height:38px;border-radius:2px;background:rgba(120,98,66,.28);flex:none}
@@ -22,26 +22,26 @@
 .field > label{font-size:14.5px;font-weight:700;color:var(--shouba-text-muted)}
 .field .hint{font-size:12px;color:var(--shouba-hint);font-weight:500}
 
-/* ---------- سطح ورقيّ مشترك ---------- */
+/* ---------- سطح ورقي مشترك ---------- */
 .paper{position:relative;overflow:hidden;background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:var(--r-input);
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.18)}
-/* صدى المجلّد على الحقول — همسة من الطرف (نفس توقيع الأزرار) */
+/* صدى المجلد على الحقول — همسة من الطرف (نفس توقيع الأزرار) */
 .paper::before{content:"";position:absolute;left:-34px;bottom:-12px;width:180px;height:62px;pointer-events:none;
   background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.08}
 
-/* ---------- حقل نصّي ---------- */
+/* ---------- حقل نصي ---------- */
 .paper > input{width:100%;border:0;background:transparent;font-family:var(--font-ar);font-size:16px;font-weight:600;
   color:var(--shouba-navy);padding:16px;outline:none;text-align:right;position:relative;z-index:1}
 .paper > input::placeholder{color:var(--shouba-hint);font-weight:500}
 
-/* ---------- قائمة شعبة المنسدلة (مُطلِق + <select> مخفيّ كمصدر بيانات) ---------- */
+/* ---------- قائمة شعبة المنسدلة (مطلق + <select> مخفي كمصدر بيانات) ---------- */
 .sdrop{position:relative}
 .sdrop .trigger{width:100%;border:0;cursor:pointer;text-align:right;font-family:var(--font-ar);
   background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:var(--r-input);padding:16px;
   display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;overflow:hidden;
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.18);
   transition:transform .06s}
-/* صدى المجلّد على المنسدلة — نفس توقيع الحقول */
+/* صدى المجلد على المنسدلة — نفس توقيع الحقول */
 .sdrop .trigger::before{content:"";position:absolute;left:-34px;bottom:-12px;width:180px;height:62px;pointer-events:none;
   background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.08}
 .sdrop .trigger .val,.sdrop .trigger .chev{position:relative;z-index:1}
@@ -61,30 +61,30 @@
 .seg.on .tick{background:var(--shouba-navy);border-color:var(--shouba-navy)}
 .seg:active{transform:translateY(1px)}
 
-/* ---------- زرّ العمل (CTA) ---------- */
+/* ---------- زر العمل (CTA) ---------- */
 .cta{background:var(--shouba-cta);border-radius:var(--r-btn);padding:16px;border:0;cursor:pointer;text-align:center;font-family:var(--font-ar);font-size:15.5px;font-weight:700;color:#241D06;text-shadow:0 1px 0 rgba(255,255,255,.4);width:100%;
   position:relative;overflow:hidden;
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(140,95,15,.4), 0 5px 0 var(--shouba-amber-deep), 0 12px 20px rgba(90,72,48,.3);transition:transform .06s, box-shadow .06s, filter .2s, opacity .2s}
-/* الزرّ العنبري **بلا زخرفة** (معتمد 2026-08-15): عنصر فِعل — قوّته في وضوحه ولونه وبروزه.
-   التمييز بالتضاد: أسطح ورقية موشومة بصدى المجلّد ⇄ زرّ عنبري نظيف صريح. */
+/* الزر العنبري **بلا زخرفة** (معتمد 2026-08-15): عنصر فعل — قوته في وضوحه ولونه وبروزه.
+   التمييز بالتضاد: أسطح ورقية موشومة بصدى المجلد ⇄ زر عنبري نظيف صريح. */
 .cta:active{transform:translateY(3px);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(140,95,15,.4), 0 0 0 var(--shouba-amber-deep), 0 6px 12px rgba(90,72,48,.28)}
-/* المعطّل: لون صلب معتم (لا شفافية — وإلا ظهرت الزخرفة من خلفه فازدحم) */
+/* المعطل: لون صلب معتم (لا شفافية — وإلا ظهرت الزخرفة من خلفه فازدحم) */
 .cta[disabled]{background:linear-gradient(180deg,#E4DAC7 0%,#DCD1BA 100%);color:#9A8E79;text-shadow:none;cursor:not-allowed;
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,.65), 0 3px 0 #C9BCA1, 0 8px 14px rgba(90,72,48,.14)}
 .cta[disabled]:active{transform:none}
 
-/* زرّ ثانوي (شبح) */
+/* زر ثانوي (شبح) */
 .btn-ghost{background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);border-radius:var(--r-btn);padding:15px;border:0;cursor:pointer;width:100%;
   font-family:var(--font-ar);font-size:15px;font-weight:700;color:var(--shouba-text-muted);
   position:relative;overflow:hidden;
   box-shadow:inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16)}
-/* صدى المجلّد على الورقي — نبرة داكنة خفيفة (كصدى المجلّدات على قماش الهوية) */
+/* صدى المجلد على الورقي — نبرة داكنة خفيفة (كصدى المجلدات على قماش الهوية) */
 .btn-ghost::before{content:"";position:absolute;left:-42px;bottom:-16px;width:225px;height:78px;pointer-events:none;
   background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.11}
 
-/* زرّ الفعل الذي لا يُستردّ (حذف حساب — 2026-09-10): ورقيٌّ كالشبح، والأحمر للنصّ
-   والحلقة فقط — فلا يُنافس العنبريّ ولا يُضغط ظنّاً أنه الفعل المعتاد. بلا صدى المجلّد.
-   والمعطّل لونٌ صلب بلا شفافية، كقاعدة .cta[disabled]. */
+/* زر الفعل الذي لا يسترد (حذف حساب — 2026-09-10): ورقي كالشبح، والأحمر للنص
+   والحلقة فقط — فلا ينافس العنبري ولا يضغط ظنا أنه الفعل المعتاد. بلا صدى المجلد.
+   والمعطل لون صلب بلا شفافية، كقاعدة .cta[disabled]. */
 .btn-danger{background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);border-radius:var(--r-btn);padding:15px;border:0;cursor:pointer;width:100%;
   font-family:var(--font-ar);font-size:15px;font-weight:700;color:var(--shouba-error);
   box-shadow:inset 0 0 0 1.5px rgba(183,68,58,.38), inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16)}
@@ -92,11 +92,11 @@
 .btn-danger[disabled]{color:#B3A68F;cursor:not-allowed;background:linear-gradient(180deg,#EFE8DA 0%,#E8E0CF 100%);
   box-shadow:inset 0 1.2px 0 rgba(255,255,255,.7), 0 2px 0 rgba(190,172,140,.4)}
 .btn-danger[disabled]:active{transform:none}
-/* تحذيرٌ قبل فعلٍ لا يُستردّ — يُقرأ قبل الحقل لا بعده */
+/* تحذير قبل فعل لا يسترد — يقرأ قبل الحقل لا بعده */
 .warnbox{background:rgba(183,68,58,.08);color:var(--shouba-error);border-radius:12px;padding:12px 14px;
   font-size:12.5px;font-weight:600;line-height:1.8}
 
-/* ---------- شريط التقدّم + رجوع ---------- */
+/* ---------- شريط التقدم + رجوع ---------- */
 .prog{display:flex;flex-direction:column;gap:7px;align-items:flex-start}
 .prog .lbl{font-size:12px;font-weight:700;color:var(--shouba-label)}
 .prog .lbl b{color:var(--shouba-navy);font-weight:700}
@@ -107,20 +107,20 @@
   box-shadow:inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16)}
 
 /* ---------- بطاقة اختيار ورقية ---------- */
-/* قائمة رأسية موحّدة (بطاقات متتابعة) — تُغني عن تعريفها في كل شاشة */
+/* قائمة رأسية موحدة (بطاقات متتابعة) — تغني عن تعريفها في كل شاشة */
 .stack{display:flex;flex-direction:column;gap:9px}
 .pick{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:20px;padding:15px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2)}
 .pick.on{box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2), 0 0 0 2px var(--shouba-navy)}
 .pick .mark{width:22px;height:22px;border-radius:999px;flex:none;display:grid;place-items:center;border:2px solid rgba(120,98,66,.3)}
 .pick.on .mark{background:var(--shouba-navy);border-color:var(--shouba-navy)}
-/* RTL: flex-start = اليمين — النصّ يُحاذي حافّة البطاقة اليمنى (flex-end كان يزيحه لليسار) */
+/* RTL: flex-start = اليمين — النص يحاذي حافة البطاقة اليمنى (flex-end كان يزيحه لليسار) */
 .pick .tx{flex:1;display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:right}
 .pick .tx b{font-size:15px;font-weight:700;color:var(--shouba-navy)}
 .pick .tx small{font-size:11.5px;color:var(--shouba-hint)}
 
 /* ===================================================================
-   اللوحة السفلية (Bottom Sheet) — تُبنى مرّة في <body> عبر components.js
+   اللوحة السفلية (Bottom Sheet) — تبنى مرة في <body> عبر components.js
    =================================================================== */
 .sheet-backdrop{position:fixed;inset:0;background:rgba(36,33,28,.42);opacity:0;pointer-events:none;transition:opacity .25s;z-index:80}
 .sheet-backdrop.open{opacity:1;pointer-events:auto}
@@ -133,8 +133,8 @@
 .sheet.open{transform:translateY(0)}
 .sheet .grab{width:46px;height:5px;border-radius:999px;background:#D9CCB2;margin:6px auto 2px;flex:none}
 .sheet .sheet-title{font-family:var(--font-ar);font-size:15.5px;font-weight:700;color:var(--shouba-ink);text-align:center;padding:8px 0 14px;flex:none}
-/* الحاوية تُمرَّر (overflow:auto) فتقصّ حلقة الاختيار الممتدّة خارج العنصر (box-shadow spread).
-   الحلّ: فسحة داخلية بقدر الحلقة، وتُعوَّض بهامش سالب كي تبقى الأسطر بمحاذاة العنوان. */
+/* الحاوية تمرر (overflow:auto) فتقص حلقة الاختيار الممتدة خارج العنصر (box-shadow spread).
+   الحل: فسحة داخلية بقدر الحلقة، وتعوض بهامش سالب كي تبقى الأسطر بمحاذاة العنوان. */
 .sheet .sheet-list{overflow:auto;display:flex;flex-direction:column;gap:9px;
   padding:3px 3px 6px;margin-inline:-3px;-webkit-overflow-scrolling:touch}
 .sheet-opt{width:100%;border:0;cursor:pointer;text-align:right;font-family:var(--font-ar);font-size:15px;font-weight:600;color:var(--shouba-ink);
@@ -145,7 +145,7 @@
 .sheet-opt.on .mk{background:var(--shouba-navy);border-color:var(--shouba-navy)}
 
 /* ===================================================================
-   نمط الشاشات الرئيسية (تبويبات) — أُضيف مع اللوحة 2026-08-20
+   نمط الشاشات الرئيسية (تبويبات) — أضيف مع اللوحة 2026-08-20
    =================================================================== */
 
 /* وسم صغير (نوع موعد · صف · حالة) */
@@ -154,7 +154,7 @@
 .chip.navy{color:var(--shouba-navy);background:rgba(22,69,110,.09)}
 .chip.muted{color:var(--shouba-label);background:rgba(120,98,66,.09)}
 
-/* شريط التبويبات — **عائم** بأربعة أقسام وزرّ إضافة عنبري في وسطه (دليل الهوية) */
+/* شريط التبويبات — **عائم** بأربعة أقسام وزر إضافة عنبري في وسطه (دليل الهوية) */
 .tabbar{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));
   max-width:calc(var(--screen-max) - 32px);margin:0 auto;z-index:3;
   display:flex;align-items:center;gap:2px;padding:7px 8px;border-radius:26px;
@@ -165,7 +165,7 @@
   font-family:var(--font-ar);font-size:10.5px;font-weight:600;color:var(--shouba-label)}
 .tab.on{color:var(--shouba-navy);background:rgba(22,69,110,.08)}
 .tab:active{transform:translateY(1px)}
-/* زرّ الإضافة العنبري — وسط الشريط، الفعل الوحيد فيه */
+/* زر الإضافة العنبري — وسط الشريط، الفعل الوحيد فيه */
 .tab-add{flex:none;width:46px;height:46px;border-radius:999px;border:0;cursor:pointer;margin:0 4px;
   background:var(--shouba-cta);display:grid;place-items:center;
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), 0 4px 0 var(--shouba-amber-deep), 0 10px 18px rgba(90,72,48,.3)}
@@ -201,7 +201,7 @@
 
 /* ===================================================================
    شريط الرأس المضغوط الثابت + الجداول المصفوفة (2026-08-20)
-   المبدأ: الوظيفة قبل الشكل — أقلّ ارتفاع للرأس والأسفل، وأوسع مساحة عمل.
+   المبدأ: الوظيفة قبل الشكل — أقل ارتفاع للرأس والأسفل، وأوسع مساحة عمل.
    =================================================================== */
 
 /* رأس ثابت مضغوط: شعار صغير · هوية الشعبة · التاريخ · إعدادات */
@@ -215,7 +215,7 @@
 .topbar .tt span{font-size:11px;font-weight:600;color:var(--shouba-label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .topbar .iconbtn{width:34px;height:34px;border-radius:12px}
 
-/* جدول مصفوف بأعمدة — يعرض أكثر من البطاقات في مساحة أقلّ */
+/* جدول مصفوف بأعمدة — يعرض أكثر من البطاقات في مساحة أقل */
 .tbl{margin:0 var(--gap-side);border-radius:18px;overflow:hidden;
   background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
   box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 8px 16px rgba(120,98,66,.14)}
@@ -250,7 +250,7 @@
 .wcol .wi.t-act{border-inline-start-color:var(--shouba-amber)}
 .wcol .wq{font-size:10px;color:var(--shouba-hint);text-align:center;padding:4px 0}
 
-/* ---------- شعار المدرسة أو رمز الشعبة (للواجهة فقط — النماذج لها إعداداتها لاحقاً) ---------- */
+/* ---------- شعار المدرسة أو رمز الشعبة (للواجهة فقط — النماذج لها إعداداتها لاحقا) ---------- */
 .crestpick{display:flex;flex-direction:column;align-items:center;gap:7px;padding:6px var(--gap-side) 0}
 .crest{width:74px;height:74px;border-radius:999px;border:0;cursor:pointer;display:grid;place-items:center;overflow:hidden;
   background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
@@ -275,7 +275,7 @@
 .icell:active{transform:translateY(1px)}
 /* سطر فاصل داخل اللوحة السفلية (بين خيار الرفع وشبكة الرموز) */
 .sheet-note{font-size:12px;font-weight:600;color:var(--shouba-label);text-align:center;padding:2px 0}
-/* خيار الرفع داخل اللوحة — صفّ كامل العرض ليتميّز عن الرموز */
+/* خيار الرفع داخل اللوحة — صف كامل العرض ليتميز عن الرموز */
 .btn-ghost.wupload{display:flex;align-items:center;justify-content:center;gap:9px}
 /* طبقات رموز الشعب — الكحلي كتلة، العنبري لمسة، و«الفراغ» بلون السطح ليقرأ فوق الكتلة */
 .crest-svg .hole{fill:var(--shouba-paper)}
@@ -286,8 +286,8 @@
 
 /* ===================================================================
    الرأس الكحلي للشاشات الرئيسية (معتمد 2026-08-27)
-   قاعدة: كتلة كحلية واحدة في الشاشة — والرأس أحقّ بها لأنه موضع العلامة.
-   لذلك تحوّلت بطاقة «التالي» إلى ورقية (.card-soft).
+   قاعدة: كتلة كحلية واحدة في الشاشة — والرأس أحق بها لأنه موضع العلامة.
+   لذلك تحولت بطاقة «التالي» إلى ورقية (.card-soft).
    =================================================================== */
 .topbar{background:var(--shouba-navy);border-bottom:0}
 .topbar .tt b{color:var(--shouba-cream)}
@@ -302,11 +302,11 @@
 .topbar .tbcrest .crest-svg .sa{stroke:var(--shouba-amber)}
 .topbar .tbcrest .crest-svg .hole,
 .topbar .tbcrest .crest-svg .ha{fill:var(--shouba-navy);stroke:var(--shouba-navy)}
-/* زرّ الإعدادات فوق الكحلي */
+/* زر الإعدادات فوق الكحلي */
 .topbar .iconbtn{background:rgba(244,241,234,.14);box-shadow:none}
 .topbar .iconbtn svg path,.topbar .iconbtn svg circle{stroke:var(--shouba-cream)}
 
-/* بطاقة ورقية بارزة — بديل البطاقة الكحلية حين يحمل الرأسُ الكحلي */
+/* بطاقة ورقية بارزة — بديل البطاقة الكحلية حين يحمل الرأس الكحلي */
 .card-soft{margin:0 var(--gap-side);border-radius:var(--r-card);padding:15px 16px;
   background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
   display:flex;flex-direction:column;gap:11px;
@@ -324,27 +324,27 @@
 .card-soft .acts .ghost2:active{transform:translateY(1px)}
 
 /* عناوين الأقسام — تمييز بلا كحلي (قرار المستخدم 2026-08-27):
-   شريط عنبري قصير + نصّ ترابي، فتتميّز كل بطاقة عن أختها بلا منافسة الرأس. */
+   شريط عنبري قصير + نص ترابي، فتتميز كل بطاقة عن أختها بلا منافسة الرأس. */
 .sect{align-items:center}
 .sect .h{font-size:14px;font-weight:700;color:var(--shouba-text-muted);
   display:flex;align-items:center;gap:8px;letter-spacing:.1px}
 .sect .h::before{content:"";width:4px;height:15px;border-radius:3px;background:var(--shouba-amber-deep);flex:none}
 
-/* روح الرأس (معتمد 2026-08-27 — الخيار ج): تدرّج كحلي + صدى المجلّد همساً
-   + زوايا سفلية وظلّ فيصير سطحاً مستقلاً + حافة عنبرية + حلقة حول الشعار. */
+/* روح الرأس (معتمد 2026-08-27 — الخيار ج): تدرج كحلي + صدى المجلد همسا
+   + زوايا سفلية وظل فيصير سطحا مستقلا + حافة عنبرية + حلقة حول الشعار. */
 .topbar{background:linear-gradient(180deg,#1B5183 0%, var(--shouba-navy) 58%, #123A5E 100%);
   border-radius:0 0 22px 22px;border-bottom:2px solid var(--shouba-amber);
   box-shadow:0 6px 16px rgba(18,58,94,.28);position:fixed;overflow:hidden}
-/* صدى المجلّد — توقيع العلامة، من الطرف الأيسر بعيداً عن الشعار (شفافية ١٦٪ ضمن حدّ الدليل) */
+/* صدى المجلد — توقيع العلامة، من الطرف الأيسر بعيدا عن الشعار (شفافية ١٦٪ ضمن حد الدليل) */
 .topbar::before{content:"";position:absolute;left:-30px;bottom:-18px;width:200px;height:78px;pointer-events:none;
   background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(3);opacity:.16}
 .topbar > *{position:relative;z-index:1}
 .topbar .tbcrest{box-shadow:0 0 0 2px var(--shouba-amber)}
-/* فسحة بين عنوان القسم وبطاقته — كان ملتصقاً بها (لاحظه المستخدم على جهازه 2026-08-27) */
+/* فسحة بين عنوان القسم وبطاقته — كان ملتصقا بها (لاحظه المستخدم على جهازه 2026-08-27) */
 .sect{margin-bottom:11px}
 
-/* ===== جدول حصص اليوم (معتمد 2026-09-01) — شارة بسطرين لكل معلّم =====
-   الاسم الأخير محاذىً لليمين · تحته المادة والصف · والحصة الجارية مظلَّلة بكاملها.
+/* ===== جدول حصص اليوم (معتمد 2026-09-01) — شارة بسطرين لكل معلم =====
+   الاسم الأخير محاذى لليمين · تحته المادة والصف · والحصة الجارية مظللة بكاملها.
    يقبل صفوف الفرص (.brk) — أوقاتها تأتي من جدول المدرسة. */
 .per{padding:10px 13px;border-bottom:1px solid rgba(226,215,194,.75)}
 .per:last-child{border-bottom:0}
@@ -363,15 +363,15 @@
 .per .ch .l2 .cl{color:var(--shouba-amber-deep);font-family:var(--font-num);font-weight:700}
 .per .freechip{align-self:center;font-size:10.5px;font-weight:700;color:var(--shouba-label);
   background:rgba(120,98,66,.08);border-radius:9px;padding:6px 10px}
-/* صفّ الفرصة — هادئ يميّزه عن الحصص */
+/* صف الفرصة — هادئ يميزه عن الحصص */
 .per.brk{background:rgba(120,98,66,.05)}
 .per.brk .top .ttl{color:var(--shouba-text-muted)}
 .per.brk.now{background:rgba(22,69,110,.10)}
 
-/* طيّ الجدول (معتمد 2026-09-05) — لا يُفتح إلّا ما يعني المستخدم الآن:
-   قبل الدوام: لقاء الصباح والحصة الأولى · أثناءه: الجارية وحدها، فتُطوى
-   السابقةُ فوقها والتاليةُ تحتها. وزرٌّ أسفل الجدول يفرده كاملاً.
-   الطيّ حالةٌ عامّة (.fold)، و«الماضية» (.past) وصفٌ زمنيّ يبهت وحده. */
+/* طي الجدول (معتمد 2026-09-05) — لا يفتح إلا ما يعني المستخدم الآن:
+   قبل الدوام: لقاء الصباح والحصة الأولى · أثناءه: الجارية وحدها، فتطوى
+   السابقة فوقها والتالية تحتها. وزر أسفل الجدول يفرده كاملا.
+   الطي حالة عامة (.fold)، و«الماضية» (.past) وصف زمني يبهت وحده. */
 .per.fold{padding:7px 13px;cursor:pointer}
 .per.fold .pairs{display:none}
 .per.fold .top .cnt::after{content:" ⌄";color:var(--shouba-hint)}
@@ -381,13 +381,13 @@
 .per.past{opacity:.72}
 .per.past.open{opacity:1}
 
-/* زرّ فرد الجدول — شريط أسفل الجدول لا زرٌّ عائم، فلا يأخذ مساحة من العمل */
+/* زر فرد الجدول — شريط أسفل الجدول لا زر عائم، فلا يأخذ مساحة من العمل */
 .tblmore{width:100%;border:0;cursor:pointer;font-family:var(--font-ar);
   font-size:12px;font-weight:700;color:var(--shouba-link);
   background:rgba(120,98,66,.06);padding:11px 13px;text-align:center}
 
-/* لون لكل معلّم — ليُتتبَّع في الجدول المفرود بنظرة (طلب المستخدم 2026-09-05).
-   ألوان خافتة من عالم الورق، والتمييز بحافّة الشارة واسم المعلّم لا بمساحة صارخة. */
+/* لون لكل معلم — ليتتبع في الجدول المفرود بنظرة (طلب المستخدم 2026-09-05).
+   ألوان خافتة من عالم الورق، والتمييز بحافة الشارة واسم المعلم لا بمساحة صارخة. */
 .per .ch{border-inline-start:2.5px solid var(--tc, transparent);background:var(--tb, rgba(22,69,110,.08))}
 .per .ch .nm{color:var(--tc, var(--shouba-navy))}
 .per .ch.t0{--tc:#16456E;--tb:rgba(22,69,110,.10)}
@@ -399,7 +399,7 @@
 .per .ch.t6{--tc:#2F7D74;--tb:rgba(47,125,116,.13)}
 .per .ch.t7{--tc:#7A5C3A;--tb:rgba(122,92,58,.14)}
 
-/* تنبيه المراقبة داخل صفّ الفرصة — «مراقبة الشعبة اليوم» */
+/* تنبيه المراقبة داخل صف الفرصة — «مراقبة الشعبة اليوم» */
 .per .duty{display:flex;align-items:center;gap:7px;margin-top:7px;padding:7px 10px;border-radius:10px;
   background:rgba(232,163,61,.14);border-inline-start:3px solid var(--shouba-amber);
   font-size:11.5px;font-weight:700;color:var(--shouba-amber-deep)}
@@ -408,77 +408,77 @@
 .per .state{font-size:10.5px;font-weight:700;color:var(--shouba-label);
   background:rgba(120,98,66,.10);border-radius:7px;padding:2px 7px}
 .per.now .state{color:#fff;background:var(--shouba-navy)}
-/* استواء أعمدة صفّ الحصة: العنوان والوقت والحالة بعروض ثابتة فتصطفّ رأسياً في كل الجدول */
+/* استواء أعمدة صف الحصة: العنوان والوقت والحالة بعروض ثابتة فتصطف رأسيا في كل الجدول */
 .per .top .ttl{width:88px;flex:none}
 .per .top .tm{width:42px;flex:none}
 .per .top .state{width:66px;flex:none;text-align:center}
 .per .top .state.is-empty{background:transparent}
-/* الحصة الجارية: وقتها مظلَّل بالكحلي و«الآن» بجانبه (قرار المستخدم 2026-09-01) */
+/* الحصة الجارية: وقتها مظلل بالكحلي و«الآن» بجانبه (قرار المستخدم 2026-09-01) */
 .per.now .top .tm{background:var(--shouba-navy);color:var(--shouba-cream);border-radius:7px;padding:2px 0;font-weight:700}
 .per.now .top .state{background:transparent;color:var(--shouba-navy);width:auto;padding:0}
-/* «الآن» داخل تظليل الوقت لا بجانبه — والحافّة اليمنى تبقى مستوية مع بقيّة الصفوف */
+/* «الآن» داخل تظليل الوقت لا بجانبه — والحافة اليمنى تبقى مستوية مع بقية الصفوف */
 .per.now .top .tm{width:auto;padding:3px 9px;display:inline-flex;align-items:center;gap:6px}
 .per.now .top .tm em{font-style:normal;font-family:var(--font-ar);font-size:10.5px;font-weight:700;opacity:.92}
-/* عدد المعلّمين في موضع واحد بكل الصفوف — المنتهية والقادمة والجارية سواء */
-.per .top .cnt{flex:none;width:88px;text-align:start;margin-inline-start:auto}   /* flex:none وإلا انكمشت في الصفّ الجاري فاختلّ الموضع */
-/* الصفّ الجاري يحمل عناصر أكثر (شارة الوقت + العدّاد) فكان يفيض فيختلّ الاصطفاف:
-   نُخفي خانة الحالة الفارغة فيه، ونضبط عرض العدّاد والعدد. */
+/* عدد المعلمين في موضع واحد بكل الصفوف — المنتهية والقادمة والجارية سواء */
+.per .top .cnt{flex:none;width:88px;text-align:start;margin-inline-start:auto}   /* flex:none وإلا انكمشت في الصف الجاري فاختل الموضع */
+/* الصف الجاري يحمل عناصر أكثر (شارة الوقت + العداد) فكان يفيض فيختل الاصطفاف:
+   نخفي خانة الحالة الفارغة فيه، ونضبط عرض العداد والعدد. */
 .per.now .top .state.is-empty{display:none}
 .per .top .left{flex:none;font-size:10.5px}
 .per .top .ttl{width:82px}
 .per .top .cnt{width:80px}
-/* ضبط نهائي لعرض الأعمدة كي لا يفيض الصفّ الجاري (المتاح ٢٩٧px) */
+/* ضبط نهائي لعرض الأعمدة كي لا يفيض الصف الجاري (المتاح ٢٩٧px) */
 .per .top{gap:6px}
 .per .top .ttl{width:80px}
 .per .top .cnt{width:74px}
 
-/* ===== توحيد صفّ الجدول نهائياً (قرار المستخدم 2026-09-01) =====
-   [العنوان] [الوقت — يُظلَّل للجارية وحدها ومعه «الآن»] [الحالة: «باقي …» ← «انتهت»] [العدد أقصى اليسار] */
+/* ===== توحيد صف الجدول نهائيا (قرار المستخدم 2026-09-01) =====
+   [العنوان] [الوقت — يظلل للجارية وحدها ومعه «الآن»] [الحالة: «باقي …» ← «انتهت»] [العدد أقصى اليسار] */
 .per .top{gap:5px}
 .per .top .ttl{width:78px}
 .per .top .state{width:70px;flex:none;text-align:center}
 .per .top .cnt{width:66px;flex:none;text-align:end;margin-inline-start:auto}
 .per.now .top .tm{padding:3px 7px}
 .per.now .top .state{display:inline-block;width:70px;background:transparent;color:var(--shouba-amber-deep);padding:0;font-weight:700}
-/* عرض ثابت لعمود الوقت في كل الصفوف (حتى المظلَّل) وإلّا أزاح عمود الحالة */
+/* عرض ثابت لعمود الوقت في كل الصفوف (حتى المظلل) وإلا أزاح عمود الحالة */
 .per .top .tm{width:72px;text-align:center;padding:2px 0}
 .per.now .top .tm{width:72px;padding:3px 0;justify-content:center}
 .per .top .state{width:64px}
-.per.now .top .state{width:64px}   /* توحيد عرض عمود الحالة حتى في الصفّ الجاري */
-/* سهم الطيّ يُحجز مكانه في كل الصفوف (مخفيّ حيث لا طيّ) وإلّا أزاح نصّ العدد ٩px
+.per.now .top .state{width:64px}   /* توحيد عرض عمود الحالة حتى في الصف الجاري */
+/* سهم الطي يحجز مكانه في كل الصفوف (مخفي حيث لا طي) وإلا أزاح نص العدد ٩px
    في الصفوف المنتهية وحدها — رصده المستخدم على جهازه. */
 .per .top .cnt::after{content:" ⌄";visibility:hidden;color:var(--shouba-hint)}
 .per.fold .top .cnt::after{visibility:visible}
 .per.fold.open .top .cnt::after{content:" ⌃";visibility:visible}
 
 /* توحيد عمود الوقت: الأرقام في خانة فرعية ثابتة، و«الآن» في خانتها — فتتحاذى الأرقام
-   في كل الصفوف سواء ظُلِّل الصفّ أم لا (قرار المستخدم 2026-09-01). */
+   في كل الصفوف سواء ظلل الصف أم لا (قرار المستخدم 2026-09-01). */
 .per .top .tm{display:flex;align-items:center;gap:0;width:72px;padding:2px 0;text-align:initial}
 .per .top .tm .hh{width:46px;flex:none;text-align:center}
 .per .top .tm em{width:26px;flex:none;font-style:normal;font-family:var(--font-ar);
   font-size:10.5px;font-weight:700;text-align:center}
 .per.now .top .tm{width:72px;padding:3px 0;justify-content:flex-start}
-/* عمود الوقت يقترب من عنوان الحصة، ويُترك فراغ واضح قبل عمود الحالة كي لا يتداخل
+/* عمود الوقت يقترب من عنوان الحصة، ويترك فراغ واضح قبل عمود الحالة كي لا يتداخل
    التظليل مع «انتهت / باقي» عند إضافة «الآن» (قرار المستخدم 2026-09-01). */
 .per .top{gap:0}
 .per .top .ttl{width:76px;margin-inline-end:2px}
 .per .top .tm{margin-inline-end:16px}
-/* «الآن» تُزاح عن حافّة التظليل اليسرى قليلاً (عرض الخانة الكلّي ٧٢px كما هو) */
+/* «الآن» تزاح عن حافة التظليل اليسرى قليلا (عرض الخانة الكلي ٧٢px كما هو) */
 .per .top .tm .hh{width:41px}
 .per .top .tm em{margin-inline-end:5px}
-.per .top .tm em{width:24px}   /* يترك ~٧px بين «الآن» وحافّة التظليل اليسرى */
+.per .top .tm em{width:24px}   /* يترك ~٧px بين «الآن» وحافة التظليل اليسرى */
 
 /* ===================================================================
    رافدة القسم (معتمد 2026-09-01) — تمييز كل بطاقة عن أختها بلمسة واحدة
-   الفكرة: شريط العنوان العنبري لم يعد مربّعاً منفصلاً، بل صار **رأس رافدة**
+   الفكرة: شريط العنوان العنبري لم يعد مربعا منفصلا، بل صار **رأس رافدة**
    تنزل في الهامش بمحاذاة البطاقة ثم تتلاشى: عنوان ← رافدة ← بطاقة كتلة واحدة.
-   لا تضيف ارتفاعاً ولا تقتطع من عرض البطاقة (المبدأ: الوظيفة قبل الشكل).
-   وفائدة تبعية: نصّ العنوان صار على محاذاة حافّة البطاقة تماماً.
+   لا تضيف ارتفاعا ولا تقتطع من عرض البطاقة (المبدأ: الوظيفة قبل الشكل).
+   وفائدة تبعية: نص العنوان صار على محاذاة حافة البطاقة تماما.
 
    **لون لكل قسم (2026-09-01):** اللون هنا **دلالة لا زينة** — كحلي لليوم الجاري ·
-   أزرق فاتح للأسبوع (مدى أوسع) · عنبري لإنجاز المنهج · أحمر لما ينتظر إجراءً،
-   ويهدأ إلى الترابي حين لا شيء ينتظر (فلا ينذر الأحمرُ بلا سبب).
-   التلاشي بقناع لا بتدرّج ألوان — فيبقى اللون واحداً متغيّراً واحداً.
+   أزرق فاتح للأسبوع (مدى أوسع) · عنبري لإنجاز المنهج · أحمر لما ينتظر إجراء،
+   ويهدأ إلى الترابي حين لا شيء ينتظر (فلا ينذر الأحمر بلا سبب).
+   التلاشي بقناع لا بتدرج ألوان — فيبقى اللون واحدا متغيرا واحدا.
    =================================================================== */
 .board > section{position:relative;--rail:var(--shouba-navy)}
 .board > section[data-rail="week"]{--rail:var(--shouba-link)}
@@ -488,15 +488,15 @@
 .board .sect .h::before{display:none}          /* الشريط انتقل إلى رأس الرافدة */
 .board > section::before{
   content:"";position:absolute;pointer-events:none;
-  inset-inline-start:12px;                     /* في الهامش الفارغ — بعيداً عن البطاقة ١٢px */
+  inset-inline-start:12px;                     /* في الهامش الفارغ — بعيدا عن البطاقة ١٢px */
   top:2px;bottom:6px;width:2.5px;border-radius:2px;
   background:var(--rail);
   -webkit-mask-image:linear-gradient(180deg,#000 0,#000 18px,rgba(0,0,0,.34) 32px,rgba(0,0,0,.30) 60px,rgba(0,0,0,0) 100%);
           mask-image:linear-gradient(180deg,#000 0,#000 18px,rgba(0,0,0,.34) 32px,rgba(0,0,0,.30) 60px,rgba(0,0,0,0) 100%);
 }
 
-/* تبويب قيد الإعداد (2026-09-05) — يبقى ظاهراً ليُعرف شكل المنصّة، ولا يفتح صفحة.
-   الضغطة تصرّح بحاله بدل أن تُوقع المستخدم في نموذج قديم أو صفحة فارغة.
+/* تبويب قيد الإعداد (2026-09-05) — يبقى ظاهرا ليعرف شكل المنصة، ولا يفتح صفحة.
+   الضغطة تصرح بحاله بدل أن توقع المستخدم في نموذج قديم أو صفحة فارغة.
    ⚠ لا opacity على سطح تفاعلي — التمييز باللون وحده (قاعدة الهوية). */
 .tab.soon{color:var(--shouba-hint)}
 .tab.soon svg{opacity:1}
@@ -516,10 +516,10 @@
 .setnote b{color:var(--shouba-navy);font-weight:700}
 .setver{font-size:11.5px;font-weight:700;color:var(--shouba-hint);text-align:center;
   font-family:var(--font-num);padding:4px 0 2px}
-/* شارة رئيس الشعبة في شريط الجداول — يدرّس أيضاً، ويتميّز عن معلّميه بلا ضجيج */
+/* شارة رئيس الشعبة في شريط الجداول — يدرس أيضا، ويتميز عن معلميه بلا ضجيج */
 .tch.me small{color:var(--shouba-amber-deep)}
 
-/* سطر شخص (معلّم/بند) — مشترك بين اللوحة وشاشة «معلّموك» */
+/* سطر شخص (معلم/بند) — مشترك بين اللوحة وشاشة «معلموك» */
 .titem{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;padding:10px 13px;
   display:flex;align-items:center;gap:10px;width:100%;border:0;text-align:right;font-family:var(--font-ar);
   box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
@@ -532,9 +532,9 @@ button.titem{cursor:pointer}
 .titem .chev{flex:none;color:var(--shouba-hint);font-size:15px;font-weight:700}
 .titem.none .tx small{color:var(--shouba-amber-deep)}
 
-/* قائمة عمودية بفجوة موحّدة (معلّمون · مداخل ملفّ المعلّم) */
+/* قائمة عمودية بفجوة موحدة (معلمون · مداخل ملف المعلم) */
 .vlist{display:flex;flex-direction:column;gap:8px;padding:0 var(--gap-side)}
-/* مدخل في ملفّ المعلّم: عنوان + عدّاده — فيُعرف قبل الضغط أفيه شيء */
+/* مدخل في ملف المعلم: عنوان + عداده — فيعرف قبل الضغط أفيه شيء */
 .entry{width:100%;border:0;cursor:pointer;text-align:right;font-family:var(--font-ar);
   background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;
   padding:14px 15px;display:flex;align-items:center;gap:10px;
@@ -551,10 +551,10 @@ button.titem{cursor:pointer}
 .subrow b{flex:1;font-size:13.5px;font-weight:700;color:var(--shouba-navy)}
 .subrow .cls{font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
 .subrow .pc{font-size:11px;font-weight:700;color:var(--shouba-label);white-space:nowrap}
-/* وضع المعلّم الواحد: يُفتح جدوله من ملفّه، فلا شريط معلّمين ولا تنقّل بينهم */
+/* وضع المعلم الواحد: يفتح جدوله من ملفه، فلا شريط معلمين ولا تنقل بينهم */
 body.solo .tsel{display:none}
 
-/* موعد في لوحة الرزنامة — نوعه بلونه وحافّته، وحذفه بضغطة */
+/* موعد في لوحة الرزنامة — نوعه بلونه وحافته، وحذفه بضغطة */
 .evrow{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;
   background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
   border-inline-start:3px solid var(--shouba-navy);
@@ -566,50 +566,50 @@ body.solo .tsel{display:none}
 .evrow.t-exam{border-inline-start-color:var(--shouba-error)}
 .evrow.t-meet{border-inline-start-color:var(--shouba-navy)}
 .evrow.t-act{border-inline-start-color:var(--shouba-amber)}
-/* خانة اليوم الفارغة تدعو إلى الإضافة بدل أن تكون شرطة صمّاء */
+/* خانة اليوم الفارغة تدعو إلى الإضافة بدل أن تكون شرطة صماء */
 .wcol{cursor:pointer}
 .wcol .wq{color:var(--shouba-hint);font-weight:700}
 
-/* تقليب الأسابيع في رزنامة اللوحة — سهمان على جانبَي الأسبوع */
+/* تقليب الأسابيع في رزنامة اللوحة — سهمان على جانبي الأسبوع */
 .wkarrow{border:0;cursor:pointer;background:transparent;font-family:var(--font-ar);
   color:var(--shouba-link);font-size:17px;font-weight:700;line-height:1;
   width:26px;height:26px;border-radius:9px;display:grid;place-items:center}
 .wkarrow:active{background:rgba(62,127,180,.12)}
 
-/* صفّ الأسبوع: سهمان على جانبيه دلالةً على السحب، والمصفوفة تملأ ما بينهما */
+/* صف الأسبوع: سهمان على جانبيه دلالة على السحب، والمصفوفة تملأ ما بينهما */
 .wkrow{display:flex;align-items:center;gap:2px;padding:0 6px}
 .wkrow .wmx{flex:1;min-width:0;padding:0}
 .wkrow .wkarrow{flex:none}
 .wmx{touch-action:pan-y;user-select:none;-webkit-user-select:none}
-/* رقم النسخة في مربّع الرأس — يُقرأ دائماً فيُسأل عنه عند أي شكوى */
-/* طرف الرأس: زرّ الإعدادات ورقم النسخة تحته ملصقاً — كلٌّ بوظيفته */
+/* رقم النسخة في مربع الرأس — يقرأ دائما فيسأل عنه عند أي شكوى */
+/* طرف الرأس: زر الإعدادات ورقم النسخة تحته ملصقا — كل بوظيفته */
 .topbar .tbend{flex:none;display:flex;flex-direction:column;align-items:center;gap:1px}
 .topbar .tbend .iconbtn{width:30px;height:30px;border-radius:11px;border:0;cursor:pointer;
   color:var(--shouba-cream);display:grid;place-items:center;padding:0}
 .topbar .tbend .verlbl{font-family:var(--font-num);font-size:8.5px;font-weight:700;
   letter-spacing:.2px;color:var(--shouba-navy-light);line-height:1}
-/* الدلالة على موضع الإدخال داخل حالة الفراغ — بلون النصّ فوقها لا أبرز منه */
+/* الدلالة على موضع الإدخال داخل حالة الفراغ — بلون النص فوقها لا أبرز منه */
 .empty .goto{display:inline-block;margin-top:8px;color:var(--shouba-text-muted);font-weight:600}
 
-/* تنبيه المخزن المستقلّ — يظهر في التطبيق المثبَّت وحده حين يكون فارغاً */
+/* تنبيه المخزن المستقل — يظهر في التطبيق المثبت وحده حين يكون فارغا */
 .sepnote{margin:16px var(--gap-side) 0;font-size:12.5px;font-weight:500;
   color:var(--shouba-text-muted);line-height:1.9;
   background:rgba(232,163,61,.13);border-inline-start:3px solid var(--shouba-amber);
   border-radius:12px;padding:12px 14px}
 .sepnote b{display:block;color:var(--shouba-amber-deep);font-weight:700;margin-bottom:2px}
 
-/* رقم النسخة داخل سطر نصّي (شاشة الدخول) — باهتٌ صغير لا يزاحم العنوان */
+/* رقم النسخة داخل سطر نصي (شاشة الدخول) — باهت صغير لا يزاحم العنوان */
 .vernum{font-family:var(--font-num);font-size:11px;font-weight:700;letter-spacing:.2px;
   color:var(--shouba-navy-light);opacity:.75}
 
-/* رقم النسخة في شريط كل شاشة — وسمٌ باهت صغير لا يزاحم شيئاً.
-   في الشريط العلويّ (كحل) عنصرٌ مستقلّ في طرفه؛ وفي شريط المعالج ملحقٌ بسطر الخطوة. */
+/* رقم النسخة في شريط كل شاشة — وسم باهت صغير لا يزاحم شيئا.
+   في الشريط العلوي (كحل) عنصر مستقل في طرفه؛ وفي شريط المعالج ملحق بسطر الخطوة. */
 .vertag{font-family:var(--font-num);font-size:9px;font-weight:700;letter-spacing:.2px;
   line-height:1;flex:none;color:var(--shouba-hint);opacity:.85;pointer-events:none}
 .topbar .vertag{color:var(--shouba-navy-light);opacity:.7}
 .prog .lbl .vertag{margin-inline-start:8px;font-size:10px;color:var(--shouba-hint)}
 
-/* وسمٌ بجانب المادّة: «اختيار حرّ» أو «مشتركة» — بدل تكرار السطر لكل مسار */
+/* وسم بجانب المادة: «اختيار حر» أو «مشتركة» — بدل تكرار السطر لكل مسار */
 .subj .free{flex:none;order:2;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:999px;
   white-space:nowrap;background:transparent;color:var(--shouba-label);
   box-shadow:inset 0 0 0 1px var(--shouba-line)}
@@ -618,24 +618,24 @@ body.solo .tsel{display:none}
 
 
 /* ═══ استجابة اللمس (مراجعة الآيباد 2026-09-08) ═══════════════════════
-   معيار آبل ٤٤×٤٤ نقطة. وأزرارنا الصغيرة تمرّ على الجوّال لضيق الشاشة،
-   وتصعب على اللوح لأن اليد أبعد والإصبع أعرض على شاشةٍ ممسوكة.
-   ⚠ نوسّع **منطقة اللمس** بعنصرٍ زائف شفّاف، ولا نوسّع الزرّ:
-     فيبقى الشكل كما اعتُمد ويكبر الهدف. */
+   معيار آبل ٤٤×٤٤ نقطة. وأزرارنا الصغيرة تمر على الجوال لضيق الشاشة،
+   وتصعب على اللوح لأن اليد أبعد والإصبع أعرض على شاشة ممسوكة.
+   ⚠ نوسع **منطقة اللمس** بعنصر زائف شفاف، ولا نوسع الزر:
+     فيبقى الشكل كما اعتمد ويكبر الهدف. */
 .wkarrow, .evrow .del, .topbar .tbend .iconbtn{position:relative}
 .wkarrow::after, .evrow .del::after, .topbar .tbend .iconbtn::after{
   content:""; position:absolute; inset:-9px; border-radius:inherit}
 .topbar .tbend .iconbtn::after{inset:-7px}
 
-/* ═══ لوحة المفاتيح لا تحجب زرّ الإجراء ═══════════════════════════════
-   على iOS يبقى الثابت (fixed) في مكانه حين تُفتح لوحة المفاتيح فتغطّيه.
-   نرفع الزرَّ واللوحةَ السفلية بمقدار ما تشغله — يُقاس من المساحة المرئية
-   في components.js ويُكتب في --kb. و‍.sheet لا تُحرَّك بـtransform لأن
-   انزلاقها مبنيّ عليه، فالرفع بـbottom في كليهما. */
+/* ═══ لوحة المفاتيح لا تحجب زر الإجراء ═══════════════════════════════
+   على iOS يبقى الثابت (fixed) في مكانه حين تفتح لوحة المفاتيح فتغطيه.
+   نرفع الزر واللوحة السفلية بمقدار ما تشغله — يقاس من المساحة المرئية
+   في components.js ويكتب في --kb. و‍.sheet لا تحرك بـtransform لأن
+   انزلاقها مبني عليه، فالرفع بـbottom في كليهما. */
 .foot{bottom:var(--kb, 0px)}
 .sheet{bottom:var(--kb, 0px)}
 
-/* شريط النسخة الأحدث — ينتظر ضغطةً ولا يقاطع، ويُوضع أسفل الرأس لا فوقه */
+/* شريط النسخة الأحدث — ينتظر ضغطة ولا يقاطع، ويوضع أسفل الرأس لا فوقه */
 .newver{position:fixed;left:50%;transform:translateX(-50%);z-index:80;
   display:flex;align-items:center;gap:10px;border:0;
   padding:9px 12px 9px 16px;border-radius:999px;font-family:var(--font-ar);
@@ -648,19 +648,19 @@ body.solo .tsel{display:none}
 .newver b:active{transform:translateY(1px)}
 .newver .x{font-style:normal;font-size:17px;font-weight:700;line-height:1;cursor:pointer;
   color:var(--shouba-navy-light);padding:0 4px;position:relative}
-.newver .x::after{content:"";position:absolute;inset:-12px}   /* هدف لمسٍ ٤٤ */
+.newver .x::after{content:"";position:absolute;inset:-12px}   /* هدف لمس ٤٤ */
 .newver.busy{opacity:.7;pointer-events:none}
 @keyframes newverIn{from{opacity:0;transform:translateX(-50%) translateY(-10px)}}
 @media (prefers-reduced-motion:reduce){.newver{animation:none}}
 
-/* شريط فشل الحفظ — صامتٌ حين ينجح، صريحٌ حين يفشل */
+/* شريط فشل الحفظ — صامت حين ينجح، صريح حين يفشل */
 .syncbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + var(--kb, 0px));z-index:85;
   max-width:calc(var(--screen-max) - 32px);width:calc(100% - 32px);
   font-family:var(--font-ar);font-size:12px;font-weight:600;line-height:1.6;text-align:center;
   padding:10px 14px;border-radius:14px;background:var(--shouba-error);color:#FFF3F1;
   box-shadow:0 8px 22px rgba(140,50,40,.28)}
 
-/* معاينة الاستيراد — ما في الملفّ قبل أن يحلّ محلّ شيء (2026-09-10).
+/* معاينة الاستيراد — ما في الملف قبل أن يحل محل شيء (2026-09-10).
    التسميات بلون التسمية، والقيم بالكحلي (لغة اللون المعتمدة). */
 .impv{display:flex;flex-direction:column;gap:12px}
 .impv .rows{display:flex;flex-direction:column;background:var(--shouba-canvas);border-radius:var(--r-input);
@@ -673,7 +673,7 @@ body.solo .tsel{display:none}
 .impv .warn{font-size:12.5px;font-weight:600;line-height:1.7;color:var(--shouba-error)}
 
 /* ═══ المزامنة والانتقال (2026-09-10) ═══════════════════════════ */
-/* الأشرطة العائمة سطرٌ واحد — كان «حُدّثت شعبتك من جهازٍ آخر» ينكسر ثلاثة أسطر على ٣٧٥px */
+/* الأشرطة العائمة سطر واحد — كان «حدثت شعبتك من جهاز آخر» ينكسر ثلاثة أسطر على ٣٧٥px */
 .newver{max-width:calc(100vw - 24px)}
 .newver span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .impv .lead{font-size:13px;line-height:1.8;color:var(--shouba-text-muted)}
@@ -688,7 +688,7 @@ body.solo .tsel{display:none}
 .moved ol{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:8px}
 .moved li{font-size:13px;line-height:1.7;color:var(--shouba-text-muted)}
 .moved li b{color:var(--shouba-navy)}
-/* رابطٌ نصّيّ بهدف لمسٍ كامل — لما هو بديلٌ لا فعلٌ رئيسي */
+/* رابط نصي بهدف لمس كامل — لما هو بديل لا فعل رئيسي */
 .linkbtn{border:0;background:none;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;
   color:var(--shouba-link);min-height:44px;padding:0 2px;display:inline-flex;align-items:center}
 .impentry{display:flex;align-items:center;justify-content:center;gap:4px;font-size:13px;color:var(--shouba-label)}

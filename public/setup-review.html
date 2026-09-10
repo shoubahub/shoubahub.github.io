@@ -12,16 +12,16 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=40" />
-<link rel="stylesheet" href="shell.css?v=40" />
-<link rel="stylesheet" href="components.css?v=40" />
-<link rel="stylesheet" href="frame.css?v=40" />
-<!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصّة لهذه الشاشة -->
+<link rel="stylesheet" href="identity/tokens.css?v=41" />
+<link rel="stylesheet" href="shell.css?v=41" />
+<link rel="stylesheet" href="components.css?v=41" />
+<link rel="stylesheet" href="frame.css?v=41" />
+<!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصة لهذه الشاشة -->
 </head>
 <body class="framed">
  <div class="device"><div class="viewport">
   <div class="screen has-foot">
-    <!-- فاصل بين المجموعتين — لا يُحتسب خطوة، فلا نقاط تقدّم -->
+    <!-- فاصل بين المجموعتين — لا يحتسب خطوة، فلا نقاط تقدم -->
     <div class="navrow">
       <div class="brand">
         <img src="identity/assets/logo-vec-color.svg" alt="شعبة" />
@@ -37,8 +37,8 @@
 
     <!-- العنوان خارج .content — موضعه ثابت في كل الشاشات (قاعدة LAYOUT) -->
     <div class="head">
-      <div class="h">تمّت المرحلة الأولى من بناء شعبتك</div>
-      <div class="s">راجِع ما أدخلت، واضغط أي سطر لتعديله. ثم ننتقل إلى محتوى شعبتك.</div>
+      <div class="h">تمت المرحلة الأولى من بناء شعبتك</div>
+      <div class="s">راجع ما أدخلت، واضغط أي سطر لتعديله. ثم ننتقل إلى محتوى شعبتك.</div>
     </div>
 
     <div class="content center">
@@ -51,17 +51,17 @@
   </div>
  </div></div>
 
-<script src="refdata.js?v=40"></script>
-<script src="derive.js?v=40"></script>
-<script src="build.js?v=40"></script>
-<script src="components.js?v=40"></script>
+<script src="refdata.js?v=41"></script>
+<script src="derive.js?v=41"></script>
+<script src="build.js?v=41"></script>
+<script src="components.js?v=41"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
 
   var d = load();
   var DASH = '—';
-  /* تاريخ أوّل يوم دراسي للطلاب — يُعرض في المراجعة ليُكتشف الخطأ فيه مبكّراً */
+  /* تاريخ أول يوم دراسي للطلاب — يعرض في المراجعة ليكتشف الخطأ فيه مبكرا */
   function startText(d){
     var v = (d.termStart && d.term) ? d.termStart[d.term] : '';
     if(!v) return '';
@@ -75,7 +75,7 @@
     { to:'setup-wizard.html',   main: d.schoolName || DASH,                    sub: j('المدرسة', d.region, d.schoolType) },
     { to:'setup-wizard-2.html', main: d.department || DASH,                    sub: j('الشعبة', d.stage, (d.subjects && d.subjects.length) ? d.subjects.length + ' مواد' : '') },
     { to:'setup-wizard-3.html', main: d.year || DASH,                          sub: j('العام الدراسي', d.term, startText(d)) },
-    { to:'setup-wizard-4.html', main: d.principal || 'لم تُضِف الإشراف بعد',   sub: j('الإشراف', d.supervisor || 'اختياري — لك إكماله لاحقاً') }
+    { to:'setup-wizard-4.html', main: d.principal || 'لم تضف الإشراف بعد',   sub: j('الإشراف', d.supervisor || 'اختياري — لك إكماله لاحقا') }
   ];
 
   var CHEV = '<svg width="15" height="15" viewBox="0 0 20 20" fill="none">'
@@ -93,7 +93,7 @@
   });
 
   document.getElementById('next').addEventListener('click', function(){
-    location.href = 'setup-wizard-5.html';   // ش⑤ المعلّمون — تُبنى تالياً
+    location.href = 'setup-wizard-5.html';   // ش⑤ المعلمون — تبنى تاليا
   });
 </script>
 </body>

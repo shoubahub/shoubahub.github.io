@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=40" />
-<link rel="stylesheet" href="shell.css?v=40" />
-<link rel="stylesheet" href="components.css?v=40" />
-<link rel="stylesheet" href="frame.css?v=40" />
+<link rel="stylesheet" href="identity/tokens.css?v=41" />
+<link rel="stylesheet" href="shell.css?v=41" />
+<link rel="stylesheet" href="components.css?v=41" />
+<link rel="stylesheet" href="frame.css?v=41" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -26,12 +26,12 @@
   .calopt span{font-size:13px;font-weight:600;color:var(--shouba-ink);line-height:1.5}
   .calopt small{display:block;font-size:11px;font-weight:500;color:var(--shouba-hint);margin-top:2px}
   .more{font-size:11.5px;color:var(--shouba-hint);padding:0 var(--gap-side)}
-  /* السطر ذاته شكلاً، وزرٌّ فعلاً: ارتفاع ٤٤ للمس ولون أوضح قليلاً كي يُقرأ أنه يُضغط */
+  /* السطر ذاته شكلا، وزر فعلا: ارتفاع ٤٤ للمس ولون أوضح قليلا كي يقرأ أنه يضغط */
   .more.tappable{display:flex;align-items:center;gap:6px;min-height:44px;cursor:pointer;
     color:var(--shouba-link);font-weight:600;-webkit-tap-highlight-color:transparent}
   .more.tappable .chev{font-size:15px;font-weight:700;line-height:1}
   .more.tappable:active{opacity:.6}
-  /* سطر الطلب صار باباً: مؤشّر ونبضة ضغط، بلا تغيير في شكله */
+  /* سطر الطلب صار بابا: مؤشر ونبضة ضغط، بلا تغيير في شكله */
   .titem.go{cursor:pointer;-webkit-tap-highlight-color:transparent}
   .titem.go:active{transform:translateY(1px);opacity:.85}
   .invite{margin:0 var(--gap-side);font-size:12.5px;color:var(--shouba-text-muted);line-height:1.8;
@@ -46,9 +46,9 @@
         <b id="deptName">شعبتك</b>
         <span id="dateLine">—</span>
       </div>
-      <!-- زرّ الإعدادات برمزه، ورقم النسخة تحته **ملصقاً لا زرّاً** (قرار المستخدم
-           2026-09-06): لمّا حمل المربّعُ الرقمَ وحده فقد دلالته على أنه يُضغط،
-           فلم يجد المستخدم الإعدادات. فاستقلّ كلٌّ بوظيفته. -->
+      <!-- زر الإعدادات برمزه، ورقم النسخة تحته **ملصقا لا زرا** (قرار المستخدم
+           2026-09-06): لما حمل المربع الرقم وحده فقد دلالته على أنه يضغط،
+           فلم يجد المستخدم الإعدادات. فاستقل كل بوظيفته. -->
       <div class="tbend">
         <button class="iconbtn" id="settings" aria-label="الإعدادات">
           <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
@@ -72,10 +72,10 @@
           <div class="tbl" id="periods"></div>
         </section>
 
-        <!-- ② مصفوفة الأسبوع — تلي الجدول مباشرةً (قرار المستخدم: أعمال الأسبوع أهمّ) -->
+        <!-- ② مصفوفة الأسبوع — تلي الجدول مباشرة (قرار المستخدم: أعمال الأسبوع أهم) -->
         <section data-rail="week">
           <div class="sect"><div class="h" id="weekTtl">هذا الأسبوع</div><div class="a" id="toWeek">تقويمك الدراسي ›</div></div>
-          <!-- السهمان على جانبَي الأسبوع دلالةً على السحب: اليمين ماضٍ واليسار قادم -->
+          <!-- السهمان على جانبي الأسبوع دلالة على السحب: اليمين ماض واليسار قادم -->
           <div class="wkrow">
             <button class="wkarrow" id="wkPrev" aria-label="الأسبوع السابق">›</button>
             <div class="wmx" id="week"></div>
@@ -98,7 +98,7 @@
         </section>
 
         <!-- البطاقة الورقية: ما يجري الآن / ما ينتظر قرارك.
-             نزلت إلى الأسفل بقرار المستخدم: «أعمال هذا الأسبوع أهمّ، وتكون بعد الجدول». -->
+             نزلت إلى الأسفل بقرار المستخدم: «أعمال هذا الأسبوع أهم، وتكون بعد الجدول». -->
         <div class="card-soft" id="nowCard"></div>
 
       </div>
@@ -112,14 +112,14 @@
     </button>
     <button class="tab" data-go="teachers.html">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 17c0-3 2.7-4.6 6-4.6S16 14 16 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      المعلّمون
+      المعلمون
     </button>
     <button class="tab-add" id="add" aria-label="إضافة">
       <svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#241D06" stroke-width="2.6" stroke-linecap="round"/></svg>
     </button>
     <button class="tab" data-go="records.html">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 9h6M7 12.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      سجلّاتك
+      سجلاتك
     </button>
     <button class="tab" data-go="schedule.html">
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3.5" y="4.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 8.5h13M7 3v3M13 3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -128,11 +128,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=40"></script>
-<script src="refdata.js?v=40"></script>
-<script src="derive.js?v=40"></script>
-<script src="icons.js?v=40"></script>
-<script src="components.js?v=40"></script>
+<script src="build.js?v=41"></script>
+<script src="refdata.js?v=41"></script>
+<script src="derive.js?v=41"></script>
+<script src="icons.js?v=41"></script>
+<script src="components.js?v=41"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -148,27 +148,27 @@
   var weekNo = Shouba.weekNo();     /* null = لا تاريخ · 0 = تمهيدي */
   document.getElementById('deptName').textContent = d.department || 'شعبتك';
 
-  /* سطر الرأس الثاني (معتمد 2026-08-27): اسم رئيس الشعبة · عدد المعلّمين · الفصل · الأسبوع.
-     التاريخ خرج منه بطلب المستخدم — الأسبوع أنفع له يومياً. */
+  /* سطر الرأس الثاني (معتمد 2026-08-27): اسم رئيس الشعبة · عدد المعلمين · الفصل · الأسبوع.
+     التاريخ خرج منه بطلب المستخدم — الأسبوع أنفع له يوميا. */
   (function headLine(){
     var head  = (window.Shouba && Shouba.user().name) || '';
     var tcount = (d.teachers || []).length;
     var term  = d.term === 'الفصل الثاني' ? 'ف٢' : d.term === 'الفصل الأول' ? 'ف١' : '';
     var parts = [];
     if(head)   parts.push('أ. ' + Shouba.shortName(head));
-    /* «معلّم واحد» لا «١ معلّم» — العدد يُصرَّف، والرقم يبرز حيث يكون عدداً */
-    if(tcount === 1)      parts.push('معلّم واحد');
-    else if(tcount === 2) parts.push('معلّمان');
-    else if(tcount)       parts.push('<b class="num">' + tcount + '</b> ' + Shouba.unit(tcount, {one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'}));
+    /* «معلم واحد» لا «١ معلم» — العدد يصرف، والرقم يبرز حيث يكون عددا */
+    if(tcount === 1)      parts.push('معلم واحد');
+    else if(tcount === 2) parts.push('معلمان');
+    else if(tcount)       parts.push('<b class="num">' + tcount + '</b> ' + Shouba.unit(tcount, {one:'معلم',two:'معلمان',few:'معلمين',many:'معلما'}));
     if(term)   parts.push(term);
-    /* الأسبوع لا يُذكر إلّا بسند: بلا تاريخ بداية لا يُعرض شيء، وقبل بدء الطلاب «تمهيدي» */
+    /* الأسبوع لا يذكر إلا بسند: بلا تاريخ بداية لا يعرض شيء، وقبل بدء الطلاب «تمهيدي» */
     if(weekNo === 0)      parts.push('الأسبوع التمهيدي');
     else if(weekNo)       parts.push('الأسبوع <b class="num">' + weekNo + '</b>');
     document.getElementById('dateLine').innerHTML = parts.join(' · ');
   })();
 
   /* شعار المدرسة أو رمز الشعبة في الرأس — يقرأ ما اختاره المستخدم في ش①.
-     بلا اختيار: علامة المنصّة على الكحلي. */
+     بلا اختيار: علامة المنصة على الكحلي. */
   (function paintTopCrest(){
     var el = document.getElementById('tbCrest'), c = d.crest;
     if(c && c.type === 'image') el.innerHTML = '<img src="' + c.data + '" alt="شعار المدرسة" />';
@@ -176,14 +176,14 @@
     else el.innerHTML = '<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
   })();
 
-  /* ===== أسبوع العرض وتواريخ أيامه — يُحسب مبكّراً لأن البطاقة والرزنامة كليهما
-     تقرآن المواعيد **بالتاريخ**. وفي العطلة يتقدّم إلى الأسبوع القادم كعنوان الجدول. */
+  /* ===== أسبوع العرض وتواريخ أيامه — يحسب مبكرا لأن البطاقة والرزنامة كليهما
+     تقرآن المواعيد **بالتاريخ**. وفي العطلة يتقدم إلى الأسبوع القادم كعنوان الجدول. */
   function iso(dt){
     return dt.getFullYear() + '-' + ('0'+(dt.getMonth()+1)).slice(-2) + '-' + ('0'+dt.getDate()).slice(-2);
   }
   var baseSunday = new Date(now);
   baseSunday.setDate(now.getDate() + (isWeekend ? (7 - dayIdx) : -dayIdx));
-  /* تقليب الأسابيع من اللوحة (طلب المستخدم 2026-09-06): الإزاحة تمسّ **الرزنامة
+  /* تقليب الأسابيع من اللوحة (طلب المستخدم 2026-09-06): الإزاحة تمس **الرزنامة
      وحدها** — جدول اليوم والبطاقة يبقيان على اليوم الحقيقي. */
   var weekOffset = 0, sunday, viewWeek, DAY_DATE = {};
   function setWeek(off){
@@ -196,11 +196,11 @@
     });
   }
   setWeek(0);
-  /* مواعيد يومٍ من الأسبوع المعروض: بتاريخه، ومعها القديمة بلا تاريخ */
+  /* مواعيد يوم من الأسبوع المعروض: بتاريخه، ومعها القديمة بلا تاريخ */
   function evOf(day){
     var dt = DAY_DATE[day];
     var list = dt ? Shouba.eventsOnDate(iso(dt)) : [];
-    /* ⚠ القديمة بلا تاريخ تُنسب إلى **الأسبوع الجاري وحده** — وإلّا ظهرت في كل أسبوع تقلّبه */
+    /* ⚠ القديمة بلا تاريخ تنسب إلى **الأسبوع الجاري وحده** — وإلا ظهرت في كل أسبوع تقلبه */
     return weekOffset === 0 ? list.concat(Shouba.legacyEventsOfDay(day)) : list;
   }
 
@@ -221,11 +221,11 @@
   function busyAt(p){ return Shouba.busyAt(viewDay, p); }
   var firstName = Shouba.firstNameOf;
 
-  /* ===== ① جدول حصص اليوم — شارة بسطرين لكل معلّم (معتمد 2026-09-01) =====
-     الاسم الأخير · تحته المادة والصف · والحصة الجارية مظلَّلة بكاملها مع الوقت المتبقّي.
-     يقبل صفوف الفرص: أي عنصر في periodTimes يحمل break:true يُعرض صفَّ فرصة. */
+  /* ===== ① جدول حصص اليوم — شارة بسطرين لكل معلم (معتمد 2026-09-01) =====
+     الاسم الأخير · تحته المادة والصف · والحصة الجارية مظللة بكاملها مع الوقت المتبقي.
+     يقبل صفوف الفرص: أي عنصر في periodTimes يحمل break:true يعرض صف فرصة. */
   /* عنوان الجدول: «جدول حصص اليوم الأحد · ٦/٩» — اليوم وتاريخه بلا سنة (قرار المستخدم) */
-  /* التاريخ يرافق العنوان دائماً — وفي العطلة تاريخ الأحد القادم لا تاريخ اليوم */
+  /* التاريخ يرافق العنوان دائما — وفي العطلة تاريخ الأحد القادم لا تاريخ اليوم */
   var viewDate = new Date(now);
   if(isWeekend) viewDate.setDate(now.getDate() + (7 - dayIdx));
   var dateTxt = viewDate.getDate() + '/' + (viewDate.getMonth()+1);
@@ -236,11 +236,11 @@
 
   var ORD = ['الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة'];
   var lastName  = Shouba.lastName;
-  /* لون ثابت لكل معلّم بحسب ترتيبه في الشعبة — لا يتبدّل بين الحصص ولا بين الأيام */
+  /* لون ثابت لكل معلم بحسب ترتيبه في الشعبة — لا يتبدل بين الحصص ولا بين الأيام */
   var ROSTER = Shouba.roster();
   function toneOf(name){ var i = ROSTER.indexOf(name); return ' t' + ((i < 0 ? 0 : i) % 8); }
   var splitSlot = Shouba.splitSlot;   /* «١١/٢ · الفلسفة» ← { cls, subject } */
-  /* الوقت المتبقّي في الحصة/الفرصة الجارية */
+  /* الوقت المتبقي في الحصة/الفرصة الجارية */
   function leftIn(t){
     var n = new Date(), sec = toMin(t.to)*60 - (n.getHours()*3600 + n.getMinutes()*60 + n.getSeconds());
     if(sec < 0) sec = 0;
@@ -248,19 +248,19 @@
     return 'باقي ' + mm + ':' + (ss < 10 ? '0' : '') + ss;
   }
 
-  var expandAll = false;      /* حالة زرّ «افرد الجدول» */
+  var expandAll = false;      /* حالة زر «افرد الجدول» */
   function paintTable(){
     if(!hasSchedules){
-      /* الجدول الفارغ يدلّ على **موضع** الملء لا على نقصه وحده (طلب المستخدم 2026-09-06) */
-      tbl.innerHTML = '<div class="empty">جداول معلّميك لم تُدخل بعد — وبها يُعرف مَن يدرّس في كل حصة ومَن متفرّغ.'
+      /* الجدول الفارغ يدل على **موضع** الملء لا على نقصه وحده (طلب المستخدم 2026-09-06) */
+      tbl.innerHTML = '<div class="empty">جداول معلميك لم تدخل بعد — وبها يعرف من يدرس في كل حصة ومن متفرغ.'
         + '<br><b class="goto">املأ جدول حصص شعبتك من تبويب «الجدول» في الأسفل.</b></div>';
       return;
     }
-    var html = '', pIdx = -1;                       // pIdx: ترقيم الحصص وحدها (الفرص لا تُرقَّم)
-    /* ما الذي **يُعرض** أصلاً؟ (قرار المستخدم 2026-09-05: الجدول لا يأكل مساحة
-       اللوحة، فتظهر بقيّة أقسامها.) أثناء الدوام: الجارية مفتوحةً والتالية مطويّةً
-       بتوقيتها وحده · قبل الدوام: التاليتان مطويّتان · بعده: سطرٌ واحد.
-       وما عداها لا يُرسَم إطلاقاً حتى يُضغط «افرد الجدول كاملاً». */
+    var html = '', pIdx = -1;                       // pIdx: ترقيم الحصص وحدها (الفرص لا ترقم)
+    /* ما الذي **يعرض** أصلا؟ (قرار المستخدم 2026-09-05: الجدول لا يأكل مساحة
+       اللوحة، فتظهر بقية أقسامها.) أثناء الدوام: الجارية مفتوحة والتالية مطوية
+       بتوقيتها وحده · قبل الدوام: التاليتان مطويتان · بعده: سطر واحد.
+       وما عداها لا يرسم إطلاقا حتى يضغط «افرد الجدول كاملا». */
     var dayRunning = !isWeekend && currentIdx > -1;
     var dayEnded   = !isWeekend && currentIdx === -1 && nextIdx === -1;
     var upcoming   = isWeekend ? 0 : nextIdx;          // في العطلة نعرض بداية جدول الأحد
@@ -273,13 +273,13 @@
       if(!isBreak) pIdx++;
 
       var title = isBreak ? (t.label || 'فرصة') : ('الحصة ' + (ORD[pIdx] || (pIdx+1)));
-      /* «انتهت» بانقضاء وقتها فعلاً — لا بوجود حصة جارية (فبعد نهاية الدوام كلّها منتهية) */
+      /* «انتهت» بانقضاء وقتها فعلا — لا بوجود حصة جارية (فبعد نهاية الدوام كلها منتهية) */
       var isPastRow = !isWeekend && m >= toMin(t.to);
-      /* مطوياً: لا يُفتح إلّا الجاري. ومفروداً: تُفتح التالية بتفاصيلها كاملةً
-         (طلب المستخدم 2026-09-05)، وتبقى الماضية سطراً واحداً تُفتح بالضغط. */
+      /* مطويا: لا يفتح إلا الجاري. ومفرودا: تفتح التالية بتفاصيلها كاملة
+         (طلب المستخدم 2026-09-05)، وتبقى الماضية سطرا واحدا تفتح بالضغط. */
       var isOpen    = isNow || (expandAll && !isPastRow);
-      if(!expandAll && !shown[i]) return;           /* وما عداه لا يُرسَم أصلاً */
-      /* الحالة تُحجز لها خانة ثابتة حتى في الصفوف القادمة، فتستوي الأعمدة (قرار المستخدم) */
+      if(!expandAll && !shown[i]) return;           /* وما عداه لا يرسم أصلا */
+      /* الحالة تحجز لها خانة ثابتة حتى في الصفوف القادمة، فتستوي الأعمدة (قرار المستخدم) */
       /* عمود واحد للحالة: «باقي mm:ss» أثناء الحصة ← «انتهت» بعد انتهائها (قرار المستخدم 2026-09-01) */
       var stateTxt = isNow ? leftIn(t) : isPastRow ? 'انتهت' : '';
       var state = '<span class="state' + (stateTxt ? '' : ' is-empty') + '">' + stateTxt + '</span>';
@@ -287,7 +287,7 @@
                 + '<span class="tm"><span class="hh">' + t.from + '</span>' + (isNow ? '<em>الآن</em>' : '') + '</span>' + state
                 ;
 
-      /* صفّ الفرصة: يحمل تنبيه المراقبة إن كان اليوم على الشعبة مراقبة (قرار المستخدم 2026-09-01) */
+      /* صف الفرصة: يحمل تنبيه المراقبة إن كان اليوم على الشعبة مراقبة (قرار المستخدم 2026-09-01) */
       if(isBreak){
         var duty = (t.duty && d.duty && d.duty[todayName]) || null;   // التنبيه في الفرص فقط لا في لقاء الصباح
         var dutyHtml = duty
@@ -299,11 +299,11 @@
         return;
       }
 
-      var slotIdx = (t.n || (pIdx+1)) - 1;              // الفهرس بحسب رقم الحصة لا ترتيب الصف (الفرصة تُزيحه)
+      var slotIdx = (t.n || (pIdx+1)) - 1;              // الفهرس بحسب رقم الحصة لا ترتيب الصف (الفرصة تزيحه)
       var busy = busyAt(slotIdx), free = teachers.length - busy.length;
       html += '<div class="per' + (isNow ? ' now' : '') + (isPastRow ? ' past' : '')
             + (isOpen ? '' : ' fold') + '">'
-            + head + '<span class="cnt">' + busy.length + ' يدرّسون</span></div>'
+            + head + '<span class="cnt">' + busy.length + ' يدرسون</span></div>'
             + '<div class="pairs">';
       busy.forEach(function(name){
         var s = splitSlot(slotOf(name, slotIdx));
@@ -311,13 +311,13 @@
               + '<span class="l2"><span class="sub">' + s.subject + '</span>'
               + '<span class="cl">' + s.cls + '</span></span></span>';
       });
-      if(free) html += '<span class="freechip">' + Shouba.count(free,{one:'متفرّغ',two:'متفرّغان',few:'متفرّغون',many:'متفرّغاً'}) + '</span>';
+      if(free) html += '<span class="freechip">' + Shouba.count(free,{one:'متفرغ',two:'متفرغان',few:'متفرغون',many:'متفرغا'}) + '</span>';
       html += '</div></div>';
     });
     if(dayEnded && !expandAll)
       html = '<div class="empty">انتهى دوام اليوم — افرد الجدول لمراجعته.</div>';
     html += '<button class="tblmore" id="tblMore">'
-          + (expandAll ? 'اطوِ الجدول' : 'افرد الجدول كاملاً') + '</button>';
+          + (expandAll ? 'اطو الجدول' : 'افرد الجدول كاملا') + '</button>';
     tbl.innerHTML = html;
     document.getElementById('tblMore').addEventListener('click', function(e){
       e.stopPropagation(); expandAll = !expandAll; paintTable();
@@ -325,12 +325,12 @@
   }
   paintTable();
 
-  /* الحصة الماضية تُفتح بالضغط عليها */
+  /* الحصة الماضية تفتح بالضغط عليها */
   tbl.addEventListener('click', function(e){
     var row = e.target.closest && e.target.closest('.per.fold');
     if(row) row.classList.toggle('open');
   });
-  /* العدّاد يتجدّد كل ثانية ما دامت هناك حصة جارية */
+  /* العداد يتجدد كل ثانية ما دامت هناك حصة جارية */
   if(currentIdx > -1 && !isWeekend && hasSchedules){
     setInterval(function(){
       var el = tbl.querySelector('.per.now .state');
@@ -348,29 +348,29 @@
   }
   function paintCard(){
     var kicker, left='', ttl, sub;
-    /* ⚠ البطاقة عن اليوم الحقيقي — لا تتأثّر بتقليب الرزنامة */
+    /* ⚠ البطاقة عن اليوم الحقيقي — لا تتأثر بتقليب الرزنامة */
     var todayEvents = todayName
       ? Shouba.eventsOnDate(iso(now)).concat(Shouba.legacyEventsOfDay(todayName)) : [];
     if(currentIdx>-1 && hasSchedules){
-      /* ⚠ الفهرس بحسب **رقم الحصة** لا ترتيب الصفّ — الفرص تُزيح الترتيب،
+      /* ⚠ الفهرس بحسب **رقم الحصة** لا ترتيب الصف — الفرص تزيح الترتيب،
          فكانت البطاقة تقول «الحصة ٦» والجدول «الرابعة»، وتقرأ خانات حصة أخرى
-         فيختلف عدد المدرّسين بينهما (رُصد 2026-09-05). */
+         فيختلف عدد المدرسين بينهما (رصد 2026-09-05). */
       var cur = times[currentIdx], curNo = cur.n || null;
       var curSlot = curNo ? curNo - 1 : currentIdx;
       var busy = curNo ? busyAt(curSlot) : [], free = teachers.length - busy.length;
       kicker = curNo ? 'الآن · الحصة ' + (ORD[curNo-1] || curNo) : 'الآن · ' + (cur.label || 'فرصة');
       left = remain();
-      ttl = busy.length ? Shouba.count(busy.length,{one:'معلّم',two:'معلّمان',few:'معلّمين',many:'معلّماً'}) + ' يدرّسون الآن'
-                        : 'لا أحد يدرّس الآن';
+      ttl = busy.length ? Shouba.count(busy.length,{one:'معلم',two:'معلمان',few:'معلمين',many:'معلما'}) + ' يدرسون الآن'
+                        : 'لا أحد يدرس الآن';
       sub = busy.length ? busy.slice(0,2).map(function(t){ return 'أ. '+firstName(t)+' · '+slotOf(t,curSlot); }).join('   ')
-                          + (busy.length>2 ? '  +'+(busy.length-2) : '') + (free ? '  ·  ' + Shouba.count(free,{one:'متفرّغ',two:'متفرّغان',few:'متفرّغون',many:'متفرّغاً'}) : '')
-                        : (curNo ? 'كل معلّميك متفرّغون في هذه الحصة.' : 'وقت راحة — لا حصص الآن.');
+                          + (busy.length>2 ? '  +'+(busy.length-2) : '') + (free ? '  ·  ' + Shouba.count(free,{one:'متفرغ',two:'متفرغان',few:'متفرغون',many:'متفرغا'}) : '')
+                        : (curNo ? 'كل معلميك متفرغون في هذه الحصة.' : 'وقت راحة — لا حصص الآن.');
     } else if(todayEvents.length){
       kicker='اليوم'; ttl=todayEvents[0].title; sub=todayEvents[0].type + ' · ' + todayName;
     } else if(!hasSchedules){
-      kicker='ابدأ من هنا'; ttl='أدخِل جداول معلّميك'; sub='ابدأ بيومٍ واحد لكل معلّميك — تضيء لوحتك في دقائق، وأكمل بقيّة الأيام على مهلك.';
+      kicker='ابدأ من هنا'; ttl='أدخل جداول معلميك'; sub='ابدأ بيوم واحد لكل معلميك — تضيء لوحتك في دقائق، وأكمل بقية الأيام على مهلك.';
     } else if(isWeekend){
-      kicker='التالي'; ttl='عطلة نهاية الأسبوع'; sub='يبدأ الدوام الأحد · أوّل حصة ' + times[0].from;
+      kicker='التالي'; ttl='عطلة نهاية الأسبوع'; sub='يبدأ الدوام الأحد · أول حصة ' + times[0].from;
     } else if(nextIdx>-1){
       var nx = times[nextIdx];
       kicker='التالي';
@@ -387,19 +387,19 @@
       + '<div class="left">' + left + '</div></div>'
       + '<div><div class="ttl">' + ttl + '</div><div class="sub">' + sub + '</div></div>'
       + '<div class="acts"><button class="cta" id="cardCta">الجدول الكامل</button>'
-      + '<button class="ghost2" id="cardGhost">المعلّمون</button></div>';
+      + '<button class="ghost2" id="cardGhost">المعلمون</button></div>';
     document.getElementById('cardCta').addEventListener('click', function(){ location.href='schedule.html'; });
     document.getElementById('cardGhost').addEventListener('click', function(){ location.href='teachers.html'; });
   }
   paintCard();
   if(currentIdx>-1 && hasSchedules) setInterval(function(){ var l=card.querySelector('.left'); if(l) l.textContent=remain(); }, 1000);
 
-  /* ===== ③ مصفوفة الأسبوع: عمود لكل يوم — وهي بابُ إدخال المواعيد =====
-     ⚠ في العطلة تتقدّم المصفوفة إلى الأسبوع القادم كما يتقدّم عنوان الجدول،
-       وإلّا عرضت اللوحةُ أحدَين مختلفين في شاشة واحدة (رُصد 2026-09-06). */
+  /* ===== ③ مصفوفة الأسبوع: عمود لكل يوم — وهي باب إدخال المواعيد =====
+     ⚠ في العطلة تتقدم المصفوفة إلى الأسبوع القادم كما يتقدم عنوان الجدول،
+       وإلا عرضت اللوحة أحدين مختلفين في شاشة واحدة (رصد 2026-09-06). */
   var weekEl=document.getElementById('week');
 
-  /* عنوان الأسبوع المعروض: قريبُه بالاسم، وبعيدُه برقمه أو بمداه */
+  /* عنوان الأسبوع المعروض: قريبه بالاسم، وبعيده برقمه أو بمداه */
   function weekTitle(){
     if(weekOffset === 0)  return 'هذا الأسبوع';
     if(weekOffset === 1)  return 'الأسبوع القادم';
@@ -455,7 +455,7 @@
       r.innerHTML = '<b>' + ev.title + '</b><span class="ty">' + ev.type + '</span>';
       var x = document.createElement('button');
       x.className = 'del'; x.setAttribute('aria-label','حذف'); x.textContent = '×';
-      /* الحذف يُغلق كالإضافة — والمصفوفة خلفها تُظهر النتيجة فوراً */
+      /* الحذف يغلق كالإضافة — والمصفوفة خلفها تظهر النتيجة فورا */
       x.addEventListener('click', function(){
         Shouba.removeEvent(ev.id); paintWeek(); paintCard(); Shouba.sheet.close();
       });
@@ -464,9 +464,9 @@
     });
 
     var add = document.createElement('button');
-    add.className = 'cta'; add.textContent = 'أضِف موعداً';
+    add.className = 'cta'; add.textContent = 'أضف موعدا';
     add.addEventListener('click', function(){
-      /* الرجوع إلى يوم الموعد إن بقي في الأسبوع المعروض، وإلّا إلى التقويم */
+      /* الرجوع إلى يوم الموعد إن بقي في الأسبوع المعروض، وإلا إلى التقويم */
       addSheet(iso(DAY_DATE[day]), function(dv){
         if(dv >= iso(DAY_DATE[R.days[0]]) && dv <= iso(DAY_DATE[R.days[4]])) daySheet(day);
         else calendarSheet();
@@ -477,13 +477,13 @@
     Shouba.sheet.open('مواعيد ' + dayLabel(day), n);
   }
 
-  /* بطاقة موعدٍ قياسية (RFC 5545) — يومٌ كامل، فالمواعيد المدرسية بلا ساعة.
-     تُبنى في المتصفّح وتُنزَّل، بلا خادم ولا حساب ولا إذن. */
+  /* بطاقة موعد قياسية (RFC 5545) — يوم كامل، فالمواعيد المدرسية بلا ساعة.
+     تبنى في المتصفح وتنزل، بلا خادم ولا حساب ولا إذن. */
   function toDeviceCalendar(dateIso, type, title){
     var p = dateIso.split('-');
     if(p.length !== 3) return;
     var d0 = p.join('');
-    var nx = new Date(+p[0], +p[1]-1, +p[2] + 1);          /* DTEND يومٌ بعده */
+    var nx = new Date(+p[0], +p[1]-1, +p[2] + 1);          /* DTEND يوم بعده */
     var pad = function(x){ return (x < 10 ? '0' : '') + x; };
     var d1 = nx.getFullYear() + pad(nx.getMonth()+1) + pad(nx.getDate());
     var esc = function(t){ return String(t).replace(/([,;\\])/g,'\\$1').replace(/\n/g,'\\n'); };
@@ -495,7 +495,7 @@
       'DTSTART;VALUE=DATE:' + d0,
       'DTEND;VALUE=DATE:' + d1,
       'SUMMARY:' + esc(title),
-      'DESCRIPTION:' + esc(type + ' — من منصّة شعبة'),
+      'DESCRIPTION:' + esc(type + ' — من منصة شعبة'),
       'END:VEVENT','END:VCALENDAR'
     ].join('\r\n');
     var blob = new Blob([ics], { type:'text/calendar;charset=utf-8' });
@@ -512,7 +512,7 @@
     var chosen = EV_TYPES[0];
     n.innerHTML = '<div class="field" style="padding-bottom:4px"><label for="evd">تاريخ الموعد</label>'
       + '<div class="paper"><input id="evd" type="date" value="' + startIso + '" /></div>'
-      + '<div class="hint">أيّ يوم في عامك الدراسي — لا هذا الأسبوع وحده.</div></div>'
+      + '<div class="hint">أي يوم في عامك الدراسي — لا هذا الأسبوع وحده.</div></div>'
       + '<div class="field" style="padding-bottom:4px"><label>نوع الموعد</label>'
       + '<div class="segs" id="evsegs"></div></div>'
       + '<div class="field" style="padding-bottom:6px"><label for="evt">العنوان</label>'
@@ -528,35 +528,35 @@
       segs.appendChild(b);
     });
     var save = document.createElement('button');
-    save.className = 'cta'; save.textContent = 'أضِف';
+    save.className = 'cta'; save.textContent = 'أضف';
     n.appendChild(save);
 
-    /* ═══ إلى رزنامة الجهاز — باتجاهٍ واحد (قرار المستخدم 2026-09-08) ═══
-       خيارٌ يُؤشَّر قبل الإضافة، فتنزل بطاقةُ موعدٍ قياسية (.ics) يفتحها
+    /* ═══ إلى رزنامة الجهاز — باتجاه واحد (قرار المستخدم 2026-09-08) ═══
+       خيار يؤشر قبل الإضافة، فتنزل بطاقة موعد قياسية (.ics) يفتحها
        الجهاز فيسأل «إضافة إلى التقويم؟».
-       ⚠ **نسخةٌ لا رابط**: تعديلُ الموعد في المنصّة لاحقاً أو حذفُه لا يتبعه
-         تغييرٌ في رزنامتك. والربط الحقيقيّ يحتاج رابط اشتراك، ويحتاج خادماً.
-         فنقولها في الشاشة ولا نَعِد بما لا يقوم. */
+       ⚠ **نسخة لا رابط**: تعديل الموعد في المنصة لاحقا أو حذفه لا يتبعه
+         تغيير في رزنامتك. والربط الحقيقي يحتاج رابط اشتراك، ويحتاج خادما.
+         فنقولها في الشاشة ولا نعد بما لا يقوم. */
     var calRow = document.createElement('label');
     calRow.className = 'calopt';
     calRow.innerHTML = '<input type="checkbox" id="tocal" /><span></span>';
     calRow.querySelector('span').innerHTML =
-      'أضِفه إلى رزنامة جهازي <small>نسخةٌ لا ترتبط — تعديلُه هنا لاحقاً لا يتبعه تغييرٌ هناك</small>';
+      'أضفه إلى رزنامة جهازي <small>نسخة لا ترتبط — تعديله هنا لاحقا لا يتبعه تغيير هناك</small>';
     n.insertBefore(calRow, save);
     Shouba.sheet.open('موعد جديد', n);
     var inp = n.querySelector('#evt');
     setTimeout(function(){ inp.focus(); }, 80);
-    /* الإغلاق فور الإضافة (قرار المستخدم 2026-09-08): كان يُعيد فتح لوحة اليوم
-       أو التقويم ليُرى الموعد في سياقه — فبدت المنصّة كأنها لا تستجيب لمن
-       أدخل موعداً واحداً، وهو الحال الغالب. والموعد يظهر في مصفوفة الأسبوع
-       خلف اللوحة فور إغلاقها، فلا يضيع أثرُ الإضافة. */
+    /* الإغلاق فور الإضافة (قرار المستخدم 2026-09-08): كان يعيد فتح لوحة اليوم
+       أو التقويم ليرى الموعد في سياقه — فبدت المنصة كأنها لا تستجيب لمن
+       أدخل موعدا واحدا، وهو الحال الغالب. والموعد يظهر في مصفوفة الأسبوع
+       خلف اللوحة فور إغلاقها، فلا يضيع أثر الإضافة. */
     function submit(){
       var v = inp.value.trim(), dv = n.querySelector('#evd').value;
       if(v.length < 2 || !dv) return;
       Shouba.addEvent({ date: dv, type: chosen, title: v });
       if(n.querySelector('#tocal').checked) toDeviceCalendar(dv, chosen, v);
       var far = dv < iso(DAY_DATE[R.days[0]]) || dv > iso(DAY_DATE[R.days[4]]);
-      if(far) setWeek(weekOffset);      /* موعدٌ خارج الأسبوع المعروض: نُبقي العرض كما هو */
+      if(far) setWeek(weekOffset);      /* موعد خارج الأسبوع المعروض: نبقي العرض كما هو */
       paintWeek(); paintCard();
       Shouba.sheet.close();
     }
@@ -564,19 +564,19 @@
     inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') submit(); });
   }
 
-  /* «الرزنامة الكاملة ›» ⟵ **تقويمك الدراسي**: بابٌ أماميّ لإدخال مواعيد العام
-     كلّه من أوّله إن شاء، ثم عرضها مجموعةً بالشهر. أيام الأسبوع تُرى في المصفوفة
-     فوقه، فلا تُكرَّر هنا (سؤال المستخدم 2026-09-06). */
+  /* «الرزنامة الكاملة ›» ⟵ **تقويمك الدراسي**: باب أمامي لإدخال مواعيد العام
+     كله من أوله إن شاء، ثم عرضها مجموعة بالشهر. أيام الأسبوع ترى في المصفوفة
+     فوقه، فلا تكرر هنا (سؤال المستخدم 2026-09-06). */
   function calendarSheet(){
     var n = document.createElement('div');
     n.className = 'vlist'; n.style.padding = '0';
 
     var add = document.createElement('button');
-    add.className = 'cta'; add.textContent = 'أضِف موعداً';
+    add.className = 'cta'; add.textContent = 'أضف موعدا';
     add.addEventListener('click', function(){ addSheet(iso(now), function(){ calendarSheet(); }); });
     n.appendChild(add);
 
-    /* من اليوم فصاعداً — الماضي مضى، وقد ظهر في أسبوعه */
+    /* من اليوم فصاعدا — الماضي مضى، وقد ظهر في أسبوعه */
     var todayIso = iso(now);
     var list = Shouba.events().filter(function(e){ return e.date && e.date >= todayIso; })
       .sort(function(a,b){ return a.date < b.date ? -1 : 1; });
@@ -584,7 +584,7 @@
     if(!list.length){
       var e0 = document.createElement('div');
       e0.className = 'soon-note';
-      e0.textContent = 'لا مواعيد بعد. أضِف اختباراتك واجتماعاتك وأنشطتك — من اليوم إلى آخر العام.';
+      e0.textContent = 'لا مواعيد بعد. أضف اختباراتك واجتماعاتك وأنشطتك — من اليوم إلى آخر العام.';
       n.appendChild(e0);
     }
 
@@ -615,16 +615,16 @@
     Shouba.sheet.open('تقويمك الدراسي', n);
   }
   document.getElementById('toWeek').addEventListener('click', calendarSheet);
-  /* ⚠ في RTL: اليمين رجوعٌ إلى الماضي، واليسار تقدّمٌ إلى القادم */
+  /* ⚠ في RTL: اليمين رجوع إلى الماضي، واليسار تقدم إلى القادم */
   /* انزلاق الأسبوع (قرار المستخدم 2026-09-06): كان يتبع اليد بأربعة أعشار
-     الحركة ثم يقفز المحتوى، فيبدو **ومضةً** لا انزلاقاً. الآن يتبع اليد
-     **كاملاً**، وعند الحسم ينزلق الأسبوع خارجاً ويدخل التالي من الجهة المقابلة. */
+     الحركة ثم يقفز المحتوى، فيبدو **ومضة** لا انزلاقا. الآن يتبع اليد
+     **كاملا**، وعند الحسم ينزلق الأسبوع خارجا ويدخل التالي من الجهة المقابلة. */
   var sliding = false;
   function goWeek(step){
     if(sliding) return;
     sliding = true;
     var w = weekEl.offsetWidth || 320;
-    var out = step > 0 ? -w : w;            // القادم يخرج يساراً · الماضي يميناً
+    var out = step > 0 ? -w : w;            // القادم يخرج يسارا · الماضي يمينا
     weekEl.style.transition = 'transform .17s ease-out, opacity .17s ease-out';
     weekEl.style.transform  = 'translateX(' + out + 'px)';
     weekEl.style.opacity    = '0';
@@ -644,7 +644,7 @@
   document.getElementById('wkPrev').addEventListener('click', function(){ goWeek(-1); });
   document.getElementById('wkNext').addEventListener('click', function(){ goWeek(1); });
 
-  /* السحب: المصفوفة تتبع الإصبع بمقدار حركته كاملاً، وتخفت تدريجياً دلالةً
+  /* السحب: المصفوفة تتبع الإصبع بمقدار حركته كاملا، وتخفت تدريجيا دلالة
      على قرب الحسم. وعند الإفلات دون العتبة تعود إلى موضعها بلين. */
   (function swipe(){
     var x0 = 0, dx = 0, on = false, moved = false;
@@ -661,8 +661,8 @@
     function end(){
       if(!on) return;
       on = false;
-      if(dx > TH)       { goWeek(-1); return; }      // سُحب يميناً ⟵ الماضي
-      if(dx < -TH)      { goWeek(1);  return; }      // سُحب يساراً ⟵ القادم
+      if(dx > TH)       { goWeek(-1); return; }      // سحب يمينا ⟵ الماضي
+      if(dx < -TH)      { goWeek(1);  return; }      // سحب يسارا ⟵ القادم
       weekEl.style.transition = 'transform .18s ease-out, opacity .18s';
       weekEl.style.transform  = '';
       weekEl.style.opacity    = '';
@@ -674,7 +674,7 @@
     weekEl.addEventListener('mousedown',  function(e){ start(e.clientX); });
     window.addEventListener('mousemove',  function(e){ move(e.clientX); });
     window.addEventListener('mouseup',    end);
-    /* حارس النقر: يمنع فتح لوحة اليوم إن كانت الحركة سحباً */
+    /* حارس النقر: يمنع فتح لوحة اليوم إن كانت الحركة سحبا */
     weekEl.addEventListener('click', function(e){ if(moved){ e.stopPropagation(); moved = false; } }, true);
   })();
   paintWeek();
@@ -695,23 +695,23 @@
     });
     document.getElementById('planPct').textContent = pr.pct + '%';
     document.getElementById('planLine').innerHTML =
-      Shouba.count(done,{one:'درس',two:'درسان',few:'دروس',many:'درساً'}) + ' من <b>' + total + '</b> · ' + (Shouba.weekLabel() || '') + (weekNo ? ' جارٍ' : '');
+      Shouba.count(done,{one:'درس',two:'درسان',few:'دروس',many:'درسا'}) + ' من <b>' + total + '</b> · ' + (Shouba.weekLabel() || '') + (weekNo ? ' جار' : '');
   }
 
   /* ===== ⑤ بحاجة إلى إجراء ===== */
   var todoEl=document.getElementById('todo'), items=[];
-  Shouba.withoutSchedule().forEach(function(t){ items.push({name:t,badge:'تذكير',text:'لم يُدخل جدوله بعد'}); });
-  /* ⚠ حُذف بند «دروس سابقة لم تُؤشَّر» (2026-09-05): اتّهامٌ بلا دليل — لا باب تأشير
-     أصلاً، فكان كلّ معلّم متأخّراً بحكم البناء. يعود يوم يصير للإنجاز مصدرٌ حقيقي
-     (تأشير المعلّم بنفسه). والدالّة Shouba.behindPlan باقية في طبقة الاشتقاق تنتظره. */
+  Shouba.withoutSchedule().forEach(function(t){ items.push({name:t,badge:'تذكير',text:'لم يدخل جدوله بعد'}); });
+  /* ⚠ حذف بند «دروس سابقة لم تؤشر» (2026-09-05): اتهام بلا دليل — لا باب تأشير
+     أصلا، فكان كل معلم متأخرا بحكم البناء. يعود يوم يصير للإنجاز مصدر حقيقي
+     (تأشير المعلم بنفسه). والدالة Shouba.behindPlan باقية في طبقة الاشتقاق تنتظره. */
   document.getElementById('todoCount').textContent = items.length ? items.length : 'لا شيء';
   if(!items.length){
     todoEl.closest('section').classList.add('calm');
-    todoEl.innerHTML='<div class="invite">لا شيء ينتظر إجراءً الآن — شعبتك منضبطة.</div>';
+    todoEl.innerHTML='<div class="invite">لا شيء ينتظر إجراء الآن — شعبتك منضبطة.</div>';
   } else {
-    /* بانٍ واحد للسطر — تستعمله البطاقة واللوحة معاً فلا يفترق شكلُهما.
-       والسطر **باب الإجراء نفسه**: الطلب «لم يُدخل جدوله»، فالضغطة تفتح
-       جدول ذلك المعلّم وحده. وإلّا كانت البطاقة إخباراً بالعمل لا طريقاً إليه
+    /* بان واحد للسطر — تستعمله البطاقة واللوحة معا فلا يفترق شكلهما.
+       والسطر **باب الإجراء نفسه**: الطلب «لم يدخل جدوله»، فالضغطة تفتح
+       جدول ذلك المعلم وحده. وإلا كانت البطاقة إخبارا بالعمل لا طريقا إليه
        (قرار المستخدم 2026-09-08). */
     function titem(it){
       var el=document.createElement('div'); el.className='titem go';
@@ -732,8 +732,8 @@
     /* البطاقة تعرض اثنين — لا تطول فتزاحم ما تحتها */
     items.slice(0,2).forEach(function(it){ todoEl.appendChild(titem(it)); });
 
-    /* والبقيّة خلف ضغطة: السطرُ السفلي صار زرّاً يفتح القائمة كاملةً
-       بالتنسيق نفسه (قرار المستخدم 2026-09-08). كان نصّاً جامداً يُخبر
+    /* والبقية خلف ضغطة: السطر السفلي صار زرا يفتح القائمة كاملة
+       بالتنسيق نفسه (قرار المستخدم 2026-09-08). كان نصا جامدا يخبر
        بالعدد ولا يوصل إليه. */
     if(items.length>2){
       var more=document.getElementById('todoMore');
@@ -743,7 +743,7 @@
       var rest = items.length - 2;
       more.innerHTML = '<span></span><span class="chev">›</span>';
       more.querySelector('span').textContent =
-        'و' + Shouba.count(rest,{one:'طلب',two:'طلبان',few:'طلبات',many:'طلباً'}) + ' في الانتظار';
+        'و' + Shouba.count(rest,{one:'طلب',two:'طلبان',few:'طلبات',many:'طلبا'}) + ' في الانتظار';
       function openAll(){
         var n=document.createElement('div'); n.className='todo';
         items.forEach(function(it){ n.appendChild(titem(it)); });
@@ -756,20 +756,20 @@
     }
   }
 
-  /* ===== التنقّل ===== */
+  /* ===== التنقل ===== */
   /* ⚠ `.tab[data-go]` لا `.tab` المطلقة: تبويب «قيد الإعداد» بلا وجهة، فكان ينتقل
-     إلى undefined فيرتدّ المستخدم إلى شاشة الدخول (رُصد بالفحص 2026-09-05). */
+     إلى undefined فيرتد المستخدم إلى شاشة الدخول (رصد بالفحص 2026-09-05). */
   [].forEach.call(document.querySelectorAll('.tab[data-go]'), function(b){
     b.addEventListener('click', function(){ if(!b.classList.contains('on')) location.href=b.dataset.go; });
   });
   document.getElementById('toSchedule').addEventListener('click', function(){ location.href='schedule.html'; });
-  /* الدلالي لا المتسلسل (قرار المستخدم 2026-09-06): «٠٫٤٫١» تدلّ على النسخة،
-     أمّا «١٥» فرقمٌ لا يعني المستخدم شيئاً. والمتسلسل يبقى في الإعدادات للتشخيص. */
+  /* الدلالي لا المتسلسل (قرار المستخدم 2026-09-06): «٠٫٤٫١» تدل على النسخة،
+     أما «١٥» فرقم لا يعني المستخدم شيئا. والمتسلسل يبقى في الإعدادات للتشخيص. */
   document.getElementById('verNo').textContent = window.SHOUBA_VERSION || '؟';
   document.getElementById('settings').addEventListener('click', function(){ Shouba.settings(); });
-  /* ⚠ زرّ «+» في اللوحة كان بلا سلوك إطلاقاً — يُضغط فلا يحدث شيء (رُصد 2026-09-06) */
+  /* ⚠ زر «+» في اللوحة كان بلا سلوك إطلاقا — يضغط فلا يحدث شيء (رصد 2026-09-06) */
   document.getElementById('add').addEventListener('click', Shouba.quickAdd);
-  /* ?add=event ⟵ قادمٌ من الإضافة السريعة: يفتح التقويم مباشرةً */
+  /* ?add=event ⟵ قادم من الإضافة السريعة: يفتح التقويم مباشرة */
   if(new URLSearchParams(location.search).get('add') === 'event') calendarSheet();
 </script>
 </body>

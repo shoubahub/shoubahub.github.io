@@ -12,12 +12,12 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=40" />
-<link rel="stylesheet" href="shell.css?v=40" />
-<link rel="stylesheet" href="components.css?v=40" />
-<link rel="stylesheet" href="frame.css?v=40" />
+<link rel="stylesheet" href="identity/tokens.css?v=41" />
+<link rel="stylesheet" href="shell.css?v=41" />
+<link rel="stylesheet" href="components.css?v=41" />
+<link rel="stylesheet" href="frame.css?v=41" />
 <style>
-  /* خاص بهذه الشاشة فقط — لا هيكل ولا هوامش عامّة */
+  /* خاص بهذه الشاشة فقط — لا هيكل ولا هوامش عامة */
   .tally{display:flex;gap:9px}
   .tally .t{flex:1;background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:15px;
     padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;
@@ -45,7 +45,7 @@
     <!-- العنوان خارج .content — موضعه ثابت في كل الشاشات (قاعدة LAYOUT) -->
     <div class="head">
       <div class="h">شعبتك جاهزة</div>
-      <div class="s">هذه حصيلة إعدادك — راجِعها، واضغط أي سطر لتعديله. ثم ابدأ عملك.</div>
+      <div class="s">هذه حصيلة إعدادك — راجعها، واضغط أي سطر لتعديله. ثم ابدأ عملك.</div>
     </div>
 
     <div class="content">
@@ -69,14 +69,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=40"></script>
-<!-- ⚠ المرجعية ثم الاشتقاق ثم المكوّنات — بهذا الترتيب.
-     أُضيفا حين احتاجت الشاشة Shouba.termStart (2026-09-08): كانت تقرأ
-     البيانات خاماً وتستغني عن الطبقة، فلمّا استُدعيت دالّةٌ منها أخفقت
-     الشاشةُ كلّها ولم يظهر سطرٌ واحد. -->
-<script src="refdata.js?v=40"></script>
-<script src="derive.js?v=40"></script>
-<script src="components.js?v=40"></script>
+<script src="build.js?v=41"></script>
+<!-- ⚠ المرجعية ثم الاشتقاق ثم المكونات — بهذا الترتيب.
+     أضيفا حين احتاجت الشاشة Shouba.termStart (2026-09-08): كانت تقرأ
+     البيانات خاما وتستغني عن الطبقة، فلما استدعيت دالة منها أخفقت
+     الشاشة كلها ولم يظهر سطر واحد. -->
+<script src="refdata.js?v=41"></script>
+<script src="derive.js?v=41"></script>
+<script src="components.js?v=41"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -87,11 +87,11 @@
 
   function j(){ return [].slice.call(arguments).filter(function(x){ return x && String(x).trim(); }).join(' · '); }
 
-  /* الحصيلة — ثلاثة أرقام تُري ثقل ما أُنجز (التسمية تُصرَّف من الأساس) */
+  /* الحصيلة — ثلاثة أرقام تري ثقل ما أنجز (التسمية تصرف من الأساس) */
   var TALLY = [
-    { n: teachers.length, label: Shouba.unit(teachers.length, { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً' }) },
-    { n: subjects.length, label: Shouba.unit(subjects.length, { one:'مادّة', two:'مادّتان', few:'مواد', many:'مادّةً' }) },
-    { n: records.length,  label: Shouba.unit(records.length,  { one:'سجلّ', two:'سجلّان', few:'سجلّات', many:'سجلاً' }) }
+    { n: teachers.length, label: Shouba.unit(teachers.length, { one:'معلم', two:'معلمان', few:'معلمين', many:'معلما' }) },
+    { n: subjects.length, label: Shouba.unit(subjects.length, { one:'مادة', two:'مادتان', few:'مواد', many:'مادة' }) },
+    { n: records.length,  label: Shouba.unit(records.length,  { one:'سجل', two:'سجلان', few:'سجلات', many:'سجلا' }) }
   ];
   var tallyEl = document.getElementById('tally');
   TALLY.forEach(function(t){
@@ -121,22 +121,22 @@
     setTimeout(function(){ inp.focus(); }, 80);
     function submit(){
       var v = inp.value.trim().replace(/\s+/g, ' ');
-      if(v.length < 3){ warn.textContent = 'اكتب اسمك كاملاً (ثلاثة أحرف فأكثر).'; return; }
+      if(v.length < 3){ warn.textContent = 'اكتب اسمك كاملا (ثلاثة أحرف فأكثر).'; return; }
       var u; try { u = JSON.parse(localStorage.getItem(UKEY)) || {}; } catch(e){ u = {}; }
       u.name = v;
       localStorage.setItem(UKEY, JSON.stringify(u));
       Shouba.sheet.close();
-      location.reload();                 /* السطر يُعاد رسمه بالاسم الجديد */
+      location.reload();                 /* السطر يعاد رسمه بالاسم الجديد */
     }
     btn.addEventListener('click', submit);
     inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') submit(); });
   }
 
-  /* أوّل يوم دراسي — يُعرض هنا لأنه **مُدخَلٌ خفيّ ذو أثرٍ يوميّ**: عليه وحده
-     يُبنى عدُّ الأسابيع في اللوحة، ويُدخَل مرّةً ثم يُنسى. فمن رأى أسبوعاً
-     لا يتوقّعه لم يجد سبيلاً إلى مصدره إلّا بفتح شاشة الإعداد (رصده المستخدم
-     2026-09-08 حين اختلف الأسبوع بين جهازيه). وغيابُه نفسه خبرٌ: بلا تاريخٍ
-     لا تعرض اللوحة أسبوعاً إطلاقاً. */
+  /* أول يوم دراسي — يعرض هنا لأنه **مدخل خفي ذو أثر يومي**: عليه وحده
+     يبنى عد الأسابيع في اللوحة، ويدخل مرة ثم ينسى. فمن رأى أسبوعا
+     لا يتوقعه لم يجد سبيلا إلى مصدره إلا بفتح شاشة الإعداد (رصده المستخدم
+     2026-09-08 حين اختلف الأسبوع بين جهازيه). وغيابه نفسه خبر: بلا تاريخ
+     لا تعرض اللوحة أسبوعا إطلاقا. */
   function startLine(){
     var iso = Shouba.termStart();
     if(!iso) return 'بلا تاريخ بداية';
@@ -151,20 +151,20 @@
     { to:'setup-wizard.html',   main: d.schoolName || DASH, sub: j('المدرسة', d.region, d.schoolType) },
     { to:'setup-wizard-2.html', main: d.department || DASH, sub: j('الشعبة', d.stage, subjects.length ? subjects.length + ' مواد' : '') },
     { to:'setup-wizard-3.html', main: d.year || DASH,       sub: j('العام الدراسي', d.term, startLine()) },
-    { to:'setup-wizard-4.html', main: d.principal || 'لم تُضِف الإشراف بعد', sub: j('الإشراف', d.supervisor || 'اختياري — لك إكماله لاحقاً') },
+    { to:'setup-wizard-4.html', main: d.principal || 'لم تضف الإشراف بعد', sub: j('الإشراف', d.supervisor || 'اختياري — لك إكماله لاحقا') },
     { to:'setup-wizard-5.html', main: teachers.length
                                    ? teachers.slice(0,2).map(function(t){ return 'أ. ' + t; }).join(' · ')
                                      + (teachers.length > 2 ? ' وآخرون' : '')
-                                   : 'لم تُضِف معلّماً',
-                                 sub: j('معلّموك', teachers.length ? Shouba.count(teachers.length, { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً' }) : '') },
-    { to:'setup-wizard-6.html', main: records.length ? Shouba.count(records.length, { one:'سجلّ', two:'سجلّان', few:'سجلّات', many:'سجلاً' }) + ' مختاراً' : 'لم تختر سجلاً',
-                                 sub: j('سجلّاتك', records.length === 15 ? 'الحزمة الجاهزة كاملة' : 'الحزمة معدَّلة') },
-    /* ⚠ اسمك — سطرٌ سابع أُضيف بعد أن رصد المستخدم أنه **محبوسٌ منذ أوّل يوم**
-       (2026-09-08): يُكتب مرّةً في شاشة الدخول، والموجِّه يمنع العودة إليها بعد
-       إتمام الإعداد. وهو يظهر في ترويسة السجلّات، فخطأٌ مطبعيّ فيه يبقى أبداً.
-       ولوحةٌ صغيرة لا شاشةُ الدخول: تلك بابُ الوافد الجديد بترحيبها وبطاقتها،
+                                   : 'لم تضف معلما',
+                                 sub: j('معلموك', teachers.length ? Shouba.count(teachers.length, { one:'معلم', two:'معلمان', few:'معلمين', many:'معلما' }) : '') },
+    { to:'setup-wizard-6.html', main: records.length ? Shouba.count(records.length, { one:'سجل', two:'سجلان', few:'سجلات', many:'سجلا' }) + ' مختارا' : 'لم تختر سجلا',
+                                 sub: j('سجلاتك', records.length === 15 ? 'الحزمة الجاهزة كاملة' : 'الحزمة معدلة') },
+    /* ⚠ اسمك — سطر سابع أضيف بعد أن رصد المستخدم أنه **محبوس منذ أول يوم**
+       (2026-09-08): يكتب مرة في شاشة الدخول، والموجه يمنع العودة إليها بعد
+       إتمام الإعداد. وهو يظهر في ترويسة السجلات، فخطأ مطبعي فيه يبقى أبدا.
+       ولوحة صغيرة لا شاشة الدخول: تلك باب الوافد الجديد بترحيبها وبطاقتها،
        ولا تليق بتصحيح حرف. */
-    { sheet: nameSheet, main: userName() || DASH, sub: 'اسمك · يظهر في ترويسة سجلّاتك' }
+    { sheet: nameSheet, main: userName() || DASH, sub: 'اسمك · يظهر في ترويسة سجلاتك' }
   ];
 
   var CHEV = '<svg width="15" height="15" viewBox="0 0 20 20" fill="none">'
@@ -177,7 +177,7 @@
     el.innerHTML = '<div class="tx"><b></b><small></small></div>' + CHEV;
     el.querySelector('b').textContent = r.main;
     el.querySelector('small').textContent = r.sub;
-    /* أكثر السطور تفتح شاشتها، وسطر الاسم يفتح لوحةً في مكانه */
+    /* أكثر السطور تفتح شاشتها، وسطر الاسم يفتح لوحة في مكانه */
     el.addEventListener('click', function(){
       if(r.sheet) r.sheet();
       else location.href = r.to + '?ret=final';
@@ -187,8 +187,8 @@
 
   document.getElementById('start').addEventListener('click', function(){
     save({ setupDone: true });
-    // وجهة اللوحة الجديدة — لم تُبنَ بعد، فينقطع المسار كما في كل شاشة،
-    // ويوم تُبنى تعمل الوصلة وحدها بلا تعديل.
+    // وجهة اللوحة الجديدة — لم تبن بعد، فينقطع المسار كما في كل شاشة،
+    // ويوم تبنى تعمل الوصلة وحدها بلا تعديل.
     location.href = 'board.html';
   });
 </script>

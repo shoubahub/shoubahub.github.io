@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=36" />
-<link rel="stylesheet" href="shell.css?v=36" />
-<link rel="stylesheet" href="components.css?v=36" />
-<link rel="stylesheet" href="frame.css?v=36" />
+<link rel="stylesheet" href="identity/tokens.css?v=35" />
+<link rel="stylesheet" href="shell.css?v=35" />
+<link rel="stylesheet" href="components.css?v=35" />
+<link rel="stylesheet" href="frame.css?v=35" />
 <style>
   /* أنماط خاصّة بشاشة الدخول فقط — الهيكل من shell.css -->*/
   .brand{display:flex;flex-direction:column;align-items:center;gap:13px;padding:0 30px}
@@ -134,8 +134,8 @@
 <!-- ⚠ شاشة الدخول أوّل ما يُفتح، فهي التي تُسجّل عامل الخدمة وتفحص التحديث:
      بلا هذين يبقى الزائر الجديد بلا عملٍ دون إنترنت، وقد يرى نسخة قديمة
      (GitHub Pages يخزّن الصفحات عشر دقائق) — رُصد بعد النشر الأول 2026-09-06. -->
-<script src="build.js?v=36"></script>
-<script src="components.js?v=36"></script>
+<script src="build.js?v=35"></script>
+<script src="components.js?v=35"></script>
 <script>
   /* شاشة الدخول — دخولٌ حقيقيّ إلى خادم المنصّة (2026-09-08).
      ⚠ لا يُخزَّن سرٌّ هنا: الجلسة كعكةٌ httpOnly لا يبلغها كود الصفحة.
@@ -202,13 +202,7 @@
 
   /* مَن جلسته قائمة لا يُسأل مرّتين */
   fetch('api/me', { credentials: 'same-origin' })
-    .then(function(r){
-      /* نسخةٌ ساكنة بلا خادم (العنوان القديم) ⟵ الوافد الجديد يُوجَّه إلى المنصّة،
-         فلا يُنشئ حساباً في مكانٍ لا يحفظ شيئاً. والتطوير المحلّي مستثنى. */
-      var home = r.status === 404 && Shouba.movedTarget && Shouba.movedTarget();
-      if(home){ location.replace(home + '/login.html'); return null; }
-      return r.ok ? r.json() : null;
-    })
+    .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(u){
       if(!u) return;
       localStorage.setItem('shouba.user', JSON.stringify({ name: u.displayName }));

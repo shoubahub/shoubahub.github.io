@@ -53,12 +53,6 @@ db.exec(`
   );
 `);
 
-/* ⚠ رقم المراجعة (rev) — يرتفع مع كل حفظ، وبه يُعرف الترتيب لا بساعة جهاز
-   (2026-09-10). القواعد القائمة قبله تُرحَّل هنا: الصفوف الموجودة تبدأ من ١،
-   فلا يلتبس «لا بيانات» (٠) بـ«بياناتٌ لم تُرقَّم». */
-const shoubaCols = db.prepare('PRAGMA table_info(shouba)').all().map(c => c.name);
-if (!shoubaCols.includes('rev')) db.exec('ALTER TABLE shouba ADD COLUMN rev INTEGER NOT NULL DEFAULT 1');
-
 /* رمز الدعوة: بلا رمزٍ صحيح لا يُنشأ حساب مهما عُرف الرابط */
 function invite() {
   const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('invite');

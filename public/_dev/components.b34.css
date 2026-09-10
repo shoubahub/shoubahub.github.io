@@ -645,36 +645,3 @@ body.solo .tsel{display:none}
   font-family:var(--font-ar);font-size:12px;font-weight:600;line-height:1.6;text-align:center;
   padding:10px 14px;border-radius:14px;background:var(--shouba-error);color:#FFF3F1;
   box-shadow:0 8px 22px rgba(140,50,40,.28)}
-
-/* معاينة الاستيراد — ما في الملفّ قبل أن يحلّ محلّ شيء (2026-09-10).
-   التسميات بلون التسمية، والقيم بالكحلي (لغة اللون المعتمدة). */
-.impv{display:flex;flex-direction:column;gap:12px}
-.impv .rows{display:flex;flex-direction:column;background:var(--shouba-canvas);border-radius:var(--r-input);
-  box-shadow:var(--shadow-inset);padding:2px 14px}
-.impv .r{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;
-  border-top:1px solid rgba(120,98,66,.14)}
-.impv .r:first-child{border-top:0}
-.impv .r span{flex:none;font-size:12px;font-weight:600;color:var(--shouba-label)}
-.impv .r b{min-width:0;font-size:13.5px;font-weight:700;color:var(--shouba-navy);text-align:left;overflow-wrap:anywhere}
-.impv .warn{font-size:12.5px;font-weight:600;line-height:1.7;color:var(--shouba-error)}
-
-/* ═══ المزامنة والانتقال (2026-09-10) ═══════════════════════════ */
-/* الأشرطة العائمة سطرٌ واحد — كان «حُدّثت شعبتك من جهازٍ آخر» ينكسر ثلاثة أسطر على ٣٧٥px */
-.newver{max-width:calc(100vw - 24px)}
-.newver span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.impv .lead{font-size:13px;line-height:1.8;color:var(--shouba-text-muted)}
-/* لوحة الخلاف: عمودان متقابلان، والتسمية فوق القيمة لضيق العمود، والفرق بالعنبري */
-.cfx{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.cfx .rows{padding:2px 12px 6px}
-.cfx .h{font-size:11.5px;font-weight:700;color:var(--shouba-label);padding:10px 0 4px}
-.cfx .r{flex-direction:column;align-items:flex-start;gap:1px;padding:7px 0}
-.cfx .r b{text-align:right}
-.cfx .r.diff b{color:var(--shouba-amber-deep)}
-/* خطوات الانتقال */
-.moved ol{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:8px}
-.moved li{font-size:13px;line-height:1.7;color:var(--shouba-text-muted)}
-.moved li b{color:var(--shouba-navy)}
-/* رابطٌ نصّيّ بهدف لمسٍ كامل — لما هو بديلٌ لا فعلٌ رئيسي */
-.linkbtn{border:0;background:none;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;
-  color:var(--shouba-link);min-height:44px;padding:0 2px;display:inline-flex;align-items:center}
-.impentry{display:flex;align-items:center;justify-content:center;gap:4px;font-size:13px;color:var(--shouba-label)}

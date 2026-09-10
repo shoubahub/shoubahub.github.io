@@ -45,23 +45,14 @@
   fetch('api/data', { credentials: 'same-origin' })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (res) {
-      if (!res) return;
-      /* نسخةٌ محلّية لصاحبٍ آخر تُطوى — فلا يرى الداخلُ بيانات من قبله ولو لحظة */
-      var owner = localStorage.getItem('shouba.owner');
-      if (owner && res.user && owner !== res.user) {
-        ['shouba.setup', 'shouba.rev', 'shouba.base'].forEach(function (k) { localStorage.removeItem(k); });
-      }
-      if (res.user) localStorage.setItem('shouba.owner', res.user);
-      if (res.data) {
+      if (res && res.data) {
         var mine = j('shouba.setup');
         var empty = !mine || Object.keys(mine).length === 0;
-        /* لا نطمس عملاً محلّياً: ننزّل حين لا يكون عندنا شيء.
-           والمقارنة برقم المراجعة تتولّاها طبقة الاشتقاق بعد التوجيه،
-           وهي التي تختم البصمة (فالموجِّه لا يكرّر حسابها). */
+        /* لا نطمس عملاً محلّياً: ننزّلها حين لا يكون عندنا شيء.
+           والمقارنة بالأحدثية تتولّاها طبقة الاشتقاق بعد التوجيه. */
         if (empty) {
           localStorage.setItem('shouba.setup', JSON.stringify(res.data));
-          localStorage.setItem('shouba.rev', String(res.rev || 0));
-          localStorage.removeItem('shouba.base');
+          localStorage.setItem('shouba.sync', new Date().toISOString());
         }
       }
     })

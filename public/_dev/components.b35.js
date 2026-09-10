@@ -20,27 +20,16 @@ document.addEventListener('DOMContentLoaded', function () { Shouba.greet(); });
 
 /* تصريف المعدود عربياً — مصدر واحد لكل العدّادات:
    ١ مفرد · ٢ مثنّى · ٣–١٠ جمع · ١١+ تمييز مفرد منصوب.
-   الصيغ: { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً', zero:'لا أحد' }
-   ⚠ «zero» اختيارية: بها يُقال «لا شيء» بدل «٠ جدولاً». كان كلّ نداءٍ يعالج الصفر
-     بنفسه، فنُسخت المعالجة في دالّةٍ محلّية وقعت خارج نطاق مَن يناديها فانكسر
-     الاستيراد (رُصد 2026-09-10) — فصار الصفر من شأن العدّاد نفسه. */
+   الصيغ: { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً' } */
 Shouba.unit = function (n, f) {
   return n === 1 ? f.one : n === 2 ? f.two : (n >= 3 && n <= 10) ? f.few : f.many;
 };
 Shouba.count = function (n, f) {
-  if (!n && f.zero) return f.zero;
   /* ⚠ «واحد» تُؤنَّث تبعاً للمعدود: «معلّم واحد» و«حصة واحدة».
      كانت مذكّرةً دائماً فأنتجت «حصة واحد» (رُصد 2026-09-05). */
   if (n === 1) return f.one + (/ة$/.test(f.one) ? ' واحدة' : ' واحد');
   if (n === 2) return f.two;
   return n + ' ' + Shouba.unit(n, f);
-};
-/* صيغ ملخّص الشعبة — في مساحة الاسم لا في دالّة، فتبلغها كل لوحة:
-   معاينة الاستيراد ولوحة الخلاف تعرضان الملخّص نفسه فيجب أن تتكلّما بلسانٍ واحد. */
-Shouba.FORMS = {
-  teachers:  { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً', zero:'لا أحد' },
-  schedules: { one:'جدول', two:'جدولان', few:'جداول',  many:'جدولاً', zero:'لا شيء' },
-  events:    { one:'موعد', two:'موعدان', few:'مواعيد', many:'موعداً', zero:'لا شيء' }
 };
 
 
@@ -264,9 +253,9 @@ Shouba.returnTo = function () {
     [
       ['الشعبة',   (s.department || '—') + (s.stage ? ' · ' + s.stage : '')],
       ['المدرسة',  s.school || '—'],
-      ['المعلّمون', Shouba.count(s.teachers,  Shouba.FORMS.teachers)],
-      ['الجداول',  Shouba.count(s.schedules, Shouba.FORMS.schedules)],
-      ['المواعيد', Shouba.count(s.events,    Shouba.FORMS.events)],
+      ['المعلّمون', s.teachers ? Shouba.count(s.teachers, { one:'معلّم', two:'معلّمان', few:'معلّمين', many:'معلّماً' }) : 'لا أحد'],
+      ['الجداول',  s.schedules ? Shouba.count(s.schedules, { one:'جدول', two:'جدولان', few:'جداول', many:'جدولاً' }) : 'لا شيء'],
+      ['المواعيد', s.events ? Shouba.count(s.events, { one:'موعد', two:'موعدان', few:'مواعيد', many:'موعداً' }) : 'لا شيء'],
       ['صُدِّر',    whenTx + (s.owner ? ' · ' + s.owner : '')]
     ].forEach(function (r) {
       var el = document.createElement('div'); el.className = 'r';
@@ -295,7 +284,7 @@ Shouba.returnTo = function () {
         var u = JSON.parse(localStorage.getItem('shouba.user')) || {};
         if (!u.name && s.owner) { u.name = s.owner; localStorage.setItem('shouba.user', JSON.stringify(u)); }
       } catch (e) {}
-      Shouba.flush(true).then(function () {   /* استبدالٌ صريحٌ بعد تحذير */
+      Shouba.flush().then(function () {
         Shouba.sheet.close();
         if (after) after(); else location.href = 'index.html';
       });
@@ -510,151 +499,24 @@ Shouba.returnTo = function () {
       .catch(function () {});                                 /* بلا إنترنت: لا شيء */
   }
 
-  /* ═══ الوصل بالخادم وعرضُ حاله (2026-09-10) ═══════════════════════════
-     طبقة الاشتقاق تقرّر (رقم المراجعة · الخلاف · الانتقال)، وهنا تُعرض.
+  /* ═══ الوصل بالخادم (2026-09-08) ═══════════════════════════════════
+     يُنادى بعد تحميل كل شاشة. وطبقة الاشتقاق هي التي تقرّر:
+     بجلسةٍ تعمل على الخادم، وبلا جلسةٍ تبقى على الجهاز كما كانت.
      ⚠ ولا تُمسّ شاشةٌ من الخمس عشرة — كما وُعد في ترويسة derive.js. */
-
-  /* شريطٌ عائم تحت الرأس، وتتراصّ الأشرطة إن تعدّدت فلا يغطّي أحدها الآخر */
-  function pill(text, action, onClick) {
-    var b = document.createElement('div'); b.className = 'newver';
-    var bar = document.querySelector('.topbar');
-    var top = bar ? Math.round(bar.getBoundingClientRect().height) + 8 : 12;
-    b.style.top = (top + document.querySelectorAll('.newver').length * 50) + 'px';
-    var s = document.createElement('span'); s.textContent = text;
-    var go = document.createElement('b'); go.setAttribute('role', 'button'); go.tabIndex = 0; go.textContent = action;
-    var x = document.createElement('i'); x.className = 'x'; x.setAttribute('role', 'button');
-    x.tabIndex = 0; x.setAttribute('aria-label', 'أغلق'); x.textContent = '×';
-    x.addEventListener('click', function (e) { e.stopPropagation(); b.remove(); });
-    go.addEventListener('click', onClick);
-    b.appendChild(s); b.appendChild(go); b.appendChild(x);
-    document.body.appendChild(b);
-    return b;
-  }
-
-  /* شريط فشل الحفظ — صامتٌ حين ينجح، صريحٌ حين يفشل.
-     (كان يُبنى داخل derive.js فخالف قاعدة «لا DOM في طبقة الاشتقاق».) */
-  var sbar = null;
-  function syncBar(bad) {
-    if (!bad) { if (sbar) { sbar.remove(); sbar = null; } return; }
-    if (sbar) return;
-    sbar = document.createElement('div'); sbar.className = 'syncbar';
-    sbar.textContent = 'لم يصل الحفظ إلى الخادم — عملُك محفوظ في جهازك وسيُرسَل تلقائياً.';
-    document.body.appendChild(sbar);
-  }
-
-  /* لوحة الخلاف: النسختان جنباً إلى جنب، والفرق مُبرَز، والاختيار لصاحبها.
-     ⚠ محتوى النسختين يُعرض بـtextContent. */
-  var cfPill = null;
-  function conflictSheet(c) {
-    c = c || (Shouba.conflict);
-    if (!c) return;
-    /* isConnected: إن أغلقه صاحبه ثم وقع خلافٌ ثانٍ في الجلسة، عاد الشريط */
-    if (!cfPill || !cfPill.isConnected) cfPill = pill('نسختان مختلفتان من شعبتك', 'احسم', function () { conflictSheet(); });
-    var a = Shouba.summarize(c.local), b = Shouba.summarize(c.server);
-    var n = document.createElement('div'); n.className = 'impv';
-    var lead = document.createElement('div'); lead.className = 'lead';
-    lead.textContent = 'على الخادم نسخةٌ غير التي على هذا الجهاز — ربما عدّلتَ من جهازٍ آخر.'
-      + ' اختر أيّهما تُبقي، والأخرى تُحفظ على هذا الجهاز احتياطاً.';
-    n.appendChild(lead);
-    var grid = document.createElement('div'); grid.className = 'cfx';
-    var anyDiff = false;
-    var F = Shouba.FORMS;
-    function side(title, s, o, at) {
-      var box = document.createElement('div'); box.className = 'rows';
-      var h = document.createElement('div'); h.className = 'h'; h.textContent = title; box.appendChild(h);
-      /* ⚠ الطرفان بالعدّاد نفسه والصيغ نفسها — فالمقارنة نصّيةٌ صادقة:
-         كان الأيمن بلا صيغة صفر والأيسر بها، فعُلِّم صفرٌ مقابل صفرٍ «مختلفاً» */
-      [['الشعبة', s.department || '—', o.department || '—'],
-       ['المعلّمون', Shouba.count(s.teachers,  F.teachers),  Shouba.count(o.teachers,  F.teachers)],
-       ['الجداول',  Shouba.count(s.schedules, F.schedules), Shouba.count(o.schedules, F.schedules)],
-       ['المواعيد', Shouba.count(s.events,    F.events),    Shouba.count(o.events,    F.events)]
-      ].forEach(function (r) {
-        var el = document.createElement('div'); el.className = 'r' + (r[1] !== r[2] ? ' diff' : '');
-        if (r[1] !== r[2]) anyDiff = true;
-        var k = document.createElement('span'); k.textContent = r[0];
-        var v = document.createElement('b');    v.textContent = r[1];
-        el.appendChild(k); el.appendChild(v); box.appendChild(el);
-      });
-      if (at) {
-        var d = new Date(at.replace(' ', 'T') + 'Z');
-        var el = document.createElement('div'); el.className = 'r';
-        var k = document.createElement('span'); k.textContent = 'آخر حفظ';
-        var v = document.createElement('b');
-        v.textContent = isNaN(d) ? at : d.toLocaleString('ar-KW', { day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' });
-        el.appendChild(k); el.appendChild(v); box.appendChild(el);
-      }
-      return box;
-    }
-    grid.appendChild(side('على هذا الجهاز', a, b, ''));
-    grid.appendChild(side('على الخادم', b, a, c.serverAt));
-    n.appendChild(grid);
-    if (!anyDiff) {
-      var same = document.createElement('div'); same.className = 'lead';
-      same.textContent = 'الأعداد متطابقة — والفرق في التفاصيل: خانةٌ في جدول، أو اسم، أو موعد.';
-      n.appendChild(same);
-    }
-    var mine = document.createElement('button'); mine.className = 'btn-ghost'; mine.textContent = 'أبقِ نسخة هذا الجهاز';
-    var theirs = document.createElement('button'); theirs.className = 'btn-ghost'; theirs.textContent = 'خذ نسخة الخادم';
-    function pick(keep, el) {
-      mine.disabled = theirs.disabled = true; el.textContent = 'يُحفظ…';
-      Shouba.resolve(keep).then(function () { Shouba.sheet.close(); location.reload(); });
-    }
-    mine.addEventListener('click', function () { pick('mine', mine); });
-    theirs.addEventListener('click', function () { pick('server', theirs); });
-    n.appendChild(mine); n.appendChild(theirs);
-    Shouba.sheet.open('نسختان مختلفتان من شعبتك', n);
-  }
-
-  /* ═══ العنوان الدائم للمنصّة وتنبيه الانتقال ═══════════════════════
-     SHOUBA_HOME في build.js — **سطرٌ واحد يتبدّل يوم يُشترى النطاق**.
-     التحويل التلقائيّ للوافد الجديد يُستثنى منه التطوير المحلّي؛
-     أمّا التنبيه فيظهر في كل نسخةٍ ساكنة بلا خادم (العنوان القديم). */
-  Shouba.movedTarget = function () {
-    var home = window.SHOUBA_HOME || '';
-    if (!home || location.origin === home) return '';
-    var h = location.hostname;
-    if (h === 'localhost' || h === '127.0.0.1' || /^(192\.168|10)\./.test(h)) return '';
-    return home;
-  };
-  function movedSheet() {
-    var home = window.SHOUBA_HOME;
-    var n = document.createElement('div'); n.className = 'impv moved';
-    var lead = document.createElement('div'); lead.className = 'lead';
-    lead.textContent = 'هذا العنوان القديم يعمل على جهازك وحده، ولن يصله جديد. وبيانات شعبتك هنا'
-      + ' لم تصل إلى المنصّة الجديدة — انقلها في ثلاث خطوات:';
-    n.appendChild(lead);
-    var ol = document.createElement('ol');
-    ol.innerHTML = '<li><b>صدِّر شعبتك</b> ملفّاً — الزرّ أدناه.</li>'
-      + '<li><b>افتح المنصّة الجديدة</b> وأنشئ حسابك برمز الدعوة من رئيس الشعبة.</li>'
-      + '<li>في أوّل شاشة بعد التسجيل اضغط <b>«استورده»</b> واختر الملفّ.</li>';
-    n.appendChild(ol);
-    var ex = document.createElement('button'); ex.className = 'cta'; ex.textContent = 'صدِّر شعبتك';
-    ex.addEventListener('click', function () { Shouba.exportData(); });
-    var go = document.createElement('button'); go.className = 'btn-ghost'; go.textContent = 'افتح المنصّة الجديدة';
-    go.addEventListener('click', function () { location.href = home + '/login.html'; });
-    n.appendChild(ex); n.appendChild(go);
-    Shouba.sheet.open('انتقلت المنصّة', n);
-  }
-  function movedNotice() {
-    var home = window.SHOUBA_HOME;
-    if (!home || location.origin === home) return;
-    pill('انتقلت المنصّة إلى عنوانٍ جديد', 'اعرض', movedSheet);
-    /* تُفتح وحدها مرّةً في الجلسة على اللوحة — شاشة كل يوم */
-    try {
-      if (/board\.html/.test(location.pathname) && !sessionStorage.getItem('shouba.movedSeen')) {
-        sessionStorage.setItem('shouba.movedSeen', '1'); movedSheet();
-      }
-    } catch (e) {}
-  }
-
   function connectServer() {
     if (!window.Shouba || !Shouba.connect) return;
-    Shouba.onConflict = conflictSheet;
-    Shouba.onSyncState = syncBar;
-    Shouba.connect().then(function () {
-      if (Shouba.serverless) { movedNotice(); return; }
-      /* تُخبَر ولا تُفاجأ — ويُقال هذا حين يكون جهازٌ آخر قد كتب فعلاً */
-      if (Shouba.updatedElsewhere) pill('حُدّثت من جهازٍ آخر', 'اعرض', function () { location.reload(); });
+    Shouba.connect().then(function (ok) {
+      if (!ok || !Shouba.serverWasNewer) return;
+      /* بياناتك تبدّلت من جهازٍ آخر — تُخبَر ولا تُفاجأ */
+      var b = document.createElement('div');
+      b.className = 'newver';
+      var bar = document.querySelector('.topbar');
+      b.style.top = (bar ? Math.round(bar.getBoundingClientRect().height) + 8 : 12) + 'px';
+      b.innerHTML = '<span>حُدّثت شعبتك من جهازٍ آخر</span><b role="button" tabindex="0">اعرض</b>'
+                  + '<i class="x" role="button" tabindex="0" aria-label="أغلق">×</i>';
+      b.querySelector('.x').addEventListener('click', function (e) { e.stopPropagation(); b.remove(); });
+      b.querySelector('b').addEventListener('click', function () { location.reload(); });
+      document.body.appendChild(b);
     });
   }
 

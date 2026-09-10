@@ -19,11 +19,14 @@
   var S = window.Shouba;
 
   /* ===== ① المصدر: نقطة قراءة وكتابة واحدة =====
-     ⚠ **الجهاز أوّلاً، والخادم بعده**: الكتابة تُحفظ محلّياً في الحال فتظهر
-       فوراً بلا انتظار شبكة، ثم تُرسَل بعد سكونٍ قصير. فالإدخال لا يتغيّر
-       إحساسه، ويعمل بلا إنترنت، وشبكة المدرسة تنقطع فلا يقف العمل. */
+     ⚠ **الجهاز أوّلاً، والخادم بعده** — وهذا هو الترتيب لا العكس:
+       الكتابة تُحفظ محلّياً في الحال فتظهر فوراً بلا انتظار شبكة، ثم تُرسَل
+       بعد سكونٍ قصير. فالإدخال لا يتغيّر إحساسه، ويعمل بلا إنترنت،
+       وشبكة المدرسة تنقطع فلا يقف العمل.
+     ⚠ والوثيقة **كاملةٌ** في كل إرسال — لا حقلاً حقلاً. ولذلك تغلب آخرُ
+       كتابة عند التحرير المتزامن من جهازين، ويحرسه guard الأحدثية أدناه. */
   var cache = null;
-  var REV = 'shouba.rev', BASE = 'shouba.base', OWNER = 'shouba.owner';
+  var SYNC  = 'shouba.sync';               /* آخر تاريخ خادمٍ عرفناه */
 
   S.data = function (fresh) {
     if (fresh || !cache) { try { cache = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { cache = {}; } }
@@ -37,145 +40,88 @@
     return d;
   };
 
-  /* ===== ①ب المزامنة: رقمُ مراجعةٍ من الخادم لا ساعةُ جهاز (2026-09-10) =====
-     ⚠ كانت تقارن الأوقات «الأحدث يقود»، فانكسرت في ثلاث:
-       · جهازٌ بلا ختمٍ سابق عَدّ كلّ ما على الخادم أحدث، فمحا نسخته بصمت
-         وأعلن «من جهازٍ آخر» ولا جهاز آخر (رُصد بالفحص).
-       · ساعةُ جوّالٍ غير مضبوطة تقلب الترتيب فتُطمَس كتابةٌ صحيحة.
-       · وحسابٌ ثانٍ على الجهاز نفسه كان يرث نسخة من قبله.
-     الآن: كل حفظٍ على الخادم يرفع رقم المراجعة، والجهاز يحفظ آخر رقمٍ بنى
-     عليه ويرسل «بنيتُ على كذا». فإن سبقه غيرُه رفض الخادم وأعاد نسخته،
-     **ولا يُحسم الخلاف بقاعدةٍ صامتة بل يُعرض على صاحبه**.
-     ⚠ و«هل عُدِّل هنا ما لم يُرسَل؟» تُعرف **ببصمة آخر نسخةٍ متزامنة** (BASE)
-       لا براية يرفعها الكاتب: شاشات الإعداد تكتب في الجهاز مباشرةً فلا ترفع
-       راية، فكان تعديلها يُمحى بصمت إن تقدّم الخادم. البصمة تكشف كلّ تغيير
-       أيّاً كان كاتبه.
-     ⚠ لا DOM هنا: الخلاف يُسلَّم عبر S.onConflict، وحال الحفظ عبر S.onSyncState،
-       والشاشة تبنيهما في components.js. */
-  var online = false, timer = null, sending = false, again = false;
-  S.conflict = null;
+  /* ===== ①ب الخادم ==========================================
+     يُفعَّل حين يكون ثمّة خادم وجلسة. وبلا ذلك تعمل المنصّة على الجهاز
+     كما كانت — فلا تنكسر نسخةٌ ساكنة ولا تطوير محلّي بلا خادم. */
+  var online = false;                       /* هل ثبتت جلسةٌ على خادم؟ */
+  var timer = null, sending = false, again = false;
 
-  function ls(k)       { try { return localStorage.getItem(k); } catch (e) { return null; } }
-  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-  function lsDel(k)    { try { localStorage.removeItem(k); } catch (e) {} }
-  lsDel('shouba.sync'); lsDel('shouba.dirty');          /* مفاتيح نظام الأوقات البائد */
-
-  function getRev()  { var v = parseInt(ls(REV), 10); return isNaN(v) ? null : v; }
-  function setRev(v) { lsSet(REV, String(v)); }
-
-  /* مقارنةٌ لا يغيّرها ترتيب المفاتيح */
-  function canon(v) {
-    if (Array.isArray(v)) return '[' + v.map(canon).join(',') + ']';
-    if (v && typeof v === 'object')
-      return '{' + Object.keys(v).sort().map(function (k) { return JSON.stringify(k) + ':' + canon(v[k]); }).join(',') + '}';
-    return JSON.stringify(v === undefined ? null : v);
-  }
-  function snap(d) {
-    var s = canon(d || {}), h = 5381;
-    for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
-    return (h >>> 0).toString(36) + '.' + s.length;
-  }
-  function mark(d)   { lsSet(BASE, snap(d)); }
-  /* بلا بصمةٍ سابقة يُعَدّ معدَّلاً — فالمجهول يُسأل عنه ولا يُطمَس */
-  function isDirty() { var b = ls(BASE); return !b || b !== snap(S.data(true)); }
-  function same(a, b) { return canon(a || {}) === canon(b || {}); }
-  function blank(d)   { return !d || typeof d !== 'object' || Object.keys(d).length === 0; }
-
-  function adopt(d, rev) {                  /* نسخة الخادم تصير نسخة الجهاز */
-    cache = d || {};
-    localStorage.setItem(KEY, JSON.stringify(cache));
-    setRev(rev); mark(cache);
-  }
-  function note(bad) {
-    if (typeof S.onSyncState === 'function') { try { S.onSyncState(!!bad); } catch (e) {} }
-  }
-  function raise(j, quiet) {
-    S.conflict = { local: S.data(), server: j.data || {}, serverRev: j.rev || 0, serverAt: j.updatedAt || '' };
-    if (!quiet && typeof S.onConflict === 'function') { try { S.onConflict(S.conflict); } catch (e) {} }
-  }
+  function stamp(t) { try { localStorage.setItem(SYNC, t || ''); } catch (e) {} }
+  function lastSync() { try { return localStorage.getItem(SYNC) || ''; } catch (e) { return ''; } }
 
   function push() {
-    if (!online || S.conflict) return;      /* لا إرسال والخلاف معلّق */
+    if (!online) return;
     clearTimeout(timer);
     timer = setTimeout(send, 1200);         /* سكونٌ قصير — لا مع كل حرف */
   }
-
-  /* يرسل الوثيقة مبنيّةً على مراجعة، ويعيد: 'ok' · 'conflict' · 'offline' */
-  function put(baseRev, quiet) {
-    var sent = S.data();
-    return fetch('api/data', {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      credentials: 'same-origin', body: JSON.stringify({ data: sent, baseRev: baseRev })
-    }).then(function (r) {
-      return r.json().then(function (j) {
-        if (r.ok) { setRev(j.rev); mark(sent); note(false); return 'ok'; }
-        if (r.status === 409) { raise(j, quiet); return 'conflict'; }
-        throw new Error('http ' + r.status);
-      });
-    }).catch(function () { note(true); return 'offline'; });
-  }
-
   function send() {
-    if (!online || S.conflict) return;
+    if (!online) return;
     if (sending) { again = true; return; }
     sending = true;
-    put(getRev() || 0).then(function (res) {
+    fetch('api/data', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin', body: JSON.stringify({ data: S.data() })
+    }).then(function (r) {
+      if (!r.ok) throw new Error();
+      stamp(new Date().toISOString());
+      note(false);
+    }).catch(function () {
+      note(true);                           /* صامتٌ حين ينجح، صريحٌ حين يفشل */
+      setTimeout(function () { if (online) send(); }, 15000);
+    }).then(function () {
       sending = false;
-      if (res === 'offline') setTimeout(function () { if (online) send(); }, 15000);
-      else if (again && res === 'ok') { again = false; send(); }
+      if (again) { again = false; send(); }
     });
   }
 
-  /* الإقلاع: يُنادى من components.js بعد تحميل الصفحة.
-     يعيد 'ok' · 'conflict' · 'none' (بلا خادمٍ أو بلا جلسة). */
-  S.connect = function () {
-    if (!window.fetch) return Promise.resolve('none');
-    return fetch('api/data', { credentials: 'same-origin' }).then(function (r) {
-      /* ⚠ ٤٠٤ = نسخةٌ ساكنة بلا خادم (العنوان القديم على GitHub Pages)،
-         وتفترق عن ٤٠١ = خادمٌ بلا جلسة. الأولى وحدها تستدعي تنبيه الانتقال. */
-      if (r.status === 404) { S.serverless = true; return 'none'; }
-      if (!r.ok) return 'none';
-      return r.json().then(function (res) {
-        online = true;
-        /* نسخةٌ محلّية لصاحبٍ آخر لا تُقارَن ولا تُرفَع — تُطوى */
-        var owner = ls(OWNER);
-        if (owner && res.user && owner !== res.user) {
-          lsDel(KEY); lsDel(REV); lsDel(BASE); cache = null;
-        }
-        if (res.user) lsSet(OWNER, res.user);
+  /* شريط الفشل — يُبنى مرّةً ويُخفى ويُظهر */
+  var bar = null;
+  function note(bad) {
+    if (!bad) { if (bar) bar.remove(), bar = null; return; }
+    if (bar) return;
+    bar = document.createElement('div');
+    bar.className = 'syncbar';
+    bar.textContent = 'لم يصل الحفظ إلى الخادم — عملُك محفوظ في جهازك وسيُرسَل تلقائياً.';
+    document.body.appendChild(bar);
+  }
 
-        var mine = S.data(true), srv = res.data, rev = res.rev || 0, base = getRev();
-        if (blank(srv)) {                   /* الخادم لا يملك شيئاً */
-          if (!blank(mine)) send();         /* ترحيل: يرتفع ما على الجهاز */
-          return 'ok';
+  /* الإقلاع: يُنادى من components.js بعد تحميل الصفحة.
+     يجلب وثيقة الخادم ويقرّر بينها وبين المحلّية. */
+  S.connect = function () {
+    if (!window.fetch) return Promise.resolve(false);
+    return fetch('api/data', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (res) {
+        if (!res) return false;             /* لا جلسة ⟵ نبقى على الجهاز */
+        online = true;
+        var mine = S.data(true);
+        var has  = mine && Object.keys(mine).length > 0;
+
+        /* ⚠ الترحيل: مَن أعدّ شعبته على جهازه لا يفقدها.
+           والمحلّية تبقى حتى ينجح الرفع — لا تُمحى قبل التأكّد. */
+        if (!res.data && has) { send(); return true; }
+
+        if (res.data && !has) {             /* الخادم وحده يملك ⟵ ننزلها */
+          cache = res.data;
+          localStorage.setItem(KEY, JSON.stringify(cache));
+          stamp(res.updatedAt || '');
+          return true;
         }
-        if (blank(mine))     { adopt(srv, rev); return 'ok'; }
-        if (same(mine, srv)) { setRev(rev); mark(srv); return 'ok'; }
-        /* مختلفان */
-        if (base === rev) { send(); return 'ok'; }          /* الخادم لم يتغيّر منذ بنينا ⟵ تعديلاتنا ترتفع */
-        if (base !== null && base < rev && !isDirty()) {     /* تقدّم الخادم ولا عمل هنا لم يُرسَل */
-          adopt(srv, rev); S.updatedElsewhere = true; return 'ok';
+        if (res.data && has) {
+          /* الاثنان يملكان: الأحدث يقود، ولا نطمس عملاً */
+          var srv = res.updatedAt || '';
+          if (srv && srv > lastSync().slice(0, 19).replace('T', ' ')) {
+            cache = res.data;
+            localStorage.setItem(KEY, JSON.stringify(cache));
+            stamp(res.updatedAt);
+            S.serverWasNewer = true;        /* تقرؤه اللوحة فتخبر المستخدم */
+          } else { send(); }
         }
-        /* خلافٌ حقيقي، أو أصلٌ مجهول (نسخةٌ لم تُرقَّم قطّ) ⟵ يُسأل صاحبه */
-        raise({ data: srv, rev: rev, updatedAt: res.updatedAt });
-        return 'conflict';
-      });
-    }).catch(function () { return 'none'; });
+        return true;
+      })
+      .catch(function () { return false; });
   };
   S.online = function () { return online; };
-
-  /* حسم الخلاف باختيار صاحبه — والنسخة المتروكة تُحفظ على الجهاز احتياطاً */
-  S.resolve = function (keep) {
-    var c = S.conflict;
-    if (!c) return Promise.resolve('ok');
-    lsSet(KEY + '.discarded', JSON.stringify({ at: new Date().toISOString(), kept: keep,
-      data: keep === 'mine' ? c.server : c.local }));
-    S.conflict = null;
-    if (keep === 'server') { adopt(c.server, c.serverRev); return Promise.resolve('ok'); }
-    cache = c.local;
-    localStorage.setItem(KEY, JSON.stringify(cache));
-    return put(c.serverRev);                /* «بنيتُ على نسختك» ⟵ تُقبل ما لم يسبقها ثالث */
-  };
 
   /* ===== ①ج قابلية النقل: تصدير الشعبة واستيرادها (2026-09-10) =====
      ميزةٌ دائمة لا جسرٌ مؤقّت — قرار المستخدم: «حلولٌ جذرية لا ترقيعية».
@@ -197,22 +143,6 @@
     };
   };
 
-  /* خلاصة وثيقة — تعرضها معاينة الاستيراد ولوحة الخلاف */
-  S.summarize = function (d) {
-    d = d || {};
-    var sch = (d.schedules && typeof d.schedules === 'object') ? d.schedules : {};
-    var withSchedule = Object.keys(sch).filter(function (t) {
-      var day = sch[t] || {};
-      return Object.keys(day).some(function (k) { return (day[k] || []).some(function (v) { return !!v; }); });
-    }).length;
-    return {
-      department: d.department || '', stage: d.stage || '', school: d.schoolName || '',
-      teachers: Array.isArray(d.teachers) ? d.teachers.length : 0,
-      schedules: withSchedule,
-      events: Array.isArray(d.events) ? d.events.length : 0
-    };
-  };
-
   /* يتحقّق ولا يكتب شيئاً — يعيد { ok, data, summary } أو { ok:false, error } */
   S.parseImport = function (obj) {
     if (!obj || typeof obj !== 'object') return { ok: false, error: 'bad' };
@@ -220,37 +150,50 @@
     if (obj.version > FORMAT_V) return { ok: false, error: 'newer' };
     var d = obj.data;
     if (!d || typeof d !== 'object' || Array.isArray(d)) return { ok: false, error: 'bad' };
-    var s = S.summarize(d);
-    s.owner = (obj.owner && obj.owner.name) || '';
-    s.exportedAt = obj.exportedAt || '';
-    return { ok: true, data: d, summary: s };
+    var sch = (d.schedules && typeof d.schedules === 'object') ? d.schedules : {};
+    var withSchedule = Object.keys(sch).filter(function (t) {
+      var day = sch[t] || {};
+      return Object.keys(day).some(function (k) { return (day[k] || []).some(function (v) { return !!v; }); });
+    }).length;
+    return { ok: true, data: d, summary: {
+      department: d.department || '', stage: d.stage || '', school: d.schoolName || '',
+      teachers: Array.isArray(d.teachers) ? d.teachers.length : 0,
+      schedules: withSchedule,
+      events: Array.isArray(d.events) ? d.events.length : 0,
+      owner: (obj.owner && obj.owner.name) || '', exportedAt: obj.exportedAt || ''
+    } };
   };
 
   /* يستبدل الوثيقة كاملةً لا يدمجها — والسابقة تُحفظ على الجهاز قبل الاستبدال،
      فالاستيراد بالخطأ يُستردّ ولا يُفقد به عمل. */
   S.replace = function (d) {
-    var prev = ls(KEY);
-    if (prev && prev !== '{}') lsSet(KEY + '.before-import', prev);
+    try {
+      var prev = localStorage.getItem(KEY);
+      if (prev && prev !== '{}') localStorage.setItem(KEY + '.before-import', prev);
+    } catch (e) {}
     cache = d;
     localStorage.setItem(KEY, JSON.stringify(d));
     push();
     return d;
   };
 
-  /* إرسالٌ فوريّ ينتظره المُنادي — لازمٌ قبل مغادرة الصفحة بعد الاستيراد:
-     الإرسال المؤجَّل يموت بموت الصفحة.
-     overwrite: الاستيراد استبدالٌ صريحٌ بعد تحذير، فإن سبقه حفظٌ على الخادم
-     بُني على رقمه الحالي، ولا يُعرض خلافٌ على من اختار الاستبدال للتوّ. */
-  S.flush = function (overwrite) {
+  /* إرسالٌ فوريّ ينتظره المُنادي.
+     ⚠ لازمٌ قبل مغادرة الصفحة بعد الاستيراد: الإرسال المؤجَّل يموت بموت الصفحة،
+       فتبقى الوثيقة المستوردة محلّيةً، ثم يراها الوصل التالي أقدم من الخادم
+       فتُطمَس بالبيانات القديمة. */
+  S.flush = function () {
     clearTimeout(timer);
-    if (!online) return Promise.resolve('offline');
-    return put(getRev() || 0, overwrite).then(function (res) {
-      if (res !== 'conflict' || !overwrite) return res;
-      var c = S.conflict; S.conflict = null;
-      return put(c.serverRev, true);
-    });
+    if (!online) return Promise.resolve(false);
+    return fetch('api/data', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin', body: JSON.stringify({ data: S.data() })
+    }).then(function (r) {
+      if (!r.ok) return false;
+      stamp(new Date().toISOString());
+      note(false);
+      return true;
+    }).catch(function () { return false; });
   };
-
 
   /* ===== ①ب الترحيل: أسماء الأقسام تبدّلت مع بيانات الوزارة (2026-09-07) =====
      مَن أعدّ شعبته على الأسماء القديمة يجدها باسمها الجديد بلا أن يفعل شيئاً.

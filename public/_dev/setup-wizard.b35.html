@@ -12,10 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=36" />
-<link rel="stylesheet" href="shell.css?v=36" />
-<link rel="stylesheet" href="components.css?v=36" />
-<link rel="stylesheet" href="frame.css?v=36" />
+<link rel="stylesheet" href="identity/tokens.css?v=35" />
+<link rel="stylesheet" href="shell.css?v=35" />
+<link rel="stylesheet" href="components.css?v=35" />
+<link rel="stylesheet" href="frame.css?v=35" />
 <!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصّة لهذه الشاشة -->
 </head>
 <body class="framed">
@@ -93,8 +93,6 @@
         </div>
       </div>
     </form>
-      <!-- قابلية النقل (2026-09-10): مَن معه ملفّ شعبة لا يعيد الإعداد من أوّله -->
-      <div class="impentry"><span>عندك ملفّ شعبةٍ محفوظ؟</span><button type="button" class="linkbtn" id="importFile">استورده</button></div>
     </div><!-- /content -->
   </div>
 
@@ -103,11 +101,9 @@
   </div>
  </div></div>
 
-<script src="icons.js?v=36"></script>
-<script src="build.js?v=36"></script>
-<script src="refdata.js?v=36"></script>
-<script src="derive.js?v=36"></script>
-<script src="components.js?v=36"></script>
+<script src="icons.js?v=35"></script>
+<script src="build.js?v=35"></script>
+<script src="components.js?v=35"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -252,12 +248,6 @@
   });
 
   paintCrest();
-</script>
-<script>
-  /* الاستيراد من أوّل شاشة: الملفّ يحمل setupDone فيذهب الموجِّه إلى اللوحة */
-  document.getElementById('importFile').addEventListener('click', function(){
-    Shouba.importData(function(){ location.href = 'index.html'; });
-  });
 </script>
 </body>
 </html>

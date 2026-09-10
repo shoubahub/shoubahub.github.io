@@ -148,37 +148,18 @@ function routes(app) {
   });
 
   /* ── وثيقة الشعبة ───────────────────────────────── */
-  /* ⚠ «user» في الجواب: النسخة المحلّية تُربط بصاحبها، فمن دخل بحسابٍ آخر
-     على الجهاز نفسه لا يرى بيانات من قبله ولا يُعرض عليه «خلافٌ» معها. */
   app.get('/api/data', requireUser, (req, res) => {
-    const row = db.prepare('SELECT data, rev, updated_at FROM shouba WHERE user_id = ?').get(req.user.id);
-    res.json({ data: row ? JSON.parse(row.data) : null, rev: row ? row.rev : 0,
-               updatedAt: row ? row.updated_at : null, user: req.user.username });
-  });
-
-  /* الكتابة المشروطة (optimistic concurrency): يرسل الجهاز «بنيتُ على المراجعة N».
-     فإن كان على الخادم غيرها فقد سبقه جهازٌ آخر، فيُرفض (409) ويُعاد إليه
-     ما على الخادم — **ولا يُحسم الخلاف بقاعدةٍ صامتة بل يُعرض على صاحبه**.
-     ⚠ الفحص والكتابة في معاملةٍ واحدة، فلا يتسلّل بينهما حفظٌ ثالث. */
-  const writeDoc = db.transaction((userId, d, base) => {
-    const row = db.prepare('SELECT data, rev, updated_at FROM shouba WHERE user_id = ?').get(userId);
-    const cur = row ? row.rev : 0;
-    if (base !== cur) return { conflict: true, rev: cur,
-      data: row ? JSON.parse(row.data) : null, updatedAt: row ? row.updated_at : null };
-    const next = cur + 1;
-    db.prepare(`INSERT INTO shouba (user_id,data,rev,updated_at) VALUES (?,?,?,datetime('now'))
-                ON CONFLICT(user_id) DO UPDATE SET data=excluded.data, rev=excluded.rev, updated_at=datetime('now')`)
-      .run(userId, JSON.stringify(d), next);
-    return { ok: true, rev: next };
+    const row = db.prepare('SELECT data, updated_at FROM shouba WHERE user_id = ?').get(req.user.id);
+    res.json({ data: row ? JSON.parse(row.data) : null, updatedAt: row ? row.updated_at : null });
   });
 
   app.put('/api/data', requireUser, (req, res) => {
     const d = req.body && req.body.data;
-    if (!d || typeof d !== 'object' || Array.isArray(d)) return res.status(400).json({ error: 'بيانات غير صالحة' });
-    const base = Number.isInteger(req.body.baseRev) ? req.body.baseRev : 0;
-    const out = writeDoc(req.user.id, d, base);
-    if (out.conflict) return res.status(409).json(Object.assign({ error: 'conflict' }, out));
-    res.json(out);
+    if (!d || typeof d !== 'object') return res.status(400).json({ error: 'بيانات غير صالحة' });
+    db.prepare(`INSERT INTO shouba (user_id,data,updated_at) VALUES (?,?,datetime('now'))
+                ON CONFLICT(user_id) DO UPDATE SET data=excluded.data, updated_at=datetime('now')`)
+      .run(req.user.id, JSON.stringify(d));
+    res.json({ ok: true });
   });
 
   /* ── الإدارة: وصفٌ فقط ─────────────────────────────

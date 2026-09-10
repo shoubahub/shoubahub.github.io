@@ -91,6 +91,12 @@ function clearCookie(res) {
   res.setHeader('Set-Cookie', `${COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
 }
 
+/* ── مفتاح صاحب النسخة المحلّية ──────────────────────
+   ⚠ بمعرّف الحساب لا باسمه (2026-09-11): الاسم يُعاد تسجيله بعد حذف حسابه، فكانت
+     نسخةٌ باقية على الجهاز ترتفع إلى الحساب الجديد ذي الاسم نفسه. والمعرّف لا يُعاد
+     أبداً (AUTOINCREMENT). و«#» لا يقع في اسم مستخدم، فلا يلتبس اسمٌ كـ«u3» بمفتاح. */
+function ownerKey(u) { return '#' + u.id; }
+
 /* ── حارس المستخدم ─────────────────────────────────── */
 function requireUser(req, res, next) {
   const u = userOf(readCookie(req));
@@ -169,7 +175,7 @@ function routes(app) {
   app.get('/api/me', (req, res) => {
     const u = userOf(readCookie(req));
     if (!u) return res.status(401).json({ error: 'لم تسجّل الدخول' });
-    res.json({ username: u.username, displayName: u.display_name });
+    res.json({ username: u.username, displayName: u.display_name, owner: ownerKey(u) });
   });
 
   /* ── وثيقة الشعبة ───────────────────────────────── */
@@ -178,7 +184,7 @@ function routes(app) {
   app.get('/api/data', requireUser, (req, res) => {
     const row = db.prepare('SELECT data, rev, updated_at FROM shouba WHERE user_id = ?').get(req.user.id);
     res.json({ data: row ? JSON.parse(row.data) : null, rev: row ? row.rev : 0,
-               updatedAt: row ? row.updated_at : null, user: req.user.username });
+               updatedAt: row ? row.updated_at : null, user: req.user.username, owner: ownerKey(req.user) });
   });
 
   /* الكتابة المشروطة (optimistic concurrency): يرسل الجهاز «بنيتُ على المراجعة N».

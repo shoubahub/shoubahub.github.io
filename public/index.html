@@ -56,11 +56,14 @@
     .then(function (res) {
       if (!res) return;
       /* نسخةٌ محلّية لصاحبٍ آخر تُطوى — فلا يرى الداخلُ بيانات من قبله ولو لحظة */
-      var owner = localStorage.getItem('shouba.owner');
-      if (owner && res.user && owner !== res.user) {
+      /* ⚠ بمعرّف الحساب «#رقم» لا باسمه (2026-09-11) — الاسم يُعاد تسجيله بعد حذف حسابه.
+         والقيمة القديمة (اسم المستخدم) تُرقّى إن طابقت. (المنطق نفسه في derive.js.) */
+      var key = res.owner || res.user, owner = localStorage.getItem('shouba.owner');
+      var legacy = owner && owner.charAt(0) !== '#' && owner === res.user;
+      if (owner && key && owner !== key && !legacy) {
         ['shouba.setup', 'shouba.rev', 'shouba.base'].forEach(function (k) { localStorage.removeItem(k); });
       }
-      if (res.user) localStorage.setItem('shouba.owner', res.user);
+      if (key) localStorage.setItem('shouba.owner', key);
       if (res.data) {
         var mine = j('shouba.setup');
         var empty = !mine || Object.keys(mine).length === 0;

@@ -148,11 +148,15 @@
       return r.json().then(function (res) {
         online = true;
         /* نسخةٌ محلّية لصاحبٍ آخر لا تُقارَن ولا تُرفَع — تُطوى */
-        var owner = ls(OWNER);
-        if (owner && res.user && owner !== res.user) {
+        /* ⚠ الربط بمعرّف الحساب «#رقم» لا باسمه (2026-09-11): الاسم يُعاد تسجيله بعد حذف
+           حسابه، والمعرّف لا يُعاد. والقيمة القديمة (اسم المستخدم) تُرقّى بصمتٍ إن طابقت
+           صاحبها — فلا تُمحى نسخةُ أحدٍ يوم النشر. (المنطق نفسه في الموجِّه index.html.) */
+        var key = res.owner || res.user, owner = ls(OWNER);
+        var legacy = owner && owner.charAt(0) !== '#' && owner === res.user;
+        if (owner && key && owner !== key && !legacy) {
           lsDel(KEY); lsDel(REV); lsDel(BASE); cache = null;
         }
-        if (res.user) lsSet(OWNER, res.user);
+        if (key) lsSet(OWNER, key);
 
         var mine = S.data(true), srv = res.data, rev = res.rev || 0, base = getRev();
         if (blank(srv)) {                   /* الخادم لا يملك شيئاً */

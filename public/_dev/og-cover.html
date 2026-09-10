@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ═══ أصل صورة المعاينة (og:image) — ما يظهر مع رابط المنصّة في واتساب ═══
+     اعتمده المستخدم 2026-09-11 (النموذج ج١): الكلمة الشعار أعلى اللوح الكحلي والأيقونة
+     أصغر تحتها · خطّ الواجهة IBM Plex · **بلا تشكيل** (نصيحة زميل: راحة للعين).
+     الناتج: identity/assets/og-cover.jpg (١٢٠٠×٦٣٠). يُعاد توليده بعد أيّ تعديلٍ هنا:
+       bash public/_dev/og-render.sh
+     ⚠ الأحجام تُقرأ بعد التصغير: واتساب يعرض الصورة بعرض ~٣٧٠px — ثلثها. فالسطر
+       ٣٠px يصير ٩px لا يُقرأ (رُصد في المحاكاة). لا تصغّر العناوين دون فحص المحاكاة.
+     ⚠ لا تُضِف لوناً عنبرياً لقسمٍ دون غيره — يوحي بأنه أهمّ. */
+  :root{--navy:#16456E;--navy2:#1B5183;--canvas:#EFE6D6;--muted:#5F5648;--chip:#E4D9C6}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1200px;height:630px;overflow:hidden;background:var(--canvas)}
+  .card{width:1200px;height:630px;display:flex;font-family:'IBM Plex Sans Arabic',sans-serif}
+  .side{width:470px;height:630px;flex:none;background:linear-gradient(180deg,var(--navy2) 0%,var(--navy) 100%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:46px}
+  .side .word{width:330px;height:auto}
+  .side .icon{width:208px;height:208px;border-radius:46px;box-shadow:0 14px 32px rgba(0,0,0,.28)}
+  .body{flex:1;padding:0 56px;display:flex;flex-direction:column;justify-content:center;gap:22px}
+  h1{font-size:64px;font-weight:700;color:var(--navy);line-height:1.2}
+  p{font-size:37px;font-weight:500;color:var(--muted);line-height:1.5}
+  .chips{display:flex;flex-wrap:nowrap;gap:10px;margin-top:6px}
+  .chips span{background:var(--chip);color:var(--navy);font-size:27px;font-weight:600;padding:9px 19px;border-radius:999px}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="side">
+      <img class="word" src="../identity/assets/lockup-word-mansa-dark.svg" alt="" />
+      <img class="icon" src="../identity/assets/app-icon-approved.png" alt="" />
+    </div>
+    <div class="body">
+      <h1>منصة رئيس الشعبة</h1>
+      <p>تتابع بها شعبتك يوما بيوم، من أي جهاز.</p>
+      <div class="chips"><span>الجداول</span><span>المعلمون</span><span>السجلات</span><span>المواعيد</span></div>
+    </div>
+  </div>
+</body>
+</html>

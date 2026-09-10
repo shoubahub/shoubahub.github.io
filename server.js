@@ -19,7 +19,12 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(path.join(__dirname, 'public'), { etag: false, lastModified: false, maxAge: 0 }));
+/* وسوم المعاينة (واتساب…) تُحقن في كل صفحة HTML قبل الملفّات الساكنة — og.js */
+const og = require('./og');
+const PUBLIC = path.join(__dirname, 'public');
+app.use(og.html(PUBLIC));
+
+app.use(express.static(PUBLIC, { etag: false, lastModified: false, maxAge: 0 }));
 
 /* ⚠ رقم الإدارة بلا بديلٍ افتراضي: إن لم يُضبط **رفض الخادم أن يبدأ**.
    في موقع التوقّعات يعود إلى «1234» صامتاً — فيعمل الموقع ويبدو سليماً
@@ -36,6 +41,6 @@ require('./auth').routes(app);
 app.get('/health', (_req, res) => res.json({ ok: true, stage: 'server' }));
 
 // SPA fallback — أي مسار غير معروف يعيد index.html
-app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('*', og.fallback(PUBLIC));
 
 app.listen(PORT, () => console.log(`منصّة شعبة (واجهة) على المنفذ ${PORT}`));

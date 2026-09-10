@@ -178,7 +178,8 @@
   } else {
     /* ?t=اسم ⟵ **وضع المعلم الواحد**: قادم من ملفه، فيفرد جدوله وحده
        بلا شريط المعلمين ولا تنقل بينهم (قرار المستخدم 2026-09-06). */
-    var want = new URLSearchParams(location.search).get('t');
+    /* الاسم من الرابط ينظف كالبيانات: رابط قديم مشكول يبقى يجد معلمه (2026-09-11) */
+    var want = Shouba.plain(new URLSearchParams(location.search).get('t') || '') || null;
     var solo = !!(want && teachers.indexOf(want) > -1);
     var cur  = solo ? want : teachers[0];
     if(solo){

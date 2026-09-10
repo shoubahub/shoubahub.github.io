@@ -74,7 +74,8 @@
 <script src="components.js?v=41"></script>
 <script>
   var d = Shouba.data();
-  var T = new URLSearchParams(location.search).get('t') || '';
+  /* الاسم من الرابط ينظف كالبيانات: رابط قديم مشكول يبقى يجد معلمه (2026-09-11) */
+  var T = Shouba.plain(new URLSearchParams(location.search).get('t') || '');
 
   (function paintTopCrest(){
     var el=document.getElementById('tbCrest'), c=d.crest;

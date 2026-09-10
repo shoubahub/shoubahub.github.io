@@ -82,9 +82,13 @@
   function blank(d)   { return !d || typeof d !== 'object' || Object.keys(d).length === 0; }
 
   function adopt(d, rev) {                  /* نسخة الخادم تصير نسخة الجهاز */
-    cache = d || {};
+    /* ما يصل من الخادم ينظف من الحركات كذلك — جهاز على نسخة قديمة قد رفع نصا مشكولا.
+       وان غير التنظيف شيئا رفعت النسخة النظيفة، فيلتقي الجهاز والخادم على نص واحد (2026-09-11) */
+    var p = plain(d || {});
+    cache = p;
     localStorage.setItem(KEY, JSON.stringify(cache));
     setRev(rev); mark(cache);
+    if (!same(p, d || {})) push();
   }
   function note(bad) {
     if (typeof S.onSyncState === 'function') { try { S.onSyncState(!!bad); } catch (e) {} }
@@ -290,17 +294,26 @@
     }
     return v;
   }
+  /* نص واحد بلا حركات — للشاشات التي يصلها نص من خارج البيانات (اسم معلم في الرابط) */
+  S.plain = function (s) { return String(s == null ? '' : s).replace(HARAKAT, ''); };
+  var HAS_HARAKAT = new RegExp(HARAKAT.source);   /* بلا g — للفحص وحده */
+
   (function migrate () {
     var d = S.data();
-    if (!d.stage || d.refDataVersion === REF_VERSION) return;
-    var clean = !isDirty();
+    if (!d.stage) return;
     var v = d.refDataVersion || 1;
+    /* ⚠ شفاء ذاتي لا ترحيل مرة واحدة (2026-09-11): جهاز ما زال على نسخة قديمة من المنصة
+       (في مخزن عامل الخدمة) قد يكتب نصا مشكولا بعد ان رحلت الوثيقة الى ٣ — فلا يكتفى
+       برقم النسخة: اي حركة في الوثيقة تنظف متى وجدت، من اي مصدر جاءت. */
+    var marked = HAS_HARAKAT.test(JSON.stringify(d));
+    if (v === REF_VERSION && !marked) return;
+    var clean = !isDirty();
     if (v < 2) {
       var now = SHOUBA_REF.departmentOf(d.stage, d.department || '');
       if (now !== d.department) d.department = now;
       delete d.subjects;                     // تشتق من جديد
     }
-    if (v < 3) d = plain(d);
+    if (v < 3 || marked) d = plain(d);
     d.refDataVersion = REF_VERSION;
     localStorage.setItem(KEY, JSON.stringify(d));
     cache = d;

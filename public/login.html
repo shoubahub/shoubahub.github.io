@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=36" />
-<link rel="stylesheet" href="shell.css?v=36" />
-<link rel="stylesheet" href="components.css?v=36" />
-<link rel="stylesheet" href="frame.css?v=36" />
+<link rel="stylesheet" href="identity/tokens.css?v=37" />
+<link rel="stylesheet" href="shell.css?v=37" />
+<link rel="stylesheet" href="components.css?v=37" />
+<link rel="stylesheet" href="frame.css?v=37" />
 <style>
   /* أنماط خاصّة بشاشة الدخول فقط — الهيكل من shell.css -->*/
   .brand{display:flex;flex-direction:column;align-items:center;gap:13px;padding:0 30px}
@@ -134,8 +134,8 @@
 <!-- ⚠ شاشة الدخول أوّل ما يُفتح، فهي التي تُسجّل عامل الخدمة وتفحص التحديث:
      بلا هذين يبقى الزائر الجديد بلا عملٍ دون إنترنت، وقد يرى نسخة قديمة
      (GitHub Pages يخزّن الصفحات عشر دقائق) — رُصد بعد النشر الأول 2026-09-06. -->
-<script src="build.js?v=36"></script>
-<script src="components.js?v=36"></script>
+<script src="build.js?v=37"></script>
+<script src="components.js?v=37"></script>
 <script>
   /* شاشة الدخول — دخولٌ حقيقيّ إلى خادم المنصّة (2026-09-08).
      ⚠ لا يُخزَّن سرٌّ هنا: الجلسة كعكةٌ httpOnly لا يبلغها كود الصفحة.
@@ -167,14 +167,30 @@
     });
   });
 
+  /* ⚠ لوحة المفاتيح العربية تكتب ٠١٢٣ — فكان الحقل يمحو كل رقمٍ يُكتب فيه.
+     التنظيف قبل الفحص في مستمعٍ واحد: كانا مستمعَين فجرى الفحص على القيمة قبل تنظيفها.
+     ولا يُعاد تعيين القيمة إلّا إن تغيّرت، فلا يقفز المؤشّر أثناء الكتابة. */
+  function clean(){
+    var p = Shouba.latinDigits(pin.value).replace(/[^0-9]/g,'').slice(0,6);
+    if(pin.value !== p) pin.value = p;
+    var u = Shouba.latinDigits(usr.value);
+    if(usr.value !== u) usr.value = u;
+    var c = Shouba.latinDigits(inv.value);
+    if(inv.value !== c) inv.value = c;
+  }
+
+  var USER_RE = /^[A-Za-z0-9_.\-]{3,24}$/;          /* كما في الخادم (auth.js) */
   function validate(){
-    var ok = usr.value.trim().length >= 3 && /^[0-9]{6}$/.test(pin.value);
+    var u = usr.value.trim();
+    /* يُقال له فوراً ما الخطأ، لا بعد أن يضغط ويُردّ */
+    if(/[؀-ۿ]/.test(u))       say('اسم المستخدم بأحرفٍ إنجليزية — بدّل لغة لوحة المفاتيح.');
+    else if(/[^A-Za-z0-9_.\-]/.test(u)) say('اسم المستخدم: أحرفٌ إنجليزية وأرقام، بلا مسافات.');
+    var ok = USER_RE.test(u) && /^[0-9]{6}$/.test(pin.value);
     if(mode === 'up') ok = ok && full.value.trim().length >= 3 && inv.value.trim().length >= 4;
     cont.disabled = !ok;
     return ok;
   }
-  [usr, pin, full, inv].forEach(function(i){ i.addEventListener('input', function(){ say(''); validate(); }); });
-  pin.addEventListener('input', function(){ pin.value = pin.value.replace(/[^0-9]/g,'').slice(0,6); });
+  [usr, pin, full, inv].forEach(function(i){ i.addEventListener('input', function(){ clean(); say(''); validate(); }); });
 
   function go(){
     if(cont.disabled || !validate()) return;

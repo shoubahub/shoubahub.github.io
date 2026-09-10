@@ -17,6 +17,17 @@ const SESSION_DAYS = 180;                 /* الجلسة تدوم فلا يُع
 const PIN_RE = /^\d{6}$/;
 const USER_RE = /^[A-Za-z0-9_.\-]{3,24}$/;
 
+/* ── الأرقام العربية ⟵ إنجليزية ──────────────────────
+   ⚠ لوحة الأرقام على جهازٍ لغته العربية تكتب ٠١٢٣ لا 0123، فكان رقم الإدارة
+     الصحيح يُرفض (رصده المستخدم 2026-09-10). الرقم رقمٌ بأيّ لوحةٍ كُتب.
+     يُطبَّق هنا لا في الصفحة وحدها: الخادم لا يثق بأنّ الصفحة نظّفت. */
+function latin(s) {
+  return String(s == null ? '' : s)
+    .replace(/[٠-٩]/g, d => d.charCodeAt(0) - 0x0660)
+    .replace(/[۰-۹]/g, d => d.charCodeAt(0) - 0x06F0)
+    .trim();
+}
+
 /* ── تجزئة الرقم ───────────────────────────────────── */
 function hashPin(pin) {
   const salt = crypto.randomBytes(16).toString('hex');
@@ -89,10 +100,23 @@ function requireUser(req, res, next) {
 }
 
 /* ── حارس الإدارة ──────────────────────────────────── */
-const ADMIN_PIN = process.env.ADMIN_PIN;
+/* ⚠ قيمة المتغيّر تُنظَّف كما يُنظَّف المُدخَل: مسافةٌ زائدة أو علامتا تنصيص
+   تُلصَقان في لوحة Railway فيُرفض الرقم الصحيح ولا يدري صاحبه لماذا. */
+const RAW_ADMIN = process.env.ADMIN_PIN;
+const ADMIN_PIN = latin(RAW_ADMIN).replace(/^(['"])(.*)\1$/, '$2');
+if (ADMIN_PIN) {
+  /* بصمةٌ في سجلّ الخادم لا الرقم: طوله ونوعه — يكفي للتشخيص ولا يكشفه */
+  console.log(`رقم الإدارة مضبوط: ${ADMIN_PIN.length} خانات`
+    + (/^\d+$/.test(ADMIN_PIN) ? ' · أرقامٌ فقط' : ' · فيه غير الأرقام')
+    + (String(RAW_ADMIN) !== ADMIN_PIN ? ' · نُظِّف من مسافاتٍ أو علامات تنصيص أو أرقامٍ عربية' : ''));
+}
 function requireAdmin(req, res, next) {
-  const given = req.headers['x-admin-pin'] || (req.body && req.body.adminPin);
-  if (!given || String(given) !== String(ADMIN_PIN)) {
+  /* ⚠ Node يقرأ الترويسة حروفاً لاتينية (latin1)، فالرقم العربي فيها يصل بايتاتٍ
+     مشوّهة لا يطابقها التحويل (رُصد في الفحص 2026-09-10) — يُعاد فكّها UTF-8 أوّلاً.
+     والصفحة ترسله إنجليزياً أصلاً؛ هذا لمن يطرق الخادم من غيرها. */
+  const h = req.headers['x-admin-pin'];
+  const given = latin(h ? Buffer.from(String(h), 'latin1').toString('utf8') : (req.body && req.body.adminPin));
+  if (!ADMIN_PIN || !given || given !== ADMIN_PIN) {
     return res.status(403).json({ error: 'رقم الإدارة غير صحيح' });
   }
   next();
@@ -103,17 +127,18 @@ function routes(app) {
   /* تسجيل حساب جديد — لا يتمّ بلا رمز دعوة */
   app.post('/api/register', (req, res) => {
     const { username = '', pin = '', displayName = '', inviteCode = '' } = req.body || {};
-    const u = String(username).trim().toLowerCase();
+    const u = latin(username).toLowerCase();
+    const p = latin(pin);
     if (!USER_RE.test(u)) return res.status(400).json({ error: 'اسم المستخدم: ٣–٢٤ حرفاً إنجليزياً أو رقماً' });
-    if (!PIN_RE.test(pin)) return res.status(400).json({ error: 'الرقم السرّي ستّة أرقام' });
+    if (!PIN_RE.test(p)) return res.status(400).json({ error: 'الرقم السرّي ستّة أرقام' });
     if (String(displayName).trim().length < 3) return res.status(400).json({ error: 'اكتب اسمك الكامل' });
-    if (String(inviteCode).trim().toUpperCase() !== invite())
+    if (latin(inviteCode).toUpperCase() !== invite())
       return res.status(403).json({ error: 'رمز الدعوة غير صحيح — اطلبه من رئيس الشعبة' });
     if (db.prepare('SELECT 1 FROM users WHERE username = ?').get(u))
       return res.status(409).json({ error: 'اسم المستخدم مأخوذ' });
 
     const info = db.prepare('INSERT INTO users (username,pin_hash,display_name) VALUES (?,?,?)')
-      .run(u, hashPin(pin), String(displayName).trim());
+      .run(u, hashPin(p), String(displayName).trim());
     const token = openSession(info.lastInsertRowid);
     setCookie(res, token);
     res.json({ username: u, displayName: String(displayName).trim() });
@@ -122,10 +147,10 @@ function routes(app) {
   /* الدخول */
   app.post('/api/login', (req, res) => {
     const { username = '', pin = '' } = req.body || {};
-    const u = String(username).trim().toLowerCase();
+    const u = latin(username).toLowerCase();
     if (blocked(u)) return res.status(429).json({ error: 'محاولات كثيرة — أعِد بعد عشر دقائق' });
     const row = db.prepare('SELECT * FROM users WHERE username = ?').get(u);
-    if (!row || !verifyPin(String(pin), row.pin_hash)) {
+    if (!row || !verifyPin(latin(pin), row.pin_hash)) {
       fail(u);
       return res.status(401).json({ error: 'اسم المستخدم أو الرقم السرّي غير صحيح' });
     }
@@ -198,7 +223,7 @@ function routes(app) {
   });
 
   app.post('/api/admin/users/:id/reset-pin', requireAdmin, (req, res) => {
-    const pin = String((req.body && req.body.pin) || '');
+    const pin = latin(req.body && req.body.pin);
     if (!PIN_RE.test(pin)) return res.status(400).json({ error: 'الرقم الجديد ستّة أرقام' });
     const info = db.prepare('UPDATE users SET pin_hash = ? WHERE id = ?').run(hashPin(pin), req.params.id);
     if (!info.changes) return res.status(404).json({ error: 'لا حساب بهذا الرقم' });

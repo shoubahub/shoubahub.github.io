@@ -7,10 +7,10 @@
 <meta name="robots" content="noindex, nofollow" />
 <meta name="theme-color" content="#1B5183" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=38" />
-<link rel="stylesheet" href="shell.css?v=38" />
-<link rel="stylesheet" href="components.css?v=38" />
-<link rel="stylesheet" href="frame.css?v=38" />
+<link rel="stylesheet" href="identity/tokens.css?v=39" />
+<link rel="stylesheet" href="shell.css?v=39" />
+<link rel="stylesheet" href="components.css?v=39" />
+<link rel="stylesheet" href="frame.css?v=39" />
 <style>
   /* خاصٌّ بالإدارة: صفّ الحساب وجدوله. لا هيكل ولا هوامش عامّة. */
   .urow{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;
@@ -46,7 +46,8 @@
 
   <div class="topbar">
     <div class="tt"><b>إدارة المنصّة</b><span id="head">أدخل رقم الإدارة</span></div>
-    <div class="iconbtn" data-home title="اللوحة"></div>
+    <!-- ⚠ لا زرّ منزل هنا (قرار المستخدم 2026-09-10): الإدارة ليست من شاشات الشعبة،
+         وكان زرّ المنزل يأخذ صاحبها إلى لوحته. استثناءٌ مقصود من قاعدة «منزلٌ في كل شاشة». -->
   </div>
 
   <div class="screen has-topbar">
@@ -94,8 +95,8 @@
   </div>
  </div></div>
 
-<script src="build.js?v=38"></script>
-<script src="components.js?v=38"></script>
+<script src="build.js?v=39"></script>
+<script src="components.js?v=39"></script>
 <script>
   /* لوحة الإدارة — شاشةٌ مستقلّة لا رابط إليها من أيّ مكان (قرار المستخدم 2026-09-08).
      ⚠ رقم الإدارة **لا يُحفظ**: يبقى في الذاكرة ما دامت الصفحة مفتوحة فقط.
@@ -105,6 +106,9 @@
   var gmsg = document.getElementById('gmsg'), pmsg = document.getElementById('pmsg');
 
   function say(el, t, ok){ el.textContent = t || ''; el.className = 'msg' + (ok ? ' ok' : ''); }
+  /* اسم المستخدم إنجليزيّ داخل نصٍّ عربي — يُعزل اتّجاهه (LRI…PDI) وإلّا انقلبت
+     علامته فظهر «uidel@» بدل «@uidel» (رُصد في الفحص 2026-09-10). */
+  function uname(u){ return '⁦@' + u.username + '⁩'; }
   function api(path, opt){
     opt = opt || {};
     opt.headers = Object.assign({ 'x-admin-pin': PIN, 'Content-Type': 'application/json' }, opt.headers || {});
@@ -154,17 +158,59 @@
         el.innerHTML = '<span class="ini"></span>'
           + '<div class="tx"><b></b><small></small></div>'
           + '<span class="dot"></span>'
-          + '<button type="button" class="rst">إعادة تعيين</button>';
+          + '<button type="button" class="rst">إدارة</button>';
         el.querySelector('.ini').textContent = (u.display_name || u.username).charAt(0);
         el.querySelector('b').textContent = u.display_name;
         /* وصفٌ فقط: الاسم · آخر دخول · هل أتمّ إعداده. ولا شيء من محتواه. */
         el.querySelector('small').textContent =
-          '@' + u.username + ' · آخر دخول: ' + when(u.last_login) + (u.has_data ? ' · أتمّ إعداده' : ' · لم يُعِدّ شعبته');
+          uname(u) + ' · آخر دخول: ' + when(u.last_login) + (u.has_data ? ' · أتمّ إعداده' : ' · لم يُعِدّ شعبته');
         el.querySelector('.dot').className = 'dot ' + (u.has_data ? 'on' : 'off');
-        el.querySelector('.rst').addEventListener('click', function(){ reset(u); });
+        el.querySelector('.rst').addEventListener('click', function(){ manage(u); });
         box.appendChild(el);
       });
     }).catch(function(e){ say(pmsg, e.message); });
+  }
+
+  /* «إدارة» حساب: فعلان لا ثالث لهما — إعادة تعيين الرقم، أو حذف الحساب.
+     ولا «عرض» ولا «تصدير»: الإدارة لا ترى المحتوى (قرار المستخدم 2026-09-08). */
+  function manage(u){
+    var n = document.createElement('div'); n.className = 'fields';
+    var r = document.createElement('button'); r.className = 'btn-ghost'; r.textContent = 'أعِد تعيين الرقم السرّي';
+    var d = document.createElement('button'); d.className = 'btn-danger'; d.textContent = 'احذف الحساب';
+    r.addEventListener('click', function(){ reset(u); });
+    d.addEventListener('click', function(){ removeUser(u); });
+    n.appendChild(r); n.appendChild(d);
+    Shouba.sheet.open(u.display_name + ' · ' + uname(u), n);
+  }
+
+  /* الحذف نهائيّ — فالتأكيد كتابةً لا ضغطاً: اسم المستخدم كما هو.
+     والخادم يفحص التأكيد نفسه، فلا تكفي الصفحة وحدها. */
+  function removeUser(u){
+    var n = document.createElement('div'); n.className = 'fields';
+    n.innerHTML = '<div class="warnbox"></div>'
+      + '<div class="field"><label for="cf"></label>'
+      + '<div class="paper"><input id="cf" type="text" dir="ltr" autocapitalize="none" autocomplete="off" spellcheck="false" /></div></div>';
+    n.querySelector('.warnbox').textContent = 'يُحذف حساب ' + u.display_name + ' وجلساته'
+      + (u.has_data ? ' وبيانات شعبته كلّها' : '') + ' نهائياً — ولا يُستردّ.'
+      + (u.has_data ? ' وإن أراد الاحتفاظ بشعبته فليصدّرها من إعداداته قبل الحذف.' : '');
+    n.querySelector('label').textContent = 'للتأكيد اكتب اسم المستخدم: ' + uname(u);
+    var b = document.createElement('button'); b.className = 'btn-danger'; b.textContent = 'احذف نهائياً'; b.disabled = true;
+    n.appendChild(b);
+    Shouba.sheet.open('حذف الحساب', n);
+    var inp = n.querySelector('#cf');
+    function said(){ return Shouba.latinDigits(inp.value).trim().replace(/^@/, '').toLowerCase(); }
+    inp.addEventListener('input', function(){ b.disabled = said() !== u.username; });
+    b.addEventListener('click', function(){
+      if(said() !== u.username) return;
+      b.disabled = true; b.textContent = 'يُحذف…';
+      api('api/admin/users/' + u.id, { method:'DELETE', body: JSON.stringify({ confirm: said() }) })
+        .then(function(){
+          Shouba.sheet.close();
+          say(pmsg, 'حُذف حساب ' + u.display_name + (u.has_data ? ' وبيانات شعبته.' : '.'), true);
+          load();
+        })
+        .catch(function(e){ b.disabled = false; b.textContent = 'احذف نهائياً'; say(pmsg, e.message); });
+    });
   }
 
   function reset(u){

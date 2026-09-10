@@ -231,6 +231,27 @@ function routes(app) {
     res.json({ ok: true });
   });
 
+  /* حذف حساب (طلب المستخدم 2026-09-10) — **نهائيّ**: الحساب وجلساته ووثيقة شعبته
+     في معاملةٍ واحدة، فلا يبقى نصفه.
+     ⚠ لا نسخة عند الإدارة — فالإدارة لا ترى المحتوى أصلاً؛ ومن أراد الاحتفاظ بشعبته
+       يصدّرها من إعداداته قبل الحذف.
+     ⚠ والتأكيد يُفحص هنا لا في الصفحة وحدها: اسم المستخدم مكتوباً كما هو، فلا
+       يحذف حساباً طلبٌ أُرسل خطأً أو زرٌّ ضُغط سهواً. */
+  const dropUser = db.transaction(id => {
+    db.prepare('DELETE FROM sessions WHERE user_id = ?').run(id);
+    db.prepare('DELETE FROM shouba WHERE user_id = ?').run(id);
+    return db.prepare('DELETE FROM users WHERE id = ?').run(id).changes;
+  });
+  app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
+    const u = db.prepare('SELECT id, username FROM users WHERE id = ?').get(req.params.id);
+    if (!u) return res.status(404).json({ error: 'لا حساب بهذا الرقم' });
+    const said = latin(req.body && req.body.confirm).replace(/^@/, '').toLowerCase();
+    if (said !== u.username) return res.status(400).json({ error: 'اكتب اسم المستخدم كما هو للتأكيد' });
+    dropUser(u.id);
+    tries.delete(u.username);
+    res.json({ ok: true });
+  });
+
   app.get('/api/admin/invite', requireAdmin, (_req, res) => res.json({ code: invite() }));
   app.post('/api/admin/invite', requireAdmin, (_req, res) => res.json({ code: require('./db').newInvite() }));
 }

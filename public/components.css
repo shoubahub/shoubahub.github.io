@@ -82,6 +82,20 @@
 .btn-ghost::before{content:"";position:absolute;left:-42px;bottom:-16px;width:225px;height:78px;pointer-events:none;
   background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.11}
 
+/* زرّ الفعل الذي لا يُستردّ (حذف حساب — 2026-09-10): ورقيٌّ كالشبح، والأحمر للنصّ
+   والحلقة فقط — فلا يُنافس العنبريّ ولا يُضغط ظنّاً أنه الفعل المعتاد. بلا صدى المجلّد.
+   والمعطّل لونٌ صلب بلا شفافية، كقاعدة .cta[disabled]. */
+.btn-danger{background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);border-radius:var(--r-btn);padding:15px;border:0;cursor:pointer;width:100%;
+  font-family:var(--font-ar);font-size:15px;font-weight:700;color:var(--shouba-error);
+  box-shadow:inset 0 0 0 1.5px rgba(183,68,58,.38), inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16)}
+.btn-danger:active{transform:translateY(1px)}
+.btn-danger[disabled]{color:#B3A68F;cursor:not-allowed;background:linear-gradient(180deg,#EFE8DA 0%,#E8E0CF 100%);
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.7), 0 2px 0 rgba(190,172,140,.4)}
+.btn-danger[disabled]:active{transform:none}
+/* تحذيرٌ قبل فعلٍ لا يُستردّ — يُقرأ قبل الحقل لا بعده */
+.warnbox{background:rgba(183,68,58,.08);color:var(--shouba-error);border-radius:12px;padding:12px 14px;
+  font-size:12.5px;font-weight:600;line-height:1.8}
+
 /* ---------- شريط التقدّم + رجوع ---------- */
 .prog{display:flex;flex-direction:column;gap:7px;align-items:flex-start}
 .prog .lbl{font-size:12px;font-weight:700;color:var(--shouba-label)}

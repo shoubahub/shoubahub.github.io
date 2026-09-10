@@ -657,10 +657,66 @@ Shouba.returnTo = function () {
     } catch (e) {}
   }
 
+  /* ═══ حارس الجلسة — كل شاشةٍ محميّة ما لم تُعلَن عامّة (2026-09-10) ═══
+     ⚠ كان الموجِّه وحده يسأل «مَن أنت؟»، فمن فتح رابط اللوحة مباشرةً من جهازٍ
+       لم يدخل منه رأى لوحةً فارغة باسم «شعبتك» ولم يُطلب منه الدخول — ففتحه
+       المستخدم من هاتفه فظنّ بياناته ضاعت، «وبأوّل اختبارٍ يفشل».
+       الآن **الحماية هي الأصل والاستثناء صريح**: `<html data-public>` (الدخول والإدارة).
+       فأيّ شاشةٍ تُبنى بعد اليوم محميّةٌ دون أن يتذكّر أحدٌ حمايتها.
+     • ٤٠١ ⟵ الدخول، ومعه الوجهة فيعود إليها بعده.
+     • ٤٠٤ ⟵ نسخةٌ ساكنة بلا خادم (العنوان القديم) — تعمل كما كانت.
+     • لا شبكة ⟵ مَن دخل من هذا الجهاز قبلاً يعمل بما عليه؛ ومَن لم يدخل منه قطّ
+       يُرسَل للدخول — فلا تُرسَم لجهازٍ جديد لوحةٌ فارغة توهمه أن بياناته ضاعت.
+     • والجهاز الذي لم يدخل منه قطّ تُحجب صفحته حتى يُعرف الجواب — فلا تومض الفارغة. */
+  Shouba.signIn = function () {
+    var here = location.pathname.replace(/^.*\//, '') + location.search;
+    location.replace('login.html' + (here ? '?next=' + encodeURIComponent(here) : ''));
+  };
+  function sessionGuard() {
+    var root = document.documentElement;
+    if (!window.fetch || root.hasAttribute('data-public')) return;
+    /* «معروف» = دخل منه صاحبُ حسابٍ قبلاً، أو أتمّ عليه إعداد شعبته (مستخدمو العنوان القديم).
+       ⚠ لا مجرّد وجود `shouba.setup`: بعض شاشات المعالج تكتبه لحظة تحميلها — قبل أن
+         يُحوِّل الحارس — فصار الجهاز الجديد «معروفاً» بمجرّد فتح رابطٍ (رُصد في الفحص). */
+    var known = false;
+    try {
+      var setup = JSON.parse(localStorage.getItem('shouba.setup') || '{}') || {};
+      known = !!(localStorage.getItem('shouba.owner') || setup.setupDone);
+    } catch (e) {}
+    if (!known) root.style.visibility = 'hidden';
+    var settled = false;
+    function settle(fn) { if (!settled) { settled = true; fn(); } }
+    function show() { root.style.visibility = ''; }
+    /* خادمٌ لا يجيب: لا تبقى الشاشة محجوبة — مَن عُرف يعمل، ومَن لم يُعرف فإلى الدخول */
+    setTimeout(function () { settle(known ? show : Shouba.signIn); }, 6000);
+    fetch('api/me', { credentials: 'same-origin', cache: 'no-store' })
+      .then(function (r) { settle(r.status === 401 ? Shouba.signIn : show); },
+            function ()  { settle(known ? show : Shouba.signIn); });
+  }
+  sessionGuard();
+
+  /* انتهت الجلسة أثناء العمل — تُعلَن ولا يُسكَت عنها.
+     كانت تُعرض «لم يصل الحفظ… وسيُرسَل تلقائياً» — وعدٌ لا يتحقّق بلا دخول. */
+  var authPill = null;
+  function authSheet() {
+    syncBar(false);
+    if (!authPill || !authPill.isConnected) authPill = pill('انتهت جلستك — الحفظ متوقّف', 'ادخل', function () { authSheet(); });
+    var n = document.createElement('div'); n.className = 'impv';
+    var lead = document.createElement('div'); lead.className = 'lead';
+    lead.textContent = 'انتهت جلسة دخولك على هذا الجهاز، فتوقّف الحفظ على الخادم.'
+      + ' ما عدّلتَه باقٍ على هذا الجهاز، ويُرسَل حين تدخل من جديد.';
+    n.appendChild(lead);
+    var go = document.createElement('button'); go.className = 'cta'; go.textContent = 'ادخل';
+    go.addEventListener('click', function () { Shouba.signIn(); });
+    n.appendChild(go);
+    Shouba.sheet.open('انتهت جلستك', n);
+  }
+
   function connectServer() {
     if (!window.Shouba || !Shouba.connect) return;
     Shouba.onConflict = conflictSheet;
     Shouba.onSyncState = syncBar;
+    Shouba.onAuthLost = authSheet;
     Shouba.connect().then(function () {
       if (Shouba.serverless) { movedNotice(); return; }
       /* تُخبَر ولا تُفاجأ — ويُقال هذا حين يكون جهازٌ آخر قد كتب فعلاً */

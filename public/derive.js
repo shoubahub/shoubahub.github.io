@@ -100,13 +100,23 @@
     timer = setTimeout(send, 1200);         /* سكونٌ قصير — لا مع كل حرف */
   }
 
-  /* يرسل الوثيقة مبنيّةً على مراجعة، ويعيد: 'ok' · 'conflict' · 'offline' */
+  /* ⚠ ٤٠١ = انتهت الجلسة (أُعيد تعيين الرقم، أو مضت مدّتها) — **ليست انقطاعاً**.
+     كانت تُعامَل «بلا إنترنت» فتُعاد المحاولة كل ١٥ ثانية أبداً، وصاحبها يظنّ
+     عمله يُحفظ (رُصد 2026-09-10). الآن يتوقّف الإرسال ويُعلَن لصاحبه، وتبقى
+     تعديلاته على الجهاز: بعد الدخول يراها الإقلاع (connect) معدَّلةً فيرفعها. */
+  function authLost() {
+    online = false; clearTimeout(timer); S.authLost = true;
+    if (typeof S.onAuthLost === 'function') { try { S.onAuthLost(); } catch (e) {} }
+  }
+
+  /* يرسل الوثيقة مبنيّةً على مراجعة، ويعيد: 'ok' · 'conflict' · 'auth' · 'offline' */
   function put(baseRev, quiet) {
     var sent = S.data();
     return fetch('api/data', {
       method: 'PUT', headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin', body: JSON.stringify({ data: sent, baseRev: baseRev })
     }).then(function (r) {
+      if (r.status === 401) { authLost(); return 'auth'; }
       return r.json().then(function (j) {
         if (r.ok) { setRev(j.rev); mark(sent); note(false); return 'ok'; }
         if (r.status === 409) { raise(j, quiet); return 'conflict'; }

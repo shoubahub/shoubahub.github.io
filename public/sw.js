@@ -3,7 +3,7 @@
    ② الأصول مبصومة بـ?v=رقم البناء، فالمخزَّن آمنٌ ما دام الرقم واحداً.
    ③ ومع كل نشر يتبدّل اسم المخزن فتُمسح النسخة القديمة كاملةً.
    ⚠ CACHE يُحدَّث آلياً بأداة الختم — لا يدوياً. */
-var BUILD = 37;
+var BUILD = 38;
 var CACHE = 'shouba-v' + BUILD;
 
 var SHELL = [
@@ -40,6 +40,12 @@ self.addEventListener('fetch', function (e) {
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
   if (url.origin !== location.origin) return;                 // الخطوط الخارجية تُترك للمتصفّح
+
+  /* ⚠ الخادم لا يمرّ بالمخزن أبداً (2026-09-10): كان طلب `api/…` يسقط إلى فرع
+     «المخزن أولاً» أدناه، فيُحفظ أوّل جوابٍ ويُعاد أبداً — بياناتٌ قديمة، أو
+     «لم تسجّل الدخول» محفوظةً تحبس صاحبها خارج حسابه بعد أن يدخل.
+     الأصل: عامل الخدمة يخزّن **ملفّات الواجهة وحدها**؛ وجواب الخادم حيٌّ دائماً. */
+  if (url.pathname.indexOf('/api/') > -1 || url.pathname.endsWith('/health')) return;
 
   /* version.json من الشبكة دائماً — به يُعرف أن ثمّة نسخة أحدث */
   if (url.pathname.endsWith('version.json')) {

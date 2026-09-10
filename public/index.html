@@ -23,9 +23,18 @@
 (function () {
   function j(k){ try { return JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { return {}; } }
 
+  /* الوجهة المطلوبة: رابطٌ مباشر فُتح بلا جلسة ⟵ الدخول ⟵ هنا ⟵ وجهته (2026-09-10).
+     ⚠ الموجِّه وحده يتحقّق منها: اسمُ صفحةٍ من المنصّة لا عنوانٌ خارجي — فلا يصير
+       الرابط باباً يُحوِّل الزميل إلى موقعٍ آخر. وتُتبَع لمن أتمّ إعداده فقط. */
+  function next() {
+    var n = '';
+    try { n = new URLSearchParams(location.search).get('next') || ''; } catch (e) {}
+    return /^(?!index\.|login\.)[a-z0-9\-]+\.html(\?[^#<>"'\s]*)?$/i.test(n) ? n : '';
+  }
+
   function route() {
     var setup = j('shouba.setup'), user = j('shouba.user');
-    var to = setup.setupDone ? 'board.html'
+    var to = setup.setupDone ? (next() || 'board.html')
            : user.name       ? 'setup-wizard.html'
                              : 'login.html';
     location.replace(to);

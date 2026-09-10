@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-public>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=37" />
-<link rel="stylesheet" href="shell.css?v=37" />
-<link rel="stylesheet" href="components.css?v=37" />
-<link rel="stylesheet" href="frame.css?v=37" />
+<link rel="stylesheet" href="identity/tokens.css?v=38" />
+<link rel="stylesheet" href="shell.css?v=38" />
+<link rel="stylesheet" href="components.css?v=38" />
+<link rel="stylesheet" href="frame.css?v=38" />
 <style>
   /* أنماط خاصّة بشاشة الدخول فقط — الهيكل من shell.css -->*/
   .brand{display:flex;flex-direction:column;align-items:center;gap:13px;padding:0 30px}
@@ -134,8 +134,8 @@
 <!-- ⚠ شاشة الدخول أوّل ما يُفتح، فهي التي تُسجّل عامل الخدمة وتفحص التحديث:
      بلا هذين يبقى الزائر الجديد بلا عملٍ دون إنترنت، وقد يرى نسخة قديمة
      (GitHub Pages يخزّن الصفحات عشر دقائق) — رُصد بعد النشر الأول 2026-09-06. -->
-<script src="build.js?v=37"></script>
-<script src="components.js?v=37"></script>
+<script src="build.js?v=38"></script>
+<script src="components.js?v=38"></script>
 <script>
   /* شاشة الدخول — دخولٌ حقيقيّ إلى خادم المنصّة (2026-09-08).
      ⚠ لا يُخزَّن سرٌّ هنا: الجلسة كعكةٌ httpOnly لا يبلغها كود الصفحة.
@@ -152,6 +152,13 @@
   var ups  = [].slice.call(document.querySelectorAll('.field.up'));
 
   function say(t, ok){ msg.textContent = t || ''; msg.className = 'msg' + (ok ? ' ok' : ''); }
+
+  /* بعد الدخول: إلى الموجِّه (ينزّل البيانات قبل أن يوجّه)، ومعه الوجهة إن جاء
+     الزميل من رابطٍ مباشر — فيصل إلى الشاشة التي فتحها لا إلى اللوحة دائماً.
+     والموجِّه وحده يتحقّق من الوجهة؛ فلا تُكرَّر القاعدة هنا. */
+  var NEXT = null;
+  try { NEXT = new URLSearchParams(location.search).get('next'); } catch (e) {}
+  function onward(){ return 'index.html' + (NEXT ? '?next=' + encodeURIComponent(NEXT) : ''); }
 
   function paint(){
     ups.forEach(function(f){ f.classList.toggle('hide', mode !== 'up'); });
@@ -207,7 +214,7 @@
       .then(function(res){
         if(!res.ok){ say(res.j.error || 'تعذّر الدخول'); cont.disabled = false; return; }
         localStorage.setItem('shouba.user', JSON.stringify({ name: res.j.displayName }));
-        location.href = 'index.html';
+        location.href = onward();
       })
       .catch(function(){ say('لا اتصال بالخادم — تحقّق من الشبكة وأعِد المحاولة.'); cont.disabled = false; });
   }
@@ -228,7 +235,7 @@
     .then(function(u){
       if(!u) return;
       localStorage.setItem('shouba.user', JSON.stringify({ name: u.displayName }));
-      location.replace('index.html');
+      location.replace(onward());
     })
     .catch(function(){});
 

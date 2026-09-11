@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=43" />
-<link rel="stylesheet" href="shell.css?v=43" />
-<link rel="stylesheet" href="components.css?v=43" />
-<link rel="stylesheet" href="frame.css?v=43" />
+<link rel="stylesheet" href="identity/tokens.css?v=44" />
+<link rel="stylesheet" href="shell.css?v=44" />
+<link rel="stylesheet" href="components.css?v=44" />
+<link rel="stylesheet" href="frame.css?v=44" />
 <style>
   /* خاص بهذه الشاشة فقط */
   .sdrop.locked{opacity:.5;pointer-events:none;filter:grayscale(.3)}
@@ -74,6 +74,13 @@
         </div>
       </div>
 
+      <!-- التوجيه — معبأ من المرجع وقابل للتعديل؛ ترويسة السجلات (قرار المستخدم 2026-09-12) -->
+      <div class="field hide" id="dirWrap">
+        <label for="dir">التوجيه</label>
+        <div class="paper"><input id="dir" type="text" maxlength="80" /></div>
+        <div class="hint">يظهر في ترويسة سجلاتك — عدله إن كانت صيغة مدرستك مختلفة.</div>
+      </div>
+
       <!-- مواد الشعبة (معاينة حية) -->
       <div class="field hide" id="subjectsWrap">
         <label>مواد شعبتك</label>
@@ -87,9 +94,9 @@
   </div>
  </div></div>
 
-<script src="refdata.js?v=43"></script>
-<script src="build.js?v=43"></script>
-<script src="components.js?v=43"></script>
+<script src="refdata.js?v=44"></script>
+<script src="build.js?v=44"></script>
+<script src="components.js?v=44"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{return JSON.parse(localStorage.getItem(KEY))||{};}catch(e){return {};} }
@@ -98,6 +105,7 @@
   var stageSel=document.getElementById('stage'), deptSel=document.getElementById('dept');
   var deptDrop=document.getElementById('deptDrop'), next=document.getElementById('next');
   var subjectsWrap=document.getElementById('subjectsWrap'), subjects=document.getElementById('subjects');
+  var dirWrap=document.getElementById('dirWrap'), dirIn=document.getElementById('dir');
 
   function setTrigger(dropSel, text, isPh){
     var v=dropSel.closest('.sdrop').querySelector('.val');
@@ -117,7 +125,8 @@
     setTrigger(deptSel, 'اختر الشعبة', true);
     deptDrop.classList.remove('locked');
     subjectsWrap.classList.add('hide'); subjects.innerHTML='';
-    save({ stage: st, department:'' });
+    dirWrap.classList.add('hide'); dirIn.value='';
+    save({ stage: st, department:'', directorate:'' });
     validate();
   }
   function onDept(){
@@ -148,9 +157,16 @@
       subjects.innerHTML='<div class="subj-empty">مواد هذه الشعبة تضاف لاحقا من الإدارة.</div>';
     }
     subjectsWrap.classList.remove('hide');
-    save({ department: dp, subjects: list });
+    /* التوجيه: ما عدله صاحبه لهذا القسم نفسه يبقى، والا الاسم من المرجع */
+    var prev=load(), def=R.directorateOf(stageSel.value, dp);
+    var dir=(prev.department===dp && prev.directorate) ? prev.directorate : def;
+    dirIn.value=dir; dirWrap.classList.toggle('hide', !dir && !def);
+    save({ department: dp, subjects: list, directorate: dir });
     validate();
   }
+  dirIn.addEventListener('input', function(){
+    save({ directorate: dirIn.value.trim() || R.directorateOf(stageSel.value, deptSel.value) });
+  });
   function validate(){ next.disabled = !(stageSel.value && deptSel.value); }
 
   stageSel.addEventListener('change', onStage);

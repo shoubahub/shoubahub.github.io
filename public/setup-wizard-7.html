@@ -12,10 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=43" />
-<link rel="stylesheet" href="shell.css?v=43" />
-<link rel="stylesheet" href="components.css?v=43" />
-<link rel="stylesheet" href="frame.css?v=43" />
+<link rel="stylesheet" href="identity/tokens.css?v=44" />
+<link rel="stylesheet" href="shell.css?v=44" />
+<link rel="stylesheet" href="components.css?v=44" />
+<link rel="stylesheet" href="frame.css?v=44" />
 <style>
   /* خاص بهذه الشاشة فقط — لا هيكل ولا هوامش عامة */
   .tally{display:flex;gap:9px}
@@ -69,14 +69,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=43"></script>
+<script src="build.js?v=44"></script>
 <!-- ⚠ المرجعية ثم الاشتقاق ثم المكونات — بهذا الترتيب.
      أضيفا حين احتاجت الشاشة Shouba.termStart (2026-09-08): كانت تقرأ
      البيانات خاما وتستغني عن الطبقة، فلما استدعيت دالة منها أخفقت
      الشاشة كلها ولم يظهر سطر واحد. -->
-<script src="refdata.js?v=43"></script>
-<script src="derive.js?v=43"></script>
-<script src="components.js?v=43"></script>
+<script src="refdata.js?v=44"></script>
+<script src="derive.js?v=44"></script>
+<script src="components.js?v=44"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -149,7 +149,7 @@
   /* كل سطر يعيد لشاشته بـ ret=final فيعود إلى هذه المراجعة بعد التعديل (لا إلى مراجعة المنتصف) */
   var ROWS = [
     { to:'setup-wizard.html',   main: d.schoolName || DASH, sub: j('المدرسة', d.region, d.schoolType) },
-    { to:'setup-wizard-2.html', main: d.department || DASH, sub: j('الشعبة', d.stage, subjects.length ? subjects.length + ' مواد' : '') },
+    { to:'setup-wizard-2.html', main: d.department || DASH, sub: j('الشعبة', d.stage, subjects.length ? subjects.length + ' مواد' : '', Shouba.directorate ? Shouba.directorate() : '') },
     { to:'setup-wizard-3.html', main: d.year || DASH,       sub: j('العام الدراسي', d.term, startLine()) },
     { to:'setup-wizard-4.html', main: d.principal || 'لم تضف الإشراف بعد', sub: j('الإشراف', d.supervisor || 'اختياري — لك إكماله لاحقا') },
     { to:'setup-wizard-5.html', main: teachers.length

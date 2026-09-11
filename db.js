@@ -51,6 +51,19 @@ db.exec(`
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
   );
+
+  /* الملاحظات (2026-09-11): يكتبها المستخدم بنفسه من زر «ملاحظة» فتصل لوحة الادارة.
+     لا شيء فيها من بيانات الشعبة — النص والنوع والشاشة ورقم البناء فقط. وتحذف مع حسابها. */
+  CREATE TABLE IF NOT EXISTS feedback (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    kind       TEXT,
+    page       TEXT,
+    build      TEXT,
+    text       TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    read_at    TEXT
+  );
 `);
 
 /* ⚠ رقم المراجعة (rev) — يرتفع مع كل حفظ، وبه يُعرف الترتيب لا بساعة جهاز

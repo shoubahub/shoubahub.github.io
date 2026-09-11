@@ -712,6 +712,82 @@ Shouba.returnTo = function () {
     Shouba.sheet.open('انتهت جلستك', n);
   }
 
+  /* ═══ الملاحظة — من زر في رأس اللوحة الى لوحة الادارة (2026-09-11) ═══
+     طلب المستخدم: رسالة الدعوة تدعو الزميل الى رصد تجربته، والرصد من هنا — فلا يلح
+     المدير على زملائه بالسؤال. ⚠ اللوحة تصرح بما يصل: الاسم واسم الشاشة فقط، ولا شيء
+     من بيانات الشعبة. والمسودة تبقى ما دامت الصفحة مفتوحة، فلا يضيع ما كتب ان اغلقت. */
+  var fbDraft = '', fbKind = null;
+  var FB_KINDS = [['unclear', 'خطوة غير واضحة'], ['missing', 'شيء ناقص'], ['idea', 'فكرة'], ['bug', 'خلل']];
+  Shouba.feedback = function () {
+    var n = document.createElement('div'); n.className = 'fields';
+    var kinds = document.createElement('div'); kinds.className = 'fbkinds';
+    FB_KINDS.forEach(function (k) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = k[1];
+      if (fbKind === k[0]) b.className = 'on';
+      b.addEventListener('click', function () {
+        fbKind = fbKind === k[0] ? null : k[0];
+        [].forEach.call(kinds.children, function (x) { x.className = ''; });
+        if (fbKind) b.className = 'on';
+      });
+      kinds.appendChild(b);
+    });
+    var field = document.createElement('div'); field.className = 'paper';
+    var ta = document.createElement('textarea'); ta.maxLength = 2000; ta.value = fbDraft;
+    ta.placeholder = 'ما الذي استوقفك؟ اكتب كما تحب';
+    field.appendChild(ta);
+    var note = document.createElement('div'); note.className = 'fbnote';
+    note.textContent = 'تصل إلى مدير المنصة مع اسمك واسم هذه الشاشة — ولا يرسل معها شيء من بيانات شعبتك.';
+    var msg = document.createElement('div'); msg.className = 'fbnote';
+    var go = document.createElement('button'); go.className = 'cta'; go.textContent = 'أرسل';
+    function check() { go.disabled = ta.value.trim().length < 3; }
+    ta.addEventListener('input', function () { fbDraft = ta.value; msg.textContent = ''; check(); });
+    check();
+    go.addEventListener('click', function () {
+      if (go.disabled) return;
+      go.disabled = true; go.textContent = 'ترسل…';
+      var page = location.pathname.replace(/^.*\//, '') || 'index.html';
+      fetch('api/feedback', {
+        method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: ta.value.trim(), kind: fbKind, page: page, build: String(window.SHOUBA_BUILD || '') })
+      }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; }); })
+        .then(function (res) {
+          if (res.ok) {
+            fbDraft = ''; fbKind = null;
+            var done = document.createElement('div'); done.className = 'fields';
+            var t = document.createElement('div'); t.className = 'setnote';
+            t.innerHTML = '<b>وصلت ملاحظتك</b> — شكرا لك، فبمثلها تتطور المنصة.';
+            var ok = document.createElement('button'); ok.className = 'btn-ghost'; ok.textContent = 'حسنا';
+            ok.addEventListener('click', function () { Shouba.sheet.close(); });
+            done.appendChild(t); done.appendChild(ok);
+            Shouba.sheet.open('ملاحظة للتطوير', done);
+            return;
+          }
+          if (res.status === 401) { Shouba.sheet.close(); Shouba.signIn(); return; }
+          msg.textContent = (res.j && res.j.error) || 'لم ترسل — أعد المحاولة';
+          go.textContent = 'أرسل'; check();
+        })
+        .catch(function () {
+          msg.textContent = 'لا اتصال — ملاحظتك باقية هنا، أعد الإرسال حين يعود الاتصال.';
+          go.textContent = 'أرسل'; check();
+        });
+    });
+    n.appendChild(kinds); n.appendChild(field); n.appendChild(note); n.appendChild(msg); n.appendChild(go);
+    Shouba.sheet.open('ملاحظة للتطوير', n);
+    setTimeout(function () { try { ta.focus(); } catch (e) {} }, 120);
+  };
+  /* زر الملاحظة: <button class="iconbtn" data-feedback></button> — الرمز والتسمية والسلوك من هنا،
+     كزر المنزل: لا يرسم في ملف الشاشة ولا يكتب له مستمع. */
+  function bindFeedback() {
+    [].forEach.call(document.querySelectorAll('[data-feedback]'), function (b) {
+      if (b.dataset.bound) return; b.dataset.bound = '1';
+      b.setAttribute('aria-label', 'ملاحظة');
+      if (!b.innerHTML.trim()) b.innerHTML = '<svg width="15" height="15" viewBox="0 0 20 20" fill="none">'
+        + '<path d="M4.2 4.2h11.6a1.6 1.6 0 0 1 1.6 1.6v7a1.6 1.6 0 0 1-1.6 1.6H9.4l-3.8 3v-3H4.2a1.6 1.6 0 0 1-1.6-1.6v-7a1.6 1.6 0 0 1 1.6-1.6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>'
+        + '<path d="M6.4 8.2h7.2M6.4 10.9h4.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+      b.addEventListener('click', function () { Shouba.feedback(); });
+    });
+  }
+
   function connectServer() {
     if (!window.Shouba || !Shouba.connect) return;
     Shouba.onConflict = conflictSheet;
@@ -724,6 +800,6 @@ Shouba.returnTo = function () {
     });
   }
 
-  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); updateBanner(); connectServer(); }
-  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); updateBanner(); connectServer(); });
+  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindFeedback(); updateBanner(); connectServer(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindFeedback(); updateBanner(); connectServer(); });
 })();

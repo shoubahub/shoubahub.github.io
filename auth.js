@@ -246,6 +246,7 @@ function routes(app) {
   const dropUser = db.transaction(id => {
     db.prepare('DELETE FROM sessions WHERE user_id = ?').run(id);
     db.prepare('DELETE FROM shouba WHERE user_id = ?').run(id);
+    db.prepare('DELETE FROM feedback WHERE user_id = ?').run(id);
     return db.prepare('DELETE FROM users WHERE id = ?').run(id).changes;
   });
   app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
@@ -256,6 +257,42 @@ function routes(app) {
     dropUser(u.id);
     tries.delete(u.username);
     res.json({ ok: true });
+  });
+
+  /* ── الملاحظات (2026-09-11) ────────────────────────────
+     يكتبها المستخدم من زر «ملاحظة» في اللوحة فتصل لوحة الادارة — طلب المستخدم: رسالة
+     الدعوة تدعو الزميل الى رصد تجربته، فلا يلح المدير عليهم بالسؤال.
+     ⚠ هي وحدها نص يصل الادارة، ويرسله صاحبه عمدا. ولا يرسل معها شيء من بيانات شعبته:
+       النوع والشاشة ورقم البناء فقط، ليعرف اين وقعت الملاحظة. */
+  const KINDS = ['unclear', 'missing', 'idea', 'bug'];
+  app.post('/api/feedback', requireUser, (req, res) => {
+    const b = req.body || {};
+    const text = String(b.text || '').trim();
+    if (text.length < 3) return res.status(400).json({ error: 'اكتب ملاحظتك' });
+    if (text.length > 2000) return res.status(400).json({ error: 'الملاحظة طويلة — الحد ٢٠٠٠ حرف' });
+    const kind = KINDS.includes(b.kind) ? b.kind : null;
+    const page = /^[a-z0-9\-]+\.html$/.test(String(b.page || '')) ? String(b.page) : null;
+    const build = /^\d{1,6}$/.test(String(b.build || '')) ? String(b.build) : null;
+    const recent = db.prepare("SELECT COUNT(*) AS c FROM feedback WHERE user_id = ? AND created_at > datetime('now','-1 hour')")
+      .get(req.user.id).c;
+    if (recent >= 20) return res.status(429).json({ error: 'ملاحظات كثيرة في ساعة — أعد بعد قليل' });
+    db.prepare('INSERT INTO feedback (user_id,kind,page,build,text) VALUES (?,?,?,?,?)')
+      .run(req.user.id, kind, page, build, text);
+    res.json({ ok: true });
+  });
+
+  app.get('/api/admin/feedback', requireAdmin, (_req, res) => {
+    const rows = db.prepare(`
+      SELECT f.id, f.kind, f.page, f.build, f.text, f.created_at, f.read_at, u.display_name, u.username
+      FROM feedback f JOIN users u ON u.id = f.user_id
+      ORDER BY f.created_at DESC, f.id DESC LIMIT 300`).all();
+    const unread = db.prepare('SELECT COUNT(*) AS c FROM feedback WHERE read_at IS NULL').get().c;
+    res.json({ feedback: rows, unread });
+  });
+
+  app.post('/api/admin/feedback/:id/read', requireAdmin, (req, res) => {
+    const info = db.prepare("UPDATE feedback SET read_at = datetime('now') WHERE id = ? AND read_at IS NULL").run(req.params.id);
+    res.json({ ok: true, changed: info.changes });
   });
 
   app.get('/api/admin/invite', requireAdmin, (_req, res) => res.json({ code: invite() }));

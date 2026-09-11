@@ -7,10 +7,10 @@
 <meta name="robots" content="noindex, nofollow" />
 <meta name="theme-color" content="#1B5183" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=41" />
-<link rel="stylesheet" href="shell.css?v=41" />
-<link rel="stylesheet" href="components.css?v=41" />
-<link rel="stylesheet" href="frame.css?v=41" />
+<link rel="stylesheet" href="identity/tokens.css?v=42" />
+<link rel="stylesheet" href="shell.css?v=42" />
+<link rel="stylesheet" href="components.css?v=42" />
+<link rel="stylesheet" href="frame.css?v=42" />
 <style>
   /* خاص بالإدارة: صف الحساب وجدوله. لا هيكل ولا هوامش عامة. */
   .urow{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;
@@ -39,6 +39,21 @@
   .msg{font-size:12.5px;font-weight:600;min-height:18px;color:var(--shouba-error)}
   .msg.ok{color:var(--shouba-navy)}
   .hide{display:none !important}
+
+  /* رسالة الدعوة — زران متجاوران (2026-09-11) */
+  .invbtns{display:flex;gap:10px}
+  .invbtns .btn-ghost{padding:13px 8px;font-size:13.5px;color:var(--shouba-navy)}
+
+  /* الملاحظات — ورقة لكل ملاحظة، والجديدة بحلقة كحلية */
+  .fbrow{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;padding:12px 14px;
+    display:flex;flex-direction:column;gap:7px;box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .fbrow.new{box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 0 0 2px var(--shouba-navy)}
+  .fbrow .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:11px;color:var(--shouba-label)}
+  .fbrow .meta b{font-size:13px;color:var(--shouba-navy)}
+  .fbrow .kind{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(22,69,110,.09);color:var(--shouba-navy)}
+  .fbrow p{margin:0;font-size:13.5px;color:var(--shouba-ink);line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+  .fbrow .rd{align-self:flex-start;border:0;cursor:pointer;font-family:var(--font-ar);font-size:11.5px;font-weight:700;
+    padding:7px 12px;border-radius:999px;background:rgba(22,69,110,.09);color:var(--shouba-navy);min-height:32px}
 </style>
 </head>
 <body class="framed">
@@ -75,15 +90,34 @@
           <div class="hint">بلا هذا الرمز لا ينشئ أحد حسابا، مهما عرف الرابط.</div>
         </div>
 
+        <!-- رسالة الدعوة — الرابط والرمز الحالي يضافان تلقائيا (طلب المستخدم 2026-09-11) -->
+        <div class="field">
+          <label>رسالة الدعوة</label>
+          <div class="invbtns">
+            <button type="button" class="btn-ghost" id="copyInvite">انسخ رسالة الدعوة</button>
+            <button type="button" class="btn-ghost" id="waInvite">أرسل عبر واتساب</button>
+          </div>
+          <div class="hint">فيها رابط المنصة ورمز الدعوة الحالي وخطوات التسجيل، ودعوة لكتابة الملاحظات.</div>
+          <div class="msg" id="imsg"></div>
+        </div>
+
         <div class="field">
           <label id="count">الحسابات</label>
           <div class="stack" id="users"></div>
+        </div>
+
+        <!-- الملاحظات — يكتبها الزملاء من زر «ملاحظة» في لوحتهم -->
+        <div class="field">
+          <label id="fbcount">الملاحظات</label>
+          <div class="stack" id="fblist"></div>
         </div>
 
         <div class="note">
           <b>ما تراه هنا وصف لا محتوى.</b> تعرف من سجل ومتى دخل وهل أتم إعداد شعبته —
           <b>ولا تعرض هذه اللوحة جدول أحد ولا معلميه ولا سجلاته</b>، ولا مسار في الخادم يعيدها.
           وقد صممت هكذا عمدا لا سهوا.
+          <br><br>
+          <b>والملاحظات</b> وحدها نص يصلك — يكتبها أصحابها لك بأنفسهم من زر «ملاحظة»، ولا يرسل معها شيء من بيانات شعبهم.
           <br><br>
           <b>والرقم السري لا يعرض</b> — يخزن مجزأ فلا يقرأ. ومن نسيه تعين له رقما جديدا وتسلمه إياه،
           وتغلق جلساته كلها فورا.
@@ -95,8 +129,8 @@
   </div>
  </div></div>
 
-<script src="build.js?v=41"></script>
-<script src="components.js?v=41"></script>
+<script src="build.js?v=42"></script>
+<script src="components.js?v=42"></script>
 <script>
   /* لوحة الإدارة — شاشة مستقلة لا رابط إليها من أي مكان (قرار المستخدم 2026-09-08).
      ⚠ رقم الإدارة **لا يحفظ**: يبقى في الذاكرة ما دامت الصفحة مفتوحة فقط.
@@ -146,7 +180,86 @@
     return isNaN(d) ? t : d.toLocaleDateString('ar-KW', { day:'numeric', month:'long' });
   }
 
+  /* ═══ رسالة الدعوة (2026-09-11) — النموذج (ب) باختيار المستخدم، ومعه دعوة الملاحظات.
+     الرابط من عنوان هذه الصفحة (فيتبع النطاق يوم يشترى)، والرمز مما يظهر الان — فمن ضغط
+     «رمز جديد» نسخ الرسالة بالجديد تلقائيا. ولا تشكيل فيها (قاعدة المنصة). */
+  function inviteText(){
+    var code = document.getElementById('code').textContent.trim();
+    return [
+      'السلام عليكم ورحمة الله وبركاته',
+      'يسعدني أن أدعوك لتجربة منصة «شعبة»، منصة رئيس الشعبة لمتابعة جداول المعلمين والسجلات والمواعيد من أي جهاز.',
+      '',
+      'للتسجيل:',
+      '١. افتح الرابط:',
+      location.origin + '/',
+      '٢. اختر «حساب جديد»',
+      '٣. اكتب رمز الدعوة: ' + code,
+      '٤. اختر اسم مستخدم بالإنجليزية ورقما سريا من ستة أرقام',
+      '',
+      'رقمك السري لا يطلع عليه أحد، ولا أرى بيانات شعبتك.',
+      '',
+      'المنصة في مرحلة تجريبية، والهدف منها أن تتطور بتجربتكم. فأرجو أن ترصد أثناء استخدامك:',
+      '• خطوة لم تتضح لك',
+      '• شيئا احتجته ولم تجده',
+      '• فكرة ترى أنها تيسر عملك',
+      'واكتبها من زر «ملاحظة» بجانب زر الإعدادات أعلى اللوحة، فتصلني مباشرة.'
+    ].join('\n');
+  }
+  /* النسخ: الحافظة الحديثة، وبديلها للمتصفحات الاقدم (سفاري قديم) */
+  function copyText(t){
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t);
+    return new Promise(function(ok, no){
+      var a = document.createElement('textarea'); a.value = t; a.setAttribute('readonly', '');
+      a.style.position = 'fixed'; a.style.top = '-1000px'; document.body.appendChild(a); a.select();
+      var done = false; try { done = document.execCommand('copy'); } catch (e) {}
+      a.remove(); done ? ok() : no();
+    });
+  }
+  var imsg = document.getElementById('imsg');
+  document.getElementById('copyInvite').addEventListener('click', function(){
+    copyText(inviteText())
+      .then(function(){ say(imsg, 'نسخت الرسالة — الصقها في واتساب أو حيث تشاء.', true); })
+      .catch(function(){ say(imsg, 'تعذر النسخ هنا — استعمل «أرسل عبر واتساب».'); });
+  });
+  document.getElementById('waInvite').addEventListener('click', function(){
+    window.open('https://wa.me/?text=' + encodeURIComponent(inviteText()), '_blank', 'noopener');
+  });
+
+  /* ═══ الملاحظات — النص يعرض بـtextContent (يكتبه غيرك) ═══ */
+  var KIND = { unclear:'خطوة غير واضحة', missing:'شيء ناقص', idea:'فكرة', bug:'خلل' };
+  var PAGE = { 'board.html':'اللوحة', 'teachers.html':'المعلمون', 'teacher.html':'ملف المعلم',
+               'schedule.html':'الجداول', 'records.html':'السجلات' };
+  function whenAt(t){
+    var d = new Date(String(t).replace(' ', 'T') + 'Z');
+    return isNaN(d) ? t : d.toLocaleString('ar-KW', { day:'numeric', month:'long', hour:'numeric', minute:'2-digit' });
+  }
+  function loadFeedback(){
+    api('api/admin/feedback').then(function(j){
+      var box = document.getElementById('fblist'); box.innerHTML = '';
+      document.getElementById('fbcount').textContent = j.feedback.length
+        ? 'الملاحظات' + (j.unread ? ' · ' + Shouba.count(j.unread, { one:'جديدة', two:'جديدتان', few:'جديدة', many:'جديدة' }) : '')
+        : 'لا ملاحظات بعد';
+      j.feedback.forEach(function(f){
+        var el = document.createElement('div'); el.className = 'fbrow' + (f.read_at ? '' : ' new');
+        var meta = document.createElement('div'); meta.className = 'meta';
+        var who = document.createElement('b'); who.textContent = f.display_name;
+        var at = document.createElement('span'); at.textContent = whenAt(f.created_at) + (f.page ? ' · ' + (PAGE[f.page] || f.page) : '');
+        meta.appendChild(who); meta.appendChild(at);
+        if (f.kind && KIND[f.kind]) { var k = document.createElement('span'); k.className = 'kind'; k.textContent = KIND[f.kind]; meta.appendChild(k); }
+        var p = document.createElement('p'); p.textContent = f.text;
+        el.appendChild(meta); el.appendChild(p);
+        if (!f.read_at) {
+          var rd = document.createElement('button'); rd.type = 'button'; rd.className = 'rd'; rd.textContent = 'قرأتها';
+          rd.addEventListener('click', function(){ api('api/admin/feedback/' + f.id + '/read', { method:'POST' }).then(loadFeedback); });
+          el.appendChild(rd);
+        }
+        box.appendChild(el);
+      });
+    }).catch(function(e){ say(pmsg, e.message); });
+  }
+
   function load(){
+    loadFeedback();
     api('api/admin/users').then(function(j){
       var box = document.getElementById('users');
       box.innerHTML = '';

@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=45" />
-<link rel="stylesheet" href="shell.css?v=45" />
-<link rel="stylesheet" href="components.css?v=45" />
-<link rel="stylesheet" href="frame.css?v=45" />
-<link rel="stylesheet" href="rec-print.css?v=45" />
+<link rel="stylesheet" href="identity/tokens.css?v=46" />
+<link rel="stylesheet" href="shell.css?v=46" />
+<link rel="stylesheet" href="components.css?v=46" />
+<link rel="stylesheet" href="frame.css?v=46" />
+<link rel="stylesheet" href="rec-print.css?v=46" />
 <style>
   /* شاشة السجل (2026-09-12) — شاشة واحدة لكل القوالب، تولدها اللبنات من التعريف:
      ?tpl=<قالب> سجل جديد (لا يحفظ حتى يكتب فيه) · ?id=<سجل> سجل محفوظ باصداره هو.
@@ -28,6 +28,7 @@
   .hdrok .pvw{border-radius:10px}
   .hdrok p{margin:0;font-size:13px;font-weight:600;color:var(--shouba-label);line-height:1.8}
   .sgn{padding:16px var(--gap-side) 0}
+  .rdel{padding:30px var(--gap-side) 0}
   .gone{padding:30px var(--gap-side);font-size:14px;font-weight:600;color:var(--shouba-label);line-height:1.9}
 </style>
 </head>
@@ -42,12 +43,13 @@
     <div class="iconbtn" data-home title="اللوحة"></div>
   </div>
 
-  <div class="screen has-topbar has-foot">
+  <div class="screen has-topbar has-foot foot-2">
     <div class="content">
       <div class="sgn" id="sgn" hidden>
         <div class="warnbox">هذا السجل موقع ونسخته مرفقة — ما تعدله هنا لا يغير النسخة الموقعة، فاطبعه ووقعه من جديد إن لزم.</div>
       </div>
       <div id="form"></div>
+      <div class="rdel" id="rdel" hidden><button class="btn-danger" id="delRec" type="button">احذف هذا السجل</button></div>
       <div class="pvwrap" id="pv" hidden>
         <div class="fillm" id="meter">
           <div class="track"><div class="bar" id="bar"></div></div>
@@ -61,6 +63,7 @@
 
   <div class="foot">
     <button class="cta" id="toPv">المعاينة والطباعة</button>
+    <button class="btn-ghost" id="done" type="button">تم</button>
     <div class="duo" id="pvAct" hidden>
       <button class="btn-ghost" id="toEd">عد للتحرير</button>
       <button class="cta" id="print">اطبع</button>
@@ -68,16 +71,16 @@
   </div>
  </div></div>
 
-<script src="build.js?v=45"></script>
-<script src="refdata.js?v=45"></script>
-<script src="rec-templates.js?v=45"></script>
-<script src="rec-engine.js?v=45"></script>
-<script src="derive.js?v=45"></script>
-<script src="icons.js?v=45"></script>
-<script src="components.js?v=45"></script>
-<script src="rec-print.js?v=45"></script>
-<script src="rec-files.js?v=45"></script>
-<script src="rec-form.js?v=45"></script>
+<script src="build.js?v=46"></script>
+<script src="refdata.js?v=46"></script>
+<script src="rec-templates.js?v=46"></script>
+<script src="rec-engine.js?v=46"></script>
+<script src="derive.js?v=46"></script>
+<script src="icons.js?v=46"></script>
+<script src="components.js?v=46"></script>
+<script src="rec-print.js?v=46"></script>
+<script src="rec-files.js?v=46"></script>
+<script src="rec-form.js?v=46"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -89,7 +92,7 @@
   })();
 
   var rec = Q.get('id') ? S.rec(Q.get('id')) : (Q.get('tpl') ? S.newRec(Q.get('tpl')) : null);
-  var tpl = rec && ShoubaRec.of(rec), saved = !!(rec && Q.get('id')), fit = null, timer = 0;
+  var tpl = rec && ShoubaRec.of(rec), saved = !!(rec && Q.get('id')), fit = null, timer = 0, deleted = false;
   var formEl = document.getElementById('form'), pv = document.getElementById('pv'), pvw = document.getElementById('pvw');
   var toPv = document.getElementById('toPv'), pvAct = document.getElementById('pvAct');
 
@@ -106,8 +109,13 @@
      واول حفظ يثبت عنوان السجل (?id=)، فالتحديث والرجوع يعيدانه هو لا سجلا جديدا */
   function persist(){
     clearTimeout(timer); timer = 0;
+    if (deleted) return;                   /* بعد الحذف: لا يعيده حفظ متأخر ولا مغادرة الصفحة */
     S.saveRec(rec);
-    if (!saved) { saved = true; history.replaceState(history.state, '', 'record.html?id=' + encodeURIComponent(rec.id)); }
+    if (!saved) {
+      saved = true;
+      history.replaceState(history.state, '', 'record.html?id=' + encodeURIComponent(rec.id));
+      document.getElementById('rdel').hidden = !pv.hidden;   /* صار له ما يحذف */
+    }
   }
   function changed(){ clearTimeout(timer); timer = setTimeout(persist, 500); sub(); }
   function flush(){ if (timer) persist(); }
@@ -155,6 +163,8 @@
   function mode(p){
     formEl.hidden = p; pv.hidden = !p; toPv.hidden = p; pvAct.hidden = !p;
     document.getElementById('sgn').hidden = p || rec.status !== 'signed';
+    document.getElementById('done').hidden = p;
+    document.getElementById('rdel').hidden = p || !saved;
     if (p) paint();
     window.scrollTo(0, 0);
   }
@@ -202,6 +212,21 @@
     /* الموقع: تعديله ينبه ولا يمنع — النسخة المرفقة هي المرجع الرسمي ولن تطابق التعديل */
     document.getElementById('sgn').hidden = rec.status !== 'signed';
 
+    /* «تم» (طلب المستخدم 2026-09-11): يثبت ما كتب في الحال بدل انتظار الحفظ التلقائي، ثم يعود
+       الى الارشيف. وسجل جديد لم يكتب فيه شيء لا يحفظ — فلا يترك مسودة فارغة */
+    var back = 'archive.html?tpl=' + encodeURIComponent(tpl.id), noun1 = (tpl.noun && tpl.noun.one) || 'السجل';
+    document.getElementById('done').addEventListener('click', function(){ flush(); location.href = back; });
+
+    /* الحذف من شاشته (وفي الارشيف كذلك) — بتأكيد يصرح باثره، ومصدره واحد: Shouba.askDeleteRec.
+       يظهر بعد اول حفظ فقط: الجديد الذي لم يكتب فيه شيء لا شيء فيه يحذف */
+    var delBtn = document.getElementById('delRec');
+    delBtn.textContent = 'احذف هذا ' + (/^ال/.test(noun1) ? noun1 : 'ال' + noun1);   /* «هذا المحضر» لا «هذا محضر» */
+    document.getElementById('rdel').hidden = !saved;
+    delBtn.addEventListener('click', function(){
+      var s = ShoubaRec.summary(rec), title = s.no !== '' ? noun1 + ' رقم ' + s.no : noun1;
+      S.askDeleteRec(rec, title, function(){ deleted = true; clearTimeout(timer); timer = 0; location.replace(back); });
+    });
+
     toPv.addEventListener('click', function(){ flush(); history.pushState({ pv: 1 }, ''); mode(true); });
     document.getElementById('toEd').addEventListener('click', function(){ history.back(); });
     window.addEventListener('popstate', function(){ mode(!!(history.state && history.state.pv)); });
@@ -238,6 +263,7 @@
     g.textContent = 'لم يعد هذا السجل موجودا على جهازك — افتح سجلاتك لتختار غيره.';
     formEl.appendChild(g);
     toPv.textContent = 'سجلاتك';
+    document.getElementById('done').hidden = true;
     toPv.addEventListener('click', function(){ location.href = 'records.html'; });
   }
 </script>

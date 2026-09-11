@@ -769,3 +769,6 @@ body.solo .tsel{display:none}
 .fview iframe{display:block;width:100%;height:60dvh;border:0;border-radius:10px;background:#fff}
 .fview .wait{margin:0;font-size:13.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8}
 .fview .miss{margin:0;font-size:13.5px;font-weight:600;color:var(--shouba-error);line-height:1.8}
+/* تأكيد ما لا يسترجع (Shouba.ask) — نص الاثر ثم زر الحذف ثم تراجع (2026-09-11) */
+.ask{display:flex;flex-direction:column;gap:12px}
+.ask p{margin:0 0 4px;font-size:13.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8}

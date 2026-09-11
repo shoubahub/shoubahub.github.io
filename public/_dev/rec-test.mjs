@@ -132,6 +132,9 @@ const fresh = R.create(R.latest('meetings'), { today: '2026-09-11' });
 ok(fresh.values.attach && Array.isArray(fresh.values.attach.items) && !Array.isArray(fresh.values.attach)
    && JSON.parse(JSON.stringify(fresh)).values.attach.items.length === 0, 'المرفقات تبدأ كائنا بقائمة فارغة (تبقى بعد الحفظ)', fresh.values.attach);
 ok(S.archive('meetings').length === 1 && S.archive('meetings')[0].items.length === 2, 'S.archive من الوثيقة', S.archive('meetings'));
+const tmpRec = S.newRec('meetings'); tmpRec.values.meta.date = '2026-09-30'; S.saveRec(tmpRec);
+const beforeDel = S.recs('meetings').length; S.deleteRec(tmpRec);
+ok(S.recs('meetings').length === beforeDel - 1 && !S.rec(tmpRec.id), 'S.deleteRec يحذف السجل (وملفاته ان حملت الشاشة عارض الملفات)');
 ok(S.stillOpen(r2).length === 1, 'بطاقة الثاني: قراره مفتوح');
 const old = S.newRec('meetings'); old.values.meta.date = '2026-09-03';
 ok(S.openDecisions(old).length === 0, 'سجل تاريخه قبل الجميع لا يرث قرارات لاحقة');

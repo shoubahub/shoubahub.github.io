@@ -375,6 +375,35 @@ Shouba.returnTo = function () {
      كان يفتح شاشة المعلمين ولها تبويبها بجانبه، فكان يكرر موجودا؛ وصار
      يحمل ما لا موضع له في الشريط — وفيه **الإعدادات** التي كانت مخفية خلف
      مربع رقم النسخة، فلما صار الرقم ملصقا فقد الزر دلالته. */
+  /* تأكيد لما لا يسترجع (2026-09-11): نص يصرح بالاثر + زر الحذف + تراجع، في لوحة سفلية.
+     يغلق اي لوحة مفتوحة اولا ثم يفتح بعد حركة الاغلاق — فينادى من لوحة اجراءات او من الشاشة سواء */
+  Shouba.ask = function (title, text, yesLabel, onYes) {
+    var n = document.createElement('div'), p = document.createElement('p');
+    var yes = document.createElement('button'), no = document.createElement('button');
+    n.className = 'ask'; p.textContent = text;
+    yes.type = no.type = 'button';
+    yes.className = 'btn-danger'; no.className = 'btn-ghost';
+    yes.textContent = yesLabel; no.textContent = 'تراجع';
+    yes.addEventListener('click', function () { Shouba.sheet.close(); onYes(); });
+    no.addEventListener('click', function () { Shouba.sheet.close(); });
+    n.appendChild(p); n.appendChild(yes); n.appendChild(no);
+    Shouba.sheet.close();
+    setTimeout(function () { Shouba.sheet.open(title, n); }, 320);
+  };
+
+  /* حذف سجل بتأكيد — **مصدر واحد** للأرشيف وشاشة السجل: يصرح بما يذهب معه (ملفاته، واثره
+     على متابعة القرارات)، ثم Shouba.deleteRec (derive.js) يحذفه وملفاته. onDone بعد الحذف */
+  Shouba.askDeleteRec = function (rec, title, onDone) {
+    var files = window.ShoubaRec ? window.ShoubaRec.files(rec).length : 0;
+    var open = Shouba.stillOpen ? Shouba.stillOpen(rec).length : 0;
+    Shouba.ask('حذف ' + title, 'سيحذف «' + title + '» نهائيا من سجلاتك ولا يسترجع.'
+      + (files ? ' ومعه ما أرفق به من ملفات.' : '')
+      + (open ? ' وقراراته المفتوحة لن تظهر بعد في متابعة ما يليه.' : ''), 'احذفه نهائيا', function () {
+      Shouba.deleteRec(rec);
+      if (onDone) onDone();
+    });
+  };
+
   Shouba.quickAdd = function () {
     var n = document.createElement('div');
     n.className = 'setlist';

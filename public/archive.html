@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=45" />
-<link rel="stylesheet" href="shell.css?v=45" />
-<link rel="stylesheet" href="components.css?v=45" />
-<link rel="stylesheet" href="frame.css?v=45" />
+<link rel="stylesheet" href="identity/tokens.css?v=46" />
+<link rel="stylesheet" href="shell.css?v=46" />
+<link rel="stylesheet" href="components.css?v=46" />
+<link rel="stylesheet" href="frame.css?v=46" />
 <style>
   /* ارشيف السجل (2026-09-12) — شاشة واحدة لكل القوالب: ?tpl=<قالب>.
      مجموعات (الفصل · العام) الاحدث اولا، وبحث في المحتوى وتصفية بالحالة، وبطاقة لكل سجل تفتح لوحة اجراءاته
@@ -54,14 +54,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=45"></script>
-<script src="refdata.js?v=45"></script>
-<script src="rec-templates.js?v=45"></script>
-<script src="rec-engine.js?v=45"></script>
-<script src="derive.js?v=45"></script>
-<script src="icons.js?v=45"></script>
-<script src="components.js?v=45"></script>
-<script src="rec-files.js?v=45"></script>
+<script src="build.js?v=46"></script>
+<script src="refdata.js?v=46"></script>
+<script src="rec-templates.js?v=46"></script>
+<script src="rec-engine.js?v=46"></script>
+<script src="derive.js?v=46"></script>
+<script src="icons.js?v=46"></script>
+<script src="components.js?v=46"></script>
+<script src="rec-files.js?v=46"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -112,16 +112,8 @@
       return function(){ if (tm) clearTimeout(tm); else S.sheet.close(); };
     }
     function notice(title, text){ var n = el('div', 'confirm'); n.appendChild(el('p', null, text)); return sheet(title, n); }
-    /* تأكيد لما لا يسترجع: نص يصرح بالاثر + زر الحذف + تراجع */
-    function ask(title, text, yesLabel, onYes){
-      var n = el('div', 'confirm'), yes = el('button', 'btn-danger', yesLabel), no = el('button', 'btn-ghost', 'تراجع');
-      n.appendChild(el('p', null, text));
-      yes.type = no.type = 'button';
-      yes.addEventListener('click', function(){ S.sheet.close(); onYes(); });
-      no.addEventListener('click', function(){ S.sheet.close(); });
-      n.appendChild(yes); n.appendChild(no);
-      sheet(title, n);
-    }
+    /* تأكيد لما لا يسترجع — المكون المشترك في components.js (ومعه حذف السجل: Shouba.askDeleteRec) */
+    var ask = S.ask;
 
     /* التصفية: «الكل» وما وجد من الحالات فقط — ولا تظهر ان لم تكن الا حالة واحدة (لا عنصر وهمي) */
     function segs(present){
@@ -209,16 +201,8 @@
       }
       var del = el('button', 'btn-danger', 'احذفه');
       del.type = 'button';
-      del.addEventListener('click', function(){
-        var open = hasDec ? S.stillOpen(r).length : 0;
-        ask('حذف ' + title, 'سيحذف «' + title + '» نهائيا من سجلاتك ولا يسترجع.'
-            + (ShoubaRec.files(r).length ? ' ومعه ما أرفق به من ملفات.' : '')
-            + (open ? ' وقراراته المفتوحة لن تظهر بعد في متابعة ما يليه.' : ''), 'احذفه نهائيا', function(){
-          /* ملفاته كلها معه — النسخة الموقعة والمرفقات (وما فات تلتقطه المصالحة في الخادم) */
-          ShoubaRec.files(r).forEach(function(f){ ShoubaFiles.remove(f); });
-          S.removeRec(r.id); render();
-        });
-      });
+      /* الحذف: المصدر المشترك مع شاشة السجل — يحذفه وملفاته ويصرح باثره */
+      del.addEventListener('click', function(){ S.askDeleteRec(r, title, render); });
       n.appendChild(del);
       S.sheet.open(title + (s.title ? ' · ' + s.title : ''), n);
     }

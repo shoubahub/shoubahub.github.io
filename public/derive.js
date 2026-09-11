@@ -582,6 +582,13 @@
     d.recs = (d.recs || []).filter(function (r) { return r.id !== id; });
     S.save();
   };
+  /* حذف السجل وملفاته (النسخة الموقعة والمرفقات) — مصدر واحد لكل شاشة تحذف (2026-09-11).
+     الملفات يطلب حذفها من الخادم ان حملت الشاشة rec-files.js، وما فات تلتقطه المصالحة في الخادم */
+  S.deleteRec = function (rec) {
+    var F = window.ShoubaFiles;
+    if (F && E()) E().files(rec).forEach(function (f) { F.remove(f); });
+    S.removeRec(rec.id);
+  };
   S.archive = function (tplId, opt) { return E().archive(S.recs(tplId), opt); };
   S.openDecisions = function (rec) { return E().openDecisions(S.recs(rec.tpl), rec); };
   S.stillOpen     = function (rec) { return E().stillOpen(S.recs(rec.tpl), rec); };

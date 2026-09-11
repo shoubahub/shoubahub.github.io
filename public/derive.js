@@ -561,11 +561,32 @@
   };
   S.rec = function (id) { return (S.data().recs || []).filter(function (r) { return r.id === id; })[0] || null; };
   /* سجل جديد من احدث اصدار — لا يحفظ حتى يكتب فيه (S.saveRec)، فالفتح والتراجع لا يتركان مسودة فارغة */
+  /* سياق انشاء السجل من الاعداد — مصدر واحد للجديد والمنسوخ */
+  function recCtx(who) {
+    var d = S.data();
+    return { today: S.today(), year: d.year || '', term: d.term || '', teachers: S.teachers(),
+      records: S.recs(), school: d.schoolName || '', directorate: S.directorate(), who: who || '' };
+  }
   S.newRec = function (tplId, who) {
-    var d = S.data(), t = E() && E().latest(tplId);
+    var t = E() && E().latest(tplId);
     if (!t) return null;
-    return E().create(t, { today: S.today(), year: d.year || '', term: d.term || '', teachers: S.teachers(),
-      records: S.recs(), school: d.schoolName || '', directorate: S.directorate(), who: who || '' });
+    return E().create(t, recCtx(who));
+  };
+  /* النسخ الى الفصل الحالي (المرحلة الثانية هـ): ShoubaRec.copyOf بسياق الاعداد، واشهر الفصلين من المرجعية
+     (فيقابل كل شهر موضعه)، ثم يحفظ — ويعيد السجل الجديد */
+  S.copyRec = function (src) {
+    var d = S.data(), tm = (window.SHOUBA_REF || {}).termMonths || {}, ctx = recCtx(src && src.who);
+    ctx.monthMap = { from: tm[src && src.term] || [], to: tm[d.term] || [] };
+    var r = E() && E().copyOf(src, ctx);
+    if (r) S.saveRec(r);
+    return r;
+  };
+  /* آخر سجل للقالب من فصل غير الحالي — مصدر «انسخ خطة الفصل السابق» في الارشيف */
+  S.prevTermRec = function (tplId) {
+    var d = S.data(), g = E() ? E().archive(S.recs(tplId)).filter(function (x) {
+      return !(x.year === (d.year || '') && x.term === (d.term || ''));
+    })[0] : null;
+    return g ? g.items[0] : null;
   };
   S.saveRec = function (rec) {
     var d = S.data();
@@ -590,6 +611,17 @@
     S.removeRec(rec.id);
   };
   S.archive = function (tplId, opt) { return E().archive(S.recs(tplId), opt); };
+  /* ما ينتظر اجراء في خطط الفصل الحالي (المرحلة الثانية ج) — لقسم «بحاجة الى اجراء» في اللوحة:
+     سجلات العام والفصل الحاليين، والشهر الحالي، واشهر الفصل من المرجعية ⟵ ShoubaRec.due.
+     عام لكل قالب فيه جدول باشهر ومتابعة (لا اسم قالب بعينه). now اختياري (للفحص) */
+  S.opDue = function (now) {
+    var d = S.data(), R = E(), ref = window.SHOUBA_REF || {};
+    if (!R) return [];
+    var cur = (now || new Date()).getMonth() + 1, order = (ref.termMonths || {})[d.term] || [], out = [];
+    S.recs().filter(function (r) { return (r.year || '') === (d.year || '') && (r.term || '') === (d.term || ''); })
+      .forEach(function (r) { R.due(r, cur, order).forEach(function (x) { x.rec = r.id; out.push(x); }); });
+    return out.sort(function (a, b) { return (b.late ? 1 : 0) - (a.late ? 1 : 0); });
+  };
   S.openDecisions = function (rec) { return E().openDecisions(S.recs(rec.tpl), rec); };
   S.stillOpen     = function (rec) { return E().stillOpen(S.recs(rec.tpl), rec); };
 

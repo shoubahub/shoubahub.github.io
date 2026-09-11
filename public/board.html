@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=46" />
-<link rel="stylesheet" href="shell.css?v=46" />
-<link rel="stylesheet" href="components.css?v=46" />
-<link rel="stylesheet" href="frame.css?v=46" />
+<link rel="stylesheet" href="identity/tokens.css?v=47" />
+<link rel="stylesheet" href="shell.css?v=47" />
+<link rel="stylesheet" href="components.css?v=47" />
+<link rel="stylesheet" href="frame.css?v=47" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -134,11 +134,13 @@
   </div>
  </div></div>
 
-<script src="build.js?v=46"></script>
-<script src="refdata.js?v=46"></script>
-<script src="derive.js?v=46"></script>
-<script src="icons.js?v=46"></script>
-<script src="components.js?v=46"></script>
+<script src="build.js?v=47"></script>
+<script src="refdata.js?v=47"></script>
+<script src="rec-templates.js?v=47"></script>
+<script src="rec-engine.js?v=47"></script>
+<script src="derive.js?v=47"></script>
+<script src="icons.js?v=47"></script>
+<script src="components.js?v=47"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -706,7 +708,18 @@
 
   /* ===== ⑤ بحاجة إلى إجراء ===== */
   var todoEl=document.getElementById('todo'), items=[];
-  Shouba.withoutSchedule().forEach(function(t){ items.push({name:t,badge:'تذكير',text:'لم يدخل جدوله بعد'}); });
+  Shouba.withoutSchedule().forEach(function(t){
+    items.push({ ini:t.charAt(0), title:'أ. ' + t, badge:'تذكير', text:'لم يدخل جدوله بعد', href:'schedule.html?t=' + encodeURIComponent(t) });
+  });
+  /* الخطة التشغيلية (المرحلة الثانية ج، 2026-09-12): اجراء حان شهره — او مضى ولم يحسم — والسطر
+     يفتحه في خطته لتؤشر حالته (باب التأشير هو السطر نفسه). و«مؤجل» و«لم ينفذ» حكم صاحبه فلا يعود هنا */
+  var MN = (window.SHOUBA_REF || {}).months || [];
+  (Shouba.opDue ? Shouba.opDue() : []).forEach(function(x){
+    items.push({ ini:'خ', title:x.what || 'إجراء بلا عنوان', badge:x.late ? 'متأخر' : 'هذا الشهر',
+      text:(x.axis ? 'محور ' + x.axisNo + ' · ' + x.axis + ' — ' : '')
+        + (x.late ? 'موعده ' + (MN[x.month - 1] || '') + ' ولم يؤشر' : x.st === 'doing' ? 'جار — موعده هذا الشهر' : 'موعده هذا الشهر'),
+      href:'record.html?id=' + encodeURIComponent(x.rec) + '&focus=' + encodeURIComponent(x.row) });
+  });
   /* ⚠ حذف بند «دروس سابقة لم تؤشر» (2026-09-05): اتهام بلا دليل — لا باب تأشير
      أصلا، فكان كل معلم متأخرا بحكم البناء. يعود يوم يصير للإنجاز مصدر حقيقي
      (تأشير المعلم بنفسه). والدالة Shouba.behindPlan باقية في طبقة الاشتقاق تنتظره. */
@@ -724,11 +737,12 @@
       el.setAttribute('role','button'); el.setAttribute('tabindex','0');
       el.innerHTML='<span class="ini"></span><div class="tx"><b></b><small></small></div>'
                  + '<span class="chip"></span><span class="chev">›</span>';
-      el.querySelector('.ini').textContent = it.name.charAt(0);
-      el.querySelector('b').textContent = 'أ. ' + it.name;
+      /* البند عام (2026-09-12): حرفه وعنوانه ووجهته منه — معلم بلا جدول، او اجراء في الخطة */
+      el.querySelector('.ini').textContent = it.ini;
+      el.querySelector('b').textContent = it.title;
       el.querySelector('small').textContent = it.text;
       el.querySelector('.chip').textContent = it.badge;
-      function go(){ location.href = 'schedule.html?t=' + encodeURIComponent(it.name); }
+      function go(){ location.href = it.href; }
       el.addEventListener('click', go);
       el.addEventListener('keydown', function(e){
         if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); }

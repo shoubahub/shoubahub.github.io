@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>شعبة · معاينة شاشة ببيانات مثال</title>
+<title>شعبة · معاينة المنصة ببيانات مثال</title>
 <meta name="theme-color" content="#1B5183" />
 <style>
   html,body{margin:0;padding:0;height:100%;background:#EFE6D6}
@@ -11,26 +11,25 @@
 </style>
 </head>
 <body>
-  <iframe id="f"></iframe>
+  <iframe id="f" title="المنصة"></iframe>
 <script>
-  /* يعرض اي شاشة محمية بلا دخول (2026-09-12) — تعميم print-settings-sim.html (أرشف في _legacy/ لما أغنت عنه هذه):
-     ?p=<الشاشة بعنوانها> (مثل record.html%3Ftpl%3Dmeetings) · &seed — يعيد وثيقة المثال ولو امتلأ المخزن.
-     تجلب الصفحة وتكتب في اطار بعد حقن:
-     • <base href="/"> — والا حلت روابطها النسبية على /_dev/؛
-     • data-public — فلا يحولها حارس الجلسة الى الدخول (لا حساب ولا رقم سري في المعاينة)؛
-     • history.replaceState الى عنوان الشاشة — فتقرا location.search كما لو فتحت مباشرة؛
-     • وثيقة شعبة مثال: اربعة معلمين واجتماعان سابقان بقرارات (فتظهر متابعة القرارات). */
-  /* ⚠ تكتب في مخزن الجهاز — على الجهاز المحلي وحده، فلا تطمس شعبة حقيقية ان فتحت على المنصة
-     (والخادم يحجب _dev في الانتاج اصلا — هذا حارس ثان) */
+  /* معاينة المنصة ببيانات مثال بلا دخول (2026-09-12) — على الجهاز المحلي وحده.
+     ?p=<الشاشة بعنوانها> (records.html افتراضا) · &seed — يعيد وثيقة المثال ولو امتلأ المخزن
+     · &seed=prev — مثال فيه خطة الفصل السابق وحدها (لمعاينة «انسخ خطة الفصل السابق»).
+     تفتح الشاشة الحقيقية في اطار ويتنقل منها الى غيرها كما في المنصة: راية جلسة (shouba.sim) يقبلها
+     حارس الجلسة على localhost وحده (components.js). والبيانات في مخزن هذا المتصفح لا في حساب.
+     (كانت تكتب الصفحة في الاطار كتابة، فاي انتقال منه ذهب الى الدخول — فلا تعاين الا شاشة واحدة) */
   (function () {
     var h = location.hostname;
-    if (!(h === 'localhost' || h === '127.0.0.1' || /^(10|172|192)\./.test(h) || h === '')) {
+    if (!(h === 'localhost' || h === '127.0.0.1')) {
       document.body.textContent = 'أداة تطوير — تعمل على الجهاز المحلي وحده.';
       throw new Error('dev only');
     }
   })();
-  var Q = new URLSearchParams(location.search), P = Q.get('p') || 'records.html';
+  var Q = new URLSearchParams(location.search), P = Q.get('p') || 'records.html', PREV = Q.get('seed') === 'prev';
   var T = ['ناصر العجمي', 'عبدالله الرشيدي', 'خالد العنزي', 'فهد المطيري'];
+
+  /* محاضر الاجتماعات: اجتماعان هذا الفصل بقرارات (فتظهر متابعتها)، وواحد من العام الماضي موقع */
   function M(id, no, date, topic, decide, carry, x){
     x = x || {};
     return { id: id, tpl: 'meetings', v: 1, year: x.year || '٢٠٢٦/٢٠٢٧', term: x.term || 'الفصل الأول', status: x.status || 'draft', signed: x.signed,
@@ -38,27 +37,59 @@
       values: { meta: { no: no, date: date, topic: topic }, body: { carry: carry || {}, axes: [], decide: decide },
                 attach: x.attach || { items: [] }, att: { roster: T.slice(), absent: [], guests: [] } } };
   }
+
+  /* الخطة التشغيلية: ثلاثة محاور باجراءات موزعة على اشهر الفصل وحالات متابعة مختلفة —
+     ومنها ما حان شهره ولم يؤشر، فيظهر في «بحاجة الى اجراء» باللوحة */
+  function plan(id, year, term, mm, created, done){
+    function act(k, what, who, m, all, note, st, fnote){
+      return { id: 'w' + id + k, what: what, who: who, when: { m: m, all: !!all, note: note || '' },
+               follow: st ? { st: st, note: fnote || '', at: created, ev: [] } : {} };
+    }
+    return { id: id, tpl: 'opplan', v: 1, year: year, term: term, status: done ? 'printed' : 'draft',
+      created: created, updated: created,
+      values: { meta: { name: 'الخطة التشغيلية لشعبة الرياضيات', year: year, term: term }, cover: {},
+        axes: [
+          { id: 'x' + id + '1', axis: { name: 'الأنشطة والفعاليات' }, goals: { g: 'تنمية مواهب الطلبة وربط الرياضيات بالحياة اليومية' }, acts: [
+            act('a', 'إذاعة مدرسية عن يوم المعلم', ['@all'], [mm[1]], false, 'حسب جدول الإذاعة المدرسية', done && 'done'),
+            act('b', 'مسابقة الرياضيات الشهرية', [T[1]], [mm[0], mm[1], mm[2], mm[3]], false, '', done ? 'done' : 'doing', done ? '' : 'الجولة الأولى تمت'),
+            act('c', 'تكريم المتفوقين في نهاية الفصل', ['@admin', T[0]], [mm[4]], false, '', done && 'done'),
+            act('d', 'رحلة علمية إلى المركز العلمي', [T[2]], [mm[2]], false, 'بعد موافقة الإدارة', done && 'no') ] },
+          { id: 'x' + id + '2', axis: { name: 'التنمية المهنية' }, goals: { g: 'رفع كفاءة معلمي الشعبة في استراتيجيات التدريس الحديثة' }, acts: [
+            act('e', 'ورشة استراتيجيات التعلم النشط', [T[0]], [mm[0]], false, '', 'done', 'حضرها معلمو الشعبة'),
+            act('f', 'زيارات تبادلية بين معلمي الشعبة', ['@all'], [], true, '', done && 'done'),
+            act('g', 'حضور دورة التقويم الحديث', [T[3]], [mm[1]], false, '', done && 'later') ] },
+          { id: 'x' + id + '3', axis: { name: 'متابعة التحصيل' }, goals: { g: 'رفع نسب النجاح ومعالجة الضعف مبكرا' }, acts: [
+            act('h', 'اختبار قصير موحد للصف العاشر', [T[1]], [mm[0]], false, '', done && 'done'),
+            act('i', 'تحليل نتائج الاختبارات القصيرة', [T[0], T[2]], [mm[1]], false, '', done && 'done'),
+            act('j', 'خطة علاجية للطلبة المتعثرين', ['@all'], [], true, 'متابعة أسبوعية', 'later') ] }
+        ] } };
+  }
+
+  var recs = [
+    M('rC', 7, '2026-05-10', 'الاستعداد للاختبارات النهائية', [], null, { year: '٢٠٢٥/٢٠٢٦', term: 'الفصل الثاني', status: 'signed',
+      signed: { file: 'f0000000000000000000000a', mime: 'image/jpeg', size: 412345, at: '2026-05-12T10:00:00.000Z' } }),
+    M('rA', 1, '2026-09-01', 'الاستعداد لانطلاق العام', [
+      { id: 'dA', text: 'تسليم التوزيع الزمني للمنهج', owner: 'جميع المعلمين', due: '2026-09-06' },
+      { id: 'dB', text: 'تجهيز بنك أسئلة الوحدة الأولى', owner: 'فهد المطيري', due: '2026-09-24' } ], null,
+      { attach: { items: [ { file: 'f00000000000000000000001', mime: 'application/pdf', size: 845000, name: 'نشرة الاختبارات القصيرة', at: '2026-09-01T09:00:00.000Z' } ] } }),
+    M('rB', 2, '2026-09-08', 'متابعة الأسبوع الأول', [
+      { id: 'dC', text: 'إعداد اختبار قصير موحد للصف العاشر', owner: 'خالد العنزي', due: '2026-10-01' } ], { dA: 'done' })
+  ];
+  /* خطة الفصل السابق دائما (للمقارنة والنسخ)، وخطة الفصل الحالي الا في &seed=prev */
+  recs.push(plan('P0', '٢٠٢٥/٢٠٢٦', 'الفصل الثاني', [2, 3, 4, 5, 6], '2026-02-08T08:00:00.000Z', true));
+  if (!PREV) recs.push(plan('P1', '٢٠٢٦/٢٠٢٧', 'الفصل الأول', [9, 10, 11, 12, 1], '2026-09-05T08:00:00.000Z', false));
+
+  /* قائمة سجلاتك بلا الخطة — فيظهر سطر «جديد — أضفه» كما عند من اعد شعبته قبلها */
   var SAMPLE = { stage: 'ثانوي', department: 'الرياضيات', refDataVersion: 3, schoolName: 'ثانوية الأمل', schoolType: 'بنين',
-    year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', teachers: T, setupDone: true,
-    records: ['سجل اجتماعات الشعبة', 'سجل الزيارات الصفية'],
-    recs: [
-      M('rC', 7, '2026-05-10', 'الاستعداد للاختبارات النهائية', [], null, { year: '٢٠٢٥/٢٠٢٦', term: 'الفصل الثاني', status: 'signed',
-        signed: { file: 'f0000000000000000000000a', mime: 'image/jpeg', size: 412345, at: '2026-05-12T10:00:00.000Z' } }),
-      M('rA', 1, '2026-09-01', 'الاستعداد لانطلاق العام', [
-        { id: 'dA', text: 'تسليم التوزيع الزمني للمنهج', owner: 'جميع المعلمين', due: '2026-09-06' },
-        { id: 'dB', text: 'تجهيز بنك أسئلة الوحدة الأولى', owner: 'فهد المطيري', due: '2026-09-24' } ], null,
-        { attach: { items: [ { file: 'f00000000000000000000001', mime: 'application/pdf', size: 845000, name: 'نشرة الاختبارات القصيرة', at: '2026-09-01T09:00:00.000Z' } ] } }),
-      M('rB', 2, '2026-09-08', 'متابعة الأسبوع الأول', [
-        { id: 'dC', text: 'إعداد اختبار قصير موحد للصف العاشر', owner: 'خالد العنزي', due: '2026-10-01' } ], { dA: 'done' }) ] };
-  fetch('/' + P.split('?')[0] + '?x=' + Date.now()).then(function(r){ return r.text(); }).then(function(html){
-    var stub = '<base href="/"><scr' + 'ipt>document.documentElement.setAttribute("data-public","");'
-      + 'history.replaceState(null,"",' + JSON.stringify('/' + P) + ');'
-      + 'try{if(' + (Q.has('seed') ? 'true' : 'false') + '||!localStorage.getItem("shouba.setup"))localStorage.setItem("shouba.setup",'
-      + JSON.stringify(JSON.stringify(SAMPLE)) + ');}catch(e){}'
-      + '</scr' + 'ipt>';
-    var doc = document.getElementById('f').contentDocument;
-    doc.open(); doc.write(html.replace('<head>', '<head>' + stub)); doc.close();
-  });
+    year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', teachers: T, setupDone: true, principal: 'عبدالعزيز الفلاح',
+    records: ['سجل اجتماعات الشعبة', 'سجل الزيارات الصفية'], recs: recs };
+
+  try {
+    if (Q.has('seed') || !localStorage.getItem('shouba.setup')) localStorage.setItem('shouba.setup', JSON.stringify(SAMPLE));
+    if (!localStorage.getItem('shouba.user')) localStorage.setItem('shouba.user', JSON.stringify({ name: 'محمد البراك' }));
+    sessionStorage.setItem('shouba.sim', '1');
+  } catch (e) {}
+  document.getElementById('f').src = '/' + P;
 </script>
 </body>
 </html>

@@ -289,7 +289,9 @@
   R.archive = function (records, opt) {
     opt = opt || {};
     var groups = {}, order = [];
-    function key(r) { var s = R.summary(r); return (s.date || String(r.created || '').slice(0, 10)) + '|' + ('00000' + (+s.no || 0)).slice(-5); }
+    /* الترتيب بتاريخ السجل، وما لا تاريخ فيه (الخطة التشغيلية) بوقت انشائه كاملا لا يومه —
+       كان اليوم وحده فتعادلت خطة منسوخة واصلها في اليوم نفسه وسبق الفصل السابق (رصد 2026-09-12) */
+    function key(r) { var s = R.summary(r); return (s.date || String(r.created || '')) + '|' + ('00000' + (+s.no || 0)).slice(-5); }
     arr(records).forEach(function (r) {
       if (opt.status && (r.status || 'draft') !== opt.status) return;
       if (opt.q && !R.match(r, opt.q)) return;
@@ -302,7 +304,7 @@
       g.items.sort(function (a, b) { return key(b).localeCompare(key(a)); });
       g.latest = key(g.items[0]);
       return g;
-    }).sort(function (a, b) { return b.latest.localeCompare(a.latest); });
+    }).sort(function (a, b) { return b.latest.localeCompare(a.latest) || R.norm(b.year).localeCompare(R.norm(a.year)); });   /* التعادل: العام الاحدث اولا */
   };
 
   R.newId = function (prefix) { return (prefix || 'r') + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); };
@@ -326,7 +328,11 @@
     switch (b.type) {
       case 'fields':
         var o = {};
-        arr(b.fields).forEach(function (f) { var a = autoValue(f.auto, ctx); if (a !== undefined && a !== '') o[f.id] = a; });
+        arr(b.fields).forEach(function (f) {
+          var a = autoValue(f.auto, ctx);
+          if (a !== undefined && a !== '') o[f.id] = a;
+          else if (f.value !== undefined) o[f.id] = f.value;   /* قيمة ابتدائية ثابتة (اسم الخطة) — تعدل */
+        });
         return o;
       case 'text':
         var s = {};
@@ -337,7 +343,12 @@
       case 'rating': case 'checklist': return {};
       /* ⚠ كائن لا مصفوفة: items على مصفوفة يسقطه JSON عند الحفظ (2026-09-11) */
       case 'files': return { items: [] };
-      default: return [];                     /* table · repeat */
+      /* القسم المتكرر يبدأ بـ start نسخة (الخطة: محور واحد فارغ — فلا تفتح خالية) */
+      case 'repeat':
+        var r = [];
+        for (var i = 0; i < (b.start || 0); i++) r.push(R.newItem(b, ctx));
+        return r;
+      default: return [];                     /* table */
     }
   }
   R.create = function (t, ctx) {
@@ -351,6 +362,164 @@
       status: 'draft', created: now, updated: now, values: {} };
     if (ctx.who) rec.who = ctx.who;          /* صاحب السجل ان كان معلما او طالبا */
     arr(t.blocks).forEach(function (b) { rec.values[b.id] = blank(b, cx); });
+    return rec;
+  };
+
+  /* صف جديد في لبنة الجدول (المرحلة الثانية أ): معرف ثابت (للمتابعة والشواهد) وقيمة فارغة بنوع كل عمود.
+     ⚠ الاشهر كائن { m: [ارقام الاشهر], all: طوال الفصل, note }، والمعلم المتعدد مصفوفة (اسماء او @all/@admin) */
+  R.newRow = function (b) {
+    var row = { id: R.newId('w') };
+    arr(b && b.columns).forEach(function (c) {
+      row[c.id] = c.kind === 'check' ? false
+        : c.kind === 'months' ? { m: [], all: false, note: '' }
+        : (c.kind === 'teacher' && c.multi) ? []
+        : c.kind === 'followup' ? {}
+        : '';
+    });
+    return row;
+  };
+
+  /* نسخة جديدة من القسم المتكرر (المرحلة الثانية ب): معرف ثابت وقيمة فارغة لكل لبنة فيه بمعرفها */
+  R.newItem = function (b, ctx) {
+    var it = { id: R.newId('x') };
+    arr(b && b.blocks).forEach(function (c) { it[c.id] = blank(c, ctx || {}); });
+    return it;
+  };
+
+  /* ── متابعة الخطة (المرحلة الثانية ج) ─────────────────────────────
+     حالات الاجراء قائمة مغلقة: نفذ · جار · مؤجل · لم ينفذ.
+     و«بحاجة الى اجراء»: ما حان شهره، او مضى من الفصل ولم يحسم — وحالته فارغة او «جار».
+     «مؤجل» و«لم ينفذ» حكم صاحبه فلا يلح عليه (النظام يعرض ما يجب، والحكم قرار المستخدم).
+     «طوال الفصل» يحين في آخر شهر من الفصل. cur رقم الشهر الحالي، order اشهر الفصل بترتيبها.
+     يعيد [{ row, what, axis, axisNo, st, late, month }] — المتأخر اولا */
+  R.FOLLOW = ['done', 'doing', 'later', 'no'];
+  function colOf(b, kind) { return arr(b.columns).filter(function (c) { return c.kind === kind; })[0]; }
+  /* يمر على كل لبنة في السجل — ما في اعلاه وما في نسخ القسم المتكرر (only: معرفات نسخ مختارة، او الكل).
+     fn(b, v, axis, axisNo): axis اسم النسخة (اول حقل نص مطلوب فيها) ورقمها.
+     مصدر واحد لـ«بحاجة الى اجراء» وتقرير التنفيذ والشواهد — فلا يفترق ما يعدونه */
+  function walkTables(rec, only, fn) {
+    var t = R.of(rec);
+    arr(t && t.blocks).forEach(function (b) {
+      var v = (rec.values || {})[b.id];
+      if (b.type !== 'repeat') return fn(b, v, '', 0);
+      arr(v).forEach(function (it, i) {
+        if (only && only.indexOf(it.id) < 0) return;
+        var nm = '';
+        arr(b.blocks).forEach(function (c) {
+          if (c.type === 'fields' && !nm) arr(c.fields).forEach(function (f) { if (!nm && f.required && it[c.id] && it[c.id][f.id]) nm = String(it[c.id][f.id]).trim(); });
+        });
+        arr(b.blocks).forEach(function (c) { fn(c, it[c.id], nm, i + 1); });
+      });
+    });
+  }
+  /* احصاء المتابعة (تقرير التنفيذ — المرحلة الثانية د): كل صف في جدول له عمود متابعة، في النسخ المختارة.
+     يعيد { total, done, doing, later, no, none } — none ما لم يؤشر */
+  R.followStats = function (rec, only) {
+    var s = { total: 0, done: 0, doing: 0, later: 0, no: 0, none: 0 };
+    walkTables(rec, only, function (b, v) {
+      if (b.type !== 'table') return;
+      var fc = colOf(b, 'followup');
+      if (!fc) return;
+      arr(v).forEach(function (row) { var st = (row[fc.id] || {}).st || ''; s.total++; s[R.FOLLOW.indexOf(st) > -1 ? st : 'none']++; });
+    });
+    return s;
+  };
+  /* الشواهد (ملحق التقرير): كل ملف في متابعة صف، ومعه عنوان اجرائه ومنفذه ومحوره وتاريخ ارفاقه —
+     من البيانات بلا ادخال */
+  R.evidence = function (rec, only) {
+    var out = [];
+    walkTables(rec, only, function (b, v, axis) {
+      if (b.type !== 'table') return;
+      var fc = colOf(b, 'followup'), tc = colOf(b, 'text'), wc = colOf(b, 'teacher');
+      if (!fc) return;
+      arr(v).forEach(function (row) {
+        arr((row[fc.id] || {}).ev).forEach(function (e) {
+          if (e && e.file) out.push({ file: e.file, mime: e.mime || '', size: e.size || 0, at: e.at || '', row: row.id, axis: axis,
+            what: tc ? String(row[tc.id] || '').trim() : '', who: wc ? row[wc.id] : '' });
+        });
+      });
+    });
+    return out;
+  };
+  R.due = function (rec, cur, order) {
+    var t = R.of(rec), out = [], ci = arr(order).indexOf(cur);
+    if (!t || ci < 0) return out;
+    function scan(b, v, axis, axisNo) {
+      if (b.type !== 'table') return;
+      var mc = colOf(b, 'months'), fc = colOf(b, 'followup'), tc = colOf(b, 'text');
+      if (!mc || !fc) return;
+      arr(v).forEach(function (row) {
+        var w = row[mc.id] || {}, st = (row[fc.id] || {}).st || '';
+        if (st && st !== 'doing') return;
+        var idx = w.all ? [order.length - 1] : arr(w.m).map(function (m) { return order.indexOf(m); }).filter(function (i) { return i > -1; });
+        var now = idx.indexOf(ci) > -1, past = idx.filter(function (i) { return i < ci; });
+        if (!now && !past.length) return;
+        out.push({ row: row.id, what: tc ? String(row[tc.id] || '').trim() : '', axis: axis, axisNo: axisNo, st: st,
+                   late: !now, month: now ? cur : order[Math.max.apply(null, past)] });
+      });
+    }
+    walkTables(rec, null, scan);
+    return out.sort(function (a, b) { return (b.late ? 1 : 0) - (a.late ? 1 : 0); });
+  };
+
+  /* ── النسخ الى الفصل الحالي (المرحلة الثانية هـ — القالب يسمح بـ copy) ─────────────────
+     سجل جديد من احدث اصدار قالبه (المعرفات ثابتة عبر الاصدارات) بمحتوى المصدر كله، الا:
+       · الحقول التلقائية (العام · الفصل · الرقم · التاريخ) من الفصل الجديد لا من المصدر؛
+       · حالات المتابعة تمسح — والملفات لا تنسخ (الشاهد والمرفق لسجلهما: نسخ اشارتها يجعل حذف الاصل
+         يحذف ملفات النسخة)، ولا توقيع ولا حالة «مطبوع»؛
+       · معرفات الصفوف والنسخ تجدد؛ واشهر التنفيذ تقابل موضعها في الفصل الجديد (ctx.monthMap {from, to}:
+         فبراير اول الثاني ⟵ سبتمبر اول الاول) وما لا مقابل له يسقط.
+     rec.from معرف الاصل. */
+  R.copyOf = function (src, ctx) {
+    var t = src && R.latest(src.tpl);
+    if (!t) return null;
+    ctx = ctx || {};
+    var rec = R.create(t, ctx), vals = JSON.parse(JSON.stringify(src.values || {})), mm = ctx.monthMap || null;
+    function months(v) {
+      if (!v || typeof v !== 'object' || !mm) return v;
+      v.m = arr(v.m).map(function (m) { var i = arr(mm.from).indexOf(m); return i > -1 ? arr(mm.to)[i] : undefined; })
+        .filter(function (m) { return m !== undefined; });
+      return v;
+    }
+    function clean(b, v) {
+      switch (b.type) {
+        case 'fields':
+          var o = v && typeof v === 'object' ? v : {};
+          arr(b.fields).forEach(function (f) { if (f.auto) delete o[f.id]; });
+          return o;
+        case 'table':
+          return arr(v).map(function (row) {
+            var r = {};
+            Object.keys(row || {}).forEach(function (k) { r[k] = row[k]; });
+            r.id = R.newId('w');
+            arr(b.columns).forEach(function (c) {
+              if (c.kind === 'followup') r[c.id] = {};
+              else if (c.kind === 'months') r[c.id] = months(r[c.id]);
+            });
+            return r;
+          });
+        case 'repeat':
+          return arr(v).map(function (it) {
+            var n = { id: R.newId('x') };
+            arr(b.blocks).forEach(function (c) { n[c.id] = clean(c, it && it[c.id]); });
+            return n;
+          });
+        case 'files': return { items: [] };
+        case 'signatures': return b.mode === 'smart:attendance' ? undefined : (v || {});   /* الحضور لقطة يومه */
+        default: return v;
+      }
+    }
+    arr(t.blocks).forEach(function (b) {
+      if (!Object.prototype.hasOwnProperty.call(vals, b.id)) return;
+      var c = clean(b, vals[b.id]);
+      if (c === undefined) return;
+      if (b.type === 'fields') {                /* التلقائي من الجديد، وسائر الخانات من المصدر */
+        var fresh = rec.values[b.id] || {};
+        Object.keys(c).forEach(function (k) { fresh[k] = c[k]; });
+        rec.values[b.id] = fresh;
+      } else rec.values[b.id] = c;
+    });
+    rec.from = src.id;
     return rec;
   };
 

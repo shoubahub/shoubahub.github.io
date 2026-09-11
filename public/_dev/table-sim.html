@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-public>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · لبنة الجدول (عينة — أداة تطوير)</title>
+<meta name="theme-color" content="#1B5183" />
+<base href="/" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css" />
+<link rel="stylesheet" href="shell.css" />
+<link rel="stylesheet" href="components.css" />
+<link rel="stylesheet" href="frame.css" />
+<link rel="stylesheet" href="rec-print.css" />
+<style>
+  /* اداة تطوير (2026-09-11): لبنة الجدول — الخطوة (أ) من المرحلة الثانية — على قالب عينة عرضي ممتد.
+     ?filled — ٢٢ صفا (تمتد صفحات) · &print — الصفحات وحدها بمقاسها (وتطبع بـ⌘P). ليست شاشة المنصة. */
+  .pvw{position:relative;overflow:hidden;background:#fff;margin:16px var(--gap-side) 0;border-radius:6px;box-shadow:0 1px 6px rgba(40,30,15,.16)}
+  .pvw .pp-sheet{position:absolute;top:0;right:0;transform-origin:top right}
+  .cap{margin:16px var(--gap-side) 0;font-size:12px;font-weight:600;color:var(--shouba-hint)}
+  .pp-print.sim{display:block}
+  .pp-print.sim .pp-sheet{margin:0 auto 8mm;box-shadow:0 1px 6px rgba(0,0,0,.25)}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="topbar">
+    <div class="tbcrest" id="tbCrest"></div>
+    <div class="tt"><b>لبنة الجدول</b><span>عينة — أداة تطوير</span></div>
+    <div class="iconbtn" data-home title="اللوحة"></div>
+  </div>
+  <div class="screen has-topbar has-foot">
+    <div class="content">
+      <div id="form"></div>
+      <div id="paper" hidden></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="segs" id="view">
+      <button type="button" class="seg on" data-v="form">الإدخال</button>
+      <button type="button" class="seg" data-v="paper">الورقة</button>
+    </div>
+  </div>
+ </div></div>
+
+<script src="build.js"></script>
+<script src="refdata.js"></script>
+<script src="rec-templates.js"></script>
+<script>
+  /* قالب عينة يسجل قبل المحرك (rec-engine.js يحمل SHOUBA_TPL عند تحميله): جدول بمجموعة اعمدة
+     وعنوان رأسي، عرضي ممتد، وصفوف فارغة حتى ٦ لما يكتب باليد */
+  SHOUBA_TPL.demo = { 1: { id: 'demo', v: 1, title: 'جدول تجريبي', owner: 'shouba',
+    page: { orient: 'landscape', fit: 'flow' },
+    blocks: [{ type: 'table', id: 'acts', title: 'الإجراءات', rowLabel: 'إجراء', rowsLabel: 'إجراءات', add: 'أضف إجراء',
+      rows: { min: 6 }, groups: [{ id: 'run', label: 'التنفيذ' }],
+      columns: [
+        { id: 'what', label: 'الوسائل والإجراءات والبرامج', kind: 'text' },
+        { id: 'who',  label: 'الإعداد والتنفيذ', kind: 'teacher', multi: true, group: 'run' },
+        { id: 'when', label: 'مواعيد التنفيذ', kind: 'months', multi: true, group: 'run' },
+        { id: 'on',   label: 'نفذ', kind: 'check', vertical: true },
+        { id: 'sign', label: 'التوقيع', kind: 'signature' } ] }] } };
+</script>
+<script src="rec-engine.js"></script>
+<script src="derive.js"></script>
+<script src="icons.js"></script>
+<script src="components.js"></script>
+<script src="rec-print.js"></script>
+<script src="rec-files.js"></script>
+<script src="rec-form.js"></script>
+<script>
+  /* ⚠ تكتب في مخزن الجهاز — على الجهاز المحلي وحده (والخادم يحجب _dev في الانتاج اصلا) */
+  (function () {
+    var h = location.hostname;
+    if (!(h === 'localhost' || h === '127.0.0.1' || /^(10|172|192)\./.test(h) || h === '')) {
+      document.body.textContent = 'أداة تطوير — تعمل على الجهاز المحلي وحده.';
+      throw new Error('dev only');
+    }
+  })();
+  var S = Shouba, Q = new URLSearchParams(location.search), T = ['ناصر العجمي', 'عبدالله الرشيدي', 'خالد العنزي', 'فهد المطيري'];
+  localStorage.setItem('shouba.setup', JSON.stringify({ stage: 'ثانوي', department: 'الرياضيات', refDataVersion: 3,
+    schoolName: 'ثانوية الأمل', schoolType: 'بنين', year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', teachers: T }));
+  S.data(true);
+  var rec = S.newRec('demo'), tpl = ShoubaRec.of(rec);
+  if (Q.has('filled')) {
+    var W = ['إذاعة مدرسية عن يوم المعلم', 'مسابقة الرياضيات الشهرية للصفوف العاشرة', 'اختبار قصير موحد للصف العاشر',
+      'زيارات تبادلية بين معلمي الشعبة', 'ورشة في استراتيجيات التعلم النشط', 'متابعة الطلبة المتعثرين ووضع خطط علاجية لهم',
+      'تكريم المتفوقين في نهاية الفصل', 'حصص تقوية قبل الاختبارات', 'معرض الوسائل التعليمية', 'لقاء أولياء الأمور',
+      'تحليل نتائج الاختبارات القصيرة'];
+    var M = [9, 10, 11, 12, 1];
+    rec.values.acts = W.concat(W).slice(0, 22).map(function (w, i) {
+      return { id: 'w' + i, what: w + (i > 10 ? ' — المرحلة الثانية' : ''),
+        who: i % 4 === 0 ? ['@all'] : i % 4 === 1 ? ['@admin', T[i % 4]] : [T[i % 4]],
+        when: i % 5 === 0 ? { m: [], all: true, note: '' } : { m: [M[i % 5]], all: false, note: i % 6 === 0 ? 'حسب الإذاعة المدرسية' : '' },
+        on: i % 3 === 0, sign: '' };
+    });
+  }
+  window.SIM = { rec: rec, tpl: tpl };
+
+  if (Q.has('print')) {
+    var pp = document.createElement('div');
+    pp.className = 'pp-print sim';
+    document.body.textContent = '';
+    document.body.className = '';
+    document.body.style.background = '#9a9a9a';
+    document.body.appendChild(pp);
+    var draw = function () { pp.textContent = ''; window.SIM.pages = ShoubaPrint.pages(tpl, rec, {}, pp); };
+    draw();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+  } else {
+    var formEl = document.getElementById('form'), paperEl = document.getElementById('paper');
+    ShoubaForm.render(formEl, tpl, rec, { teachers: S.teachers() }, function () { window.SIM.changes = (window.SIM.changes || 0) + 1; });
+    var paintPaper = function () {
+      paperEl.textContent = '';
+      var host = document.createElement('div');
+      paperEl.appendChild(host);
+      var pages = ShoubaPrint.pages(tpl, rec, {}, host);
+      var cap = document.createElement('div');
+      cap.className = 'cap';
+      cap.textContent = S.count(pages.length, { one: 'صفحة', two: 'صفحتان', few: 'صفحات', many: 'صفحة' }) + ' — عرضية، ورأس الجدول يتكرر في كل صفحة';
+      paperEl.insertBefore(cap, host);
+      pages.forEach(function (p) {
+        var box = document.createElement('div');
+        box.className = 'pvw';
+        paperEl.insertBefore(box, host);
+        box.appendChild(p);
+        var k = box.clientWidth / p.offsetWidth;
+        p.style.transform = 'scale(' + k + ')';
+        box.style.height = Math.ceil(p.offsetHeight * k) + 'px';
+      });
+      paperEl.removeChild(host);
+      window.SIM.pages = pages;
+    };
+    [].forEach.call(document.querySelectorAll('#view .seg'), function (btn) {
+      btn.addEventListener('click', function () {
+        [].forEach.call(document.querySelectorAll('#view .seg'), function (x) { x.classList.toggle('on', x === btn); });
+        var paper = btn.dataset.v === 'paper';
+        formEl.hidden = paper; paperEl.hidden = !paper;
+        /* الترقيم بعد اكتمال الخط: القياس بخط بديل يطيل الصفوف فيزيد الصفحات (رصد: ٣ صفحات بدل ٢) */
+        if (paper) { paintPaper(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (!paperEl.hidden) paintPaper(); }); }
+        window.scrollTo(0, 0);
+      });
+    });
+    window.SIM.paintPaper = paintPaper;
+  }
+</script>
+</body>
+</html>

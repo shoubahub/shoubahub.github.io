@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=46" />
-<link rel="stylesheet" href="shell.css?v=46" />
-<link rel="stylesheet" href="components.css?v=46" />
-<link rel="stylesheet" href="frame.css?v=46" />
+<link rel="stylesheet" href="identity/tokens.css?v=47" />
+<link rel="stylesheet" href="shell.css?v=47" />
+<link rel="stylesheet" href="components.css?v=47" />
+<link rel="stylesheet" href="frame.css?v=47" />
 <style>
   /* ارشيف السجل (2026-09-12) — شاشة واحدة لكل القوالب: ?tpl=<قالب>.
      مجموعات (الفصل · العام) الاحدث اولا، وبحث في المحتوى وتصفية بالحالة، وبطاقة لكل سجل تفتح لوحة اجراءاته
@@ -24,6 +24,9 @@
   .grp{display:flex;flex-direction:column;gap:12px}
   .confirm{display:flex;flex-direction:column;gap:12px}
   .confirm p{margin:0 0 4px;font-size:13.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8}
+  /* دعوة النسخ من فصل سابق (المرحلة الثانية هـ) — لوح بحد رقيق كبطاقة البند */
+  .copyinv{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:18px;background:rgba(255,255,255,.45);box-shadow:inset 0 0 0 1.5px var(--shouba-line)}
+  .copyinv p{margin:0;font-size:13.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8}
 </style>
 </head>
 <body class="framed">
@@ -54,14 +57,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=46"></script>
-<script src="refdata.js?v=46"></script>
-<script src="rec-templates.js?v=46"></script>
-<script src="rec-engine.js?v=46"></script>
-<script src="derive.js?v=46"></script>
-<script src="icons.js?v=46"></script>
-<script src="components.js?v=46"></script>
-<script src="rec-files.js?v=46"></script>
+<script src="build.js?v=47"></script>
+<script src="refdata.js?v=47"></script>
+<script src="rec-templates.js?v=47"></script>
+<script src="rec-engine.js?v=47"></script>
+<script src="derive.js?v=47"></script>
+<script src="icons.js?v=47"></script>
+<script src="components.js?v=47"></script>
+<script src="rec-files.js?v=47"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -141,7 +144,9 @@
       b.type = 'button';
       r1.appendChild(el('b', null, (s.no !== '' ? 'رقم ' + s.no : noun.one) + (s.title ? ' · ' + s.title : '')));
       r1.appendChild(el('span', st.c, st.t));
-      r2.appendChild(el('span', null, s.date ? ShoubaRec.weekday(s.date) + ' ' + dm(s.date) : 'بلا تاريخ'));
+      /* سجل بلا خانة تاريخ (الخطة التشغيلية): آخر تعديل عليه بدلها */
+      r2.appendChild(el('span', null, s.date ? ShoubaRec.weekday(s.date) + ' ' + dm(s.date)
+        : r.updated ? 'آخر تعديل ' + dm(r.updated) : 'بلا تاريخ'));
       if (hasDec) {
         var n = S.stillOpen(r).length;
         if (n) r2.appendChild(el('span', 'open', 'مفتوح منه ' + S.count(n, DEC)));
@@ -175,6 +180,11 @@
       setTimeout(function(){ ShoubaFiles.view('النسخة الموقعة · ' + titleOf(s), r.signed); }, 320);
     }
 
+    /* النسخ الى الفصل الحالي (المرحلة الثانية هـ — tpl.copy): سجل جديد بمحتوى المصدر، بعام الفصل الحالي وفصله،
+       والمتابعة ممسوحة والملفات لا تنسخ (S.copyRec) — ثم يفتح لتعدله */
+    function isNow(r){ return (r.year || '') === (d.year || '') && (r.term || '') === (d.term || ''); }
+    function copyToNow(r){ var n = S.copyRec(r); if (n) location.href = 'record.html?id=' + encodeURIComponent(n.id); }
+
     /* لوحة الاجراءات: فتح وتعديل (او عرض لعام سابق) · المعاينة والطباعة · النسخة الموقعة · حذف بتأكيد */
     function actions(r, s){
       var n = el('div', 'setlist'), id = encodeURIComponent(r.id), old = past(r), title = titleOf(s);
@@ -199,6 +209,8 @@
       } else {
         row('أرفق النسخة الموقعة', 'صورة أو PDF — تصير مرجعه الرسمي', function(){ attach(r); });
       }
+      if (t.copy && !isNow(r)) row('انسخ إلى ' + (d.term || 'الفصل الحالي'), 'نسخة جديدة بعام الفصل الحالي — وتمسح حالات المتابعة والشواهد',
+        function(){ S.sheet.close(); copyToNow(r); });
       var del = el('button', 'btn-danger', 'احذفه');
       del.type = 'button';
       /* الحذف: المصدر المشترك مع شاشة السجل — يحذفه وملفاته ويصرح باثره */
@@ -215,6 +227,19 @@
       document.getElementById('sub').textContent = all.length ? 'أرشيف ' + noun.few + 'ك · ' + S.count(all.length, noun) : noun.zero || '—';
       toolsEl.hidden = !all.length;
       listEl.textContent = '';
+      /* لا سجل للفصل الحالي وعندك من فصل سابق: النسخ يعرض اولا (المرحلة الثانية هـ) — والبحث والتصفية يخفيانه */
+      if (t.copy && !state.q && !state.status && !all.some(isNow)) {
+        var prev = S.prevTermRec(t.id);
+        if (prev) {
+          var ci = el('div', 'copyinv'), cb = el('button', 'btn-ghost', 'انسخ ' + noun.one + ' ' + (prev.term || 'الفصل السابق') + ' وعدلها');
+          ci.appendChild(el('p', null, noun.one + ' ' + [d.term, d.year].filter(Boolean).join(' ') + ' لم تكتب بعد. انسخ '
+            + noun.one + ' ' + [prev.term, prev.year].filter(Boolean).join(' ') + ' بما فيها، وتمسح حالات متابعتها وشواهدها، ثم عدلها.'));
+          cb.type = 'button';
+          cb.addEventListener('click', function(){ copyToNow(prev); });
+          ci.appendChild(cb);
+          listEl.appendChild(el('div', 'vlist')).appendChild(ci);
+        }
+      }
       if (!all.length || !groups.length) {
         listEl.appendChild(el('div', 'vlist')).appendChild(el('div', 'invite', !all.length
           ? 'لم تكتب ' + noun.few + ' بعد — ابدأ أولها من «' + noun.one + ' جديد» أدناه.'

@@ -135,6 +135,68 @@ ok(S.archive('meetings').length === 1 && S.archive('meetings')[0].items.length =
 const tmpRec = S.newRec('meetings'); tmpRec.values.meta.date = '2026-09-30'; S.saveRec(tmpRec);
 const beforeDel = S.recs('meetings').length; S.deleteRec(tmpRec);
 ok(S.recs('meetings').length === beforeDel - 1 && !S.rec(tmpRec.id), 'S.deleteRec يحذف السجل (وملفاته ان حملت الشاشة عارض الملفات)');
+
+// ٥ج) لبنة الجدول (المرحلة الثانية أ): صف جديد بقيم فارغة بنوع كل عمود، وبمعرف ثابت
+const tbl = { type: 'table', id: 't', columns: [{ id: 'a', label: 'أ', kind: 'text' }, { id: 'b', label: 'ب', kind: 'check' },
+  { id: 'c', label: 'ج', kind: 'teacher', multi: true }, { id: 'd', label: 'د', kind: 'months', multi: true }, { id: 'e', label: 'هـ', kind: 'teacher' }] };
+const nr = R.newRow(tbl), nr2 = R.newRow(tbl);
+ok(/^w/.test(nr.id) && nr.id !== nr2.id && nr.a === '' && nr.b === false && Array.isArray(nr.c) && nr.d.all === false
+   && Array.isArray(nr.d.m) && nr.d.note === '' && nr.e === '', 'صف جديد في الجدول: فارغ بنوع كل عمود وبمعرف فريد', nr);
+
+// ٥د) الخطة التشغيلية (المرحلة الثانية ب): عرضية ممتدة، تبدأ بمحور واحد، واسمها وعامها وفصلها معبأة
+const op = R.latest('opplan');
+ok(!!op && op.page.fit === 'flow' && op.page.orient === 'landscape' && R.byReady('الخطة التشغيلية للشعبة') === op, 'الخطة التشغيلية مسجلة: عرضية ممتدة ومربوطة باسمها');
+const pr = R.create(op, { year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول' });
+ok(Array.isArray(pr.values.axes) && pr.values.axes.length === 1 && /^x/.test(pr.values.axes[0].id) && Array.isArray(pr.values.axes[0].acts)
+   && pr.values.axes[0].axis && pr.values.axes[0].goals && pr.values.meta.name === 'الخطة التشغيلية للشعبة'
+   && pr.values.meta.year === '٢٠٢٦/٢٠٢٧' && pr.values.meta.term === 'الفصل الأول', 'خطة جديدة: محور واحد فارغ، واسمها وعامها وفصلها معبأة', pr.values);
+ok(R.summary(pr).title === 'الخطة التشغيلية للشعبة' && R.newItem(op.blocks[2]).id !== pr.values.axes[0].id, 'ملخص الخطة اسمها، ولكل محور معرف فريد');
+
+// ٥هـ) متابعة الخطة (المرحلة الثانية ج): «بحاجة الى اجراء» ما حان شهره او مضى ولم يحسم
+const pd = clone(pr), ord = [9, 10, 11, 12, 1];
+const mk = (id, what, m, all, st) => ({ id, what, who: [], when: { m, all, note: '' }, follow: st ? { st } : {} });
+pd.values.axes[0].axis.name = 'الأنشطة';
+pd.values.axes[0].acts = [mk('a', 'سبتمبر بلا تأشير', [9], false, ''), mk('b', 'أكتوبر جار', [10], false, 'doing'), mk('c', 'أكتوبر نفذ', [10], false, 'done'),
+  mk('d', 'أكتوبر مؤجل', [10], false, 'later'), mk('e', 'نوفمبر', [11], false, ''), mk('f', 'طوال الفصل', [], true, '')];
+const due10 = R.due(pd, 10, ord);
+ok(due10.map(x => x.row).join() === 'a,b' && due10[0].late && due10[0].month === 9 && !due10[1].late && due10[0].axis === 'الأنشطة' && due10[0].axisNo === 1,
+  'بحاجة الى اجراء: المتأخر اولا ثم ما حان شهره — ولا يعود المنفذ ولا المؤجل ولا ما لم يحن', due10);
+ok(R.due(pd, 1, ord).some(x => x.row === 'f') && !R.due(pd, 12, ord).some(x => x.row === 'f'), '«طوال الفصل» يحين في آخر شهر من الفصل');
+ok(R.due(pd, 7, ord).length === 0 && R.FOLLOW.join() === 'done,doing,later,no', 'خارج اشهر الفصل لا شيء، والحالات قائمة مغلقة');
+
+// ٥و) تقرير التنفيذ (المرحلة الثانية د): احصاء المتابعة والشواهد — للكل او لمحاور مختارة
+const pe = clone(pd);
+pe.values.axes.push({ id: 'x2', axis: { name: 'التنمية' }, goals: {}, acts: [mk('g', 'ورشة', [9], false, 'done')] });
+pe.values.axes[0].acts[2].follow.ev = [{ file: 'fe1', mime: 'image/jpeg', size: 10, at: '2026-10-05T08:00:00Z' }, { file: 'fe2', mime: 'application/pdf', size: 20, at: '2026-10-06T08:00:00Z' }];
+const stAll = R.followStats(pe), stOne = R.followStats(pe, ['x2']);
+ok(stAll.total === 7 && stAll.done === 2 && stAll.doing === 1 && stAll.later === 1 && stAll.none === 3 && stOne.total === 1 && stOne.done === 1,
+  'احصاء المتابعة: الكل ومحور مختار', [stAll, stOne]);
+const evA = R.evidence(pe), evB = R.evidence(pe, ['x2']);
+ok(evA.length === 2 && evA[0].what === 'أكتوبر نفذ' && evA[0].axis === 'الأنشطة' && evA[1].mime === 'application/pdf' && evB.length === 0,
+  'الشواهد تجمع من المحاور المختارة بعنوان اجرائها ومحوره', evA);
+ok(R.files(pe).indexOf('fe1') > -1 && R.due(pd, 10, ord).map(x => x.row).join() === 'a,b', 'الشاهد يحذف مع السجل (R.files)، و«بحاجة الى اجراء» على حاله بعد توحيد المرور');
+const pv = R.latest('opplan').prints;
+ok(pv.length === 2 && pv[1].follow && pv[1].summary && pv[1].cover === false && pv[1].pick === 'axes', 'مطبوعا الخطة: «الخطة» و«تقرير التنفيذ» بخصائصه', pv);
+
+// ٥ز) النسخ من الفصل السابق (المرحلة الثانية هـ)
+const srcPlan = clone(pe);
+srcPlan.id = 'rSrc'; srcPlan.year = '٢٠٢٥/٢٠٢٦'; srcPlan.term = 'الفصل الثاني'; srcPlan.status = 'signed'; srcPlan.signed = { file: 'fs' };
+srcPlan.values.meta.name = 'خطة شعبة الرياضيات';
+srcPlan.values.axes[0].acts[0].when = { m: [2, 3], all: false, note: 'حسب الإذاعة' };
+const cp = R.copyOf(srcPlan, { year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', monthMap: { from: [2, 3, 4, 5, 6], to: [9, 10, 11, 12, 1] } });
+ok(cp && cp.id !== srcPlan.id && cp.status === 'draft' && !cp.signed && cp.from === 'rSrc' && cp.year === '٢٠٢٦/٢٠٢٧'
+   && cp.values.meta.year === '٢٠٢٦/٢٠٢٧' && cp.values.meta.term === 'الفصل الأول' && cp.values.meta.name === 'خطة شعبة الرياضيات',
+   'النسخة: سجل جديد بعام الفصل الحالي وفصله واسم الخطة نفسه، مسودة بلا توقيع', cp.values.meta);
+const a0 = cp.values.axes[0];
+ok(cp.values.axes.length === 2 && a0.axis.name === 'الأنشطة' && a0.acts.length === 6 && a0.id !== srcPlan.values.axes[0].id && a0.acts[0].id !== 'a'
+   && a0.acts.every(r => !r.follow || !r.follow.st) && R.files(cp).length === 0 && a0.acts[0].what === 'سبتمبر بلا تأشير',
+   'المحاور والاجراءات تنسخ بمعرفات جديدة، والمتابعة تمسح والملفات لا تنسخ', a0.acts.map(r => [r.id, r.follow]));
+ok(JSON.stringify(a0.acts[0].when.m) === '[9,10]' && a0.acts[0].when.note === 'حسب الإذاعة' && JSON.stringify(a0.acts[1].when.m) === '[]',
+   'اشهر التنفيذ تقابل موضعها في الفصل الجديد (فبراير ← سبتمبر)، وما لا مقابل له يسقط', [a0.acts[0].when, a0.acts[1].when]);
+ok(srcPlan.values.axes[0].acts[2].follow.st === 'done' && srcPlan.values.axes[0].acts[2].follow.ev.length === 2, 'المصدر لا يمسه النسخ');
+const o1 = clone(srcPlan); o1.id = 'o1'; o1.created = '2026-09-12T08:00:00.000Z';
+const o2 = clone(cp); o2.created = '2026-09-12T09:30:00.000Z';
+ok(R.archive([o1, o2])[0].year === '٢٠٢٦/٢٠٢٧', 'الارشيف: خطة بلا تاريخ ترتب بوقت انشائها — المنسوخة اليوم تسبق اصلها من الفصل السابق', R.archive([o1, o2]).map(g => g.year));
 ok(S.stillOpen(r2).length === 1, 'بطاقة الثاني: قراره مفتوح');
 const old = S.newRec('meetings'); old.values.meta.date = '2026-09-03';
 ok(S.openDecisions(old).length === 0, 'سجل تاريخه قبل الجميع لا يرث قرارات لاحقة');

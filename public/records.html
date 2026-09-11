@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=46" />
-<link rel="stylesheet" href="shell.css?v=46" />
-<link rel="stylesheet" href="components.css?v=46" />
-<link rel="stylesheet" href="frame.css?v=46" />
+<link rel="stylesheet" href="identity/tokens.css?v=47" />
+<link rel="stylesheet" href="shell.css?v=47" />
+<link rel="stylesheet" href="components.css?v=47" />
+<link rel="stylesheet" href="frame.css?v=47" />
 <style>
   .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
   .note{padding:0 var(--gap-side);font-size:12px;font-weight:600;color:var(--shouba-hint);line-height:1.8}
@@ -69,13 +69,13 @@
   </div>
  </div></div>
 
-<script src="build.js?v=46"></script>
-<script src="refdata.js?v=46"></script>
-<script src="rec-templates.js?v=46"></script>
-<script src="rec-engine.js?v=46"></script>
-<script src="derive.js?v=46"></script>
-<script src="icons.js?v=46"></script>
-<script src="components.js?v=46"></script>
+<script src="build.js?v=47"></script>
+<script src="refdata.js?v=47"></script>
+<script src="rec-templates.js?v=47"></script>
+<script src="rec-engine.js?v=47"></script>
+<script src="derive.js?v=47"></script>
+<script src="icons.js?v=47"></script>
+<script src="components.js?v=47"></script>
 <script>
   var d = Shouba.data();
 
@@ -116,6 +116,20 @@
         Shouba.sheet.open(name, n);
       });
     }
+    listEl.appendChild(b);
+  });
+
+  /* قالب رسمي جاهز ليس في قائمتك (بني بعد اعدادك — كالخطة التشغيلية 2026-09-12): يعرض «جديد» ويضاف بلمسة
+     ثم يفتح ارشيفه. القائمة تبقى قرارك — لا يضاف اليها شيء دون لمستك */
+  ShoubaRec.list().filter(function(t){ return t.ready && records.indexOf(t.ready) < 0; }).forEach(function(t){
+    var b = document.createElement('button');
+    b.className = 'entry';
+    b.innerHTML = '<b></b><span class="chip">جديد — أضفه</span>';
+    b.querySelector('b').textContent = t.ready;
+    b.addEventListener('click', function(){
+      Shouba.save({ records: (Shouba.data().records || []).concat(t.ready) });
+      location.href = 'archive.html?tpl=' + encodeURIComponent(t.id);
+    });
     listEl.appendChild(b);
   });
 

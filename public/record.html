@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=46" />
-<link rel="stylesheet" href="shell.css?v=46" />
-<link rel="stylesheet" href="components.css?v=46" />
-<link rel="stylesheet" href="frame.css?v=46" />
-<link rel="stylesheet" href="rec-print.css?v=46" />
+<link rel="stylesheet" href="identity/tokens.css?v=47" />
+<link rel="stylesheet" href="shell.css?v=47" />
+<link rel="stylesheet" href="components.css?v=47" />
+<link rel="stylesheet" href="frame.css?v=47" />
+<link rel="stylesheet" href="rec-print.css?v=47" />
 <style>
   /* شاشة السجل (2026-09-12) — شاشة واحدة لكل القوالب، تولدها اللبنات من التعريف:
      ?tpl=<قالب> سجل جديد (لا يحفظ حتى يكتب فيه) · ?id=<سجل> سجل محفوظ باصداره هو.
@@ -29,6 +29,8 @@
   .hdrok p{margin:0;font-size:13px;font-weight:600;color:var(--shouba-label);line-height:1.8}
   .sgn{padding:16px var(--gap-side) 0}
   .rdel{padding:30px var(--gap-side) 0}
+  .pgs{display:flex;flex-direction:column;gap:12px}
+  .popts{display:flex;flex-direction:column;gap:12px}
   .gone{padding:30px var(--gap-side);font-size:14px;font-weight:600;color:var(--shouba-label);line-height:1.9}
 </style>
 </head>
@@ -51,12 +53,14 @@
       <div id="form"></div>
       <div class="rdel" id="rdel" hidden><button class="btn-danger" id="delRec" type="button">احذف هذا السجل</button></div>
       <div class="pvwrap" id="pv" hidden>
+        <div class="popts" id="popts" hidden></div>
         <div class="fillm" id="meter">
           <div class="track"><div class="bar" id="bar"></div></div>
           <div class="t" id="mt"></div>
         </div>
         <div class="warnbox" id="miss" hidden></div>
         <div class="pvw" id="pvw" aria-label="معاينة الورقة"></div>
+        <div class="pgs" id="pgs" hidden aria-label="معاينة الصفحات"></div>
       </div>
     </div>
   </div>
@@ -71,16 +75,16 @@
   </div>
  </div></div>
 
-<script src="build.js?v=46"></script>
-<script src="refdata.js?v=46"></script>
-<script src="rec-templates.js?v=46"></script>
-<script src="rec-engine.js?v=46"></script>
-<script src="derive.js?v=46"></script>
-<script src="icons.js?v=46"></script>
-<script src="components.js?v=46"></script>
-<script src="rec-print.js?v=46"></script>
-<script src="rec-files.js?v=46"></script>
-<script src="rec-form.js?v=46"></script>
+<script src="build.js?v=47"></script>
+<script src="refdata.js?v=47"></script>
+<script src="rec-templates.js?v=47"></script>
+<script src="rec-engine.js?v=47"></script>
+<script src="derive.js?v=47"></script>
+<script src="icons.js?v=47"></script>
+<script src="components.js?v=47"></script>
+<script src="rec-print.js?v=47"></script>
+<script src="rec-files.js?v=47"></script>
+<script src="rec-form.js?v=47"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -102,7 +106,7 @@
   function sub(){
     var s = ShoubaRec.summary(rec), n = (tpl.noun && tpl.noun.one) || 'السجل';
     document.getElementById('sub').textContent = [s.no !== '' ? n + ' رقم ' + s.no : '',
-      s.date ? ShoubaRec.weekday(s.date) + ' ' + dm(s.date) : ''].filter(Boolean).join(' · ') || tpl.title;
+      s.date ? ShoubaRec.weekday(s.date) + ' ' + dm(s.date) : ''].filter(Boolean).join(' · ') || s.title || tpl.title;
   }
 
   /* الحفظ تلقائي بعد كل تعديل (بتأخير يسير يجمع ضربات المفاتيح) — ولا زر حفظ.
@@ -134,7 +138,123 @@
   }
 
   /* المعاينة: الورقة الحقيقية (ShoubaPrint.render) تلاءم صفحتها ثم تصغر الى عرض الشاشة — فما يرى هو ما يطبع */
+  /* ── خيارات الطباعة (المرحلة الثانية د): لقالب له اكثر من مطبوع (tpl.prints) ──────────────
+     ايهما (الخطة · تقرير التنفيذ)، ولتقرير التنفيذ: المحاور — كلها افتراضا، ومحور وحده يخرج «تقرير <اسمه>»
+     (تقرير الانشطة الذي تطلبه الادارة) — وملحق الشواهد وصوره (كلها محددة، ولمسة تستبعد صورة).
+     المعاينة تتبع الاختيار، فما يرى هو ما يطبع */
+  var PR = tpl && tpl.prints && tpl.prints.length > 1 ? tpl.prints : null;
+  var pst = { id: PR ? PR[0].id : '', axes: null, appendix: false, off: {} };
+  var CHK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var IMGF = { one: 'صورة', two: 'صورتان', few: 'صور', many: 'صورة' }, PDFF = { one: 'ملف PDF', two: 'ملفا PDF', few: 'ملفات PDF', many: 'ملف PDF' };
+  function curPrint(){ return PR ? (PR.filter(function(x){ return x.id === pst.id; })[0] || PR[0]) : null; }
+  function axesOf(){
+    var rb = (tpl.blocks || []).filter(function(b){ return b.type === 'repeat'; })[0];
+    if (!rb) return [];
+    return (rec.values[rb.id] || []).map(function(it, i){
+      var nm = '';
+      rb.blocks.forEach(function(c){
+        if (c.type === 'fields' && !nm) (c.fields || []).forEach(function(f){ if (!nm && f.required && it[c.id] && it[c.id][f.id]) nm = String(it[c.id][f.id]).trim(); });
+      });
+      return { id: it.id, name: nm || (rb.label + ' ' + (i + 1)) };
+    });
+  }
+  function printCfg(){
+    var p = curPrint();
+    if (!p) return null;
+    var ax = axesOf(), picked = p.pick === 'axes' && pst.axes ? pst.axes.slice() : null, title = p.title || tpl.title;
+    if (picked && picked.length === 1 && ax.length > 1) title = 'تقرير ' + (ax.filter(function(a){ return a.id === picked[0]; })[0] || {}).name;
+    return { id: p.id, title: title, follow: !!p.follow, summary: !!p.summary, cover: p.cover !== false,
+             axes: picked, appendix: !!(p.appendix && pst.appendix), off: pst.off };
+  }
+  function pickRow(title, sub, on, tap, disabled){
+    var r = document.createElement('div');
+    r.className = 'pick' + (on ? ' on' : '');
+    r.setAttribute('role', 'checkbox'); r.setAttribute('aria-checked', on ? 'true' : 'false'); r.tabIndex = 0;
+    r.innerHTML = '<span class="mark">' + CHK + '</span><div class="tx"><b></b><small></small></div>';
+    r.querySelector('b').textContent = title; r.querySelector('small').textContent = sub;
+    if (!disabled) {
+      r.addEventListener('click', tap);
+      r.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } });
+    }
+    return r;
+  }
+  function lab(t){ var d = document.createElement('div'); d.className = 'rb-lab'; d.textContent = t; return d; }
+  function buildOpts(){
+    var box = document.getElementById('popts'), p = curPrint();
+    box.hidden = !p; box.textContent = '';
+    if (!p) return;
+    var sg = document.createElement('div');
+    sg.className = 'segs sm';
+    PR.forEach(function(x){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'seg' + (x.id === p.id ? ' on' : ''); b.textContent = x.label || x.title;
+      b.addEventListener('click', function(){ pst.id = x.id; buildOpts(); paint(); });
+      sg.appendChild(b);
+    });
+    box.appendChild(sg);
+    if (p.pick === 'axes') {
+      var ax = axesOf();
+      if (ax.length > 1) {
+        var sel = pst.axes ? pst.axes.slice() : ax.map(function(a){ return a.id; });
+        box.appendChild(lab('المحاور — المس محورا لتخرجه من التقرير'));
+        box.appendChild(ShoubaForm.toggles(ax.map(function(a){ return { v: a.id, t: a.name }; }), function(id){ return sel.indexOf(id) > -1; }, function(id){
+          var i = sel.indexOf(id);
+          if (i > -1) { if (sel.length > 1) sel.splice(i, 1); } else sel.push(id);
+          pst.axes = sel.length === ax.length ? null : sel.slice();
+          buildOpts(); paint();
+        }));
+      }
+    }
+    if (p.appendix) {
+      var ev = ShoubaRec.evidence(rec, pst.axes), imgs = ev.filter(function(e){ return e.mime !== 'application/pdf'; }), pdfs = ev.length - imgs.length;
+      var sub = ev.length ? [imgs.length ? S.count(imgs.length, IMGF) : '', pdfs ? S.count(pdfs, PDFF) + ' تذكر أسماؤها' : ''].filter(Boolean).join(' · ')
+                          : 'لا شواهد مرفقة بعد — ترفق من متابعة كل إجراء';
+      box.appendChild(pickRow('أرفق ملحق الشواهد', sub, !!(pst.appendix && ev.length), function(){ pst.appendix = !pst.appendix; buildOpts(); paint(); }, !ev.length));
+      if (pst.appendix && imgs.length) {
+        box.appendChild(lab('الصور في الملحق — المس صورة لتستبعدها'));
+        var list = document.createElement('div');
+        list.className = 'stack';
+        imgs.forEach(function(e){
+          var day = e.at ? e.at.slice(0, 10) : '';
+          list.appendChild(pickRow(e.what || 'إجراء', day ? ShoubaRec.weekday(day) + ' ' + dm(day) : '', !pst.off[e.file],
+            function(){ pst.off[e.file] = !pst.off[e.file]; buildOpts(); paint(); }));
+        });
+        box.appendChild(list);
+      }
+    }
+  }
+
+  /* الامتداد (fit: 'flow' — الخطة التشغيلية): صفحات مرقمة ذاتيا (ShoubaPrint.pages)، كل صفحة مصغرة الى
+     عرض الشاشة. لا مقياس امتلاء هنا — عدد الصفحات واتجاه الورق بدله. ويعاد عند اكتمال الخط (start) */
+  function paintFlow(){
+    var box = document.getElementById('pgs'), host = document.createElement('div'), m = document.getElementById('meter');
+    pvw.hidden = true; box.hidden = false; box.textContent = ''; box.appendChild(host);
+    var pages = ShoubaPrint.pages(tpl, rec, { open: S.openDecisions(rec), print: printCfg() }, host);
+    pages.forEach(function(p){
+      var w = document.createElement('div');
+      w.className = 'pvw';
+      box.insertBefore(w, host);
+      w.appendChild(p);
+      var k = w.clientWidth / p.offsetWidth;
+      p.style.transform = 'scale(' + k + ')';
+      w.style.height = Math.ceil(p.offsetHeight * k) + 'px';
+    });
+    box.removeChild(host);
+    fit = null;
+    m.className = 'fillm';
+    m.querySelector('.track').hidden = true;
+    document.getElementById('mt').textContent = 'الصفحات: ' + pages.length + ' — الورق '
+      + (tpl.page.orient === 'landscape' ? 'عرضي' : 'عمودي') + '، ورأس كل جدول يتكرر في صفحاته';
+    var miss = missing(), me = document.getElementById('miss');
+    me.hidden = !miss.length;
+    me.textContent = miss.length ? 'لم تكتب ' + miss.join(' و') + ' بعد — يطبع فارغا إن طبعته الآن.' : '';
+    return pages;
+  }
+
   function paint(){
+    if (tpl.page && tpl.page.fit === 'flow') return paintFlow();
+    pvw.hidden = false; document.getElementById('pgs').hidden = true;
+    document.getElementById('meter').querySelector('.track').hidden = false;
     pvw.textContent = '';
     var sheet = ShoubaPrint.render(tpl, rec, { open: S.openDecisions(rec) });
     pvw.appendChild(sheet);
@@ -165,7 +285,7 @@
     document.getElementById('sgn').hidden = p || rec.status !== 'signed';
     document.getElementById('done').hidden = p;
     document.getElementById('rdel').hidden = p || !saved;
-    if (p) paint();
+    if (p) { buildOpts(); paint(); }
     window.scrollTo(0, 0);
   }
 
@@ -207,7 +327,10 @@
   function start(){
     document.getElementById('ttl').textContent = tpl.title;
     document.title = 'شعبة · ' + tpl.title;
-    ShoubaForm.render(formEl, tpl, rec, { teachers: S.teachers(), open: S.openDecisions(rec) }, changed);
+    ShoubaForm.render(formEl, tpl, rec, { teachers: S.teachers(), open: S.openDecisions(rec), focus: Q.get('focus') || '' }, changed);
+    /* الوصول المباشر من اللوحة (?focus=صف): ينزل الى الاجراء المقصود في محوره المفتوح */
+    var fr = Q.get('focus') && formEl.querySelector('[data-row="' + Q.get('focus').replace(/[^A-Za-z0-9_\-]/g, '') + '"]');
+    if (fr) setTimeout(function(){ fr.scrollIntoView({ block: 'center' }); }, 60);
     sub();
     /* الموقع: تعديله ينبه ولا يمنع — النسخة المرفقة هي المرجع الرسمي ولن تطابق التعديل */
     document.getElementById('sgn').hidden = rec.status !== 'signed';

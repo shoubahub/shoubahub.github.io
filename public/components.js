@@ -737,6 +737,11 @@ Shouba.returnTo = function () {
   function sessionGuard() {
     var root = document.documentElement;
     if (!window.fetch || root.hasAttribute('data-public')) return;
+    /* معاينة التطوير (_dev/page-sim.html، 2026-09-12): على الجهاز المحلي وحده، وبراية في جلسة التبويب —
+       فيتنقل المعاين بين الشاشات ببيانات مثال دون دخول. والحارس واجهة لا حماية: بيانات الحساب في الخادم
+       لا تبلغ بلا جلسة (٤٠١)، والمنصة الحية ليست localhost ولا تبلغ _dev اصلا */
+    var host = location.hostname;
+    try { if ((host === 'localhost' || host === '127.0.0.1') && sessionStorage.getItem('shouba.sim')) return; } catch (e) {}
     /* «معروف» = دخل منه صاحب حساب قبلا، أو أتم عليه إعداد شعبته (مستخدمو العنوان القديم).
        ⚠ لا مجرد وجود `shouba.setup`: بعض شاشات المعالج تكتبه لحظة تحميلها — قبل أن
          يحول الحارس — فصار الجهاز الجديد «معروفا» بمجرد فتح رابط (رصد في الفحص). */

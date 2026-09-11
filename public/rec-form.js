@@ -123,7 +123,7 @@
           if (f.kind === 'number') { var n = latin(x).trim(); v[f.id] = n === '' ? '' : (isNaN(+n) ? n : +n); }
           else v[f.id] = x;
           hint(); changed();
-        }, { type: f.kind === 'date' ? 'date' : 'text', numeric: f.kind === 'number', long: f.kind === 'longtext', rows: 3, label: f.label }).box);
+        }, { type: f.kind === 'date' ? 'date' : 'text', numeric: f.kind === 'number', long: f.kind === 'longtext', rows: 3, label: f.label, ph: f.ph }).box);
       }
       hint();
       fld.appendChild(h);
@@ -287,6 +287,268 @@
     return sec;
   };
 
+  /* ── ③ الجدول (المرحلة الثانية أ): كل صف بطاقة على الجوال، تسمية كل خانة فوقها ─────────
+     والورق جدول بإطار يمتد صفحات (rec-print.js). الصف الجديد من المحرك (ShoubaRec.newRow)
+     بمعرف ثابت. المعلمون والاشهر رقاقات تتبدل بلمسة. خانة التوقيع للورق وحده، والمتابعة في خطوتها (ج). */
+  function REF() { return window.SHOUBA_REF || {}; }
+  function toggles(opts, isOn, tap) {
+    var w = el('div', 'tgs');
+    function sync() {
+      [].forEach.call(w.children, function (x, i) {
+        var on = isOn(opts[i].v);
+        x.classList.toggle('on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+    opts.forEach(function (o) {
+      var c = el('button', 'tg', o.t);
+      c.type = 'button';
+      c.addEventListener('click', function () { tap(o.v); sync(); });
+      w.appendChild(c);
+    });
+    sync();
+    return w;
+  }
+  function whoOpts(ctx) {
+    return (REF().whoGroups || []).map(function (g) { return { v: g.id, t: g.t }; })
+      .concat((ctx.teachers || []).map(function (n) { return { v: n, t: 'أ. ' + n }; }));
+  }
+  var CELL = {};
+  CELL.text = function (c, row, ctx, changed) {
+    return input(row[c.id], function (x) { row[c.id] = x; changed(); }, { ph: c.ph || '', label: c.label }).box;
+  };
+  CELL.longtext = function (c, row, ctx, changed) {
+    return input(row[c.id], function (x) { row[c.id] = x; changed(); }, { long: true, rows: 2, ph: c.ph || '', label: c.label }).box;
+  };
+  CELL.number = function (c, row, ctx, changed) {
+    return input(row[c.id], function (x) {
+      var n = latin(x).trim(); row[c.id] = n === '' ? '' : (isNaN(+n) ? n : +n); changed();
+    }, { numeric: true, label: c.label }).box;
+  };
+  CELL.date = function (c, row, ctx, changed) {
+    return input(row[c.id], function (x) { row[c.id] = x; changed(); }, { type: 'date', ph: 'التاريخ', label: c.label }).box;
+  };
+  CELL.choice = function (c, row, ctx, changed) {
+    return drop(c.label, (c.options || []).map(function (o) { return { v: o, t: o }; }), row[c.id],
+      function (x) { row[c.id] = x; changed(); }, 'اختر');
+  };
+  CELL.check = function (c, row, ctx, changed) {
+    var s = el('div', 'segs sm'), b = el('button', 'seg' + (row[c.id] ? ' on' : ''));
+    b.type = 'button'; b.innerHTML = TICK; b.appendChild(document.createTextNode(c.on || 'تم'));
+    b.addEventListener('click', function () { row[c.id] = !row[c.id]; b.classList.toggle('on', !!row[c.id]); changed(); });
+    s.appendChild(b);
+    return s;
+  };
+  /* المعلم: واحد بمنسدلة، او اكثر برقاقات. «معلمو الشعبة» يغني عن الاسماء والاسم يلغيه،
+     و«الادارة المدرسية» تجتمع مع ايهما */
+  CELL.teacher = function (c, row, ctx, changed) {
+    if (!c.multi) return drop(c.label, whoOpts(ctx), row[c.id], function (x) { row[c.id] = x; changed(); }, 'اختر');
+    var v = row[c.id] = Array.isArray(row[c.id]) ? row[c.id] : [];
+    return toggles(whoOpts(ctx), function (x) { return v.indexOf(x) > -1; }, function (x) {
+      var i = v.indexOf(x), k;
+      if (i > -1) v.splice(i, 1);
+      else {
+        if (x === '@all') { for (k = v.length - 1; k >= 0; k--) if (v[k] !== '@admin') v.splice(k, 1); }
+        else if (x !== '@admin') { k = v.indexOf('@all'); if (k > -1) v.splice(k, 1); }
+        v.push(x);
+      }
+      changed();
+    });
+  };
+  /* مواعيد التنفيذ: اشهر الفصل الحالي (refdata.termMonths) او «طوال الفصل»، وملاحظة اختيارية */
+  CELL.months = function (c, row, ctx, changed) {
+    var v = row[c.id] = (row[c.id] && typeof row[c.id] === 'object' && !Array.isArray(row[c.id])) ? row[c.id] : { m: [], all: false, note: '' };
+    v.m = Array.isArray(v.m) ? v.m : [];
+    var R = REF(), d = (window.Shouba && Shouba.data) ? Shouba.data() : {};
+    var list = (R.termMonths || {})[d.term] || [9, 10, 11, 12, 1, 2, 3, 4, 5, 6], w = el('div', 'rb-cell');
+    var opts = [{ v: 0, t: 'طوال الفصل' }].concat(list.map(function (n) { return { v: n, t: (R.months || [])[n - 1] || String(n) }; }));
+    w.appendChild(toggles(opts, function (x) { return x === 0 ? !!v.all : (!v.all && v.m.indexOf(x) > -1); }, function (x) {
+      if (x === 0) { v.all = !v.all; if (v.all) v.m = []; }
+      else {
+        v.all = false;
+        var i = v.m.indexOf(x);
+        if (i > -1) v.m.splice(i, 1); else v.m.push(x);
+        v.m.sort(function (a, b) { return list.indexOf(a) - list.indexOf(b); });
+      }
+      changed();
+    }));
+    w.appendChild(input(v.note, function (x) { v.note = x; changed(); },
+      { ph: 'ملاحظة — اختياري، مثل: حسب الإذاعة المدرسية', label: c.label + ' — ملاحظة' }).box);
+    return w;
+  };
+  /* سطر ملف مرفق: نوعه وحجمه، وعرضه، وحذفه بلمستين (الاولى تسأل «احذفه نهائيا») —
+     مكون واحد للمرفقات (⑥) وشواهد المتابعة، فلا يفترق سلوكهما */
+  function fileRow(it, prefix, onDel) {
+    var FL = window.ShoubaFiles, row = el('div', 'rb-tools rb-file'), see = el('button', 'rb-btn'), del = el('button', 'rb-btn del');
+    row.appendChild(el('span', 'hint', (prefix || '') + (it.mime === 'application/pdf' ? 'PDF' : 'صورة') + ' · ' + FL.kb(it.size)));
+    see.type = del.type = 'button';
+    see.innerHTML = ICON.eye; see.setAttribute('aria-label', 'اعرضه');
+    see.addEventListener('click', function () { FL.view(FL.label(it), it); });
+    del.innerHTML = ICON.del; del.setAttribute('aria-label', 'احذفه');
+    del.addEventListener('click', function () {
+      if (!del.classList.contains('sure')) {
+        del.classList.add('sure'); del.textContent = 'احذفه نهائيا';
+        setTimeout(function () { if (del.isConnected) { del.classList.remove('sure'); del.innerHTML = ICON.del; } }, 4000);
+        return;
+      }
+      onDel();
+    });
+    row.appendChild(see); row.appendChild(del);
+    return row;
+  }
+
+  /* المتابعة (المرحلة الثانية ج): حالة بلمسة — نفذ · جار · مؤجل · لم ينفذ — ولمس المختارة يلغيها.
+     وبعد اختيار حالة تظهر ملاحظة قصيرة وشاهد مرفق (اختياريان) — فالخطة اول الفصل لا تزدحم بما لم يحن.
+     القيمة { st, at (متى حسمت), note, ev: [{ file, mime, size, name, at }] } — والشاهد يحذف مع السجل (R.files) */
+  var FST = [{ v: 'done', t: 'نفذ' }, { v: 'doing', t: 'جار' }, { v: 'later', t: 'مؤجل' }, { v: 'no', t: 'لم ينفذ' }];
+  CELL.followup = function (c, row, ctx, changed) {
+    var v = row[c.id] = (row[c.id] && typeof row[c.id] === 'object' && !Array.isArray(row[c.id])) ? row[c.id] : {};
+    v.ev = Array.isArray(v.ev) ? v.ev : [];
+    var FL = window.ShoubaFiles, w = el('div', 'rb-cell fu'), more = el('div', 'rb-cell'), list = el('div', 'stack'), msg = el('div', 'warnbox');
+    function showMore() { more.hidden = !(v.st || v.note || v.ev.length); }
+    w.appendChild(toggles(FST, function (x) { return v.st === x; }, function (x) {
+      v.st = v.st === x ? '' : x;
+      v.at = v.st ? new Date().toISOString() : '';
+      changed(); showMore();
+    }));
+    more.appendChild(input(v.note, function (x) { v.note = x; changed(); }, { ph: 'ملاحظة — اختياري', label: c.label + ' — ملاحظة' }).box);
+    if (FL) {
+      msg.hidden = true;
+      var paintEv = function () {
+        list.textContent = '';
+        v.ev.forEach(function (e, i) {
+          list.appendChild(fileRow(e, 'شاهد: ', function () { v.ev.splice(i, 1); FL.remove(e.file); changed(); paintEv(); showMore(); }));
+        });
+      };
+      var add = el('button', 'btn-ghost rb-add', '+ أرفق شاهدا');
+      add.type = 'button';
+      add.addEventListener('click', function () {
+        msg.hidden = true;
+        FL.pick(function (file) {
+          var wait = el('div', 'hint', 'يجهز الشاهد ويرفعه إلى حسابك…');
+          list.appendChild(wait);
+          FL.prepare(file).then(function (p) { return FL.upload(ctx.recId, p); }).then(function (j) {
+            v.ev.push({ file: j.id, mime: j.mime, size: j.size, name: '', at: new Date().toISOString() });
+            changed(); paintEv();
+          }).catch(function (e) {
+            if (wait.parentNode) wait.parentNode.removeChild(wait);
+            msg.textContent = e && e.user ? e.message : 'تعذر الرفع — أعد المحاولة';
+            msg.hidden = false;
+          });
+        });
+      });
+      more.appendChild(list); more.appendChild(msg); more.appendChild(add);
+      paintEv();
+    }
+    w.appendChild(more);
+    showMore();
+    return w;
+  };
+
+  BLOCK.table = function (b, v, ctx, changed) {
+    var rows = v, noun = b.rowLabel || 'صف', sec = section(b.title || '', b.hint), box = el('div', 'stack');
+    var cols = b.columns.filter(function (c) { return CELL[c.kind]; });
+    function move(i, d) { var x = rows.splice(i, 1)[0]; rows.splice(i + d, 0, x); changed(); paint(); }
+    function paint() {
+      box.textContent = '';
+      rows.forEach(function (row, i) {
+        var card = el('div', 'rb-item' + (ctx.focus && ctx.focus === row.id ? ' focus' : ''));
+        card.setAttribute('data-row', row.id || '');   /* للوصول المباشر من اللوحة (?focus=) */
+        card.appendChild(el('div', 'rb-q', noun + ' ' + (i + 1)));
+        cols.forEach(function (c) {
+          var cell = el('div', 'rb-cell');
+          cell.appendChild(el('div', 'rb-lab', c.label));
+          cell.appendChild(CELL[c.kind](c, row, ctx, changed));
+          card.appendChild(cell);
+        });
+        card.appendChild(tools(i > 0 ? function () { move(i, -1); } : null,
+                               i < rows.length - 1 ? function () { move(i, 1); } : null,
+                               function () { rows.splice(i, 1); changed(); paint(); }));
+        box.appendChild(card);
+      });
+      if (!rows.length) box.appendChild(el('div', 'hint', 'لا ' + (b.rowsLabel || 'صفوف') + ' بعد — أضف أولها'));
+    }
+    sec.appendChild(box);
+    sec.appendChild(addBtn(b.add || 'أضف صفا', function () {
+      rows.push(window.ShoubaRec.newRow(b)); changed(); paint();
+      var last = box.lastElementChild, f = last && last.querySelector('input,textarea');
+      if (f) f.focus();
+    }));
+    paint();
+    return sec;
+  };
+
+  /* ── القسم المتكرر (المرحلة الثانية ب): نسخ يضيفها المستخدم من مجموعة لبنات — «محور» في الخطة ──
+     كل نسخة لوح يطوى: رأسه «محور ١ · اسمه» وعدد صفوف جدوله، وفيه لبناته بمولداتها نفسها.
+     الجديدة مفتوحة وسواها مطوية (الجوال: محاور كثيرة في شاشة واحدة). حذف نسخة بتأكيد — تذهب صفوفها معها. */
+  BLOCK.repeat = function (b, v, ctx, changed) {
+    var items = v, label = b.label || 'قسم', sec = section(b.title || '', b.hint), box = el('div', 'stack'), open = {};
+    if (items.length === 1) open[items[0].id] = true;
+    /* الوصول المباشر (?focus=صف): تفتح النسخة التي فيها ذلك الصف */
+    if (ctx.focus) items.forEach(function (it) {
+      b.blocks.forEach(function (c) {
+        if (c.type === 'table' && Array.isArray(it[c.id]) && it[c.id].some(function (r) { return r && r.id === ctx.focus; })) open[it.id] = true;
+      });
+    });
+    function nameOf(it) {
+      var n = '';
+      b.blocks.forEach(function (c) {
+        if (c.type !== 'fields' || n) return;
+        (c.fields || []).forEach(function (f) { if (!n && f.required && it[c.id] && it[c.id][f.id]) n = String(it[c.id][f.id]).trim(); });
+      });
+      return n;
+    }
+    function rowsOf(it) {
+      var n = 0, forms = null;
+      b.blocks.forEach(function (c) { if (c.type === 'table' && Array.isArray(it[c.id])) { n += it[c.id].length; forms = forms || c.count; } });
+      return !n ? '' : forms && window.Shouba ? Shouba.count(n, forms) : String(n);
+    }
+    function move(i, d) { var x = items.splice(i, 1)[0]; items.splice(i + d, 0, x); changed(); paint(); }
+    function paint() {
+      box.textContent = '';
+      items.forEach(function (it, i) {
+        var card = el('div', 'rb-rep' + (open[it.id] ? ' open' : '')), head = el('button', 'rb-rep-h'), body = el('div', 'rb-rep-b');
+        var ttl = el('b'), meta = el('span', 'hint');
+        function refresh() {
+          var n = nameOf(it);
+          ttl.textContent = label + ' ' + (i + 1) + (n ? ' · ' + n : '');
+          meta.textContent = rowsOf(it);
+        }
+        function ch() { changed(); refresh(); }
+        head.type = 'button';
+        head.appendChild(ttl); head.appendChild(meta);
+        head.insertAdjacentHTML('beforeend', '<span class="chv">' + ICON.down + '</span>');
+        head.addEventListener('click', function () { open[it.id] = !open[it.id]; card.classList.toggle('open', !!open[it.id]); });
+        b.blocks.forEach(function (c) {
+          var vv = it[c.id];
+          if (c.type === 'table') { if (!Array.isArray(vv)) vv = it[c.id] = []; }
+          else if (!vv || typeof vv !== 'object' || Array.isArray(vv)) vv = it[c.id] = {};
+          var n = BLOCK[c.type] && BLOCK[c.type](c, vv, ctx, ch);
+          if (n) body.appendChild(n);
+        });
+        body.appendChild(tools(i > 0 ? function () { move(i, -1); } : null,
+          i < items.length - 1 ? function () { move(i, 1); } : null,
+          function () {
+            var title = label + ' ' + (i + 1) + (nameOf(it) ? ' · ' + nameOf(it) : '');
+            Shouba.ask('حذف ' + title, 'يحذف «' + title + '» ومعه كل ما فيه' + (rowsOf(it) ? ' (' + rowsOf(it) + ')' : '') + '.', 'احذفه',
+              function () { items.splice(i, 1); changed(); paint(); });
+          }));
+        card.appendChild(head); card.appendChild(body);
+        refresh();
+        box.appendChild(card);
+      });
+    }
+    sec.appendChild(box);
+    sec.appendChild(addBtn(b.add || 'أضف', function () {
+      var it = window.ShoubaRec.newItem(b);
+      items.push(it); open[it.id] = true; changed(); paint();
+      var last = box.lastElementChild, f = last && last.querySelector('.rb-rep-b input');
+      if (last) last.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      if (f) f.focus({ preventScroll: true });
+    }));
+    paint();
+    return sec;
+  };
+
   /* ── ⑥ المرفقات: صورة او PDF بعنوان يكتبه (نشرة · محضر مجلس الادارة …) ─────
      ترفع لحسابك (ShoubaFiles) والسجل يحمل الاشارة وحدها { file, mime, size, name, at }.
      الحذف بلمستين — الاولى تسأل «احذفه نهائيا» — لانه لا يسترجع، والخادم يحذف الملف في الحال.
@@ -302,25 +564,10 @@
     function paint() {
       box.textContent = '';
       items.forEach(function (it, i) {
-        var card = el('div', 'rb-item'), row = el('div', 'rb-tools rb-file');
-        var see = el('button', 'rb-btn'), del = el('button', 'rb-btn del');
+        var card = el('div', 'rb-item');
         card.appendChild(input(it.name, function (x) { it.name = x; changed(); },
           { ph: 'عنوان المرفق — مثل: نشرة', label: 'عنوان المرفق ' + (i + 1) }).box);
-        row.appendChild(el('span', 'hint', (it.mime === 'application/pdf' ? 'PDF' : 'صورة') + ' · ' + FL.kb(it.size)));
-        see.type = del.type = 'button';
-        see.innerHTML = ICON.eye; see.setAttribute('aria-label', 'اعرضه');
-        see.addEventListener('click', function () { FL.view(FL.label(it), it); });
-        del.innerHTML = ICON.del; del.setAttribute('aria-label', 'احذفه');
-        del.addEventListener('click', function () {
-          if (!del.classList.contains('sure')) {
-            del.classList.add('sure'); del.textContent = 'احذفه نهائيا';
-            setTimeout(function () { if (del.isConnected) { del.classList.remove('sure'); del.innerHTML = ICON.del; } }, 4000);
-            return;
-          }
-          items.splice(i, 1); FL.remove(it.file); changed(); paint();
-        });
-        row.appendChild(see); row.appendChild(del);
-        card.appendChild(row);
+        card.appendChild(fileRow(it, '', function () { items.splice(i, 1); FL.remove(it.file); changed(); paint(); }));
         box.appendChild(card);
       });
     }
@@ -346,6 +593,8 @@
     return sec;
   };
 
+  F.toggles = toggles;   /* الرقاقات المتبدلة — تستعملها خيارات الطباعة في شاشة السجل */
+
   F.render = function (root, tpl, rec, ctx, onChange) {
     /* نسخة من السياق ومعها معرف السجل (للرفع) — لا يمس سياق المنادي */
     var cx = {};
@@ -361,6 +610,7 @@
       if (!v || typeof v !== 'object') v = rec.values[b.id] = {};
       /* سجل انشئ قبل ان تصير قيمة المرفقات كائنا ({ items }) يحمل [] — يحول هنا فلا تسقط مرفقاته عند الحفظ */
       if (b.type === 'files' && Array.isArray(v)) v = rec.values[b.id] = { items: v.slice() };
+      if ((b.type === 'table' || b.type === 'repeat') && !Array.isArray(v)) v = rec.values[b.id] = [];   /* صفوف · نسخ */
       var n = BLOCK[b.type](b, v, ctx, changed);
       if (n) form.appendChild(n);
     });

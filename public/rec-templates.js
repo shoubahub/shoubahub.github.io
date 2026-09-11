@@ -42,6 +42,54 @@ window.SHOUBA_TPL = {
         { type: 'signatures', id: 'att', mode: 'smart:attendance', print: { groups: 2, rows: 6, presentOnly: true } }
       ]
     }
+  },
+
+  /* ── الخطة التشغيلية للشعبة (المرحلة الثانية ب، 2026-09-12) — السجل السادس عشر ──
+     لا نموذج معتمد موحد لها، فشكل المنصة هو المرجع (قرار المستخدم). عرضية ممتدة (flow):
+     غلاف (اسم الخطة · الشعبة · الفصل والعام · توقيعا رئيس الشعبة ومدير المدرسة) في صفحته ⟵
+     محاور متكررة، لكل محور اسمه وغاياته الاستراتيجية وجدول اجراءاته باربعة اعمدة.
+     المطبوع هنا «الخطة» وعمود المتابعة فارغ؛ والمتابعة وتقرير التنفيذ في الخطوتين (ج) و(د). */
+  opplan: {
+    1: {
+      id: 'opplan', v: 1, official: true, owner: 'shouba',
+      title: 'الخطة التشغيلية للشعبة', ready: 'الخطة التشغيلية للشعبة',
+      noun: { one: 'خطة', two: 'خطتان', few: 'خطط', many: 'خطة', zero: 'لا خطط بعد' },
+      copy: true,   /* تنسخ من فصل سابق (المرحلة الثانية هـ) — والمتابعة تمسح */
+      page: { orient: 'landscape', fit: 'flow' },
+      /* مطبوعان من البيانات نفسها (المرحلة الثانية د): «الخطة» اول الفصل وعمود المتابعة فارغ ·
+         و«تقرير التنفيذ» بلا غلاف، في اوله ملخص، والمتابعة حالة وملاحظة، وتختار محاوره
+         (محور وحده يخرج «تقرير <اسمه>»)، ومعه ملحق الشواهد اختيارا */
+      prints: [
+        { id: 'plan', label: 'الخطة', title: 'الخطة التشغيلية للشعبة' },
+        { id: 'report', label: 'تقرير التنفيذ', title: 'تقرير تنفيذ الخطة التشغيلية', follow: true, summary: true, cover: false,
+          pick: 'axes', appendix: 'evidence' }
+      ],
+      blocks: [
+        /* بيانات الخطة: تعبأ من الاعداد وتعدل — وتطبع على الغلاف لا جدولا (print:false) */
+        { type: 'fields', id: 'meta', print: false, fields: [
+          { id: 'name', label: 'اسم الخطة', kind: 'text', required: true, value: 'الخطة التشغيلية للشعبة' },
+          { id: 'year', label: 'العام الدراسي', kind: 'text', auto: 'year' },
+          { id: 'term', label: 'الفصل', kind: 'text', auto: 'term' }
+        ] },
+        { type: 'signatures', id: 'cover', mode: 'cover', roles: [
+          { id: 'head', label: 'رئيس الشعبة', from: 'head' },
+          { id: 'principal', label: 'مدير المدرسة', from: 'principal' }
+        ] },
+        { type: 'repeat', id: 'axes', label: 'محور', title: 'المحاور', add: 'أضف محورا', start: 1, blocks: [
+          { type: 'fields', id: 'axis', fields: [
+            { id: 'name', label: 'اسم المحور', kind: 'text', required: true, ph: 'مثل: الأنشطة والفعاليات' } ] },
+          { type: 'text', id: 'goals', sections: [{ id: 'g', kind: 'paragraph', title: 'الغايات الاستراتيجية' }] },
+          { type: 'table', id: 'acts', rowLabel: 'إجراء', rowsLabel: 'إجراءات', add: 'أضف إجراء',
+            count: { one: 'إجراء', two: 'إجراءان', few: 'إجراءات', many: 'إجراء' },
+            columns: [
+              { id: 'what',   label: 'الوسائل والإجراءات والبرامج', kind: 'text' },
+              { id: 'who',    label: 'الإعداد والتنفيذ', kind: 'teacher', multi: true },
+              { id: 'when',   label: 'مواعيد التنفيذ', kind: 'months', multi: true },
+              { id: 'follow', label: 'المتابعة', kind: 'followup' }
+            ] }
+        ] }
+      ]
+    }
   }
 
 };

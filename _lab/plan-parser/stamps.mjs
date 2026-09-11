@@ -34,7 +34,7 @@ function names(txt) {
   return [...out];
 }
 const groups = {};
-for (const x of LIST.filter(x => /توز/.test(x.fileDescription || '') && x.term === 1 && !/منازل|فصول\s*خاصة|الفصول\s*الخاصة|بطء/.test(x.fileDescription || '')))
+for (const x of LIST.filter(x => /توز/.test(x.fileDescription || '') && x.term === 1 && !/منازل|فصول\s*خاصة|الفصول\s*الخاصة|بطء|بطيء|بطئ/.test(x.fileDescription || '')))
   (groups[x.educationGradeID + '|' + x.educationSubjectID] ||= []).push(x);
 const res = {};
 let n = 0; const total = Object.values(groups).reduce((a, g) => a + g.length, 0);

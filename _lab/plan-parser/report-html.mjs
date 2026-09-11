@@ -44,8 +44,9 @@ const core = R.filter(r => !r.elective), elect = R.filter(r => r.elective);
 const lig = s => String(s || '').replace(/اال/g, 'الا').replace(/لال/g, 'للا').replace(/اإل/g, 'الإ').replace(/اآل/g, 'الآ').replace(/\s+/g, ' ').trim();
 const stripData = R.filter(r => r.weeks > 0 && !r.elective).map(r => ({
   k: r.grade + ' · ' + r.subject, id: r.id, status: r.status,
-  w: r.plan.map(w => ({ u: lig(w.unit), l: w.lessons.map(l => [lig(l.title), l.periods]) }))
+  w: r.plan.map(w => ({ u: lig(w.unit), l: w.lessons.map(l => [lig(l.title), l.periods]), d: w.from ? [w.from, w.to] : null }))
 }));
+const ocrN = R.filter(r => r.ocr).length;
 
 /* التوجيهات */
 const dir = {};
@@ -53,7 +54,7 @@ for (const r of R) { const d = r.directorate || '— لم يقرأ الختم'; 
 const dirRows = Object.entries(dir).sort((a, b) => (a[0].startsWith('—') ? 1 : 0) - (b[0].startsWith('—') ? 1 : 0) || b[1].size - a[1].size);
 
 const STATUS = { ok: ['سليم', 'ok'], review: ['يراجع', 'rev'], 'no-table': ['لم يقرأ جدولها', 'bad'], unreadable: ['لا يفتح', 'bad'], 'download-failed': ['تعذر تنزيلها', 'bad'] };
-const CAUSE = { encoding: 'خط بترميز خاص — النص لا يقرأ، ويحتاج قراءة ضوئية', layout: 'نص سليم وجدول لم تتعرف عليه الاداة بعد' };
+const CAUSE = { encoding: 'نص لا يقرأ (صورة او خط بترميز خاص) — ولم تتعرف القراءة الضوئية على جدوله بعد', layout: 'نص سليم وجدول لم تتعرف عليه الاداة بعد' };
 function row(r) {
   const [label, cls] = STATUS[r.status] || [r.status, 'bad'];
   /* «لم يقرأ الختم» من محاولة القراءة الاولى — عمود التوجيه يغني عنه */
@@ -62,9 +63,9 @@ function row(r) {
   if (r.segments) r.issues = (r.issues || []).concat(r.segments.map(s => 'قسم ص' + s.pages + (s.grade ? ' («' + s.grade + '»)' : '') + ': ' + s.weeks + ' أسبوعا · ' + s.periods + ' حصة' + (s.stated != null ? ' / ' + s.stated : '')));
   const tot = r.periods ? AR(r.periods) + (r.stated != null ? '<small> / ' + AR(r.stated) + '</small>' : '') : '—';
   return `<tr>
-    <td><b>${esc(r.subject)}</b>${r.courseTitle && r.courseTitle !== r.subject ? `<small class="sub">${esc(r.courseTitle)}</small>` : ''}${r.pick === 'old' ? '<span class="tag old">خطة قديمة</span>' : ''}${r.pick === 'current-extra' ? '<span class="tag">خطة ثانية</span>' : ''}${r.homeVariant && r.homeVariant.length ? '<span class="tag">لها نسخة بديلة</span>' : ''}</td>
+    <td><b>${esc(r.subject)}</b>${r.courseTitle && r.courseTitle !== r.subject ? `<small class="sub">${esc(r.courseTitle)}</small>` : ''}${r.pick === 'old' ? '<span class="tag old">خطة قديمة</span>' : ''}${r.pick === 'current-extra' ? '<span class="tag">خطة ثانية</span>' : ''}${r.homeVariant && r.homeVariant.length ? '<span class="tag">لها نسخة بديلة</span>' : ''}${r.ocr ? '<span class="tag ocr">قرئت ضوئيا</span>' : ''}</td>
     <td><span class="pill ${cls}">${label}</span></td>
-    <td class="num">${r.weeks ? AR(r.weeks) : '—'}</td>
+    <td class="num">${r.weeks ? AR(r.weeksSpan || r.weeks) + (r.weeksSpan ? `<small class="sub">في ${AR(r.weeks)} صفا</small>` : '') : '—'}</td>
     <td class="num">${tot}</td>
     <td class="dir">${r.directorate ? esc(r.directorate) + (r.dirYear ? `<small class="sub">ختم ${AR(r.dirYear)}</small>` : '') : `<span class="none">${r.dirTemplate ? 'جدول توقيع بلا اسم' : 'لا ختم مقروء'}</span>`}</td>
     <td class="iss">${(r.issues || []).filter(i => r.status !== 'ok' || /الختم/.test(i)).map(i => `<span>${esc(i)}</span>`).join('') || '<span class="none">لا ملاحظة</span>'}</td>
@@ -161,6 +162,9 @@ const html = `<title>خطط توزيع ${STAGE}</title>
   .pill.ok{background:var(--okbg);color:var(--ok)} .pill.rev{background:var(--revbg);color:var(--rev)} .pill.bad{background:var(--badbg);color:var(--bad)}
   .tag{display:inline-block;margin-inline-start:6px;font-size:10.5px;font-weight:700;color:var(--muted);background:var(--sand);border-radius:6px;padding:0 6px}
   .tag.old{color:var(--bad);background:var(--badbg)}
+  .tag.ocr{color:var(--navy);background:var(--sand)} :root[data-theme="dark"] .tag.ocr{color:#A8C6E2}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tag.ocr{color:#A8C6E2}}
+  .planline .dates{display:block;font-weight:500;color:var(--label);font-size:12px}
   .missing{display:flex;flex-wrap:wrap;gap:8px} .missing span{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:12.5px}
   ol.next{margin:0;padding-inline-start:20px;max-width:70ch;display:flex;flex-direction:column;gap:6px}
   footer{color:var(--label);font-size:12px;padding-bottom:30px}
@@ -170,13 +174,14 @@ const html = `<title>خطط توزيع ${STAGE}</title>
 <header><div class="wrap">
   <div class="eyebrow">شعبة · خطوة قياس قبل بناء شريط الخطة</div>
   <h1>خطط توزيع ${STAGE} — الفصل الاول ٢٠٢٦/٢٠٢٧</h1>
-  <p>قرئت خطط توزيع المنهج كما نشرتها وزارة التربية في مكتبة المعلم، جدولا جدولا، ليعرف قبل البناء ما يقرأ سليما وما يحتاج مراجعة. لم يتغير شيء في المنصة.</p>
+  <p>قرئت خطط توزيع المنهج كما نشرتها وزارة التربية في مكتبة المعلم، جدولا جدولا، ليعرف قبل البناء ما يقرأ سليما وما يحتاج مراجعة. والخطط المنشورة صورا ممسوحة او بخط لا يقرأ نصه قرئت قراءة ضوئية على الجهاز نفسه. لم يتغير شيء في المنصة.</p>
   <div class="verdict">
     <div class="stat hl"><b>${AR(ok)}</b><span>قرئت سليمة</span></div>
     <div class="stat"><b>${AR(review)}</b><span>تحتاج مراجعة</span></div>
     <div class="stat"><b>${AR(noTable)}</b><span>لم يقرأ جدولها</span></div>
     <div class="stat"><b>${AR(R.length)}</b><span>خطة من ${AR(core.length)} مقرر اساسي و${AR(elect.length)} اختياري</span></div>
     ${old ? `<div class="stat"><b>${AR(old)}</b><span>بلا خطة للعام الجاري فأخذت القديمة</span></div>` : ''}
+    ${ocrN ? `<div class="stat"><b>${AR(ocrN)}</b><span>منها قرئت ضوئيا</span></div>` : ''}
   </div>
 </div></header>
 
@@ -218,7 +223,8 @@ const html = `<title>خطط توزيع ${STAGE}</title>
       <li>مراجعة ما وسم «يراجع» — اغلبه تفصيل قراءة لا خلل في الخطة.</li>
       <li>تخزين الخطط السليمة في المنصة مرجعا ثابتا، ويؤكد رئيس الشعبة ان الخطة المعروضة خطة مقرره.</li>
       <li>بناء الشريط في اللوحة على هذا النموذج، وربط الانجاز بسجل «ما قطع من المنهج» في مرحلة السجلات.</li>
-      <li>تكرار القياس للمتوسط والابتدائي، وللفصل الثاني حين تنشر خططه.</li>
+      <li>مدى كل اسبوع مكتوب في خطط كثيرة («من 2026/10/4 إلى 2026/10/8») وقد قرئ — فيعرف الاسبوع الجاري من التقويم نفسه لا من عد الاسابيع.</li>
+      <li>تكرار القياس للفصل الثاني حين تنشر خططه.</li>
     </ol>
   </section>
   <footer>قرئت ${esc(X.at.slice(0, 10))} من مكتبة المعلم (elibrary.moe.edu.kw) · اداة القراءة: _lab/plan-parser/batch.mjs</footer>
@@ -229,7 +235,9 @@ const html = `<title>خطط توزيع ${STAGE}</title>
   var AR = function(n){ return String(n).replace(/\\d/g, function(d){ return '٠١٢٣٤٥٦٧٨٩'[d]; }); };
   var pick = document.getElementById('pick'), wk = document.getElementById('wk'), phone = document.getElementById('phone'), lbl = document.getElementById('wkLbl');
   D.forEach(function(p, i){ var o = document.createElement('option'); o.value = i; o.textContent = p.k + (p.status === 'ok' ? '' : ' (يراجع)'); pick.appendChild(o); });
-  var pref = D.findIndex(function(p){ return /الثاني عشر · الرياضيات/.test(p.k) && p.status === 'ok'; }); if (pref < 0) pref = D.findIndex(function(p){ return p.status === 'ok'; }); pick.value = Math.max(pref, 0);
+  var pref = D.findIndex(function(p){ return /الثاني عشر · الرياضيات/.test(p.k) && p.status === 'ok'; });
+  if (pref < 0) pref = D.findIndex(function(p){ return /· الرياضيات$/.test(p.k) && p.status === 'ok'; });
+  if (pref < 0) pref = D.findIndex(function(p){ return p.status === 'ok'; }); pick.value = Math.max(pref, 0);
   function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
   function paint(){
     var p = D[+pick.value]; if (!p) return;
@@ -243,6 +251,9 @@ const html = `<title>خطط توزيع ${STAGE}</title>
     var line = el('div', 'planline'); line.innerHTML = '';
     line.appendChild(document.createTextNode(p.k + ' · الاسبوع ' + AR(n) + ' من ')); line.appendChild(el('b', null, AR(W)));
     line.appendChild(document.createTextNode(' · ' + AR(done) + ' حصة مضت من ' + AR(total)));
+    /* مدى الاسبوع كما في الخطة — «الاحد ٤/١٠ إلى الخميس ٨/١٠» */
+    if (week && week.d) { var dm = function(s){ var p = s.split('-'); return AR(+p[2]) + '/' + AR(+p[1]); };
+      line.appendChild(el('span', 'dates', 'من ' + dm(week.d[0]) + ' إلى ' + dm(week.d[1]) + ' — كما في الخطة')); }
     var box = el('div', 'wk');
     if (week && week.u) box.appendChild(el('div', 'u', week.u));
     var ul = el('ul');

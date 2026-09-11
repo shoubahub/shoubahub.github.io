@@ -3,3 +3,9 @@ node_modules/
 *.log
 shouba.db*
 _dev.server.bak
+# المكتبات خارج مزامنة iCloud (2026-09-12): iCloud أخلى ملفاتها فعلّق الخادم
+node_modules
+node_modules.nosync/
+node_modules.icloud-old/
+_lab/**/node_modules
+_lab/**/node_modules.nosync/

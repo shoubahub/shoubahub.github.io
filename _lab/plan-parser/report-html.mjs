@@ -4,12 +4,16 @@ import fs from 'fs';
 const [, , IN, OUT, STAMPS] = process.argv;
 const X = JSON.parse(fs.readFileSync(IN, 'utf8'));
 const R = X.results;
+/* اسم المرحلة في العنوان — من البيانات لا ثابتا (2026-09-12: المتوسط والابتدائي بعد الثانوي) */
+const STAGE = ({ 'الثانوية': 'الثانوي', 'المتوسط': 'المتوسط', 'الإبتدائية': 'الابتدائي', 'الابتدائية': 'الابتدائي' })[String(X.stage || '').trim()] || String(X.stage || '').trim();
 
 /* اسم التوجيه: من اختام الخطط بكل اعوامها (stamps.mjs) — خطط ٢٠٢٦/٢٠٢٧ صار اسفلها جدول توقيع بلا اسم.
    ينظف ما التصق («لعلوم» ⟵ العلوم · «لغة العربية» ⟵ اللغة العربية) ويؤخذ الاكثر ورودا لكل مقرر. */
 const ST = STAMPS && fs.existsSync(STAMPS) ? JSON.parse(fs.readFileSync(STAMPS, 'utf8')) : {};
 const cleanDir = n => {
-  let s = n.replace(/^التوجيه الفني\s+/, 'إدارة توجيه ').replace(/\s+(المسح|التشخيصي|الثاني|الأول).*$/, '');
+  /* ما بعد الاسم يقطع: «… الإدارة العامة» · «مدير …» (سطر التوقيع التالي) — رصد في المتوسط والابتدائي */
+  let s = n.replace(/^التوجيه الفني\s+/, 'إدارة توجيه ').replace(/\s+(المسح|التشخيصي|الثاني|الأول|الإدارة|إدارة|مدير).*$/, '');
+  s = s.replace(/الداراسات/g, 'الدراسات');   /* اصلاح «لا» افسد «الدراسات» */
   s = s.replace(/توجيه\s+مادة\s+/, 'توجيه ').replace(/توجيه\s+لغة\s+/, 'توجيه اللغة ')
        .replace(/توجيه\s+ل(?!ل)(?=\S)/, 'توجيه ال');   /* «لعلوم» ⟵ العلوم · «لدراسات» ⟵ الدراسات */
   return s.replace(/[()\[\]«»،.:\-–]+$/, '').trim();
@@ -17,7 +21,11 @@ const cleanDir = n => {
 const DIR = {};
 for (const [k, arr] of Object.entries(ST)) {
   const c = {};
-  arr.forEach(a => (a.names || []).forEach(n => { const m = cleanDir(n); c[m] = c[m] || { n: 0, year: a.year }; c[m].n++; }));
+  arr.forEach(a => (a.names || []).forEach(n => {
+    const m = cleanDir(n);
+    if (m.replace(/^إدارة توجيه\s*/, '').length < 5) return;   /* «إدارة توجيه الد» اسم مبتور — لا يعرض؛ اقصر اسم سليم «العلوم» */
+    c[m] = c[m] || { n: 0, year: a.year }; c[m].n++;
+  }));
   const best = Object.entries(c).sort((a, b) => b[1].n - a[1].n)[0];
   DIR[k] = best ? { name: best[0], year: String(best[1].year || '').slice(0, 4) } : { name: null, template: arr.some(a => a.template) };
 }
@@ -54,7 +62,7 @@ function row(r) {
   if (r.segments) r.issues = (r.issues || []).concat(r.segments.map(s => 'قسم ص' + s.pages + (s.grade ? ' («' + s.grade + '»)' : '') + ': ' + s.weeks + ' أسبوعا · ' + s.periods + ' حصة' + (s.stated != null ? ' / ' + s.stated : '')));
   const tot = r.periods ? AR(r.periods) + (r.stated != null ? '<small> / ' + AR(r.stated) + '</small>' : '') : '—';
   return `<tr>
-    <td><b>${esc(r.subject)}</b>${r.courseTitle && r.courseTitle !== r.subject ? `<small class="sub">${esc(r.courseTitle)}</small>` : ''}${r.pick === 'old' ? '<span class="tag old">خطة قديمة</span>' : ''}${r.pick === 'current-extra' ? '<span class="tag">خطة ثانية</span>' : ''}${r.homeVariant && r.homeVariant.length ? '<span class="tag">لها نسخة طلاب منازل</span>' : ''}</td>
+    <td><b>${esc(r.subject)}</b>${r.courseTitle && r.courseTitle !== r.subject ? `<small class="sub">${esc(r.courseTitle)}</small>` : ''}${r.pick === 'old' ? '<span class="tag old">خطة قديمة</span>' : ''}${r.pick === 'current-extra' ? '<span class="tag">خطة ثانية</span>' : ''}${r.homeVariant && r.homeVariant.length ? '<span class="tag">لها نسخة بديلة</span>' : ''}</td>
     <td><span class="pill ${cls}">${label}</span></td>
     <td class="num">${r.weeks ? AR(r.weeks) : '—'}</td>
     <td class="num">${tot}</td>
@@ -65,7 +73,7 @@ function row(r) {
 }
 const byGrade = {};
 for (const r of core) (byGrade[r.grade] ||= []).push(r);
-const gradeOrder = ['العاشر', 'الحادي عشر', 'الثاني عشر'];
+const gradeOrder = X.grades || [...new Set(core.map(r => r.grade))];
 const tables = gradeOrder.filter(g => byGrade[g]).map(g => `
   <section class="grade">
     <h3>الصف ${esc(g)} <small>${AR(byGrade[g].length)} خطة</small></h3>
@@ -83,7 +91,7 @@ const electTable = elect.length ? `
     </table></div>
   </section>` : '';
 
-const html = `<title>خطط توزيع الثانوي</title>
+const html = `<title>خطط توزيع ${STAGE}</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@500;600;700&display=swap">
 <style>
   :root{--navy:#16456E;--navy2:#1B5183;--amber:#E8A33D;--amberd:#A9701B;--ground:#EFE6D6;--paper:#F9F4E9;--sand:#EDE5D8;
@@ -161,7 +169,7 @@ const html = `<title>خطط توزيع الثانوي</title>
 
 <header><div class="wrap">
   <div class="eyebrow">شعبة · خطوة قياس قبل بناء شريط الخطة</div>
-  <h1>خطط توزيع الثانوي — الفصل الاول ٢٠٢٦/٢٠٢٧</h1>
+  <h1>خطط توزيع ${STAGE} — الفصل الاول ٢٠٢٦/٢٠٢٧</h1>
   <p>قرئت خطط توزيع المنهج كما نشرتها وزارة التربية في مكتبة المعلم، جدولا جدولا، ليعرف قبل البناء ما يقرأ سليما وما يحتاج مراجعة. لم يتغير شيء في المنصة.</p>
   <div class="verdict">
     <div class="stat hl"><b>${AR(ok)}</b><span>قرئت سليمة</span></div>
@@ -200,7 +208,7 @@ const html = `<title>خطط توزيع الثانوي</title>
 
   ${X.missing.length ? `<section>
     <h2>مواد بلا خطة في مكتبة الوزارة</h2>
-    <p class="lead">مواد في شجرة الوزارة للمرحلة الثانوية لم تنشر لها خطة توزيع للفصل الاول بعد.</p>
+    <p class="lead">مواد في شجرة الوزارة لمرحلة ${STAGE} لم تنشر لها خطة توزيع للفصل الاول بعد.</p>
     <div class="missing">${X.missing.map(m => `<span>${esc(m.grade)} · ${esc(m.subject)}</span>`).join('')}</div>
   </section>` : ''}
 

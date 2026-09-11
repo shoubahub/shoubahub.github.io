@@ -8,7 +8,9 @@ import { openDoc } from './lib2.mjs';
 import { readTable, norm } from './lib3.mjs';
 
 const W = process.argv[2], STAGE = process.argv[3] || '17', TERM = +(process.argv[4] || 1);
-const LIST = JSON.parse(fs.readFileSync(`${W}/plans/sec-t1.json`, 'utf8')).books || [];
+/* قائمة المرحلة: list-<المرحلة>-t<الفصل>.json، وsec-t1.json لقياس الثانوي الاول (2026-09-12) */
+const LISTF = fs.existsSync(`${W}/plans/list-${STAGE}-t${TERM}.json`) ? `${W}/plans/list-${STAGE}-t${TERM}.json` : `${W}/plans/sec-t1.json`;
+const LIST = JSON.parse(fs.readFileSync(LISTF, 'utf8')).books || [];
 const TREE = JSON.parse(fs.readFileSync(`${W}/moe-tree.json`, 'utf8'));
 const DOCS = `${W}/moe-docs`; fs.mkdirSync(DOCS, { recursive: true });
 
@@ -19,7 +21,8 @@ for (const [gid, G] of Object.entries(st.grades)) { gname[gid] = G.name.trim(); 
 
 /* ── الاختيار: خطة العام الجاري اولا، ونسخة «طلاب منازل» بديل لا اصل ── */
 const CUR = x => /2026\s*[-–]\s*2027/.test(x.fileDescription || '') || String(x.createdDate || '') >= '2026-08-01';
-const HOME = x => /منازل/.test(x.fileDescription || '');
+/* نسخ بديلة لا اصل: طلاب منازل (الثانوي) · فصول خاصة وبطء تعلم (المتوسط والابتدائي) */
+const HOME = x => /منازل|فصول\s*خاصة|الفصول\s*الخاصة|بطء/.test(x.fileDescription || '');
 const plans = LIST.filter(x => /توز/.test(x.fileDescription || '') && x.term === TERM);
 const groups = {};
 for (const x of plans) (groups[x.educationGradeID + '|' + x.educationSubjectID] ||= []).push(x);
@@ -83,7 +86,13 @@ async function extract(p) {
     all += txt + ' ';
     const seg = segs[segs.length - 1];
     seg.pages.push(n);
-    if (!seg.grade) { const g = txt.match(/الصف\s*:?\s*(ا?\s?ل?\s?(?:عاشر|حادي|ثاني|ثانى)[^\s:]*)/); if (g) seg.grade = g[1].replace(/\s+/g, ''); }
+    /* صف القسم من اسماء صفوف المرحلة نفسها (لا «عاشر/حادي» الثانوي وحده) — الاطول اولا */
+    if (!seg.grade) {
+      const bt = bare(txt).replace(/ى/g, 'ي');
+      const hit = Object.values(gname).filter(n => !/اختيار/.test(n)).sort((a, b) => b.length - a.length)
+        .find(n => { const b = bare(n).replace(/ى/g, 'ي'); return bt.includes('الصف' + b) || bt.includes('الصف:' + b); });
+      if (hit) seg.grade = hit;
+    }
     /* المعلن: عدد من ثلاث خانات على الاكثر — كان يلتقط «2026» من سطر العام الدراسي */
     const m = txt.match(/المجموع\s*الكلي[^\d]{0,60}?(?<!\d)(\d{1,3})(?!\d)/);
     let t = null; try { t = await readTable(page); } catch (e) {}
@@ -98,10 +107,8 @@ async function extract(p) {
   /* للمقرر قسمه: بالصف ان حسمه عنوان القسم، والا يبقى الاول ويوسم للمراجعة */
   let chosen = real[0] || segs[0];
   if (real.length > 1) {
-    const want = /حادي/.test(out.grade) ? /حادي/ : /ثاني|ثانى/.test(out.grade) ? /ثاني|ثانى/ : /عاشر/;
-    const known = /حادي|ثاني|ثانى|عاشر/;
-    const byGrade = real.filter(s => want.test(s.grade));
-    const unknown = real.filter(s => !known.test(s.grade));
+    const byGrade = real.filter(s => s.grade && bare(s.grade) === bare(out.grade));
+    const unknown = real.filter(s => !s.grade);
     const isStats = /إحصاء|احصاء/.test(out.subject);
     /* الاحصاء: قسماه بلا صف مقروء في ترويستهما — ينسبان بالترتيب (الحادي عشر اولا) ويوسمان للمراجعة */
     if (isStats && unknown.length) { chosen = unknown[/حادي/.test(out.grade) ? 0 : unknown.length - 1]; out.segmentPick = 'guess'; }
@@ -166,6 +173,7 @@ for (const [gid, G] of Object.entries(st.grades)) for (const s of G.subjects) {
   const id = String(s.value || s.id);
   if (!results.some(r => String(r.gradeId) === String(gid) && String(r.subjectId) === id)) missing.push({ grade: G.name.trim(), subject: s.text.trim() });
 }
-fs.writeFileSync(`${W}/plans/extract-${STAGE}-t${TERM}.json`, JSON.stringify({ stage: st.name.trim(), term: TERM, at: new Date().toISOString(), results, missing }, null, 1));
+fs.writeFileSync(`${W}/plans/extract-${STAGE}-t${TERM}.json`, JSON.stringify({ stage: st.name.trim(), stageId: STAGE, term: TERM, at: new Date().toISOString(),
+  grades: Object.values(gname), results, missing }, null, 1));
 const c = s => results.filter(r => r.status === s).length;
 console.log(`\nالمجموع ${results.length} · سليم ${c('ok')} · يراجع ${c('review')} · بلا جدول ${c('no-table')} · تعذر تنزيله ${c('download-failed')} · لا يقرأ ${c('unreadable')} · مواد بلا خطة ${missing.length}`);

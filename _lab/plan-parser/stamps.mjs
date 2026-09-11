@@ -6,8 +6,9 @@ import fs from 'fs';
 import { execFileSync } from 'child_process';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-const W = process.argv[2];
-const LIST = JSON.parse(fs.readFileSync(`${W}/plans/sec-t1.json`, 'utf8')).books || [];
+const W = process.argv[2], STAGE = process.argv[3] || '17';
+const LISTF = fs.existsSync(`${W}/plans/list-${STAGE}-t1.json`) ? `${W}/plans/list-${STAGE}-t1.json` : `${W}/plans/sec-t1.json`;
+const LIST = JSON.parse(fs.readFileSync(LISTF, 'utf8')).books || [];
 const DOCS = `${W}/moe-docs`;
 const fix = s => s.replace(/اال/g, 'الا').replace(/لال/g, 'للا').replace(/اإل/g, 'الإ').replace(/اآل/g, 'الآ');
 const isPdf = f => { try { const b = Buffer.alloc(5); const fd = fs.openSync(f, 'r'); fs.readSync(fd, b, 0, 5, 0); fs.closeSync(fd); return b.toString() === '%PDF-'; } catch (e) { return false; } };
@@ -33,7 +34,7 @@ function names(txt) {
   return [...out];
 }
 const groups = {};
-for (const x of LIST.filter(x => /توز/.test(x.fileDescription || '') && x.term === 1 && !/منازل/.test(x.fileDescription || '')))
+for (const x of LIST.filter(x => /توز/.test(x.fileDescription || '') && x.term === 1 && !/منازل|فصول\s*خاصة|الفصول\s*الخاصة|بطء/.test(x.fileDescription || '')))
   (groups[x.educationGradeID + '|' + x.educationSubjectID] ||= []).push(x);
 const res = {};
 let n = 0; const total = Object.values(groups).reduce((a, g) => a + g.length, 0);
@@ -54,5 +55,5 @@ for (const [k, arr] of Object.entries(groups)) {
     console.log(`[${n}/${total}] ${k} #${x.bookFileID} ${String(x.createdDate || '').slice(0, 10)} ⟵ ${nm.join(' | ') || '—'}`);
   }
 }
-fs.writeFileSync(`${W}/plans/stamps-17-t1.json`, JSON.stringify(res, null, 1));
-console.log('✓ stamps-17-t1.json');
+fs.writeFileSync(`${W}/plans/stamps-${STAGE}-t1.json`, JSON.stringify(res, null, 1));
+console.log(`✓ stamps-${STAGE}-t1.json`);

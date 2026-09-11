@@ -9,3 +9,4 @@ node_modules.nosync/
 node_modules.icloud-old/
 _lab/**/node_modules
 _lab/**/node_modules.nosync/
+.git.icloud-old/

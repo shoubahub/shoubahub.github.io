@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=47" />
-<link rel="stylesheet" href="shell.css?v=47" />
-<link rel="stylesheet" href="components.css?v=47" />
-<link rel="stylesheet" href="frame.css?v=47" />
-<link rel="stylesheet" href="rec-print.css?v=47" />
+<link rel="stylesheet" href="identity/tokens.css?v=48" />
+<link rel="stylesheet" href="shell.css?v=48" />
+<link rel="stylesheet" href="components.css?v=48" />
+<link rel="stylesheet" href="frame.css?v=48" />
+<link rel="stylesheet" href="rec-print.css?v=48" />
 <style>
   /* شاشة السجل (2026-09-12) — شاشة واحدة لكل القوالب، تولدها اللبنات من التعريف:
      ?tpl=<قالب> سجل جديد (لا يحفظ حتى يكتب فيه) · ?id=<سجل> سجل محفوظ باصداره هو.
@@ -75,16 +75,16 @@
   </div>
  </div></div>
 
-<script src="build.js?v=47"></script>
-<script src="refdata.js?v=47"></script>
-<script src="rec-templates.js?v=47"></script>
-<script src="rec-engine.js?v=47"></script>
-<script src="derive.js?v=47"></script>
-<script src="icons.js?v=47"></script>
-<script src="components.js?v=47"></script>
-<script src="rec-print.js?v=47"></script>
-<script src="rec-files.js?v=47"></script>
-<script src="rec-form.js?v=47"></script>
+<script src="build.js?v=48"></script>
+<script src="refdata.js?v=48"></script>
+<script src="rec-templates.js?v=48"></script>
+<script src="rec-engine.js?v=48"></script>
+<script src="derive.js?v=48"></script>
+<script src="icons.js?v=48"></script>
+<script src="components.js?v=48"></script>
+<script src="rec-print.js?v=48"></script>
+<script src="rec-files.js?v=48"></script>
+<script src="rec-form.js?v=48"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -95,7 +95,8 @@
     else el.innerHTML = '<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
   })();
 
-  var rec = Q.get('id') ? S.rec(Q.get('id')) : (Q.get('tpl') ? S.newRec(Q.get('tpl')) : null);
+  /* ?who=<معلم>: سجل المعلم (القالب owner:'teacher') ينشأ باسمه — يأتي من اختيار المعلم في الارشيف */
+  var rec = Q.get('id') ? S.rec(Q.get('id')) : (Q.get('tpl') ? S.newRec(Q.get('tpl'), Q.get('who') || '') : null);
   var tpl = rec && ShoubaRec.of(rec), saved = !!(rec && Q.get('id')), fit = null, timer = 0, deleted = false;
   var formEl = document.getElementById('form'), pv = document.getElementById('pv'), pvw = document.getElementById('pvw');
   var toPv = document.getElementById('toPv'), pvAct = document.getElementById('pvAct');
@@ -105,7 +106,7 @@
   /* الرأس: «محضر رقم ٣ · الجمعة ١١/٩» — من ملخص التعريف (ShoubaRec.summary) لا من حقول بعينها */
   function sub(){
     var s = ShoubaRec.summary(rec), n = (tpl.noun && tpl.noun.one) || 'السجل';
-    document.getElementById('sub').textContent = [s.no !== '' ? n + ' رقم ' + s.no : '',
+    document.getElementById('sub').textContent = [rec.who ? 'أ. ' + rec.who : '', s.no !== '' ? n + ' رقم ' + s.no : '',
       s.date ? ShoubaRec.weekday(s.date) + ' ' + dm(s.date) : ''].filter(Boolean).join(' · ') || s.title || tpl.title;
   }
 

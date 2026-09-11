@@ -82,6 +82,20 @@
   var PB = {}, PS = {};
   /* ① خانات البيانات: العناوين يمينا والقيم يسارا، باطار — كاعلى نموذج الاجتماعات */
   PB.fields = function (b, v) {
+    /* سطر واحد تحت الترويسة (inline — شبكتا المتابعة): «اسم المعلم: … · الفصل الدراسي: … · العام الدراسي: …» —
+       الجدول العريض يحتاج الصفحة كلها، والخانات الثلاث لا تستحق جدولا */
+    if (b.inline) {
+      var line = el('div', 'pp-inline');
+      b.fields.forEach(function (f) {
+        var x = v[f.id];
+        if (x === '' || x == null) return;
+        var s = el('span');
+        s.appendChild(el('b', null, f.label + ': '));
+        s.appendChild(document.createTextNode(f.kind === 'teacher' ? P.whoLabel(x) : f.kind === 'date' ? P.date(x) : P.ar(x)));
+        line.appendChild(s);
+      });
+      return line.children.length ? line : null;
+    }
     var t = el('table', 'pp-fields');
     b.fields.forEach(function (f) {
       var tr = el('tr'), td = el('td'), x = v[f.id];
@@ -178,20 +192,26 @@
   }
   var COLW = { date: 26, number: 16, check: 11, signature: 28, teacher: 44, months: 42, choice: 30, followup: 42 };   /* بالمليمتر */
   PB.table = function (b, v, ctx) {
-    var rows = Array.isArray(v) ? v : [], cols = b.columns || [], groups = {}, num = b.numbered !== false;
-    var t = el('table', 'pp-tbl'), cg = el('colgroup'), th = el('thead'), r1 = el('tr');
+    /* الشبكة: الاعمدة المختارة وحدها، والمجموعة التي لم يختر منها شيء تسقط من الرأس تلقائيا. وحين
+       يقل المختار تتسع اعمدة ✓ لما بقي من العرض (بلا عرض ثابت)، ويبقى للتاريخ والتوقيع عرضهما */
+    var all = b.columns || [], cols = (window.Shouba && Shouba.colsOf) ? Shouba.colsOf(ctx && ctx.rec, b, ctx && ctx.tpl && ctx.tpl.id) : all;
+    var fewer = b.choose && cols.length < all.length;
+    /* الرأس الرأسي للاعمدة الضيقة وحدها: فاذا قل المختار (١٢ فما دون) اتسعت الاعمدة فكتب الرأس افقيا يقرأ بلا ميل الرأس */
+    var upright = fewer && cols.filter(function (c) { return c.kind === 'check'; }).length <= 12;
+    var rows = Array.isArray(v) ? v : [], groups = {}, num = b.numbered !== false;
+    var t = el('table', 'pp-tbl' + (b.dense ? ' dense' : '')), cg = el('colgroup'), th = el('thead'), r1 = el('tr');   /* dense: الشبكات العريضة */
     var grouped = cols.some(function (c) { return c.group; }), r2 = grouped ? el('tr') : null;
     (b.groups || []).forEach(function (g) { groups[g.id] = g; });
     if (b.title) t.appendChild(el('caption', null, b.title));
     function col(w) { var c = el('col'); if (w) c.style.width = w + 'mm'; return c; }
     function head(c, span2) {
-      var h = el('th', c.vertical ? 'v' : null);
-      if (c.vertical) h.appendChild(el('span', null, c.label)); else h.textContent = c.label;
+      var v = c.vertical && !upright, h = el('th', v ? 'v' : null);
+      if (v) h.appendChild(el('span', null, c.label)); else h.textContent = c.label;
       if (span2) h.rowSpan = 2;
       return h;
     }
     if (num) { cg.appendChild(col(8)); var hm = el('th', 'm', 'م'); if (grouped) hm.rowSpan = 2; r1.appendChild(hm); }
-    cols.forEach(function (c) { cg.appendChild(col(c.w || COLW[c.kind])); });
+    cols.forEach(function (c) { cg.appendChild(col(fewer && c.kind === 'check' ? 0 : (c.w || COLW[c.kind]))); });
     for (var i = 0; i < cols.length;) {
       var c = cols[i];
       if (!c.group) { r1.appendChild(head(c, grouped)); i++; continue; }

@@ -277,6 +277,7 @@
   /* نص السجل للبحث: كل قيمه، واسم يوم تاريخه وصيغة «يوم/شهر» */
   R.text = function (rec) {
     var s = R.summary(rec), a = strings(rec.values, []), p = String(s.date || '').split('-');
+    if (rec.who) a.push(rec.who);          /* سجل المعلم يوجد باسمه */
     if (p.length === 3) { a.push(R.weekday(s.date)); a.push((+p[2]) + '/' + (+p[1])); }
     return R.norm(a.join(' '));
   };
@@ -362,6 +363,10 @@
       status: 'draft', created: now, updated: now, values: {} };
     if (ctx.who) rec.who = ctx.who;          /* صاحب السجل ان كان معلما او طالبا */
     arr(t.blocks).forEach(function (b) { rec.values[b.id] = blank(b, cx); });
+    /* لقطة عناصر النموذج المختارة يوم الانشاء (table.choose) — فلا يتغير سجل ان تغير الاختيار بعده */
+    arr(t.blocks).forEach(function (b) {
+      if (b.type === 'table' && b.choose && ctx.pick && arr(ctx.pick[b.id]).length) (rec.cols = rec.cols || {})[b.id] = ctx.pick[b.id].slice();
+    });
     return rec;
   };
 
@@ -521,6 +526,15 @@
     });
     rec.from = src.id;
     return rec;
+  };
+
+  /* اعمدة الجدول الظاهرة (شبكتا المتابعة — table.choose): رئيس الشعبة يختار من اعمدة ✓ ما يتابعه.
+     الترتيب: لقطة السجل (rec.cols يوم انشائه) ⟵ اختيار الشعبة الحالي (now) ⟵ النموذج كاملا.
+     وما ليس ✓ (تاريخ المتابعة · التوقيع · الاسم · الملاحظات) ثابت لا يختار */
+  R.colsOf = function (rec, b, now) {
+    if (!b || !b.choose) return arr(b && b.columns);
+    var pick = (rec && rec.cols && rec.cols[b.id]) || (now && now[b.id]) || null;
+    return pick ? arr(b.columns).filter(function (c) { return c.kind !== 'check' || pick.indexOf(c.id) > -1; }) : arr(b.columns);
   };
 
   /* الرقم التسلسلي: يبدأ من ١ كل عام دراسي، ويليه اكبر رقم مسجل (لا عدد السجلات:

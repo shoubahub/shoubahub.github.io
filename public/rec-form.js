@@ -444,9 +444,11 @@
     return w;
   };
 
+  function groupLabel(b, id) { var g = (b.groups || []).filter(function (x) { return x.id === id; })[0]; return g ? g.label : ''; }
   BLOCK.table = function (b, v, ctx, changed) {
     var rows = v, noun = b.rowLabel || 'صف', sec = section(b.title || '', b.hint), box = el('div', 'stack');
-    var cols = b.columns.filter(function (c) { return CELL[c.kind]; });
+    /* الشبكة: عناصر النموذج المختارة وحدها (لقطة السجل او اختيار الشعبة) — وسائر الجداول كل اعمدتها */
+    var cols = (window.Shouba && Shouba.colsOf ? Shouba.colsOf(ctx.rec, b) : b.columns).filter(function (c) { return CELL[c.kind]; });
     function move(i, d) { var x = rows.splice(i, 1)[0]; rows.splice(i + d, 0, x); changed(); paint(); }
     function paint() {
       box.textContent = '';
@@ -454,12 +456,23 @@
         var card = el('div', 'rb-item' + (ctx.focus && ctx.focus === row.id ? ' focus' : ''));
         card.setAttribute('data-row', row.id || '');   /* للوصول المباشر من اللوحة (?focus=) */
         card.appendChild(el('div', 'rb-q', noun + ' ' + (i + 1)));
-        cols.forEach(function (c) {
-          var cell = el('div', 'rb-cell');
-          cell.appendChild(el('div', 'rb-lab', c.label));
-          cell.appendChild(CELL[c.kind](c, row, ctx, changed));
+        /* اعمدة ✓ المتجاورة في مجموعة واحدة (شبكتا المتابعة) خانة واحدة: اسم المجموعة ورقاقة لكل عنصر —
+           قائمة تحقق للصف على الجوال بدل عشرات الازرار. وسائر الاعمدة خانة لكل عمود */
+        for (var k = 0; k < cols.length;) {
+          var c = cols[k], cell = el('div', 'rb-cell');
+          if (c.kind === 'check' && c.group) {
+            var grp = [];
+            while (k < cols.length && cols[k].kind === 'check' && cols[k].group === c.group) grp.push(cols[k++]);
+            cell.appendChild(el('div', 'rb-lab', groupLabel(b, c.group)));
+            cell.appendChild(toggles(grp.map(function (x) { return { v: x.id, t: x.label }; }),
+              function (id) { return !!row[id]; }, function (id) { row[id] = !row[id]; changed(); }));
+          } else {
+            cell.appendChild(el('div', 'rb-lab', c.label));
+            cell.appendChild(CELL[c.kind](c, row, ctx, changed));
+            k++;
+          }
           card.appendChild(cell);
-        });
+        }
         card.appendChild(tools(i > 0 ? function () { move(i, -1); } : null,
                                i < rows.length - 1 ? function () { move(i, 1); } : null,
                                function () { rows.splice(i, 1); changed(); paint(); }));
@@ -600,6 +613,7 @@
     var cx = {};
     Object.keys(ctx || {}).forEach(function (k) { cx[k] = ctx[k]; });
     cx.recId = rec.id;
+    cx.rec = rec;                          /* لاعمدة الشبكة المختارة (Shouba.colsOf) */
     ctx = cx;
     root.textContent = '';
     var form = el('div', 'rb-form');

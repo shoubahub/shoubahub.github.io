@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · عناصر النموذج</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1B5183" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=48" />
+<link rel="stylesheet" href="shell.css?v=48" />
+<link rel="stylesheet" href="components.css?v=48" />
+<link rel="stylesheet" href="frame.css?v=48" />
+<style>
+  /* عناصر النموذج (2026-09-12، قرار المستخدم) — رئيس الشعبة يختار من عناصر شبكة المتابعة ما يتابعه:
+     «الاغلب لا يملأ النموذج كله». ⚠ غير مؤشرة ابتداء وهو يؤشر (قراره صراحة) — خلاف قائمة السجلات
+     المؤشرة كلها في ش⑥، لان الاختيار هنا تضييق مقصود لا حزمة جاهزة.
+     للشعبة كلها، ويسري على السجلات الجديدة (السجل يحفظ لقطة اختياره يوم انشائه). لا هيكل هنا */
+  .items{display:flex;flex-direction:column;gap:22px;padding-top:16px}
+  .lead{padding:0 var(--gap-side);font-size:13px;font-weight:600;color:var(--shouba-label);line-height:1.8}
+  .grp{display:flex;flex-direction:column;gap:9px}
+  .grp .stack{padding:0 var(--gap-side)}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="topbar">
+    <div class="tbcrest" id="tbCrest"></div>
+    <div class="tt">
+      <b id="ttl">عناصر النموذج</b>
+      <span id="sub">—</span>
+    </div>
+    <div class="iconbtn" data-home title="اللوحة"></div>
+  </div>
+
+  <div class="screen has-topbar has-foot">
+    <div class="content">
+      <div class="items" id="items"></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <button class="cta" id="ok" disabled>اختر عنصرا واحدا على الأقل</button>
+  </div>
+ </div></div>
+
+<script src="build.js?v=48"></script>
+<script src="refdata.js?v=48"></script>
+<script src="rec-templates.js?v=48"></script>
+<script src="rec-engine.js?v=48"></script>
+<script src="derive.js?v=48"></script>
+<script src="icons.js?v=48"></script>
+<script src="components.js?v=48"></script>
+<script>
+  var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search), t = ShoubaRec.latest(Q.get('tpl') || '');
+
+  (function paintTopCrest(){
+    var el = document.getElementById('tbCrest'), c = d.crest;
+    if (c && c.type === 'image') el.innerHTML = '<img src="' + c.data + '" alt="شعار المدرسة" />';
+    else if (c && c.type === 'icon' && window.SHOUBA_ICONS) el.innerHTML = SHOUBA_ICONS.svg(c.id, 22);
+    else el.innerHTML = '<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
+  })();
+
+  var CHK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var tb = t && t.blocks.filter(function(b){ return b.type === 'table' && b.choose; })[0];
+
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function groupLabel(id){ var g = (tb.groups || []).filter(function(x){ return x.id === id; })[0]; return g ? g.label : ''; }
+
+  if (!tb) location.replace('records.html');
+  else start();
+
+  function start(){
+    var checks = tb.columns.filter(function(c){ return c.kind === 'check'; });
+    var fixed = tb.columns.filter(function(c){ return c.kind !== 'check'; }).map(function(c){ return c.label; });
+    var cur = S.pickOf(t.id), sel = cur && cur[tb.id] ? cur[tb.id].slice() : [];
+    var itemsEl = document.getElementById('items'), ok = document.getElementById('ok');
+    var order = [], groups = {}, rows = {}, gAll = {};
+
+    document.getElementById('ttl').textContent = 'عناصر ' + (t.ready || t.title);
+    document.title = 'شعبة · عناصر ' + (t.ready || t.title);
+    itemsEl.appendChild(el('div', 'lead', 'اختر من عناصر النموذج ما تتابعه في معلميك — يطبق على شعبتك كلها، وتعدله متى شئت فيسري على السجلات الجديدة. وتبقى معها دائما: ' + fixed.join(' · ') + '.'));
+
+    function on(id){ return sel.indexOf(id) > -1; }
+    function set(id, v){ var i = sel.indexOf(id); if (v && i < 0) sel.push(id); if (!v && i > -1) sel.splice(i, 1); }
+    function refresh(){
+      Object.keys(rows).forEach(function(id){
+        rows[id].classList.toggle('on', on(id));
+        rows[id].setAttribute('aria-checked', on(id) ? 'true' : 'false');
+      });
+      order.forEach(function(g){
+        gAll[g].textContent = groups[g].every(function(c){ return on(c.id); }) ? 'ألغ المجموعة' : 'اختر المجموعة';
+      });
+      document.getElementById('sub').textContent = 'اخترت ' + sel.length + ' من ' + checks.length;
+      ok.disabled = !sel.length;
+      ok.textContent = sel.length ? 'اعتمد اختيارك' : 'اختر عنصرا واحدا على الأقل';
+    }
+
+    checks.forEach(function(c){ var g = c.group || ''; if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(c); });
+    order.forEach(function(g){
+      var sec = el('section', 'grp'), head = el('div', 'sect'), all = el('div', 'a'), list = el('div', 'stack');
+      head.appendChild(el('div', 'h', groupLabel(g) || 'عناصر أخرى'));
+      all.setAttribute('role', 'button'); all.tabIndex = 0;
+      function toggleGroup(){
+        var every = groups[g].every(function(c){ return on(c.id); });
+        groups[g].forEach(function(c){ set(c.id, !every); });
+        refresh();
+      }
+      all.addEventListener('click', toggleGroup);
+      all.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleGroup(); } });
+      head.appendChild(all);
+      gAll[g] = all;
+      groups[g].forEach(function(c){
+        var r = el('div', 'pick');
+        r.setAttribute('role', 'checkbox'); r.tabIndex = 0;
+        r.innerHTML = '<span class="mark">' + CHK + '</span><div class="tx"><b></b></div>';
+        r.querySelector('b').textContent = c.label;
+        function tap(){ set(c.id, !on(c.id)); refresh(); }
+        r.addEventListener('click', tap);
+        r.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } });
+        rows[c.id] = r;
+        list.appendChild(r);
+      });
+      sec.appendChild(head); sec.appendChild(list);
+      itemsEl.appendChild(sec);
+    });
+
+    /* الاعتماد: بترتيب النموذج لا بترتيب اللمس، ثم الى ارشيف السجل */
+    ok.addEventListener('click', function(){
+      if (!sel.length) return;
+      var map = {};
+      map[tb.id] = checks.map(function(c){ return c.id; }).filter(on);
+      S.setPick(t.id, map);
+      location.href = 'archive.html?tpl=' + encodeURIComponent(t.id);
+    });
+    refresh();
+  }
+</script>
+</body>
+</html>

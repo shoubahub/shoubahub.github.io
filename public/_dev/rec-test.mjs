@@ -197,6 +197,28 @@ ok(srcPlan.values.axes[0].acts[2].follow.st === 'done' && srcPlan.values.axes[0]
 const o1 = clone(srcPlan); o1.id = 'o1'; o1.created = '2026-09-12T08:00:00.000Z';
 const o2 = clone(cp); o2.created = '2026-09-12T09:30:00.000Z';
 ok(R.archive([o1, o2])[0].year === '٢٠٢٦/٢٠٢٧', 'الارشيف: خطة بلا تاريخ ترتب بوقت انشائها — المنسوخة اليوم تسبق اصلها من الفصل السابق', R.archive([o1, o2]).map(g => g.year));
+
+// ٦) شبكتا المتابعة (2026-09-12): سجل لكل معلم، و٢٣ عنصرا في ست مجموعات (٤+٤+٥+٤+٣+٣ كنموذج التوجيه)، و١٣ في الاعمال التحريرية
+const prepT = R.latest('prep'), wrT = R.latest('written');
+ok(!!prepT && !!wrT && prepT.owner === 'teacher' && R.byReady('متابعة سجلات الإعداد') === prepT && R.byReady('متابعة الأعمال التحريرية') === wrT,
+   'شبكتا المتابعة مسجلتان باسميهما في قائمة السجلات، وسجلهما للمعلم');
+const prepCols = prepT.blocks[1].columns, wrCols = wrT.blocks[1].columns;
+ok(prepCols.filter(c => c.kind === 'check').length === 23 && prepT.blocks[1].groups.length === 6 && prepCols.every(c => c.kind !== 'check' || (c.group && c.vertical))
+   && wrCols.filter(c => c.kind === 'check').length === 13, 'سجلات الاعداد ٢٣ عنصرا ✓ مجمعة رأسية، والاعمال التحريرية ١٣');
+const pr1 = R.create(prepT, { year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', who: 'خالد العنزي' });
+ok(pr1.who === 'خالد العنزي' && pr1.values.meta.who === 'خالد العنزي' && Array.isArray(pr1.values.rows) && R.newRow(prepT.blocks[1]).hook === false
+   && R.match(pr1, 'العنزي'), 'سجل المعلم ينشأ باسمه (سجله وخانته) ويوجد بالبحث باسمه', pr1.values.meta);
+
+// ٦ب) عناصر النموذج المختارة (قرار المستخدم 2026-09-12): الشعبة تختار، والسجل يحفظ لقطته يوم انشائه
+const prepB = prepT.blocks[1];
+ok(prepB.choose && wrT.blocks[1].choose && R.colsOf({}, prepB).length === prepB.columns.length, 'شبكتا المتابعة تختار عناصرهما، وبلا اختيار النموذج كاملا');
+const pk = R.create(prepT, { year: 'x', term: 'y', who: 'م', pick: { rows: ['hook', 'aclear'] } });
+ok(R.colsOf(pk, prepB).map(c => c.id).join() === 'date,hook,aclear,sign' && pk.cols.rows.join() === 'hook,aclear',
+   'السجل الجديد يحفظ لقطة الاختيار، ويبقى التاريخ والتوقيع', R.colsOf(pk, prepB).map(c => c.id));
+ok(R.colsOf(pk, prepB, { rows: ['innov'] }).map(c => c.id).join() === 'date,hook,aclear,sign'
+   && R.colsOf({}, prepB, { rows: ['innov'] }).map(c => c.id).join() === 'date,innov,sign',
+   'لقطة السجل تتقدم على اختيار الشعبة الحالي، وما لا لقطة له يتبع الاختيار الحالي');
+ok(R.colsOf(pk, R.latest('opplan').blocks[2].blocks[2]).length === 4, 'الجداول الاخرى (الخطة) كل اعمدتها لا يمسها الاختيار');
 ok(S.stillOpen(r2).length === 1, 'بطاقة الثاني: قراره مفتوح');
 const old = S.newRec('meetings'); old.values.meta.date = '2026-09-03';
 ok(S.openDecisions(old).length === 0, 'سجل تاريخه قبل الجميع لا يرث قرارات لاحقة');

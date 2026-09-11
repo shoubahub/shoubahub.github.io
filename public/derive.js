@@ -562,20 +562,21 @@
   S.rec = function (id) { return (S.data().recs || []).filter(function (r) { return r.id === id; })[0] || null; };
   /* سجل جديد من احدث اصدار — لا يحفظ حتى يكتب فيه (S.saveRec)، فالفتح والتراجع لا يتركان مسودة فارغة */
   /* سياق انشاء السجل من الاعداد — مصدر واحد للجديد والمنسوخ */
-  function recCtx(who) {
+  function recCtx(who, tplId) {
     var d = S.data();
     return { today: S.today(), year: d.year || '', term: d.term || '', teachers: S.teachers(),
-      records: S.recs(), school: d.schoolName || '', directorate: S.directorate(), who: who || '' };
+      records: S.recs(), school: d.schoolName || '', directorate: S.directorate(), who: who || '',
+      pick: (d.recPick || {})[tplId] || null };   /* عناصر النموذج المختارة — لقطتها في السجل الجديد */
   }
   S.newRec = function (tplId, who) {
     var t = E() && E().latest(tplId);
     if (!t) return null;
-    return E().create(t, recCtx(who));
+    return E().create(t, recCtx(who, tplId));
   };
   /* النسخ الى الفصل الحالي (المرحلة الثانية هـ): ShoubaRec.copyOf بسياق الاعداد، واشهر الفصلين من المرجعية
      (فيقابل كل شهر موضعه)، ثم يحفظ — ويعيد السجل الجديد */
   S.copyRec = function (src) {
-    var d = S.data(), tm = (window.SHOUBA_REF || {}).termMonths || {}, ctx = recCtx(src && src.who);
+    var d = S.data(), tm = (window.SHOUBA_REF || {}).termMonths || {}, ctx = recCtx(src && src.who, src && src.tpl);
     ctx.monthMap = { from: tm[src && src.term] || [], to: tm[d.term] || [] };
     var r = E() && E().copyOf(src, ctx);
     if (r) S.saveRec(r);
@@ -610,6 +611,11 @@
     if (F && E()) E().files(rec).forEach(function (f) { F.remove(f); });
     S.removeRec(rec.id);
   };
+  /* عناصر النموذج التي اختارها رئيس الشعبة لشبكة (قرار المستخدم 2026-09-12) — للشعبة كلها:
+     d.recPick[قالب] = { معرف الجدول: [معرفات اعمدة ✓] }. والسجل يحفظ لقطته يوم انشائه (ShoubaRec.create) */
+  S.pickOf = function (tplId) { return (S.data().recPick || {})[tplId] || null; };
+  S.setPick = function (tplId, map) { var p = S.data().recPick || {}; p[tplId] = map; S.save({ recPick: p }); };
+  S.colsOf = function (rec, b, tplId) { return E() ? E().colsOf(rec, b, S.pickOf((rec && rec.tpl) || tplId)) : ((b && b.columns) || []); };   /* tplId: للنموذج الفارغ بلا سجل */
   S.archive = function (tplId, opt) { return E().archive(S.recs(tplId), opt); };
   /* ما ينتظر اجراء في خطط الفصل الحالي (المرحلة الثانية ج) — لقسم «بحاجة الى اجراء» في اللوحة:
      سجلات العام والفصل الحاليين، والشهر الحالي، واشهر الفصل من المرجعية ⟵ ShoubaRec.due.

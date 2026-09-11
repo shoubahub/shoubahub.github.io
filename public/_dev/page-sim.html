@@ -79,10 +79,29 @@
   recs.push(plan('P0', '٢٠٢٥/٢٠٢٦', 'الفصل الثاني', [2, 3, 4, 5, 6], '2026-02-08T08:00:00.000Z', true));
   if (!PREV) recs.push(plan('P1', '٢٠٢٦/٢٠٢٧', 'الفصل الأول', [9, 10, 11, 12, 1], '2026-09-05T08:00:00.000Z', false));
 
+  /* شبكتا المتابعة: سجل اعداد لخالد العنزي بثلاث متابعات، وكشف اعمال تحريرية لفهد المطيري بخمسة متعلمين */
+  function grid(id, tpl, who, rows, created){
+    return { id: id, tpl: tpl, v: 1, year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', status: 'draft', who: who, created: created, updated: created,
+      values: { meta: { who: who, term: 'الفصل الأول', year: '٢٠٢٦/٢٠٢٧' }, rows: rows } };
+  }
+  var PK = ['hook','ivary','innov','ilink','gcover','gphrase','glevels','gdomains','aclear','alinks','askills','ageneral','aproblem',
+            'nvary','ngoals','ndiff','ncoop','emeasure','evary','ecover','xvary','xlevels','xlink'];
+  recs.push(grid('G1', 'prep', 'خالد العنزي', ['2026-09-06', '2026-09-13', '2026-09-20'].map(function(dt, i){
+    var r = { id: 'wg1' + i, date: dt, sign: '' };
+    PK.forEach(function(k, j){ r[k] = (j + i) % 4 !== 0; });
+    return r;
+  }), '2026-09-06T08:00:00.000Z'));
+  var WK = ['cvary','cread','cmaps','csheets','cneat','cfix','cpraise','ovary','omaps','oresearch','oneat','opraise','ofix'];
+  recs.push(grid('G2', 'written', 'فهد المطيري', ['عبدالعزيز سعد','محمد فيصل','يوسف أحمد','سالم ناصر','راشد خالد'].map(function(nm, i){
+    var r = { id: 'wg2' + i, name: nm, date: '2026-09-10', note: i === 2 ? 'يحتاج متابعة في الخرائط' : '' };
+    WK.forEach(function(k, j){ r[k] = (j + i) % 3 !== 0; });
+    return r;
+  }), '2026-09-10T08:00:00.000Z'));
+
   /* قائمة سجلاتك بلا الخطة — فيظهر سطر «جديد — أضفه» كما عند من اعد شعبته قبلها */
   var SAMPLE = { stage: 'ثانوي', department: 'الرياضيات', refDataVersion: 3, schoolName: 'ثانوية الأمل', schoolType: 'بنين',
     year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', teachers: T, setupDone: true, principal: 'عبدالعزيز الفلاح',
-    records: ['سجل اجتماعات الشعبة', 'سجل الزيارات الصفية'], recs: recs };
+    records: ['سجل اجتماعات الشعبة', 'متابعة سجلات الإعداد', 'متابعة الأعمال التحريرية', 'سجل الزيارات الصفية'], recs: recs };
 
   try {
     if (Q.has('seed') || !localStorage.getItem('shouba.setup')) localStorage.setItem('shouba.setup', JSON.stringify(SAMPLE));

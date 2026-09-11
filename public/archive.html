@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=47" />
-<link rel="stylesheet" href="shell.css?v=47" />
-<link rel="stylesheet" href="components.css?v=47" />
-<link rel="stylesheet" href="frame.css?v=47" />
+<link rel="stylesheet" href="identity/tokens.css?v=48" />
+<link rel="stylesheet" href="shell.css?v=48" />
+<link rel="stylesheet" href="components.css?v=48" />
+<link rel="stylesheet" href="frame.css?v=48" />
 <style>
   /* ارشيف السجل (2026-09-12) — شاشة واحدة لكل القوالب: ?tpl=<قالب>.
      مجموعات (الفصل · العام) الاحدث اولا، وبحث في المحتوى وتصفية بالحالة، وبطاقة لكل سجل تفتح لوحة اجراءاته
@@ -57,14 +57,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=47"></script>
-<script src="refdata.js?v=47"></script>
-<script src="rec-templates.js?v=47"></script>
-<script src="rec-engine.js?v=47"></script>
-<script src="derive.js?v=47"></script>
-<script src="icons.js?v=47"></script>
-<script src="components.js?v=47"></script>
-<script src="rec-files.js?v=47"></script>
+<script src="build.js?v=48"></script>
+<script src="refdata.js?v=48"></script>
+<script src="rec-templates.js?v=48"></script>
+<script src="rec-engine.js?v=48"></script>
+<script src="derive.js?v=48"></script>
+<script src="icons.js?v=48"></script>
+<script src="components.js?v=48"></script>
+<script src="rec-files.js?v=48"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -97,12 +97,45 @@
     var noun = t.noun || { one: 'سجل', two: 'سجلان', few: 'سجلات', many: 'سجلا', zero: 'لا سجلات بعد' };
     /* عدد القرارات المفتوحة على البطاقة — لمن في قالبه قسم قرارات فقط */
     var hasDec = t.blocks.some(function(b){ return (b.sections || []).some(function(s){ return s.kind === 'smart:decisions'; }); });
+    /* شبكة يختار رئيس الشعبة عناصرها (table.choose — قرار المستخدم 2026-09-12): اول فتح يسأله الاختيار
+       (rec-items.html)، ثم سطر «عناصر النموذج» فوق القائمة ليعدله متى شاء — ويسري على السجلات الجديدة */
+    var chooser = t.blocks.filter(function(b){ return b.type === 'table' && b.choose; })[0];
+    if (chooser && !S.pickOf(t.id)) { location.replace('rec-items.html?tpl=' + encodeURIComponent(t.id)); return; }
+    if (chooser) {
+      var picked = ((S.pickOf(t.id) || {})[chooser.id] || []).length;
+      var total = chooser.columns.filter(function(c){ return c.kind === 'check'; }).length;
+      var pw = el('div', 'vlist'), pl = el('button', 'entry');
+      pl.type = 'button';
+      pl.appendChild(el('b', null, 'عناصر النموذج'));
+      pl.appendChild(el('span', 'val', 'اخترت ' + picked + ' من ' + total));
+      pl.appendChild(el('span', 'chev', '‹'));
+      pl.addEventListener('click', function(){ location.href = 'rec-items.html?tpl=' + encodeURIComponent(t.id); });
+      pw.appendChild(pl);
+      toolsEl.parentNode.insertBefore(pw, toolsEl);
+    }
     document.getElementById('ttl').textContent = t.title;
     document.title = 'شعبة · ' + t.title;
     qEl.placeholder = 'ابحث في ' + noun.few + 'ك';
     qEl.setAttribute('aria-label', qEl.placeholder);
     newBtn.textContent = noun.one + ' جديد';
-    newBtn.addEventListener('click', function(){ location.href = 'record.html?tpl=' + encodeURIComponent(t.id); });
+    /* سجل المعلم (owner:'teacher' — شبكتا المتابعة): الجديد يسأل لمن، ومن له سجل في هذا الفصل يفتح سجله
+       فتضاف اليه المتابعات (سجل واحد لكل معلم في الفصل) */
+    newBtn.addEventListener('click', function(){
+      if (t.owner !== 'teacher') { location.href = 'record.html?tpl=' + encodeURIComponent(t.id); return; }
+      var names = S.teachers(), n = el('div', 'setlist');
+      if (!names.length) n.appendChild(el('div', 'soon-note', 'أضف معلمي شعبتك أولا — من تبويب «المعلمون».'));
+      names.forEach(function(nm){
+        var mine = S.recs(t.id).filter(function(r){ return r.who === nm && isNow(r); })[0], b = el('button', 'setitem');
+        b.type = 'button';
+        b.appendChild(el('b', null, 'أ. ' + nm));
+        b.appendChild(el('small', null, mine ? noun.one + 'ه لهذا الفصل — افتحه' : noun.one + ' جديد لهذا الفصل'));
+        b.addEventListener('click', function(){
+          location.href = mine ? 'record.html?id=' + encodeURIComponent(mine.id) : 'record.html?tpl=' + encodeURIComponent(t.id) + '&who=' + encodeURIComponent(nm);
+        });
+        n.appendChild(b);
+      });
+      S.sheet.open(t.title + ' — لأي معلم؟', n);
+    });
     qEl.addEventListener('input', function(){ state.q = qEl.value; render(); });
 
     function titleOf(s){ return s.no !== '' ? noun.one + ' رقم ' + s.no : noun.one; }
@@ -142,11 +175,15 @@
       var s = ShoubaRec.summary(r), st = ST[r.status || 'draft'] || ST.draft, b = el('button', 'entry rcard');
       var r1 = el('div', 'r1'), r2 = el('div', 'r2');
       b.type = 'button';
-      r1.appendChild(el('b', null, (s.no !== '' ? 'رقم ' + s.no : noun.one) + (s.title ? ' · ' + s.title : '')));
+      /* سجل المعلم باسمه، وسائرها برقمها او اسمها */
+      r1.appendChild(el('b', null, (r.who ? 'أ. ' + r.who : s.no !== '' ? 'رقم ' + s.no : noun.one) + (s.title ? ' · ' + s.title : '')));
       r1.appendChild(el('span', st.c, st.t));
       /* سجل بلا خانة تاريخ (الخطة التشغيلية): آخر تعديل عليه بدلها */
       r2.appendChild(el('span', null, s.date ? ShoubaRec.weekday(s.date) + ' ' + dm(s.date)
         : r.updated ? 'آخر تعديل ' + dm(r.updated) : 'بلا تاريخ'));
+      /* عدد صفوف الجدول (المتابعات · المتعلمين) لمن في قالبه جدول بصيغ معدود */
+      var tb = t.blocks.filter(function(x){ return x.type === 'table' && x.count; })[0], rows = tb && (r.values || {})[tb.id];
+      if (tb && Array.isArray(rows) && rows.length) r2.appendChild(el('span', 'open', S.count(rows.length, tb.count)));
       if (hasDec) {
         var n = S.stillOpen(r).length;
         if (n) r2.appendChild(el('span', 'open', 'مفتوح منه ' + S.count(n, DEC)));

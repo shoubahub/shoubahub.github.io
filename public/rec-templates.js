@@ -90,6 +90,102 @@ window.SHOUBA_TPL = {
         ] }
       ]
     }
+  },
+
+  /* ── شبكتا المتابعة (2026-09-12) — على لبنة الجدول نفسها: اعمدة ✓ مجمعة بعناوين رأسية، عرضية ممتدة.
+     سجل لكل معلم في الفصل (owner: 'teacher' — ينشأ باسمه ويبقى يضاف اليه)، وعلى الجوال كل مجموعة
+     قائمة تحقق للصف. المرجع صفحتا نماذج التوجيه العاشرة والحادية عشرة ── */
+
+  /* نموذج متابعة سجلات الاعداد: كل صف متابعة بتاريخها، و٢٧ عنصرا في ست مجموعات، وتوقيع المعلم باليد */
+  prep: {
+    1: {
+      id: 'prep', v: 1, official: true, owner: 'teacher',
+      title: 'نموذج متابعة سجلات الإعداد للمعلمين', ready: 'متابعة سجلات الإعداد',
+      noun: { one: 'سجل', two: 'سجلان', few: 'سجلات', many: 'سجلا', zero: 'لا سجلات بعد' },
+      page: { orient: 'landscape', fit: 'flow' },
+      blocks: [
+        { type: 'fields', id: 'meta', inline: true, fields: [
+          { id: 'who',  label: 'اسم المعلم',    kind: 'teacher', auto: 'teacher' },
+          { id: 'term', label: 'الفصل الدراسي', kind: 'text',    auto: 'term' },
+          { id: 'year', label: 'العام الدراسي', kind: 'text',    auto: 'year' }
+        ] },
+        /* choose: رئيس الشعبة يختار من عناصر ✓ ما يتابعه (قرار المستخدم 2026-09-12 — الاغلب لا يملأ النموذج كله) */
+        { type: 'table', id: 'rows', rowLabel: 'متابعة', rowsLabel: 'متابعات', add: 'أضف متابعة', choose: true,
+          numbered: false, dense: true, rows: { min: 7 },
+          count: { one: 'متابعة', two: 'متابعتان', few: 'متابعات', many: 'متابعة' },
+          groups: [
+            { id: 'intro', label: 'النشاط الاستهلالي' }, { id: 'goals', label: 'الأهداف السلوكية' },
+            { id: 'anal',  label: 'تحليل المادة' },       { id: 'grow',  label: 'أنشطة النمو' },
+            { id: 'eval',  label: 'التقويم' },            { id: 'extra', label: 'الأنشطة اللاصفية' }
+          ],
+          columns: [
+            { id: 'date', label: 'تاريخ المتابعة', kind: 'date', w: 20 },
+            { id: 'hook',     label: 'عنصر التشويق',            kind: 'check', group: 'intro', vertical: true, w: 8 },
+            { id: 'ivary',    label: 'التنويع',                  kind: 'check', group: 'intro', vertical: true, w: 8 },
+            { id: 'innov',    label: 'الابتكار',                 kind: 'check', group: 'intro', vertical: true, w: 8 },
+            { id: 'ilink',    label: 'ارتباط الموضوع',           kind: 'check', group: 'intro', vertical: true, w: 8 },
+            { id: 'gcover',   label: 'تغطي المادة العلمية',      kind: 'check', group: 'goals', vertical: true, w: 8 },
+            { id: 'gphrase',  label: 'حسن الصياغة',              kind: 'check', group: 'goals', vertical: true, w: 8 },
+            { id: 'glevels',  label: 'تنوع المستويات',           kind: 'check', group: 'goals', vertical: true, w: 8 },
+            { id: 'gdomains', label: 'تنوع مجالاتها',            kind: 'check', group: 'goals', vertical: true, w: 8 },
+            { id: 'aclear',   label: 'وضوح الأفكار',             kind: 'check', group: 'anal',  vertical: true, w: 8 },
+            { id: 'alinks',   label: 'الارتباطات',               kind: 'check', group: 'anal',  vertical: true, w: 8 },
+            { id: 'askills',  label: 'المهارات',                 kind: 'check', group: 'anal',  vertical: true, w: 8 },
+            { id: 'ageneral', label: 'التعميمات',                kind: 'check', group: 'anal',  vertical: true, w: 8 },
+            { id: 'aproblem', label: 'المشكلات',                 kind: 'check', group: 'anal',  vertical: true, w: 8 },
+            { id: 'nvary',    label: 'تنوعها',                   kind: 'check', group: 'grow',  vertical: true, w: 8 },
+            { id: 'ngoals',   label: 'تحقق الأهداف السلوكية',    kind: 'check', group: 'grow',  vertical: true, w: 8 },
+            { id: 'ndiff',    label: 'تناسب الفروق الفردية',     kind: 'check', group: 'grow',  vertical: true, w: 8 },
+            { id: 'ncoop',    label: 'تنوع التعليم التعاوني',    kind: 'check', group: 'grow',  vertical: true, w: 8 },
+            { id: 'emeasure', label: 'يقيس الأهداف المتنوعة',    kind: 'check', group: 'eval',  vertical: true, w: 8 },
+            { id: 'evary',    label: 'التنويع',                  kind: 'check', group: 'eval',  vertical: true, w: 8 },
+            { id: 'ecover',   label: 'تغطي الموضوع',             kind: 'check', group: 'eval',  vertical: true, w: 8 },
+            { id: 'xvary',    label: 'تنوعها',                   kind: 'check', group: 'extra', vertical: true, w: 8 },
+            { id: 'xlevels',  label: 'تقيس مستويات الأهداف',     kind: 'check', group: 'extra', vertical: true, w: 8 },
+            { id: 'xlink',    label: 'ربط ميول الطالب بمصادر المعرفة', kind: 'check', group: 'extra', vertical: true, w: 8 },
+            { id: 'sign', label: 'توقيع المعلم', kind: 'signature', w: 20 }
+          ] }
+      ]
+    }
+  },
+
+  /* كشف متابعة الاعمال التحريرية: كل صف متعلم بتاريخ متابعته، وعناصر النشاط الصفي واللاصفي، وملاحظات */
+  written: {
+    1: {
+      id: 'written', v: 1, official: true, owner: 'teacher',
+      title: 'كشف متابعة الأعمال التحريرية', ready: 'متابعة الأعمال التحريرية',
+      noun: { one: 'كشف', two: 'كشفان', few: 'كشوف', many: 'كشفا', zero: 'لا كشوف بعد' },
+      page: { orient: 'landscape', fit: 'flow' },
+      blocks: [
+        { type: 'fields', id: 'meta', inline: true, fields: [
+          { id: 'who',  label: 'اسم المعلم',    kind: 'teacher', auto: 'teacher' },
+          { id: 'term', label: 'الفصل الدراسي', kind: 'text',    auto: 'term' },
+          { id: 'year', label: 'العام الدراسي', kind: 'text',    auto: 'year' }
+        ] },
+        { type: 'table', id: 'rows', rowLabel: 'متعلم', rowsLabel: 'متعلمين', add: 'أضف متعلما', choose: true,
+          numbered: false, dense: true, rows: { min: 10 },
+          count: { one: 'متعلم', two: 'متعلمان', few: 'متعلمين', many: 'متعلما' },
+          groups: [{ id: 'in', label: 'النشاط الصفي' }, { id: 'out', label: 'النشاط اللاصفي' }],
+          columns: [
+            { id: 'name', label: 'اسم المتعلم', kind: 'text', w: 36 },
+            { id: 'date', label: 'تاريخ المتابعة', kind: 'date', vertical: true, w: 18 },
+            { id: 'cvary',   label: 'التنويع والشمول',                kind: 'check', group: 'in',  w: 14 },
+            { id: 'cread',   label: 'تحليل الجداول والصور والأشكال',  kind: 'check', group: 'in',  w: 14 },
+            { id: 'cmaps',   label: 'رسم وتلوين الخرائط',             kind: 'check', group: 'in',  w: 14 },
+            { id: 'csheets', label: 'أوراق العمل',                    kind: 'check', group: 'in',  w: 14 },
+            { id: 'cneat',   label: 'النظافة والترتيب',               kind: 'check', group: 'in',  w: 14 },
+            { id: 'cfix',    label: 'دقة التصويب',                    kind: 'check', group: 'in',  w: 14 },
+            { id: 'cpraise', label: 'التشجيع والتحفيز',               kind: 'check', group: 'in',  w: 14 },
+            { id: 'ovary',   label: 'التنويع والشمولية',              kind: 'check', group: 'out', w: 14 },
+            { id: 'omaps',   label: 'رسم وتلوين الخرائط',             kind: 'check', group: 'out', w: 14 },
+            { id: 'oresearch', label: 'البحث والاطلاع ومهارات أخرى',  kind: 'check', group: 'out', w: 14 },
+            { id: 'oneat',   label: 'الترتيب والنظافة',               kind: 'check', group: 'out', w: 14 },
+            { id: 'opraise', label: 'التشجيع والتحفيز',               kind: 'check', group: 'out', w: 14 },
+            { id: 'ofix',    label: 'دقة التصويب',                    kind: 'check', group: 'out', w: 14 },
+            { id: 'note', label: 'ملاحظات', kind: 'text' }
+          ] }
+      ]
+    }
   }
 
 };

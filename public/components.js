@@ -148,15 +148,21 @@ Shouba.returnTo = function () {
     document.body.style.overflow = '';
   }
 
+  /* ربط منسدلة واحدة — ويصدر (Shouba.bindDrop) للمنسدلات التي تنشأ بعد التحميل
+     (لبنات السجلات: «المسؤول» في كل قرار). والراية تمنع ربطها مرتين (2026-09-12) */
+  function bind(drop) {
+    if (drop.dataset.bound) return;
+    drop.dataset.bound = '1';
+    var sel = drop.querySelector('select');
+    var trig = drop.querySelector('.trigger');
+    var v = drop.querySelector('.val');
+    var s = sel.options[sel.selectedIndex];
+    if (s && s.value) { v.textContent = s.textContent; v.classList.remove('ph'); }  // استرجاع قيمة محفوظة
+    trig.addEventListener('click', function () { open(drop); });
+  }
+  Shouba.bindDrop = bind;
   function init() {
-    [].forEach.call(document.querySelectorAll('.sdrop'), function (drop) {
-      var sel = drop.querySelector('select');
-      var trig = drop.querySelector('.trigger');
-      var v = drop.querySelector('.val');
-      var s = sel.options[sel.selectedIndex];
-      if (s && s.value) { v.textContent = s.textContent; v.classList.remove('ph'); }  // استرجاع قيمة محفوظة
-      trig.addEventListener('click', function () { open(drop); });
-    });
+    [].forEach.call(document.querySelectorAll('.sdrop'), bind);
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
   }
 
@@ -173,6 +179,29 @@ Shouba.returnTo = function () {
       reveal();
     },
     close: function () { close(); }
+  };
+
+  /* يصغر صورة مرفوعة الى مربع (٢٥٦ افتراضا) قبل الحفظ — مخزن المتصفح محدود، والتصغير شرط ألا ينكسر الحفظ.
+     احتواء لا اقتصاص (الشعارات نادرا مربعة فكانت تقص اطرافها)، وخلفية بيضاء (الشعارات PNG شفافة
+     فتبهت على الكحلي) — رصدهما المستخدم على شعار مدرسته 2026-09-06.
+     نقلت من ش① (2026-09-12) ليستعملها شعار المطبوعات كذلك — مصدر واحد للقاعدة. */
+  Shouba.shrinkImage = function (file, size, cb) {
+    var s = size || 256, fr = new FileReader();
+    fr.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        var cv = document.createElement('canvas'); cv.width = s; cv.height = s;
+        var ctx = cv.getContext('2d');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, s, s);
+        var k = Math.min(s / img.width, s / img.height);
+        var w = Math.round(img.width * k), h = Math.round(img.height * k);
+        ctx.drawImage(img, Math.round((s - w) / 2), Math.round((s - h) / 2), w, h);
+        cb(cv.toDataURL('image/png'));
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
   };
 
   /* قائمة الإعدادات — سلوك مشترك لكل الشاشات ذات الرأس الكحلي.
@@ -193,6 +222,10 @@ Shouba.returnTo = function () {
 
     item('مراجعة بيانات شعبتك', 'المدرسة · الشعبة · العام · الإشراف', function () {
       location.href = 'setup-wizard-7.html';
+    });
+    /* ترويسة الورق الرسمي (2026-09-12) — شعار المدرسة واسم التوجيه على كل مطبوع */
+    item('إعدادات المطبوعات', 'شعار المدرسة واسم التوجيه على الورق', function () {
+      location.href = 'print-settings.html';
     });
     /* قابلية النقل (2026-09-10) — ميزة دائمة: نسخ احتياطي · تسليم الشعبة · انتقال.
        ⚠ الاستدعاء متزامن داخل النقرة: المشاركة واختيار الملف يشترطان فعلا من المستخدم. */

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-public>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · معاينة شاشة ببيانات مثال</title>
+<meta name="theme-color" content="#1B5183" />
+<style>
+  html,body{margin:0;padding:0;height:100%;background:#EFE6D6}
+  iframe{border:0;width:100%;height:100%;display:block}
+</style>
+</head>
+<body>
+  <iframe id="f"></iframe>
+<script>
+  /* يعرض اي شاشة محمية بلا دخول (2026-09-12) — تعميم print-settings-sim.html (أرشف في _legacy/ لما أغنت عنه هذه):
+     ?p=<الشاشة بعنوانها> (مثل record.html%3Ftpl%3Dmeetings) · &seed — يعيد وثيقة المثال ولو امتلأ المخزن.
+     تجلب الصفحة وتكتب في اطار بعد حقن:
+     • <base href="/"> — والا حلت روابطها النسبية على /_dev/؛
+     • data-public — فلا يحولها حارس الجلسة الى الدخول (لا حساب ولا رقم سري في المعاينة)؛
+     • history.replaceState الى عنوان الشاشة — فتقرا location.search كما لو فتحت مباشرة؛
+     • وثيقة شعبة مثال: اربعة معلمين واجتماعان سابقان بقرارات (فتظهر متابعة القرارات). */
+  /* ⚠ تكتب في مخزن الجهاز — على الجهاز المحلي وحده، فلا تطمس شعبة حقيقية ان فتحت على المنصة
+     (والخادم يحجب _dev في الانتاج اصلا — هذا حارس ثان) */
+  (function () {
+    var h = location.hostname;
+    if (!(h === 'localhost' || h === '127.0.0.1' || /^(10|172|192)\./.test(h) || h === '')) {
+      document.body.textContent = 'أداة تطوير — تعمل على الجهاز المحلي وحده.';
+      throw new Error('dev only');
+    }
+  })();
+  var Q = new URLSearchParams(location.search), P = Q.get('p') || 'records.html';
+  var T = ['ناصر العجمي', 'عبدالله الرشيدي', 'خالد العنزي', 'فهد المطيري'];
+  function M(id, no, date, topic, decide, carry, x){
+    x = x || {};
+    return { id: id, tpl: 'meetings', v: 1, year: x.year || '٢٠٢٦/٢٠٢٧', term: x.term || 'الفصل الأول', status: x.status || 'draft', signed: x.signed,
+      created: date + 'T08:00:00.000Z', updated: date + 'T09:00:00.000Z',
+      values: { meta: { no: no, date: date, topic: topic }, body: { carry: carry || {}, axes: [], decide: decide },
+                attach: x.attach || { items: [] }, att: { roster: T.slice(), absent: [], guests: [] } } };
+  }
+  var SAMPLE = { stage: 'ثانوي', department: 'الرياضيات', refDataVersion: 3, schoolName: 'ثانوية الأمل', schoolType: 'بنين',
+    year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', teachers: T, setupDone: true,
+    records: ['سجل اجتماعات الشعبة', 'سجل الزيارات الصفية'],
+    recs: [
+      M('rC', 7, '2026-05-10', 'الاستعداد للاختبارات النهائية', [], null, { year: '٢٠٢٥/٢٠٢٦', term: 'الفصل الثاني', status: 'signed',
+        signed: { file: 'f0000000000000000000000a', mime: 'image/jpeg', size: 412345, at: '2026-05-12T10:00:00.000Z' } }),
+      M('rA', 1, '2026-09-01', 'الاستعداد لانطلاق العام', [
+        { id: 'dA', text: 'تسليم التوزيع الزمني للمنهج', owner: 'جميع المعلمين', due: '2026-09-06' },
+        { id: 'dB', text: 'تجهيز بنك أسئلة الوحدة الأولى', owner: 'فهد المطيري', due: '2026-09-24' } ], null,
+        { attach: { items: [ { file: 'f00000000000000000000001', mime: 'application/pdf', size: 845000, name: 'نشرة الاختبارات القصيرة', at: '2026-09-01T09:00:00.000Z' } ] } }),
+      M('rB', 2, '2026-09-08', 'متابعة الأسبوع الأول', [
+        { id: 'dC', text: 'إعداد اختبار قصير موحد للصف العاشر', owner: 'خالد العنزي', due: '2026-10-01' } ], { dA: 'done' }) ] };
+  fetch('/' + P.split('?')[0] + '?x=' + Date.now()).then(function(r){ return r.text(); }).then(function(html){
+    var stub = '<base href="/"><scr' + 'ipt>document.documentElement.setAttribute("data-public","");'
+      + 'history.replaceState(null,"",' + JSON.stringify('/' + P) + ');'
+      + 'try{if(' + (Q.has('seed') ? 'true' : 'false') + '||!localStorage.getItem("shouba.setup"))localStorage.setItem("shouba.setup",'
+      + JSON.stringify(JSON.stringify(SAMPLE)) + ');}catch(e){}'
+      + '</scr' + 'ipt>';
+    var doc = document.getElementById('f').contentDocument;
+    doc.open(); doc.write(html.replace('<head>', '<head>' + stub)); doc.close();
+  });
+</script>
+</body>
+</html>

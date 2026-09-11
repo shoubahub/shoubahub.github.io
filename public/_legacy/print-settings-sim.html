@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-public>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · إعدادات المطبوعات (معاينة ببيانات مثال)</title>
+<meta name="theme-color" content="#1B5183" />
+<style>
+  html,body{margin:0;padding:0;height:100%;background:#EFE6D6}
+  iframe{border:0;width:100%;height:100%;display:block}
+  .bar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:9;
+    background:rgba(36,33,28,.86);color:#F4F1EA;border-radius:999px;padding:7px 14px;
+    font:600 11.5px 'IBM Plex Sans Arabic',sans-serif;white-space:nowrap;pointer-events:none}
+</style>
+</head>
+<body>
+  <div class="bar">معاينة ببيانات مثال — أداة تطوير</div>
+  <iframe id="f"></iframe>
+<script>
+  /* يعرض print-settings.html الحقيقية بلا دخول (2026-09-12) — على منهج board-sim.html:
+     تجلب الصفحة وتكتب في اطار، بعد حقن:
+     • <base href="/"> — والا حلت روابطها النسبية على /_dev/ فلم يحمل شيء؛
+     • data-public — فلا يحولها حارس الجلسة الى الدخول (لا حساب ولا رقم سري في المعاينة)؛
+     • وثيقة شعبة مثال ان خلا المخزن — مدرسة وقسم وشعار صورة (ليرى خيار «شعار الواجهة»). */
+  var LOGO = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#fff"/><circle cx="50" cy="50" r="44" fill="none" stroke="#1B5183" stroke-width="4"/>' +
+    '<text x="50" y="57" font-size="20" text-anchor="middle" font-family="sans-serif" fill="#1B5183">مدرسة</text></svg>');
+  var SAMPLE = { stage: 'ثانوي', department: 'الرياضيات', refDataVersion: 3, schoolName: 'ثانوية الأمل', schoolType: 'بنين',
+    year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', teachers: ['أحمد الفهد', 'خالد العنزي', 'فهد المطيري'],
+    crest: { type: 'image', data: LOGO } };
+  fetch('/print-settings.html?x=' + Date.now()).then(function(r){ return r.text(); }).then(function(html){
+    var stub = '<base href="/"><scr' + 'ipt>document.documentElement.setAttribute("data-public","");'
+      + 'try{if(!localStorage.getItem("shouba.setup"))localStorage.setItem("shouba.setup",' + JSON.stringify(JSON.stringify(SAMPLE)) + ');}catch(e){}'
+      + '</scr' + 'ipt>';
+    var doc = document.getElementById('f').contentDocument;
+    doc.open(); doc.write(html.replace('<head>', '<head>' + stub)); doc.close();
+  });
+</script>
+</body>
+</html>

@@ -706,3 +706,66 @@ body.solo .tsel{display:none}
 .linkbtn{border:0;background:none;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;
   color:var(--shouba-link);min-height:44px;padding:0 2px;display:inline-flex;align-items:center}
 .impentry{display:flex;align-items:center;justify-content:center;gap:4px;font-size:13px;color:var(--shouba-label)}
+
+/* ═══ لبنات السجلات — شاشة الادخال (2026-09-12) ═══════════════════════
+   تولدها rec-form.js لكل القوالب — لا شاشة لسجل بعينه. من الوان الهوية ومكوناتها وحدها. */
+.rb-form{display:flex;flex-direction:column;gap:30px;padding:16px var(--gap-side) 0}
+.rb{display:flex;flex-direction:column;gap:22px}
+.rb-sec{display:flex;flex-direction:column;gap:12px}
+.rb-sec > .t{font-size:14.5px;font-weight:700;color:var(--shouba-text-muted)}
+.rb-form .hint{font-size:12px;color:var(--shouba-hint);font-weight:500;line-height:1.6}   /* كل اللبنات — لا ما داخل .rb وحده (فات سطر الحضور) */
+/* البند (محور · قرار · متابعة): لوح بحد رقيق يجمع حقوله وادواته — الرملي وحده يذوب في الارضية */
+.rb-item{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:18px;background:rgba(255,255,255,.3);box-shadow:inset 0 0 0 1.5px var(--shouba-line)}
+.rb-item .paper > textarea{min-height:0}   /* الاسطر من rows — تفاصيل البند سطران لا ١٢٠px */
+/* نائب التاريخ الفارغ (rec-form.js) — ::after لان ::before صدى المجلد */
+.paper.empty[data-ph]::after{content:attr(data-ph);position:absolute;inset-inline-start:16px;top:50%;transform:translateY(-50%);
+  color:var(--shouba-hint);font-family:var(--font-ar);font-size:15px;font-weight:500;pointer-events:none;z-index:2;white-space:nowrap}
+.paper.empty > input::-webkit-datetime-edit{color:transparent}
+.rb-q{font-size:14.5px;font-weight:700;color:var(--shouba-navy);line-height:1.7}
+.rb-tools{display:flex;gap:8px;justify-content:flex-end}
+.rb-btn{width:34px;height:34px;border-radius:999px;border:0;cursor:pointer;display:grid;place-items:center;
+  background:var(--shouba-paper);color:var(--shouba-text-muted);font-family:var(--font-ar);font-size:18px;font-weight:700}
+.rb-btn:disabled{background:transparent;color:var(--shouba-line);cursor:default}
+.rb-btn.del{color:var(--shouba-error)}
+.rb-btn.add{color:var(--shouba-navy);width:46px;height:46px;flex:none}
+.rb-row{display:flex;gap:8px;align-items:center}
+.rb-row > .paper,.rb-row > .sdrop{flex:1;min-width:0}
+.rb-add{display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700;color:var(--shouba-navy)}
+.segs.sm{gap:8px}
+.segs.sm .seg{padding:10px 12px;font-size:13.5px}
+/* الحضور: رقاقة لكل معلم — حاضر افتراضا، ولمسة تجعله غائبا */
+.att{display:flex;flex-wrap:wrap;gap:8px}
+.att-c{border:0;cursor:pointer;font-family:var(--font-ar);font-size:13.5px;font-weight:700;border-radius:999px;padding:9px 14px;
+  color:var(--shouba-navy);background:rgba(22,69,110,.1);display:inline-flex;align-items:center;gap:6px}
+.att-c.off{color:var(--shouba-hint);background:transparent;box-shadow:inset 0 0 0 1.5px var(--shouba-line);text-decoration:line-through}
+.att-c.guest{color:var(--shouba-amber-deep);background:rgba(169,112,27,.1)}
+.att-c .x{display:grid;place-items:center}
+/* شريط اجراءين (معاينة السجل): ثانوي بجانب الفعل العنبري — والعنبري اعرض */
+.foot .duo{display:flex;gap:12px}
+.foot .duo > .btn-ghost{flex:1}
+.foot .duo > .cta{flex:2}
+/* مقياس امتلاء الورقة: شريط وسطر — الكحلي يتسع بالخط الكامل · العنبري صغر الخط · الاحمر اطول من صفحة */
+.fillm{display:flex;flex-direction:column;gap:8px}
+.fillm .track{height:8px;border-radius:999px;background:var(--shouba-line);overflow:hidden}
+.fillm .bar{height:100%;border-radius:999px;background:var(--shouba-navy)}
+.fillm.shrunk .bar{background:var(--shouba-amber-deep)}
+.fillm.over .bar{background:var(--shouba-error)}
+.fillm .t{font-size:13px;font-weight:700;color:var(--shouba-text-muted);line-height:1.7}
+.fillm.over .t{color:var(--shouba-error)}
+/* بطاقة سجل في الارشيف (2026-09-12) — سطح .entry نفسه بسطرين: الرقم والموضوع مع شارة الحالة،
+   وتحته اليوم والتاريخ وما بقي مفتوحا من قراراته. الحالة: مسودة ترابي · مطبوع عنبري (ينتظر التوقيع) · موقع كحلي */
+.entry.rcard{flex-direction:column;align-items:stretch;gap:6px}
+.rcard .r1,.rcard .r2{display:flex;align-items:center;gap:8px}
+.rcard .r1 b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rcard .r2{font-size:12px;font-weight:600;color:var(--shouba-label)}
+.rcard .r2 .open{margin-inline-start:auto;color:var(--shouba-amber-deep);font-weight:700}
+/* ⑥ المرفقات في الادخال (2026-09-11): نوع الملف وحجمه يمينا وادواته يسارا · الحذف بلمستين */
+.rb-file{align-items:center}
+.rb-file .hint{margin-inline-end:auto}
+.rb-btn.del.sure{width:auto;padding:0 14px;background:var(--shouba-error);color:#fff;font-size:13px}
+/* عارض الملف في لوحة سفلية (ShoubaFiles.view) — للنسخة الموقعة والمرفقات معا */
+.fview{display:flex;flex-direction:column;gap:12px}
+.fview img{display:block;width:100%;border-radius:10px;background:#fff}
+.fview iframe{display:block;width:100%;height:60dvh;border:0;border-radius:10px;background:#fff}
+.fview .wait{margin:0;font-size:13.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8}
+.fview .miss{margin:0;font-size:13.5px;font-weight:600;color:var(--shouba-error);line-height:1.8}

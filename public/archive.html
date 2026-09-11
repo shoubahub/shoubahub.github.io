@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · الأرشيف</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1B5183" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=45" />
+<link rel="stylesheet" href="shell.css?v=45" />
+<link rel="stylesheet" href="components.css?v=45" />
+<link rel="stylesheet" href="frame.css?v=45" />
+<style>
+  /* ارشيف السجل (2026-09-12) — شاشة واحدة لكل القوالب: ?tpl=<قالب>.
+     مجموعات (الفصل · العام) الاحدث اولا، وبحث في المحتوى وتصفية بالحالة، وبطاقة لكل سجل تفتح لوحة اجراءاته
+     (فتح · طباعة · النسخة الموقعة · حذف). لا هيكل هنا — كله موروث من shell.css */
+  .wrap{display:flex;flex-direction:column;gap:22px;padding-top:16px}
+  .tools{display:flex;flex-direction:column;gap:12px;padding:0 var(--gap-side)}
+  .grp{display:flex;flex-direction:column;gap:12px}
+  .confirm{display:flex;flex-direction:column;gap:12px}
+  .confirm p{margin:0 0 4px;font-size:13.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="topbar">
+    <div class="tbcrest" id="tbCrest"></div>
+    <div class="tt">
+      <b id="ttl">الأرشيف</b>
+      <span id="sub">—</span>
+    </div>
+    <div class="iconbtn" data-home title="اللوحة"></div>
+  </div>
+
+  <div class="screen has-topbar has-foot">
+    <div class="content">
+      <div class="wrap">
+        <div class="tools" id="tools" hidden>
+          <div class="paper"><input id="q" type="search" enterkeyhint="search" autocomplete="off" /></div>
+          <div class="segs sm" id="st" hidden></div>
+        </div>
+        <div id="list" class="wrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <button class="cta" id="new">جديد</button>
+  </div>
+ </div></div>
+
+<script src="build.js?v=45"></script>
+<script src="refdata.js?v=45"></script>
+<script src="rec-templates.js?v=45"></script>
+<script src="rec-engine.js?v=45"></script>
+<script src="derive.js?v=45"></script>
+<script src="icons.js?v=45"></script>
+<script src="components.js?v=45"></script>
+<script src="rec-files.js?v=45"></script>
+<script>
+  var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
+
+  (function paintTopCrest(){
+    var el = document.getElementById('tbCrest'), c = d.crest;
+    if (c && c.type === 'image') el.innerHTML = '<img src="' + c.data + '" alt="شعار المدرسة" />';
+    else if (c && c.type === 'icon' && window.SHOUBA_ICONS) el.innerHTML = SHOUBA_ICONS.svg(c.id, 22);
+    else el.innerHTML = '<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
+  })();
+
+  var t = ShoubaRec.latest(Q.get('tpl') || '');
+  var listEl = document.getElementById('list'), toolsEl = document.getElementById('tools');
+  var qEl = document.getElementById('q'), stEl = document.getElementById('st'), newBtn = document.getElementById('new');
+  var state = { q: '', status: '' };
+  /* الحالة شارة بلونها: مسودة ترابي · مطبوع عنبري (ينتظر التوقيع) · موقع كحلي */
+  var ST = { draft: { t: 'مسودة', c: 'chip muted' }, printed: { t: 'مطبوع', c: 'chip' }, signed: { t: 'موقع', c: 'chip navy' } };
+  var DEC = { one: 'قرار', two: 'قراران', few: 'قرارات', many: 'قرارا' };
+
+  function dm(iso){ var p = String(iso || '').slice(0, 10).split('-'); return p.length === 3 ? (+p[2]) + '/' + (+p[1]) : ''; }
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function past(r){ return !!(r.year && d.year && r.year !== d.year); }
+
+  if (!t) {
+    listEl.appendChild(el('div', 'vlist')).appendChild(el('div', 'invite', 'هذا السجل لم يجهز قالبه بعد — افتح سجلاتك لتختار غيره.'));
+    newBtn.textContent = 'سجلاتك';
+    newBtn.addEventListener('click', function(){ location.href = 'records.html'; });
+  } else start();
+
+  function start(){
+    var noun = t.noun || { one: 'سجل', two: 'سجلان', few: 'سجلات', many: 'سجلا', zero: 'لا سجلات بعد' };
+    /* عدد القرارات المفتوحة على البطاقة — لمن في قالبه قسم قرارات فقط */
+    var hasDec = t.blocks.some(function(b){ return (b.sections || []).some(function(s){ return s.kind === 'smart:decisions'; }); });
+    document.getElementById('ttl').textContent = t.title;
+    document.title = 'شعبة · ' + t.title;
+    qEl.placeholder = 'ابحث في ' + noun.few + 'ك';
+    qEl.setAttribute('aria-label', qEl.placeholder);
+    newBtn.textContent = noun.one + ' جديد';
+    newBtn.addEventListener('click', function(){ location.href = 'record.html?tpl=' + encodeURIComponent(t.id); });
+    qEl.addEventListener('input', function(){ state.q = qEl.value; render(); });
+
+    function titleOf(s){ return s.no !== '' ? noun.one + ' رقم ' + s.no : noun.one; }
+
+    /* لوحة تفتح بعد اغلاق السابقة (حركة الاغلاق) — وتعيد دالة تغلقها او تلغيها ان لم تفتح بعد */
+    function sheet(title, node){
+      var tm;
+      S.sheet.close();
+      tm = setTimeout(function(){ tm = 0; S.sheet.open(title, node); }, 320);
+      return function(){ if (tm) clearTimeout(tm); else S.sheet.close(); };
+    }
+    function notice(title, text){ var n = el('div', 'confirm'); n.appendChild(el('p', null, text)); return sheet(title, n); }
+    /* تأكيد لما لا يسترجع: نص يصرح بالاثر + زر الحذف + تراجع */
+    function ask(title, text, yesLabel, onYes){
+      var n = el('div', 'confirm'), yes = el('button', 'btn-danger', yesLabel), no = el('button', 'btn-ghost', 'تراجع');
+      n.appendChild(el('p', null, text));
+      yes.type = no.type = 'button';
+      yes.addEventListener('click', function(){ S.sheet.close(); onYes(); });
+      no.addEventListener('click', function(){ S.sheet.close(); });
+      n.appendChild(yes); n.appendChild(no);
+      sheet(title, n);
+    }
+
+    /* التصفية: «الكل» وما وجد من الحالات فقط — ولا تظهر ان لم تكن الا حالة واحدة (لا عنصر وهمي) */
+    function segs(present){
+      var opts = [''].concat(present), k = opts.join();
+      if (present.indexOf(state.status) < 0) state.status = '';
+      stEl.hidden = present.length < 2;
+      if (stEl.dataset.k === k) return;
+      stEl.dataset.k = k;
+      stEl.textContent = '';
+      opts.forEach(function(v){
+        var b = el('button', 'seg' + (state.status === v ? ' on' : ''), v ? ST[v].t : 'الكل');
+        b.type = 'button';
+        b.addEventListener('click', function(){
+          state.status = v;
+          [].forEach.call(stEl.children, function(x, i){ x.classList.toggle('on', opts[i] === v); });
+          render();
+        });
+        stEl.appendChild(b);
+      });
+    }
+
+    function card(r){
+      var s = ShoubaRec.summary(r), st = ST[r.status || 'draft'] || ST.draft, b = el('button', 'entry rcard');
+      var r1 = el('div', 'r1'), r2 = el('div', 'r2');
+      b.type = 'button';
+      r1.appendChild(el('b', null, (s.no !== '' ? 'رقم ' + s.no : noun.one) + (s.title ? ' · ' + s.title : '')));
+      r1.appendChild(el('span', st.c, st.t));
+      r2.appendChild(el('span', null, s.date ? ShoubaRec.weekday(s.date) + ' ' + dm(s.date) : 'بلا تاريخ'));
+      if (hasDec) {
+        var n = S.stillOpen(r).length;
+        if (n) r2.appendChild(el('span', 'open', 'مفتوح منه ' + S.count(n, DEC)));
+      }
+      b.appendChild(r1); b.appendChild(r2);
+      b.addEventListener('click', function(){ actions(r, s); });
+      return b;
+    }
+
+    /* ── النسخة الموقعة (الخطوة و) ───────────────────────────────────
+       ارفاقها: صورة (تصغر في الجهاز) او PDF ⟵ ترفع لحسابك ⟵ السجل «موقع». واستبدالها يحذف السابقة. */
+    function attach(r){
+      S.sheet.close();
+      ShoubaFiles.pick(function(file){
+        var done = notice('النسخة الموقعة', 'يجهز الملف ويرفعه إلى حسابك…');
+        ShoubaFiles.prepare(file).then(function(p){ return ShoubaFiles.upload(r.id, p); }).then(function(j){
+          var old = ShoubaRec.unsign(r);
+          ShoubaRec.markSigned(r, j);
+          S.saveRec(r);
+          if (old && old !== j.id) ShoubaFiles.remove(old);
+          done(); render();
+        }).catch(function(e){
+          done();
+          setTimeout(function(){ notice('تعذر الإرفاق', e && e.user ? e.message : 'تعذر الرفع — أعد المحاولة'); }, 350);
+        });
+      });
+    }
+    /* العرض بالعارض المشترك (ShoubaFiles.view) — بعد اغلاق لوحة الاجراءات */
+    function view(r, s){
+      S.sheet.close();
+      setTimeout(function(){ ShoubaFiles.view('النسخة الموقعة · ' + titleOf(s), r.signed); }, 320);
+    }
+
+    /* لوحة الاجراءات: فتح وتعديل (او عرض لعام سابق) · المعاينة والطباعة · النسخة الموقعة · حذف بتأكيد */
+    function actions(r, s){
+      var n = el('div', 'setlist'), id = encodeURIComponent(r.id), old = past(r), title = titleOf(s);
+      function row(t1, sub, go){
+        var b = el('button', 'setitem');
+        b.type = 'button';
+        b.appendChild(el('b', null, t1)); b.appendChild(el('small', null, sub));
+        b.addEventListener('click', typeof go === 'function' ? go : function(){ location.href = go; });
+        n.appendChild(b);
+      }
+      row(old ? 'اعرضه' : 'افتحه وعدله', old ? 'من عام ' + r.year + ' — للاطلاع والطباعة' : 'يحفظ ما تغيره تلقائيا', 'record.html?id=' + id);
+      row('المعاينة والطباعة', (r.status || 'draft') === 'draft' ? 'يصير «مطبوعا» بعد أول طباعة' : 'طبع من قبل', 'record.html?id=' + id + '&pv=1');
+      if (r.signed) {
+        row('النسخة الموقعة', (r.signed.mime === 'application/pdf' ? 'ملف PDF' : 'صورة') + (r.signed.at ? ' · أرفقت ' + dm(r.signed.at) : '') + ' — مرجعه الرسمي',
+            function(){ view(r, s); });
+        row('استبدل النسخة الموقعة', 'ترفع غيرها وتحذف هذه', function(){ attach(r); });
+        row('أزل النسخة الموقعة', 'يعود «مطبوعا»', function(){
+          ask('إزالة النسخة الموقعة', 'تزال النسخة الموقعة من «' + title + '» نهائيا، ويعود «مطبوعا».', 'أزلها', function(){
+            var f = ShoubaRec.unsign(r); S.saveRec(r); ShoubaFiles.remove(f); render();
+          });
+        });
+      } else {
+        row('أرفق النسخة الموقعة', 'صورة أو PDF — تصير مرجعه الرسمي', function(){ attach(r); });
+      }
+      var del = el('button', 'btn-danger', 'احذفه');
+      del.type = 'button';
+      del.addEventListener('click', function(){
+        var open = hasDec ? S.stillOpen(r).length : 0;
+        ask('حذف ' + title, 'سيحذف «' + title + '» نهائيا من سجلاتك ولا يسترجع.'
+            + (ShoubaRec.files(r).length ? ' ومعه ما أرفق به من ملفات.' : '')
+            + (open ? ' وقراراته المفتوحة لن تظهر بعد في متابعة ما يليه.' : ''), 'احذفه نهائيا', function(){
+          /* ملفاته كلها معه — النسخة الموقعة والمرفقات (وما فات تلتقطه المصالحة في الخادم) */
+          ShoubaRec.files(r).forEach(function(f){ ShoubaFiles.remove(f); });
+          S.removeRec(r.id); render();
+        });
+      });
+      n.appendChild(del);
+      S.sheet.open(title + (s.title ? ' · ' + s.title : ''), n);
+    }
+
+    function render(){
+      var all = S.recs(t.id);
+      var present = ShoubaRec.STATUS.filter(function(v){ return all.some(function(r){ return (r.status || 'draft') === v; }); });
+      segs(present);
+      var groups = S.archive(t.id, state);
+      document.getElementById('sub').textContent = all.length ? 'أرشيف ' + noun.few + 'ك · ' + S.count(all.length, noun) : noun.zero || '—';
+      toolsEl.hidden = !all.length;
+      listEl.textContent = '';
+      if (!all.length || !groups.length) {
+        listEl.appendChild(el('div', 'vlist')).appendChild(el('div', 'invite', !all.length
+          ? 'لم تكتب ' + noun.few + ' بعد — ابدأ أولها من «' + noun.one + ' جديد» أدناه.'
+          : 'لا نتائج — جرب كلمة أخرى، أو اختر «الكل».'));
+        return;
+      }
+      groups.forEach(function(g){
+        var grp = el('section', 'grp'), h = el('div', 'sect'), v = el('div', 'vlist');
+        h.appendChild(el('div', 'h', [g.term, g.year].filter(Boolean).join(' · ') || 'بلا عام دراسي'));
+        grp.appendChild(h);
+        g.items.forEach(function(r){ v.appendChild(card(r)); });
+        grp.appendChild(v);
+        listEl.appendChild(grp);
+      });
+    }
+    render();
+  }
+</script>
+</body>
+</html>

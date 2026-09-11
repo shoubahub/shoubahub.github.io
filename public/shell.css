@@ -93,3 +93,7 @@ body{
 .screen.has-foot{ padding-bottom:150px }   /* مساحة الشريط المثبت */
 .screen.has-tabbar{ padding-bottom:118px }   /* مساحة كي لا يغطي الشريط المحتوى */
 .screen.has-topbar{ padding-top:60px }   /* مساحة الرأس المضغوط الثابت */
+
+/* السمة hidden تخفي دائما (2026-09-12): كل عنصر بـdisplay صريح (flex/grid) كان يبطلها
+   فيبقى ظاهرا وهو «مخفي» — رصد في شاشة السجل (.duo · .pvwrap). حكم عام لا ترقيع لكل شاشة */
+[hidden]{ display:none !important; }

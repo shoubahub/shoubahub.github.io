@@ -12,6 +12,7 @@
    =================================================================== */
 const crypto = require('crypto');
 const { db, invite } = require('./db');
+const files = require('./files');         /* المرفقات: المصالحة مع كل حفظ، والحذف مع الحساب */
 
 const SESSION_DAYS = 180;                 /* الجلسة تدوم فلا يعاد الدخول كل يوم */
 const PIN_RE = /^\d{6}$/;
@@ -209,6 +210,8 @@ function routes(app) {
     const base = Number.isInteger(req.body.baseRev) ? req.body.baseRev : 0;
     const out = writeDoc(req.user.id, d, base);
     if (out.conflict) return res.status(409).json(Object.assign({ error: 'conflict' }, out));
+    /* المصالحة: ملف لم يعد سجل يشير اليه يحذف بعد مهلة (files.js) — وفشلها لا يفشل الحفظ */
+    try { files.reconcile(req.user.id, d); } catch (e) { console.error('مصالحة المرفقات:', e.message); }
     res.json(out);
   });
 
@@ -247,6 +250,7 @@ function routes(app) {
     db.prepare('DELETE FROM sessions WHERE user_id = ?').run(id);
     db.prepare('DELETE FROM shouba WHERE user_id = ?').run(id);
     db.prepare('DELETE FROM feedback WHERE user_id = ?').run(id);
+    files.dropFor(id);                      /* ومرفقاته — لا يبقى ملف بلا صاحب */
     return db.prepare('DELETE FROM users WHERE id = ?').run(id).changes;
   });
   app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
@@ -299,4 +303,4 @@ function routes(app) {
   app.post('/api/admin/invite', requireAdmin, (_req, res) => res.json({ code: require('./db').newInvite() }));
 }
 
-module.exports = { routes, requireAdmin, ADMIN_PIN };
+module.exports = { routes, requireAdmin, requireUser, ADMIN_PIN };

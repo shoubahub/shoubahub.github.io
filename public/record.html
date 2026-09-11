@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · السجل</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1B5183" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=45" />
+<link rel="stylesheet" href="shell.css?v=45" />
+<link rel="stylesheet" href="components.css?v=45" />
+<link rel="stylesheet" href="frame.css?v=45" />
+<link rel="stylesheet" href="rec-print.css?v=45" />
+<style>
+  /* شاشة السجل (2026-09-12) — شاشة واحدة لكل القوالب، تولدها اللبنات من التعريف:
+     ?tpl=<قالب> سجل جديد (لا يحفظ حتى يكتب فيه) · ?id=<سجل> سجل محفوظ باصداره هو.
+     وضعان: التحرير (ShoubaForm) والمعاينة (الورقة الحقيقية مصغرة + مقياس الامتلاء + الطباعة).
+     لا هيكل هنا — كله موروث من shell.css */
+  .pvwrap{display:flex;flex-direction:column;gap:16px;padding:16px var(--gap-side) 0}
+  .pvw{position:relative;overflow:hidden;background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(40,30,15,.16)}
+  .pvw .pp-sheet{position:absolute;top:0;right:0;transform-origin:top right}
+  .hdrok{display:flex;flex-direction:column;gap:16px}
+  .hdrok .pvw{border-radius:10px}
+  .hdrok p{margin:0;font-size:13px;font-weight:600;color:var(--shouba-label);line-height:1.8}
+  .sgn{padding:16px var(--gap-side) 0}
+  .gone{padding:30px var(--gap-side);font-size:14px;font-weight:600;color:var(--shouba-label);line-height:1.9}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="topbar">
+    <div class="tbcrest" id="tbCrest"></div>
+    <div class="tt">
+      <b id="ttl">السجل</b>
+      <span id="sub">—</span>
+    </div>
+    <div class="iconbtn" data-home title="اللوحة"></div>
+  </div>
+
+  <div class="screen has-topbar has-foot">
+    <div class="content">
+      <div class="sgn" id="sgn" hidden>
+        <div class="warnbox">هذا السجل موقع ونسخته مرفقة — ما تعدله هنا لا يغير النسخة الموقعة، فاطبعه ووقعه من جديد إن لزم.</div>
+      </div>
+      <div id="form"></div>
+      <div class="pvwrap" id="pv" hidden>
+        <div class="fillm" id="meter">
+          <div class="track"><div class="bar" id="bar"></div></div>
+          <div class="t" id="mt"></div>
+        </div>
+        <div class="warnbox" id="miss" hidden></div>
+        <div class="pvw" id="pvw" aria-label="معاينة الورقة"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <button class="cta" id="toPv">المعاينة والطباعة</button>
+    <div class="duo" id="pvAct" hidden>
+      <button class="btn-ghost" id="toEd">عد للتحرير</button>
+      <button class="cta" id="print">اطبع</button>
+    </div>
+  </div>
+ </div></div>
+
+<script src="build.js?v=45"></script>
+<script src="refdata.js?v=45"></script>
+<script src="rec-templates.js?v=45"></script>
+<script src="rec-engine.js?v=45"></script>
+<script src="derive.js?v=45"></script>
+<script src="icons.js?v=45"></script>
+<script src="components.js?v=45"></script>
+<script src="rec-print.js?v=45"></script>
+<script src="rec-files.js?v=45"></script>
+<script src="rec-form.js?v=45"></script>
+<script>
+  var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
+
+  (function paintTopCrest(){
+    var el = document.getElementById('tbCrest'), c = d.crest;
+    if (c && c.type === 'image') el.innerHTML = '<img src="' + c.data + '" alt="شعار المدرسة" />';
+    else if (c && c.type === 'icon' && window.SHOUBA_ICONS) el.innerHTML = SHOUBA_ICONS.svg(c.id, 22);
+    else el.innerHTML = '<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
+  })();
+
+  var rec = Q.get('id') ? S.rec(Q.get('id')) : (Q.get('tpl') ? S.newRec(Q.get('tpl')) : null);
+  var tpl = rec && ShoubaRec.of(rec), saved = !!(rec && Q.get('id')), fit = null, timer = 0;
+  var formEl = document.getElementById('form'), pv = document.getElementById('pv'), pvw = document.getElementById('pvw');
+  var toPv = document.getElementById('toPv'), pvAct = document.getElementById('pvAct');
+
+  function dm(iso){ var p = String(iso || '').split('-'); return p.length === 3 ? (+p[2]) + '/' + (+p[1]) : ''; }
+
+  /* الرأس: «محضر رقم ٣ · الجمعة ١١/٩» — من ملخص التعريف (ShoubaRec.summary) لا من حقول بعينها */
+  function sub(){
+    var s = ShoubaRec.summary(rec), n = (tpl.noun && tpl.noun.one) || 'السجل';
+    document.getElementById('sub').textContent = [s.no !== '' ? n + ' رقم ' + s.no : '',
+      s.date ? ShoubaRec.weekday(s.date) + ' ' + dm(s.date) : ''].filter(Boolean).join(' · ') || tpl.title;
+  }
+
+  /* الحفظ تلقائي بعد كل تعديل (بتأخير يسير يجمع ضربات المفاتيح) — ولا زر حفظ.
+     واول حفظ يثبت عنوان السجل (?id=)، فالتحديث والرجوع يعيدانه هو لا سجلا جديدا */
+  function persist(){
+    clearTimeout(timer); timer = 0;
+    S.saveRec(rec);
+    if (!saved) { saved = true; history.replaceState(history.state, '', 'record.html?id=' + encodeURIComponent(rec.id)); }
+  }
+  function changed(){ clearTimeout(timer); timer = setTimeout(persist, 500); sub(); }
+  function flush(){ if (timer) persist(); }
+
+  /* المطلوب الفارغ ينبه ولا يمنع — «النظام يعرض ما يجب، والحكم قرار المستخدم» */
+  function missing(){
+    var out = [];
+    tpl.blocks.forEach(function(b){
+      if (b.type !== 'fields') return;
+      b.fields.forEach(function(f){
+        var x = (rec.values[b.id] || {})[f.id];
+        if (f.required && (x === '' || x == null)) out.push(f.label);
+      });
+    });
+    return out;
+  }
+
+  /* المعاينة: الورقة الحقيقية (ShoubaPrint.render) تلاءم صفحتها ثم تصغر الى عرض الشاشة — فما يرى هو ما يطبع */
+  function paint(){
+    pvw.textContent = '';
+    var sheet = ShoubaPrint.render(tpl, rec, { open: S.openDecisions(rec) });
+    pvw.appendChild(sheet);
+    fit = ShoubaPrint.fit(sheet, tpl.page);
+    var k = pvw.clientWidth / sheet.offsetWidth;
+    sheet.style.transform = 'scale(' + k + ')';
+    pvw.style.height = Math.ceil(sheet.offsetHeight * k) + 'px';
+
+    var m = document.getElementById('meter'), pct = Math.round(fit.ratio * 100);
+    var NQ = { one: 'نقطة', two: 'نقطتان', few: 'نقاط', many: 'نقطة' };
+    m.className = 'fillm' + (fit.over ? ' over' : fit.pt < fit.base ? ' shrunk' : '');
+    document.getElementById('bar').style.width = Math.min(100, pct) + '%';
+    document.getElementById('mt').textContent = fit.over
+      ? 'أطول من صفحة ولو صغر الخط إلى ' + S.count(fit.min, NQ) + ' — اختصر بعض النص، أو يطبع في صفحتين'
+      : fit.pt < fit.base
+        ? 'صغر الخط إلى ' + S.count(fit.pt, NQ) + ' ليتسع في صفحة واحدة'
+        : 'في صفحة واحدة — امتلأ منها ' + pct + '٪';
+
+    var miss = missing(), me = document.getElementById('miss');
+    me.hidden = !miss.length;
+    me.textContent = miss.length ? 'لم تكتب ' + miss.join(' و') + ' بعد — يطبع فارغا إن طبعته الآن.' : '';
+    return sheet;
+  }
+
+  /* الوضعان في شاشة واحدة، والمعاينة خطوة في السجل التاريخي — فرجوع الجهاز يعيد الى التحرير */
+  function mode(p){
+    formEl.hidden = p; pv.hidden = !p; toPv.hidden = p; pvAct.hidden = !p;
+    document.getElementById('sgn').hidden = p || rec.status !== 'signed';
+    if (p) paint();
+    window.scrollTo(0, 0);
+  }
+
+  /* الطباعة تجعل المسودة «مطبوعا» (حالة الارشيف) — والموقع يبقى موقعا */
+  function go(){ ShoubaRec.markPrinted(rec); persist(); ShoubaPrint.print(paint(), fit); }
+
+  /* اول طباعة: الترويسة تطبع على كل سجلاتك — تعرض مرة لتعتمد (printOk)، او تعدل من اعدادات المطبوعات ثم يعود هنا */
+  function confirmHeader(){
+    var n = document.createElement('div'), p = document.createElement('p'), box = document.createElement('div');
+    var ok = document.createElement('button'), ed = document.createElement('button');
+    n.className = 'hdrok'; box.className = 'pvw'; ok.className = 'cta'; ed.className = 'btn-ghost';
+    p.textContent = 'هذه ترويسة سجلاتك — تطبع أعلى كل سجل. تأكد منها هذه المرة وحدها.';
+    ok.textContent = 'اعتمدها واطبع';
+    ed.textContent = 'عدلها أولا';
+    ok.addEventListener('click', function(){ S.save({ printOk: true }); S.sheet.close(); setTimeout(go, 350); });
+    ed.addEventListener('click', function(){
+      location.href = 'print-settings.html?ret=' + encodeURIComponent('record.html?id=' + rec.id + '&pv=1');
+    });
+    n.appendChild(p); n.appendChild(box); n.appendChild(ok); n.appendChild(ed);
+    S.sheet.open('ترويسة سجلاتك', n);
+    /* اللوحة السفلية تظهر بعد لحظة من فتحها، فعرض المعاينة صفر عندئذ — فتحجم حين يصير لها عرض
+       (ResizeObserver) لا بعد عدد من الاطارات يخمن */
+    var s = ShoubaPrint.sheet('portrait'), h;
+    s.appendChild(ShoubaPrint.header(ShoubaPrint.headerData(tpl.title)));
+    box.appendChild(s);
+    h = s.querySelector('.pp-head');
+    function size(){
+      var w = box.clientWidth, sw = s.offsetWidth;
+      if (!w || !sw) return;
+      var k = w / sw;
+      s.style.transform = 'scale(' + k + ')';
+      box.style.height = Math.ceil((h.offsetTop + h.offsetHeight + 20) * k) + 'px';
+    }
+    size();
+    if (window.ResizeObserver) new ResizeObserver(size).observe(box);
+    else setTimeout(size, 400);
+  }
+
+  function start(){
+    document.getElementById('ttl').textContent = tpl.title;
+    document.title = 'شعبة · ' + tpl.title;
+    ShoubaForm.render(formEl, tpl, rec, { teachers: S.teachers(), open: S.openDecisions(rec) }, changed);
+    sub();
+    /* الموقع: تعديله ينبه ولا يمنع — النسخة المرفقة هي المرجع الرسمي ولن تطابق التعديل */
+    document.getElementById('sgn').hidden = rec.status !== 'signed';
+
+    toPv.addEventListener('click', function(){ flush(); history.pushState({ pv: 1 }, ''); mode(true); });
+    document.getElementById('toEd').addEventListener('click', function(){ history.back(); });
+    window.addEventListener('popstate', function(){ mode(!!(history.state && history.state.pv)); });
+    /* ما يطبع يحفظ — ولو لم يعدل فيه شيء */
+    document.getElementById('print').addEventListener('click', function(){
+      persist();
+      if (!S.data().printOk) confirmHeader(); else go();
+    });
+
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') flush(); });
+    window.addEventListener('resize', function(){ if (!pv.hidden) paint(); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ if (!pv.hidden) paint(); });
+
+    /* سجل من عام سابق: للاطلاع والطباعة وحدهما — يفتح على ورقته بلا تحرير */
+    if (saved && rec.year && d.year && rec.year !== d.year) {
+      document.getElementById('toEd').hidden = true;
+      document.getElementById('sub').textContent += ' · عام ' + rec.year;
+      mode(true);
+      return;
+    }
+    /* عائد من اعدادات المطبوعات (&pv=1): يفتح على المعاينة، ورجوع الجهاز الى التحرير */
+    if (Q.get('pv') && saved) {
+      history.replaceState(null, '', 'record.html?id=' + encodeURIComponent(rec.id));
+      history.pushState({ pv: 1 }, '');
+      mode(true);
+    }
+  }
+
+  if (tpl) start();
+  else {
+    var g = document.createElement('div');
+    g.className = 'gone';
+    g.textContent = 'لم يعد هذا السجل موجودا على جهازك — افتح سجلاتك لتختار غيره.';
+    formEl.appendChild(g);
+    toPv.textContent = 'سجلاتك';
+    toPv.addEventListener('click', function(){ location.href = 'records.html'; });
+  }
+</script>
+</body>
+</html>

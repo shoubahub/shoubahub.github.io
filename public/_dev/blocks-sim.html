@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-public>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · لبنات السجلات (عينة — أداة تطوير)</title>
+<meta name="theme-color" content="#1B5183" />
+<base href="/" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css" />
+<link rel="stylesheet" href="shell.css" />
+<link rel="stylesheet" href="components.css" />
+<link rel="stylesheet" href="frame.css" />
+<link rel="stylesheet" href="rec-print.css" />
+<style>
+  /* اداة تطوير (2026-09-12): لبنات الخطوة (ج) على قالب الاجتماعات — الادخال والورقة من التعريف نفسه.
+     ليست شاشة المنصة (تلك في الخطوة د) — لا حفظ على خادم ولا دخول. */
+  .pvw{position:relative;overflow:hidden;background:#fff;margin:16px var(--gap-side) 0;border-radius:6px;box-shadow:0 1px 6px rgba(40,30,15,.16)}
+  .pvw .pp-sheet{position:absolute;top:0;right:0;transform-origin:top right}
+  /* ?print: الورقة وحدها ظاهرة على الشاشة — .pp-print مخفية على الشاشة منذ الخطوة (د) (نسخة الطباعة)،
+     فتظهر هنا بوسم .sim؛ وتبقى .pp-print فتطبع بـ⌘P */
+  .pp-print.sim{display:block}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="topbar">
+    <div class="tbcrest" id="tbCrest"></div>
+    <div class="tt"><b>سجل الاجتماعات</b><span>عينة اللبنات — أداة تطوير</span></div>
+    <div class="iconbtn" data-home title="اللوحة"></div>
+  </div>
+  <div class="screen has-topbar has-foot">
+    <div class="content">
+      <div id="form"></div>
+      <div id="paper" class="pvw" hidden></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div class="segs" id="view">
+      <button type="button" class="seg on" data-v="form">الإدخال</button>
+      <button type="button" class="seg" data-v="paper">الورقة</button>
+    </div>
+  </div>
+ </div></div>
+
+<script src="build.js"></script>
+<script src="refdata.js"></script>
+<script src="rec-templates.js"></script>
+<script src="rec-engine.js"></script>
+<script src="derive.js"></script>
+<script src="icons.js"></script>
+<script src="components.js"></script>
+<script src="rec-print.js"></script>
+<script src="rec-files.js"></script>
+<script src="rec-form.js"></script>
+<script>
+  /* وثيقة مثال: شعبة باربعة معلمين، واجتماعان سابقان بقرارات — فتظهر «متابعة قرارات الاجتماع السابق» */
+  /* ⚠ تكتب في مخزن الجهاز — على الجهاز المحلي وحده (والخادم يحجب _dev في الانتاج اصلا) */
+  (function () {
+    var h = location.hostname;
+    if (!(h === 'localhost' || h === '127.0.0.1' || /^(10|172|192)\./.test(h) || h === '')) {
+      document.body.textContent = 'أداة تطوير — تعمل على الجهاز المحلي وحده.';
+      throw new Error('dev only');
+    }
+  })();
+  var KEY = 'shouba.setup', S = Shouba;
+  var seed = { stage: 'ثانوي', department: 'الرياضيات', refDataVersion: 3, schoolName: 'ثانوية الأمل', schoolType: 'بنين',
+    year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', teachers: ['ناصر العجمي', 'عبدالله الرشيدي', 'خالد العنزي', 'فهد المطيري'] };
+  localStorage.setItem(KEY, JSON.stringify(seed));
+  S.data(true);
+  var a = S.newRec('meetings');
+  a.values.meta.date = '2026-09-01'; a.values.meta.topic = 'الاستعداد لانطلاق العام';
+  a.values.body.decide = [{ id: 'dA', text: 'تسليم التوزيع الزمني للمنهج', owner: 'جميع المعلمين', due: '2026-09-06' },
+                          { id: 'dB', text: 'تجهيز بنك أسئلة الوحدة الأولى', owner: 'فهد المطيري', due: '2026-09-24' }];
+  S.saveRec(a);
+  var b = S.newRec('meetings');
+  b.values.meta.date = '2026-09-08'; b.values.meta.topic = 'متابعة الأسبوع الأول';
+  b.values.body.carry = { dA: 'done' };
+  b.values.body.decide = [{ id: 'dC', text: 'إعداد اختبار قصير موحد للصف العاشر', owner: 'خالد العنزي', due: '2026-10-01' }];
+  S.saveRec(b);
+
+  var rec = S.newRec('meetings'), tpl = ShoubaRec.of(rec), Q = new URLSearchParams(location.search);
+  var formEl = document.getElementById('form'), paperEl = document.getElementById('paper');
+  function ctx() { return { teachers: S.teachers(), open: S.openDecisions(rec) }; }
+  window.SIM = { rec: rec, tpl: tpl };
+  /* ?filled — محضر مملوء كما يملؤه رئيس الشعبة · ?print — الورقة وحدها بمقاسها (وتطبع بـ⌘P) */
+  if (Q.has('filled')) {
+    var v = rec.values;
+    v.meta.topic = 'خطة الفصل الأول ومتابعة الاختبارات';
+    v.body.carry = { dB: 'done', dC: 'cont' };
+    v.body.axes = [
+      { title: 'توزيع المنهج على الأسابيع', details: 'مراجعة التوزيع الزمني المعتمد من التوجيه ومطابقته بجداول المعلمين' },
+      { title: 'الاختبارات القصيرة', details: 'الاتفاق على موعد الاختبار القصير الأول ومعايير تصحيحه' },
+      { title: 'تبادل الزيارات', details: '' } ];
+    v.body.decide = [
+      { id: 'dD', text: 'اعتماد موعد الاختبار القصير الأول', owner: 'جميع المعلمين', due: '2026-09-24' },
+      { id: 'dE', text: 'إعداد جدول تبادل الزيارات', owner: 'رئيس الشعبة', due: '' } ];
+    v.attach = { items: [
+      { file: 'f00000000000000000000001', mime: 'application/pdf', size: 845000, name: 'نشرة الاختبارات القصيرة', at: '2026-09-11T08:00:00.000Z' },
+      { file: 'f00000000000000000000002', mime: 'image/jpeg', size: 402000, name: 'محضر مجلس الإدارة', at: '2026-09-11T08:05:00.000Z' } ] };
+    v.att.absent = ['عبدالله الرشيدي'];
+    v.att.guests = ['سالم الشمري'];
+  }
+  if (Q.has('print')) {
+    var pp = document.createElement('div');
+    pp.className = 'pp-print sim';
+    pp.appendChild(ShoubaPrint.render(tpl, rec, ctx()));
+    document.body.textContent = '';
+    document.body.className = '';
+    document.body.style.background = '#9a9a9a';
+    document.body.appendChild(pp);   // الورقة وحدها — وشاشة الادخال تبنى منفصلة فلا تظهر
+  }
+  ShoubaForm.render(formEl, tpl, rec, ctx(), function () { window.SIM.changes = (window.SIM.changes || 0) + 1; });
+
+  function paintPaper() {
+    paperEl.textContent = '';
+    var sheet = ShoubaPrint.render(tpl, rec, ctx());
+    paperEl.appendChild(sheet);
+    var k = paperEl.clientWidth / sheet.offsetWidth;
+    sheet.style.transform = 'scale(' + k + ')';
+    paperEl.style.height = Math.ceil(sheet.offsetHeight * k) + 'px';
+  }
+  [].forEach.call(document.querySelectorAll('#view .seg'), function (btn) {
+    btn.addEventListener('click', function () {
+      [].forEach.call(document.querySelectorAll('#view .seg'), function (x) { x.classList.toggle('on', x === btn); });
+      var paper = btn.dataset.v === 'paper';
+      formEl.hidden = paper; paperEl.hidden = !paper;
+      if (paper) paintPaper();
+      window.scrollTo(0, 0);
+    });
+  });
+  window.SIM.paintPaper = paintPaper;
+</script>
+</body>
+</html>

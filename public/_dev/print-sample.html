@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-public>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>عينة الترويسة — خط الورق</title>
+<!-- عينة للاعتماد (2026-09-12): الترويسة المشتركة بثلاثة خطوط، بشعار وبدونه. بيانات مثال لا بيانات مستخدم. -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../rec-print.css" />
+<style>
+  body{ margin:0; background:#e9e4da; font-family:"IBM Plex Sans Arabic", sans-serif; }
+  .wrap{ padding:20px; display:flex; flex-direction:column; gap:26px; align-items:center; }
+  h2{ margin:0 0 8px; font-size:15px; color:#16456E; }
+  .row{ display:flex; flex-direction:column; gap:10px; align-items:center; }
+  .cap{ font-size:12px; color:#5F5648; margin:4px 0 0; text-align:center; }
+  /* اعلى الورقة بمقياس يقرأ — الترويسة وحدها */
+  .clip{ width:calc(210mm * .8); height:calc(60mm * .8); overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,.18); background:#fff; }
+  .clip .pp-sheet{ transform:scale(.8); transform-origin:top right; min-height:0; }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap"></div>
+<script src="../refdata.js"></script>
+<script src="../derive.js"></script>
+<script src="../rec-print.js"></script>
+<script>
+  /* شعار مثال محايد (ليس شعار الوزارة ولا شعبة) — مكان شعار المدرسة */
+  var LOGO = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="#000" stroke-width="3"/>' +
+    '<circle cx="50" cy="50" r="36" fill="none" stroke="#000" stroke-width="1.5" stroke-dasharray="4 3"/>' +
+    '<text x="50" y="47" font-size="13" text-anchor="middle" font-family="sans-serif">شعار</text><text x="50" y="64" font-size="13" text-anchor="middle" font-family="sans-serif">المدرسة</text></svg>');
+  var base = { title: 'سجل الاجتماعات', ministry: 'وزارة التربية', directorate: 'التوجيه الفني للرياضيات', school: 'ثانوية الأمل' };
+  var wrap = document.getElementById('wrap');
+  ShoubaPrint.FONTS.forEach(function (f) {
+    var sec = document.createElement('section'), h = document.createElement('h2'), row = document.createElement('div');
+    h.textContent = f.name + ' — ' + f.family.split(',')[0].replace(/"/g, '');
+    row.className = 'row';
+    [true, false].forEach(function (withLogo) {
+      var cell = document.createElement('div'), clip = document.createElement('div'), sheet = ShoubaPrint.sheet('portrait', f.id), cap = document.createElement('p');
+      clip.className = 'clip';
+      sheet.appendChild(ShoubaPrint.header(Object.assign({}, base, { logo: withLogo ? LOGO : '' })));
+      clip.appendChild(sheet); cell.appendChild(clip);
+      cap.className = 'cap'; cap.textContent = withLogo ? 'بشعار المدرسة' : 'بلا شعار';
+      cell.appendChild(cap); row.appendChild(cell);
+    });
+    sec.appendChild(h); sec.appendChild(row); wrap.appendChild(sec);
+  });
+</script>
+</body>
+</html>

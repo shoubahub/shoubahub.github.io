@@ -1,0 +1,85 @@
+/* ===================================================================
+   شعبة · الورق الرسمي (2026-09-12)
+   ────────────────────────────────────────────────────────────────
+   ⚠ الورق رسمي خالص: **لا شعار لـ«شعبة» ولا اسمها ولا الوانها** على اي مطبوع،
+     ولا شعار الوزارة. اسود على ابيض، وخط عربي رسمي مضمن (--paper-font).
+     هوية «شعبة» على الشاشة وحدها — هذا الملف لا يستعمل رموز tokens.css.
+   ⚠ الترويسة طبقة مستقلة لا يغيرها قالب: .pp-head يرسمها rec-print.js.
+   ⚠ المقاسات بالمليمتر والنقطة (مقاس الورق) لا بالبكسل — الا خطوط اللبنات فبـem
+     من خط الورقة، ليصغرها P.fit معا حين يطول السجل عن صفحته.
+   =================================================================== */
+.pp-sheet{
+  --paper-font: "IBM Plex Sans Arabic", sans-serif;   /* المعتمد للورق (قرار المستخدم 2026-09-12) */
+  box-sizing:border-box; width:210mm; min-height:297mm; padding:12mm 13mm;
+  background:#fff; color:#000; direction:rtl;
+  font-family:var(--paper-font); font-size:12pt; line-height:1.55;   /* ١٢ = P.BASE_PT */
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  display:flex; flex-direction:column;   /* عمود مرن: مساحة النص تبتلع ما بقي */
+}
+.pp-sheet.landscape{ width:297mm; min-height:210mm; }
+.pp-sheet *{ box-sizing:border-box; }
+
+/* ── الترويسة المشتركة ────────────────────────────────────────────
+   يمينا: شعار المدرسة (ان رفع) في اطار ثابت، وتحته ثلاثة اسطر.
+   بلا شعار: الاسطر وحدها في موضعها دون فراغ ظاهر.
+   وسطا: عنوان السجل في اطار مزدوج بظل رمادي كما في نماذج التوجيه.
+   العمود الايسر فارغ بعرض الايمن نفسه — فيقع العنوان في وسط الورقة حقا.
+   ⚠ بالنقطة لا بـem: الترويسة ثابتة لا يصغرها P.fit */
+.pp-head{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:6mm; margin-bottom:7mm; }
+.pp-id{ display:flex; flex-direction:column; align-items:center; justify-self:start; text-align:center; gap:1.5mm; }
+.pp-logo{ width:22mm; height:22mm; display:flex; align-items:center; justify-content:center; }
+.pp-logo img{ max-width:100%; max-height:100%; object-fit:contain; display:block; }
+.pp-lines{ font-weight:700; font-size:11.5pt; line-height:1.45; }
+.pp-lines div{ white-space:nowrap; }
+.pp-title{
+  border:3px double #000; padding:3mm 9mm; font-weight:700; font-size:17pt; line-height:1.3;
+  text-align:center; white-space:nowrap; box-shadow:-2.2mm -2.2mm 0 0 #bdbdbd; background:#fff;
+}
+
+/* ── اللبنات على الورق (2026-09-12) — الخطوط بـem من خط الورقة (١em = ١٢ نقطة بالخط الكامل) ── */
+/* ① خانات البيانات: العناوين يمينا والقيم يسارا، باطار */
+.pp-fields{ width:100%; border-collapse:collapse; margin:0 0 5mm; font-size:1em; }
+.pp-fields th,.pp-fields td{ border:1.2px solid #000; padding:2.2mm 3.5mm; text-align:right; vertical-align:middle; }
+.pp-fields th{ width:36mm; font-weight:700; }
+.pp-fields td{ font-weight:500; }
+.pp-fields .gap{ display:inline-block; width:8mm; }
+/* ② مساحة النص: العبارة الافتتاحية ثم الاقسام مرقمة بالهندية، وما بقي اسطر منقطة */
+.pp-text{ flex:1; display:flex; flex-direction:column; gap:3mm; margin:0 0 5mm; }
+.pp-lead{ font-weight:700; font-size:1.08em; }
+.pp-sec .t{ font-weight:700; text-decoration:underline; text-underline-offset:1.3mm; }
+.pp-sec ol{ list-style:none; counter-reset:n; margin:1.2mm 0 0; padding:0; }
+.pp-sec li{ counter-increment:n; position:relative; padding-right:7mm; margin-bottom:1mm; }
+.pp-sec li::before{ content:counter(n, arabic-indic) "."; position:absolute; right:0; }
+.pp-para{ white-space:pre-wrap; }
+.pp-status{ display:inline-block; border:1.2px solid #000; padding:0 2mm; margin-inline-start:3mm; font-weight:700; font-size:.875em; line-height:1.5; }
+.pp-meta{ font-size:.92em; }
+/* ⑥ المرفقات: قائمة الاسماء بين مساحة النص والحضور */
+.pp-files{ margin:0 0 5mm; }
+/* الاسطر المنقطة تملأ ما بقي فقط — لا حد ادنى لها، فلا تدفع سجلا ممتلئا الى تصغير الخط */
+.pp-fill{ flex:1; min-height:0; background-image:radial-gradient(circle,#666 .32mm,transparent .36mm); background-size:2.1mm 8.5mm; background-position:0 4mm; }
+/* ⑦ الحضور: مجموعتان متجاورتان، اليمنى تملأ اولا، والتوقيع فارغ لليد */
+.pp-att{ display:grid; grid-template-columns:1fr 1fr; border:1.6px solid #000; }
+.pp-att table{ width:100%; border-collapse:collapse; }
+.pp-att table + table{ border-right:2px solid #000; }
+.pp-att th,.pp-att td{ border:1px solid #000; padding:1.2mm 2mm; height:8.5mm; font-size:.92em; text-align:right; }
+.pp-att th{ font-weight:700; height:auto; }
+.pp-att .m{ width:8mm; text-align:center; }
+.pp-att .sig{ width:30%; }
+
+/* ── القياس (P.fit): الورقة بطولها الطبيعي — بلا حد الصفحة ولا تمدد مساحة النص ── */
+.pp-sheet.pp-measure{ min-height:0; }
+.pp-measure .pp-text,.pp-measure .pp-fill{ flex:none; }
+
+/* ── الطباعة: الورق وحده ───────────────────────────────────────────
+   P.print ينسخ الورقة الى .pp-print (ابن body)، ولا ترى على الشاشة */
+.pp-print{ display:none; }
+@media print{
+  @page{ size:A4; margin:0; }
+  html,body{ margin:0 !important; padding:0 !important; background:#fff !important; }
+  body > *:not(.pp-print){ display:none !important; }
+  .pp-print{ display:block !important; }
+  .pp-sheet{ box-shadow:none !important; margin:0 !important; }
+  /* المتسع في صفحة يثبت بطولها — فلا تنزلق صفحة بيضاء ثانية من كسر مليمتر */
+  .pp-sheet.one{ height:297mm; min-height:0; overflow:hidden; }
+  .pp-sheet.landscape.one{ height:210mm; }
+}

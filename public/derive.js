@@ -227,7 +227,8 @@
       department: d.department || '', stage: d.stage || '', school: d.schoolName || '',
       teachers: Array.isArray(d.teachers) ? d.teachers.length : 0,
       schedules: withSchedule,
-      events: Array.isArray(d.events) ? d.events.length : 0
+      events: Array.isArray(d.events) ? d.events.length : 0,
+      recs: Array.isArray(d.recs) ? d.recs.length : 0
     };
   };
 
@@ -543,6 +544,47 @@
       });
     });
   };
+
+  /* ===== ⑥ السجلات — محرك السجلات، المرحلة الاولى (2026-09-12) =====
+     السجلات في الوثيقة نفسها تحت `recs` — فتزامن وتصدر وتستورد كبقية الشعبة.
+     ⚠ لا `records`: ذاك مفتاح اسماء السجلات التي اختارها رئيس الشعبة في ش⑥.
+     ⚠ القالب لا يخزن في الوثيقة: السجل يحمل رقمه واصداره، والقالب من rec-templates.js.
+     ⚠ المرفقات (النسخة الموقعة · الشواهد) لا تدخل الوثيقة — في الخادم بمعرفها (الخطوة و).
+     يعتمد على rec-engine.js حين ينادى (لا عند التحميل) — فلا يلزم ترتيب الوصل للشاشات بلا سجلات. */
+  function E() { return window.ShoubaRec; }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  /* تاريخ اليوم بتوقيت الجهاز (لا UTC — كان سيجعل ليل الكويت يوم امس) */
+  S.today = function () { var t = new Date(); return t.getFullYear() + '-' + pad2(t.getMonth() + 1) + '-' + pad2(t.getDate()); };
+  S.recs = function (tplId) {
+    var a = (S.data().recs || []).slice();
+    return tplId ? a.filter(function (r) { return r.tpl === tplId; }) : a;
+  };
+  S.rec = function (id) { return (S.data().recs || []).filter(function (r) { return r.id === id; })[0] || null; };
+  /* سجل جديد من احدث اصدار — لا يحفظ حتى يكتب فيه (S.saveRec)، فالفتح والتراجع لا يتركان مسودة فارغة */
+  S.newRec = function (tplId, who) {
+    var d = S.data(), t = E() && E().latest(tplId);
+    if (!t) return null;
+    return E().create(t, { today: S.today(), year: d.year || '', term: d.term || '', teachers: S.teachers(),
+      records: S.recs(), school: d.schoolName || '', directorate: S.directorate(), who: who || '' });
+  };
+  S.saveRec = function (rec) {
+    var d = S.data();
+    d.recs = d.recs || [];
+    rec.updated = new Date().toISOString();
+    var i = -1;
+    d.recs.forEach(function (r, k) { if (r.id === rec.id) i = k; });
+    if (i > -1) d.recs[i] = rec; else d.recs.push(rec);
+    S.save();
+    return rec;
+  };
+  S.removeRec = function (id) {
+    var d = S.data();
+    d.recs = (d.recs || []).filter(function (r) { return r.id !== id; });
+    S.save();
+  };
+  S.archive = function (tplId, opt) { return E().archive(S.recs(tplId), opt); };
+  S.openDecisions = function (rec) { return E().openDecisions(S.recs(rec.tpl), rec); };
+  S.stillOpen     = function (rec) { return E().stillOpen(S.recs(rec.tpl), rec); };
 
   /* ===== ⑤ صيغ الأسماء (تستعمل في كل الشاشات) ===== */
   S.lastName = function (n) {

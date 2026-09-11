@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=44" />
-<link rel="stylesheet" href="shell.css?v=44" />
-<link rel="stylesheet" href="components.css?v=44" />
-<link rel="stylesheet" href="frame.css?v=44" />
+<link rel="stylesheet" href="identity/tokens.css?v=45" />
+<link rel="stylesheet" href="shell.css?v=45" />
+<link rel="stylesheet" href="components.css?v=45" />
+<link rel="stylesheet" href="frame.css?v=45" />
 <style>
   .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
   .note{padding:0 var(--gap-side);font-size:12px;font-weight:600;color:var(--shouba-hint);line-height:1.8}
@@ -32,7 +32,7 @@
         <span id="headLine">—</span>
       </div>
       <div class="iconbtn" id="toBoard" data-home title="اللوحة">
-        
+
       </div>
     </div>
 
@@ -69,11 +69,13 @@
   </div>
  </div></div>
 
-<script src="build.js?v=44"></script>
-<script src="refdata.js?v=44"></script>
-<script src="derive.js?v=44"></script>
-<script src="icons.js?v=44"></script>
-<script src="components.js?v=44"></script>
+<script src="build.js?v=45"></script>
+<script src="refdata.js?v=45"></script>
+<script src="rec-templates.js?v=45"></script>
+<script src="rec-engine.js?v=45"></script>
+<script src="derive.js?v=45"></script>
+<script src="icons.js?v=45"></script>
+<script src="components.js?v=45"></script>
 <script>
   var d = Shouba.data();
 
@@ -84,34 +86,45 @@
     else el.innerHTML='<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
   })();
 
-  /* السجلات التي اعتمدها رئيس الشعبة في ش⑥ — ترص هنا قوالب تملأ لاحقا.
-     لا تخترع قائمة هنا: المصدر ما اختاره في الإعداد، وتعديلها من هناك. */
+  /* السجلات التي اعتمدها رئيس الشعبة في ش⑥ — لا تخترع قائمة هنا: المصدر ما اختاره في الإعداد، وتعديلها من هناك.
+     ما بني قالبه (ShoubaRec.byReady) يفتح ارشيفه (archive.html)، وفيه الجديد والمحفوظ (2026-09-12).
+     وسائرها «قيد الإعداد» حتى تبنى قوالبها. */
   var listEl = document.getElementById('list');
   var records = (d.records || []).slice();
+  var ready = records.filter(function(n){ return ShoubaRec.byReady(n); }).length;
 
   if(!records.length){
     listEl.innerHTML = '<div class="invite">لم تعتمد سجلات في الإعداد بعد —'
       + ' وهي قوالب رسمية جاهزة تختار منها ما يخص شعبتك.</div>';
   }
   records.forEach(function(name){
-    var b = document.createElement('button');
-    b.className = 'entry soon';
-    b.innerHTML = '<b>' + name + '</b><span class="val">قالب فارغ</span><span class="chev">‹</span>';
-    b.addEventListener('click', function(){
-      var n = document.createElement('div');
-      n.className = 'soon-note';
-      n.textContent = 'سجل «' + name + '» قيد الإعداد — يصل في تحديث قادم بحقوله الرسمية،'
-                    + ' وما تدخله اليوم في اللوحة والجداول يغذيه حين يجهز.';
-      Shouba.sheet.open(name, n);
-    });
+    var t = ShoubaRec.byReady(name), b = document.createElement('button');
+    b.innerHTML = '<b></b><span class="val"></span><span class="chev">‹</span>';
+    b.querySelector('b').textContent = name;
+    if (t) {
+      b.className = 'entry';
+      b.querySelector('.val').textContent = Shouba.count(Shouba.recs(t.id).length, t.noun || {});
+      b.addEventListener('click', function(){ location.href = 'archive.html?tpl=' + encodeURIComponent(t.id); });
+    } else {
+      b.className = 'entry soon';
+      b.querySelector('.val').textContent = 'قالب فارغ';
+      b.addEventListener('click', function(){
+        var n = document.createElement('div');
+        n.className = 'soon-note';
+        n.textContent = 'سجل «' + name + '» قيد الإعداد — يصل في تحديث قادم بحقوله الرسمية،'
+                      + ' وما تدخله اليوم في اللوحة والجداول يغذيه حين يجهز.';
+        Shouba.sheet.open(name, n);
+      });
+    }
     listEl.appendChild(b);
   });
 
   document.getElementById('headLine').textContent = records.length
-    ? Shouba.count(records.length,{one:'سجل',two:'سجلان',few:'سجلات',many:'سجلا'}) + ' · قوالب قيد الإعداد'
+    ? Shouba.count(records.length,{one:'سجل',two:'سجلان',few:'سجلات',many:'سجلا'})
+      + (ready ? ' · جاهز منها ' + ready : ' · قوالب قيد الإعداد')
     : 'لم تعتمد سجلات بعد';
   document.getElementById('note').textContent = records.length
-    ? 'هذه السجلات التي اعتمدتها في الإعداد — تبنى حقولها تباعا، سجلا بعد سجل.' : '';
+    ? 'هذه السجلات التي اعتمدتها في الإعداد — الجاهز منها يفتح بلمسة، وسائرها تبنى حقوله تباعا.' : '';
 
   document.getElementById('edit').addEventListener('click', function(){
     location.href = 'setup-wizard-6.html?ret=records';

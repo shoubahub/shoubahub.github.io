@@ -19,6 +19,12 @@ app.use((req, res, next) => {
   next();
 });
 
+/* ⚠ أدوات التطوير لا تبلغ المنصة الحية (2026-09-11): Railway يخدم public كله، وفيه
+   _dev (معاينات تكتب بيانات مثال في مخزن الجهاز — لو فتحت على المنصة لطمست شعبة حقيقية
+   ثم رفعتها إلى الحساب) و_legacy والقالب. محليا تبقى متاحة للتطوير. */
+const PROD = process.env.NODE_ENV === 'production' || !!process.env.RAILWAY_ENVIRONMENT;
+if (PROD) app.use(['/_dev', '/_legacy', '/_template.html'], (_req, res) => res.status(404).send('Not found'));
+
 /* وسوم المعاينة (واتساب…) تُحقن في كل صفحة HTML قبل الملفّات الساكنة — og.js */
 const og = require('./og');
 const PUBLIC = path.join(__dirname, 'public');
@@ -37,6 +43,9 @@ if (!process.env.ADMIN_PIN) {
 }
 
 require('./auth').routes(app);
+
+/* المرفقات (النسخ الموقعة) — لصاحب الحساب وحده · files.js */
+require('./files').routes(app, require('./auth').requireUser);
 
 app.get('/health', (_req, res) => res.json({ ok: true, stage: 'server' }));
 

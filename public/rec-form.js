@@ -331,6 +331,16 @@
     return drop(c.label, (c.options || []).map(function (o) { return { v: o, t: o }; }), row[c.id],
       function (x) { row[c.id] = x; changed(); }, 'اختر');
   };
+  /* فصل المتعلم (طلب المستخدم 2026-09-12): فصول معلم السجل وحده رقاقات، من جدول حصصه.
+     المختار يبقى ظاهرا وان خرج من الجدول بعد، ولمسه يلغيه. ومن لا جدول له يكتب بيده */
+  CELL['class'] = function (c, row, ctx, changed) {
+    var opts = (window.Shouba && Shouba.classesOf) ? Shouba.classesOf(ctx.rec && ctx.rec.who) : [];
+    if (row[c.id] && opts.indexOf(row[c.id]) < 0) opts = opts.concat([row[c.id]]);
+    if (!opts.length) return CELL.text(c, row, ctx, changed);
+    return toggles(opts.map(function (o) { return { v: o, t: o }; }),
+      function (x) { return row[c.id] === x; },
+      function (x) { row[c.id] = row[c.id] === x ? '' : x; changed(); });
+  };
   CELL.check = function (c, row, ctx, changed) {
     var s = el('div', 'segs sm'), b = el('button', 'seg' + (row[c.id] ? ' on' : ''));
     b.type = 'button'; b.innerHTML = TICK; b.appendChild(document.createTextNode(c.on || 'تم'));

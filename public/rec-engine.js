@@ -30,7 +30,8 @@
   /* انواع الحقول والاعمدة: نص قصير · نص طويل · تاريخ · رقم · اختيار · علامة ✓ · معلم ·
      اشهر (اختيار شهر او اكثر) · قيمة تلقائية · توقيع (خانة فارغة على الورق) ·
      متابعة (حالة + ملاحظة + شاهد — عمود الخطة التشغيلية الذكي) */
-  R.KINDS    = ['text', 'longtext', 'date', 'number', 'choice', 'check', 'teacher', 'months', 'auto', 'signature', 'followup'];
+  /* class: فصل المتعلم — يختار من فصول معلم السجل في جدوله (rec.who)، ونص حر لمن لا جدول له */
+  R.KINDS    = ['text', 'longtext', 'date', 'number', 'choice', 'check', 'teacher', 'months', 'auto', 'signature', 'followup', 'class'];
   R.SECTIONS = ['paragraph', 'list', 'smart:followup', 'smart:decisions'];
   R.SIGN     = ['roles', 'smart:attendance', 'cover'];
   R.AUTO     = ['serial:year', 'today', 'year', 'term', 'teacher', 'school', 'directorate'];

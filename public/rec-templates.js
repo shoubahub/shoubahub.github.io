@@ -185,6 +185,44 @@ window.SHOUBA_TPL = {
             { id: 'note', label: 'ملاحظات', kind: 'text' }
           ] }
       ]
+    },
+    /* الاصدار ٢ (2026-09-12، طلب المستخدم): عمود «الفصل» بعد اسم المتعلم — لا في نموذج التوجيه،
+       لكن رئيس الشعبة يتابع متعلمين من فصول شتى. والاصدار ١ منشور فلا يمس: كشوفه تعرض به */
+    2: {
+      id: 'written', v: 2, official: true, owner: 'teacher',
+      title: 'كشف متابعة الأعمال التحريرية', ready: 'متابعة الأعمال التحريرية',
+      noun: { one: 'كشف', two: 'كشفان', few: 'كشوف', many: 'كشفا', zero: 'لا كشوف بعد' },
+      page: { orient: 'landscape', fit: 'flow' },
+      blocks: [
+        { type: 'fields', id: 'meta', inline: true, fields: [
+          { id: 'who',  label: 'اسم المعلم',    kind: 'teacher', auto: 'teacher' },
+          { id: 'term', label: 'الفصل الدراسي', kind: 'text',    auto: 'term' },
+          { id: 'year', label: 'العام الدراسي', kind: 'text',    auto: 'year' }
+        ] },
+        { type: 'table', id: 'rows', rowLabel: 'متعلم', rowsLabel: 'متعلمين', add: 'أضف متعلما', choose: true,
+          numbered: false, dense: true, rows: { min: 10 },
+          count: { one: 'متعلم', two: 'متعلمان', few: 'متعلمين', many: 'متعلما' },
+          groups: [{ id: 'in', label: 'النشاط الصفي' }, { id: 'out', label: 'النشاط اللاصفي' }],
+          columns: [
+            { id: 'name', label: 'اسم المتعلم', kind: 'text', w: 36 },
+            { id: 'cls',  label: 'الفصل', kind: 'class', w: 14, ph: 'مثل ١٠/٣' },   /* فصول المعلم من جدوله */
+            { id: 'date', label: 'تاريخ المتابعة', kind: 'date', vertical: true, w: 18 },
+            { id: 'cvary',   label: 'التنويع والشمول',                kind: 'check', group: 'in',  w: 14 },
+            { id: 'cread',   label: 'تحليل الجداول والصور والأشكال',  kind: 'check', group: 'in',  w: 14 },
+            { id: 'cmaps',   label: 'رسم وتلوين الخرائط',             kind: 'check', group: 'in',  w: 14 },
+            { id: 'csheets', label: 'أوراق العمل',                    kind: 'check', group: 'in',  w: 14 },
+            { id: 'cneat',   label: 'النظافة والترتيب',               kind: 'check', group: 'in',  w: 14 },
+            { id: 'cfix',    label: 'دقة التصويب',                    kind: 'check', group: 'in',  w: 14 },
+            { id: 'cpraise', label: 'التشجيع والتحفيز',               kind: 'check', group: 'in',  w: 14 },
+            { id: 'ovary',   label: 'التنويع والشمولية',              kind: 'check', group: 'out', w: 14 },
+            { id: 'omaps',   label: 'رسم وتلوين الخرائط',             kind: 'check', group: 'out', w: 14 },
+            { id: 'oresearch', label: 'البحث والاطلاع ومهارات أخرى',  kind: 'check', group: 'out', w: 14 },
+            { id: 'oneat',   label: 'الترتيب والنظافة',               kind: 'check', group: 'out', w: 14 },
+            { id: 'opraise', label: 'التشجيع والتحفيز',               kind: 'check', group: 'out', w: 14 },
+            { id: 'ofix',    label: 'دقة التصويب',                    kind: 'check', group: 'out', w: 14 },
+            { id: 'note', label: 'ملاحظات', kind: 'text' }
+          ] }
+      ]
     }
   }
 

@@ -208,6 +208,11 @@ ok(prepCols.filter(c => c.kind === 'check').length === 23 && prepT.blocks[1].gro
 const pr1 = R.create(prepT, { year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', who: 'خالد العنزي' });
 ok(pr1.who === 'خالد العنزي' && pr1.values.meta.who === 'خالد العنزي' && Array.isArray(pr1.values.rows) && R.newRow(prepT.blocks[1]).hook === false
    && R.match(pr1, 'العنزي'), 'سجل المعلم ينشأ باسمه (سجله وخانته) ويوجد بالبحث باسمه', pr1.values.meta);
+// الاصدار ٢ من الاعمال التحريرية (طلب المستخدم 2026-09-12): «الفصل» بعد اسم المتعلم، والاصدار ١ المنشور كما هو
+const wr1 = R.get('written', 1), wrNew = R.create(wrT, { year: 'x', term: 'y', who: 'م' });
+ok(wrT.v === 2 && wrCols[1].id === 'cls' && wrCols[1].kind === 'class' && !wr1.blocks[1].columns.some(c => c.id === 'cls')
+   && wrNew.v === 2 && R.newRow(wrT.blocks[1]).cls === '' && R.of({ tpl: 'written', v: 1 }) === wr1,
+   'الكشف الجديد بعمود الفصل، والكشف القديم يعرض باصداره', wrCols.slice(0, 3).map(c => c.id));
 
 // ٦ب) عناصر النموذج المختارة (قرار المستخدم 2026-09-12): الشعبة تختار، والسجل يحفظ لقطته يوم انشائه
 const prepB = prepT.blocks[1];

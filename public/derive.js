@@ -422,6 +422,23 @@
       .sort(function (a, b) { return b.periods - a.periods; });
   };
 
+  /* فصول المعلم من جدوله — لعمود «الفصل» في السجلات (kind:'class'). بالصف ثم رقم الشعبة: 10/2 قبل 10/4 قبل 11/1.
+     ⚠ يقرأ الجدول ولا يمسه: daySlots ينشئ أياما فارغة لمن لا جدول له */
+  S.classesOf = function (teacher) {
+    var t = (S.data().schedules || {})[teacher] || {}, out = [];
+    Object.keys(t).forEach(function (day) {
+      (Array.isArray(t[day]) ? t[day] : []).forEach(function (v) {
+        var c = S.splitSlot(v).cls;
+        if (c && out.indexOf(c) < 0) out.push(c);
+      });
+    });
+    function key(c) {
+      return String(c).replace(/[٠-٩]/g, function (d) { return d.charCodeAt(0) - 0x660; })
+        .split('/').map(function (n) { return parseInt(n, 10) || 0; });
+    }
+    return out.sort(function (a, b) { var x = key(a), y = key(b); return (x[0] - y[0]) || ((x[1] || 0) - (y[1] || 0)); });
+  };
+
   /* نصاب المعلم: مجموع حصصه في الأسبوع (الفراغ تفرغ لا نقص) */
   S.loadOf = function (teacher) {
     var n = 0;

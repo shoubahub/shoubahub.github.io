@@ -181,7 +181,7 @@
   function cellText(c, x, ctx) {
     switch (c.kind) {
       case 'date': return P.date(x);
-      case 'number': return P.ar(x == null ? '' : x);
+      case 'number': case 'class': return P.ar(x == null ? '' : x);
       case 'check': return x ? '✓' : '';
       case 'teacher': return Array.isArray(x) ? x.map(P.whoLabel).join('، ') : P.whoLabel(x);
       case 'months': return P.monthsLabel(x);
@@ -190,7 +190,7 @@
       default: return String(x == null ? '' : x);
     }
   }
-  var COLW = { date: 26, number: 16, check: 11, signature: 28, teacher: 44, months: 42, choice: 30, followup: 42 };   /* بالمليمتر */
+  var COLW = { date: 26, number: 16, 'class': 14, check: 11, signature: 28, teacher: 44, months: 42, choice: 30, followup: 42 };   /* بالمليمتر */
   PB.table = function (b, v, ctx) {
     /* الشبكة: الاعمدة المختارة وحدها، والمجموعة التي لم يختر منها شيء تسقط من الرأس تلقائيا. وحين
        يقل المختار تتسع اعمدة ✓ لما بقي من العرض (بلا عرض ثابت)، ويبقى للتاريخ والتوقيع عرضهما */

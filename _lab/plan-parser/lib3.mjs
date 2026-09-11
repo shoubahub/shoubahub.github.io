@@ -16,8 +16,9 @@ export async function readTable(page){
   const fix = makeFixer(await ligatureMap(page));
   const tc  = await page.getTextContent();
 
+  /* ⚠ NFKC: بعض الخطط (الفرنسية) تصل حروفها باشكال العرض «ﺗ و ز ﯾ ﻊ» — تعاد الى صورتها (2026-09-11) */
   const items = tc.items.filter(i => i.str.trim()).map(i => ({
-    s: fix(i.str), x:i.transform[4], y:i.transform[5], w:i.width,
+    s: fix(i.str).normalize('NFKC'), x:i.transform[4], y:i.transform[5], w:i.width,
     rot: Math.abs(i.transform[0]) < 0.01 && Math.abs(i.transform[1]) > 0.01
   }));
 
@@ -27,7 +28,11 @@ export async function readTable(page){
               .map(r => ({ y1:Math.min(r.y,r.y+r.h), y2:Math.max(r.y,r.y+r.h), x:r.x, len:Math.abs(r.h) }));
   if (!H.length || !V.length) return null;
 
-  const head = items.filter(i => !i.rot && /^الأسبوع$|^الاسبوع$/.test(norm(i.s)));
+  /* ترويسة الاسبوع: كانت تشترط «الأسبوع» كلمة تامة في عنصر واحد، فسقطت خطط تصلها مقطعة
+     («األ» + «سبوع» — الاحياء) او بالانجليزية («Weeks» — اللغة الانجليزية) (2026-09-11) */
+  const bareS = s => norm(s).replace(/\s+/g, '');
+  const head = items.filter(i => !i.rot && (/^(ال)?[أا]?سبوع$|^الاسبوع$|^الأسبوع$/.test(bareS(i.s)) || /^سبوع$/.test(bareS(i.s)) || /^weeks?$/i.test(i.s.trim())))
+                    .sort((p, q) => q.y - p.y);
   if (!head.length) return null;
   const hy = head[0].y;
 
@@ -76,7 +81,9 @@ export async function readTable(page){
       const lb = band(bounds[k], bounds[k+1]);
       lessons.push({
         دروس:   pick(COL.lesson, lb, false),
-        حصص:    (pick(COL.periods, lb, false).join('').match(/\d+/)||[])[0] || '',
+        /* ⚠ الاعداد تفصل ثم تجمع: ضمها بلا فاصل جعل «٩ ٢ ٦ ١» «9261» (الكيمياء ١٢) */
+        حصص:    (() => { const n = (pick(COL.periods, lb, false).join(' ').match(/\d+/g) || []).map(Number).filter(v => v > 0 && v <= 30);
+                         return n.length ? String(n.reduce((a, b) => a + b, 0)) : ''; })(),
         مراجع:  pick(COL.notes, lb, false).join(' ')
       });
     }

@@ -35,7 +35,7 @@ body{font-family:var(--font-ar);direction:rtl}
                         radial-gradient(circle,rgba(22,69,110,.06) 0 62%,transparent 63%)}
 
 /* ---------- العلامة ---------- */
-/* الدليل: لا يوضع الشعار على لون ثالث → لا علامة على العنبري */
+/* على العنبري العلامة بيضاء (استثناء بقرار المستخدم من «لا يوضع الشعار على لون ثالث») — تشتق في templates.mjs */
 .lock{position:absolute;top:56px;right:72px}
 .lock img{height:96px;display:block}
 

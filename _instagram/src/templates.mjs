@@ -31,9 +31,21 @@ function dataUri(p) {
 /* التوقيع: النطاق ان كتب في الاعداد، والا اسم المنصة — مفتاح واحد يبدل الشرائح والنصوص معا */
 export const signOf = cfg => cfg.domain || cfg.name || '';
 
-/* قاعدة الدليل: لا يوضع الشعار على لون ثالث ⟵ لا علامة على العنبري */
+/* الشعار على العنبري أبيض — استثناء بقرار المستخدم (2026-09-12) من قاعدة الدليل
+   «لا يُستعمل الشعار على لون ثالث». يشتق من النسخة الاحادية في مرور واحد: الاسود (جسم
+   العلامة) ⟵ ابيض، والابيض (المفرغ، ككلمة «شعبة» داخل الشين) ⟵ لون السطح من رموز الهوية.
+   ⚠ مرور واحد لا مرحلتان: الاستبدال المتتابع كان يعيد تحويل الابيض الناتج فتختفي العلامة. */
+const AMBER = JSON.parse(fs.readFileSync(path.join(IDENTITY, 'tokens.json'), 'utf8')).color.amber;
+let whiteOnAmber = null;
 function logo(surface) {
-  if (surface === 'amber') return '';
+  if (surface === 'amber') {
+    if (!whiteOnAmber) {
+      const svg = fs.readFileSync(path.join(IDENTITY, 'assets', 'logo-vec-mono.svg'), 'utf8')
+        .replace(/fill="#(000000|ffffff)"/gi, (m, c) => `fill="${c === '000000' ? '#FFFFFF' : AMBER}"`);
+      whiteOnAmber = 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64');
+    }
+    return whiteOnAmber;
+  }
   return dataUri(path.join(IDENTITY, 'assets', surface === 'navy' ? 'logo-vec-dark.svg' : 'logo-vec-color.svg'));
 }
 const mark = surface => (logo(surface) ? `<div class="lock"><img src="${logo(surface)}" alt=""></div>` : '');

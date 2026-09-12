@@ -1,0 +1,46 @@
+{
+  "base": "https://shoubahubgithubio-production.up.railway.app",
+  "_تعليق": "base عنوان المنصّة المنشورة: منه يُقرأ رقم البناء للمقارنة، وعليه يعمل الوضع الحي (--live). كلّ لقطة: path مسار الصفحة، و file الاسم المذكور في posts.json. الحقول الاختيارية: wait_for انتظار ظهور عنصر، wait_ms انتظار زمني إضافي، hide عناصر تُخفى قبل الالتقاط، click عنصر يُضغط قبل الالتقاط، clock ساعة الصفحة لهذه اللقطة.",
+  "demo": {
+    "base": "http://localhost:4100",
+    "data": "demo.json",
+    "_تعليق": "وضع العرض (الافتراضي): خادم المنصّة المحلي ببيانات demo.json الوهمية، بلا حساب ولا دخول. يرفض الالتقاط إن اختلف بناء المحلي عن المنشور."
+  },
+  "defaults": {
+    "width": 390,
+    "height": 844,
+    "scale": 2,
+    "wait_ms": 900,
+    "hide": [],
+    "clock": "2026-09-13T10:07:20+03:00",
+    "_clock": "الأحد ١٠:٠٧:٢٠ بتوقيت الكويت، ساعة ثابتة لا تمضي — في الثانوي داخل الحصة الثالثة (٩:٣٥–١٠:٢٠) فتعرض اللوحة «يدرسون الآن · باقي 12:40» كشريحة المنشور. لمرحلة أخرى غيّرها."
+  },
+  "shots": [
+    {
+      "file": "jadwal-main.png",
+      "path": "/schedule.html"
+    },
+    {
+      "file": "jadwal-days.png",
+      "path": "/schedule.html",
+      "click": "#tsel .tch:nth-child(2)",
+      "wait_ms": 1200,
+      "_ملاحظة": "الاسم الثاني في الشريط (فهد) — جدوله أكثف، ولا تتطابق اللقطة مع jadwal-main."
+    },
+    {
+      "file": "jadwal-entry.png",
+      "path": "/schedule.html",
+      "click": ".cell",
+      "_ملاحظة": "الضغط على أول خانة يفتح لوحة الإسناد."
+    },
+    {
+      "file": "sijil-preview.png",
+      "path": "/record.html?id=rB&pv=1",
+      "_ملاحظة": "rB المحضر الثاني في demo.json — pv=1 يفتحه على ورقته."
+    },
+    {
+      "file": "board-main.png",
+      "path": "/board.html"
+    }
+  ]
+}

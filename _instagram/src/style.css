@@ -1,0 +1,122 @@
+/* ==========================================================================
+   شعبة · أنماط شرائح انستجرام
+   الالوان والخطوط من هوية المنصة نفسها: public/identity/tokens.css يحقن قبل
+   هذا الملف (src/templates.mjs)، وهنا أسماء مختصرة لها فقط — لا تكتب لون
+   هوية بقيمته في مكان آخر.
+   ========================================================================== */
+
+:root{
+  --navy:var(--shouba-navy); --amber:var(--shouba-amber); --ink:var(--shouba-ink);
+  --cream:var(--shouba-cream); --paper:var(--shouba-paper); --sand:var(--shouba-sand); --canvas:var(--shouba-canvas);
+  --line:var(--shouba-line); --muted:var(--shouba-text-muted); --label:var(--shouba-label); --hint:var(--shouba-hint);
+  --navy-light:var(--shouba-navy-light); --amber-deep:var(--shouba-amber-deep);
+  --r-phone:44px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:transparent}
+body{font-family:var(--font-ar);direction:rtl}
+
+/* ---------- السطح ---------- */
+.cv{width:1080px;height:1080px;position:relative;overflow:hidden}
+.cv.navy {background:var(--navy); color:var(--cream)}
+.cv.cream{background:var(--paper);color:var(--ink)}
+.cv.amber{background:var(--amber);color:var(--navy)}
+
+/* زخرفة واحدة في السطح، شفافية لا تزيد على 25٪ (قاعدة الدليل) */
+.echo{position:absolute;left:-120px;bottom:-160px;width:600px;height:600px;border-radius:50%}
+.navy  .echo{background:radial-gradient(circle,rgba(244,241,234,.13) 0 40%,transparent 41%),
+                        radial-gradient(circle,rgba(244,241,234,.09) 0 62%,transparent 63%)}
+.cream .echo{background:radial-gradient(circle,rgba(22,69,110,.07) 0 40%,transparent 41%),
+                        radial-gradient(circle,rgba(22,69,110,.05) 0 62%,transparent 63%)}
+.amber .echo{background:radial-gradient(circle,rgba(22,69,110,.09) 0 40%,transparent 41%),
+                        radial-gradient(circle,rgba(22,69,110,.06) 0 62%,transparent 63%)}
+
+/* ---------- العلامة ---------- */
+/* الدليل: لا يوضع الشعار على لون ثالث → لا علامة على العنبري */
+.lock{position:absolute;top:56px;right:72px}
+.lock img{height:96px;display:block}
+
+/* ---------- النصوص ---------- */
+.cap{position:absolute;top:206px;right:76px;left:76px}
+.cap.high{top:150px}
+.step{display:inline-block;font-size:27px;font-weight:500;margin-bottom:12px}
+.navy  .step{color:var(--navy-light)}
+.cream .step{color:var(--label)}
+.amber .step{color:var(--navy);opacity:.7;font-weight:600}
+.cap h1{font-size:64px;font-weight:700;line-height:1.26;letter-spacing:-1.4px}
+.cap p{font-size:30px;line-height:1.6;margin-top:16px;max-width:28ch}
+.navy  .cap p{color:var(--navy-light)}
+.cream .cap p{color:var(--muted)}
+.amber .cap p{color:var(--navy);opacity:.8}
+
+.foot{position:absolute;bottom:46px;left:72px;font-size:26px;font-weight:500;letter-spacing:.4px}
+/* الاسم العربي مكان النطاق: بلا تباعد — التباعد يقطع وصل الحروف */
+.foot.ar{letter-spacing:0}
+.navy  .foot{color:var(--navy-light)}
+.cream .foot{color:var(--label)}
+.amber .foot{color:var(--navy);opacity:.72}
+
+/* ---------- إطار الهاتف ---------- */
+/* الإطار كحلي أعمق من الهوية (ليس من رموزها) ليبين على الكحلي */
+.phone{position:absolute;border:12px solid #0F3355;border-radius:56px;
+       background:var(--canvas);overflow:hidden;box-shadow:0 26px 56px rgba(0,0,0,.3)}
+.phone img{width:100%;display:block}
+/* قالب أ — ٥٢٠ لا ٥٦٠: كان النطاق في الزاوية يختفي خلف الإطار (2026-09-11) */
+.phone.center{width:520px;right:280px;top:560px;height:560px}
+.phone.side  {width:470px;right:64px;top:300px;height:800px}
+
+/* البديل حين تنقص اللقطة: في وسط الإطار، واسم الملف سطر وحده */
+.ph-holder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+           background:var(--sand);color:var(--label);font-size:32px;text-align:center;padding:0 36px}
+.ph-holder b{font-family:var(--font-num);font-weight:500;font-size:26px;word-break:break-all}
+
+/* ---------- قالب ب: الهاتف على الجانب ---------- */
+.side-txt{position:absolute;top:190px;left:72px;width:400px}
+.side-txt .rule{display:block;width:88px;height:10px;border-radius:6px;background:var(--amber);margin-bottom:30px}
+.amber .side-txt .rule{background:var(--navy)}
+.side-txt h1{font-size:58px;font-weight:700;line-height:1.28;letter-spacing:-1.2px}
+.side-txt p{font-size:28px;line-height:1.6;margin-top:16px}
+.cream .side-txt p{color:var(--muted)}
+.navy  .side-txt p{color:var(--navy-light)}
+.side-txt .foot{position:static;display:block;margin-top:36px}
+
+/* ---------- قالب ج: تكبير تفصيل ---------- */
+.zoom{position:absolute;right:76px;left:76px;bottom:170px;border-radius:40px;padding:56px 54px;
+      box-shadow:0 26px 54px rgba(0,0,0,.22)}
+.navy  .zoom,.amber .zoom{background:var(--cream);color:var(--navy)}
+.cream .zoom{background:var(--navy);color:var(--cream)}
+.zoom.warn{border-right:14px solid var(--amber);padding-right:44px}
+.zoom h2{font-size:50px;font-weight:700;line-height:1.3}
+.zoom .z-sub{font-size:30px;margin-top:14px}
+.navy .zoom .z-sub,.amber .zoom .z-sub{color:var(--muted)}
+.cream .zoom .z-sub{color:var(--navy-light)}
+.z-btns{display:flex;gap:20px;margin-top:34px}
+.z-btns .primary{background:var(--shouba-cta);color:var(--ink);
+                 font-weight:700;font-size:32px;border-radius:26px;padding:20px 44px;box-shadow:0 8px 0 var(--amber-deep)}
+.z-btns .ghost{border:3px solid rgba(22,69,110,.3);color:var(--navy);font-size:32px;border-radius:26px;padding:20px 40px}
+.cream .z-btns .ghost{border-color:rgba(244,241,234,.35);color:var(--cream)}
+.z-bar{height:26px;border-radius:14px;background:var(--line);margin-top:24px;overflow:hidden}
+.z-bar span{display:block;height:100%;background:var(--navy)}
+.cream .z-bar{background:rgba(244,241,234,.2)}
+.cream .z-bar span{background:var(--amber)}
+.z-crop{border-radius:26px;overflow:hidden;background:var(--sand)}
+.z-crop img{display:block;width:100%}
+
+/* ---------- قالب الرقم ---------- */
+.cv.num{display:flex;flex-direction:column;justify-content:center;padding:92px 88px}
+.num .big{font-size:330px;font-weight:700;line-height:1;letter-spacing:-10px}
+.num .n-sub{font-size:44px;font-weight:500;line-height:1.5;margin-top:18px;max-width:19ch}
+.num .foot{position:static;margin-top:36px}
+
+/* ---------- رأس العمود المثبّت ---------- */
+.hd .hd-mark{position:absolute;top:70px;right:76px;height:84px}
+.hd .pin{position:absolute;top:78px;left:70px;font-size:40px;font-weight:700;border-radius:999px;padding:14px 40px}
+.navy.hd .pin{background:var(--amber);color:var(--navy)}
+.cream.hd .pin{background:var(--navy);color:var(--cream)}
+.amber.hd .pin{background:var(--navy);color:var(--cream)}
+.hd h1{position:absolute;top:420px;right:76px;font-size:120px;font-weight:700;letter-spacing:-3px}
+.hd p{position:absolute;top:590px;right:76px;left:76px;font-size:36px}
+.navy.hd p{color:var(--navy-light)}
+.cream.hd p{color:var(--muted)}
+.amber.hd p{color:var(--navy);opacity:.78}

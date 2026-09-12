@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=55" />
-<link rel="stylesheet" href="shell.css?v=55" />
-<link rel="stylesheet" href="components.css?v=55" />
-<link rel="stylesheet" href="frame.css?v=55" />
-<link rel="stylesheet" href="rec-print.css?v=55" />
+<link rel="stylesheet" href="identity/tokens.css?v=56" />
+<link rel="stylesheet" href="shell.css?v=56" />
+<link rel="stylesheet" href="components.css?v=56" />
+<link rel="stylesheet" href="frame.css?v=56" />
+<link rel="stylesheet" href="rec-print.css?v=56" />
 <style>
   /* شاشة السجل (2026-09-12) — شاشة واحدة لكل القوالب، تولدها اللبنات من التعريف:
      ?tpl=<قالب> سجل جديد (لا يحفظ حتى يكتب فيه) · ?id=<سجل> سجل محفوظ باصداره هو.
@@ -61,6 +61,8 @@
         <div class="warnbox" id="miss" hidden></div>
         <div class="pvw" id="pvw" aria-label="معاينة الورقة"></div>
         <div class="pgs" id="pgs" hidden aria-label="معاينة الصفحات"></div>
+        <!-- التوقيعات تحت الورقة لا فوقها (طلب المستخدم 2026-09-13): تلمس الرقاقة فترى أثرها في ذيل الورقة فوقها مباشرة -->
+        <div class="popts" id="psigns"></div>
       </div>
     </div>
   </div>
@@ -75,17 +77,17 @@
   </div>
  </div></div>
 
-<script src="build.js?v=55"></script>
-<script src="refdata.js?v=55"></script>
-<script src="rec-templates.js?v=55"></script>
-<script src="rec-engine.js?v=55"></script>
-<script src="derive.js?v=55"></script>
-<script src="plan-data.js?v=55"></script>
-<script src="icons.js?v=55"></script>
-<script src="components.js?v=55"></script>
-<script src="rec-print.js?v=55"></script>
-<script src="rec-files.js?v=55"></script>
-<script src="rec-form.js?v=55"></script>
+<script src="build.js?v=56"></script>
+<script src="refdata.js?v=56"></script>
+<script src="rec-templates.js?v=56"></script>
+<script src="rec-engine.js?v=56"></script>
+<script src="derive.js?v=56"></script>
+<script src="plan-data.js?v=56"></script>
+<script src="icons.js?v=56"></script>
+<script src="components.js?v=56"></script>
+<script src="rec-print.js?v=56"></script>
+<script src="rec-files.js?v=56"></script>
+<script src="rec-form.js?v=56"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -183,7 +185,7 @@
   function lab(t){ var d = document.createElement('div'); d.className = 'rb-lab'; d.textContent = t; return d; }
   function buildOpts(){
     var box = document.getElementById('popts'), p = curPrint();
-    box.hidden = false; box.textContent = '';
+    box.hidden = !p; box.textContent = '';
     if (p) {
     var sg = document.createElement('div');
     sg.className = 'segs sm';
@@ -225,7 +227,7 @@
       }
     }
     }   /* نهاية خيارات المطبوعين */
-    signOpts(box);
+    signOpts();
   }
 
   /* ── التوقيعات اسفل النموذج (2026-09-13، اعتمده المستخدم): رئيس الشعبة يمينا · الموجه وسطا · المدير يسارا
@@ -240,24 +242,20 @@
     var cover = tpl.blocks.some(function(b){ return b.type === 'signatures' && b.mode === 'cover'; }) && (!p || p.cover !== false);
     return cover ? { head: false, supervisor: false, principal: false } : { head: !!d0.head, supervisor: !!d0.supervisor, principal: !!d0.principal };
   }
-  /* سطر لكل موقع بدائرة تأشير ومنصبه واسمه (2026-09-13): كانت رقاقات صغيرة تحت سطر رمادي فلم تقرأ خيارات
-     («يعمل ولكن غير واضح» — المستخدم). كسطر «أرفق ملحق الشواهد»: المؤشر يطبع، ولمسه يخفيه */
-  function signOpts(box){
-    var o = signs(), d1 = S.data(), list = document.createElement('div');
-    var names = { head: (S.user && S.user().name) || '', supervisor: d1.supervisor || '', principal: d1.principal || '' };
-    list.className = 'stack';
-    box.appendChild(lab('من يوقع أسفل النموذج؟ أشر على من يطبع اسمه'));
-    SIGNERS.forEach(function(x){
-      var nm = String(names[x.v] || '').trim().replace(/^أ\.\s*/, '');
-      list.appendChild(pickRow(x.t, nm ? 'أ. ' + nm : 'لم يكتب اسمه في الإعداد — يطبع نقاطا تكتب باليد', !!o[x.v], function(){
-        o[x.v] = !o[x.v];
-        var m = S.data().printSigns || {};
-        m[signKey()] = { head: o.head, supervisor: o.supervisor, principal: o.principal };
-        S.save({ printSigns: m });
-        buildOpts(); paint();
-      }));
-    });
-    box.appendChild(list);
+  /* رقاقات تحت الورقة (#psigns — 2026-09-13): جربت اسطرا كبيرة بدائرة تأشير فوق الورقة فدفعتها الى الاسفل،
+     وقال المستخدم ان الرقاقات «كانت تظهر النتيجة بشكل اوضح» لو كانت تحت المعاينة — فعادت رقاقات، تحت الورقة
+     مباشرة: تلمس فترى سطر التوقيعات في ذيل الورقة فوقها */
+  function signOpts(){
+    var box = document.getElementById('psigns'), o = signs();
+    box.textContent = '';
+    box.appendChild(lab('التوقيعات أسفل النموذج — المس اسما لتظهره أو تخفيه'));
+    box.appendChild(ShoubaForm.toggles(SIGNERS, function(k){ return !!o[k]; }, function(k){
+      o[k] = !o[k];
+      var m = S.data().printSigns || {};
+      m[signKey()] = { head: o.head, supervisor: o.supervisor, principal: o.principal };
+      S.save({ printSigns: m });
+      paint();
+    }));
   }
 
   /* الامتداد (fit: 'flow' — الخطة التشغيلية): صفحات مرقمة ذاتيا (ShoubaPrint.pages)، كل صفحة مصغرة الى

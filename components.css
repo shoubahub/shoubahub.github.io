@@ -1,0 +1,832 @@
+/* ===================================================================
+   شعبة · مكتبة المكونات المشتركة
+   كل لبنة تعرف هنا مرة واحدة، وكل الشاشات تستهلكها.
+   يعتمد على: tokens.css (المتغيرات) + frame.css (الهيكل/الإطار).
+   =================================================================== */
+
+/* ---------- تخطيطات نمط المعالج/الإدخال (مشتركة) ---------- */
+.navrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:20px var(--gap-side) 0}
+
+/* علامة المنصة داخل شريط التنقل — بجانب نقاط المراحل (حضور دائم، احترافي) */
+.navrow .brand{display:flex;align-items:center;gap:13px;min-width:0}
+.navrow .brand img{width:50px;height:auto;flex:none}
+.navrow .brand .vsep{width:2px;height:38px;border-radius:2px;background:rgba(120,98,66,.28);flex:none}
+.head{padding:30px var(--gap-side) 0;display:flex;flex-direction:column;gap:8px}
+/* لغة اللون (2026-08-16): الكحلي = العنوان + ما اختاره المستخدم · الترابي الهادئ = التسميات */
+.head .h{font-size:25px;font-weight:700;color:var(--shouba-navy)}
+.head .s{font-size:13.5px;color:var(--shouba-label);line-height:1.7}
+.fields{padding:26px var(--gap-side) 0;display:flex;flex-direction:column;gap:22px}
+
+/* ---------- الحقل (label + control) ---------- */
+.field{display:flex;flex-direction:column;gap:10px}
+.field > label{font-size:14.5px;font-weight:700;color:var(--shouba-text-muted)}
+.field .hint{font-size:12px;color:var(--shouba-hint);font-weight:500}
+
+/* ---------- سطح ورقي مشترك ---------- */
+.paper{position:relative;overflow:hidden;background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:var(--r-input);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.18)}
+/* صدى المجلد على الحقول — همسة من الطرف (نفس توقيع الأزرار) */
+.paper::before{content:"";position:absolute;left:-34px;bottom:-12px;width:180px;height:62px;pointer-events:none;
+  background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.08}
+
+/* ---------- حقل نصي ---------- */
+.paper > input{width:100%;border:0;background:transparent;font-family:var(--font-ar);font-size:16px;font-weight:600;
+  color:var(--shouba-navy);padding:16px;outline:none;text-align:right;position:relative;z-index:1}
+.paper > input::placeholder{color:var(--shouba-hint);font-weight:500}
+/* التاريخ من اليسار الى اليمين (2026-09-13، رصد المستخدم في «أول يوم دراسي»): في الصفحة العربية يرسم المتصفح
+   خانات التاريخ معكوسة. والقيمة تبقى الى اليمين كسائر الحقول */
+.paper > input[type=date]{direction:ltr;text-align:right}
+/* حقل نص متعدد الاسطر — كالحقل الواحد: ١٦px فلا يكبر سفاري الصفحة عند الكتابة (2026-09-11) */
+.paper > textarea{width:100%;border:0;background:transparent;font-family:var(--font-ar);font-size:16px;font-weight:500;
+  color:var(--shouba-navy);padding:14px 16px;min-height:120px;resize:none;outline:none;line-height:1.7;
+  position:relative;z-index:1;display:block}
+.paper > textarea::placeholder{color:var(--shouba-hint);font-weight:500}
+/* نوع الملاحظة — شارات صغيرة، واحدة او لا شيء */
+.fbkinds{display:flex;flex-wrap:wrap;gap:8px}
+.fbkinds button{border:0;cursor:pointer;font-family:var(--font-ar);font-size:12.5px;font-weight:700;min-height:36px;
+  padding:8px 13px;border-radius:999px;background:rgba(22,69,110,.08);color:var(--shouba-navy)}
+.fbkinds button.on{background:var(--shouba-navy);color:var(--shouba-cream)}
+.fbnote{font-size:12px;color:var(--shouba-label);line-height:1.8}
+.fbnote:empty{display:none}
+
+/* ---------- قائمة شعبة المنسدلة (مطلق + <select> مخفي كمصدر بيانات) ---------- */
+.sdrop{position:relative}
+.sdrop .trigger{width:100%;border:0;cursor:pointer;text-align:right;font-family:var(--font-ar);
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:var(--r-input);padding:16px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;overflow:hidden;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.18);
+  transition:transform .06s}
+/* صدى المجلد على المنسدلة — نفس توقيع الحقول */
+.sdrop .trigger::before{content:"";position:absolute;left:-34px;bottom:-12px;width:180px;height:62px;pointer-events:none;
+  background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.08}
+.sdrop .trigger .val,.sdrop .trigger .chev{position:relative;z-index:1}
+.sdrop .trigger:active{transform:translateY(1px)}
+.sdrop .trigger .val{font-size:15px;font-weight:600;color:var(--shouba-navy)}
+.sdrop .trigger .val.ph{color:var(--shouba-hint);font-weight:500}
+.sdrop .trigger .chev{flex:none;display:grid;place-items:center}
+.sdrop > select{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+/* ---------- الأزرار المقطعية (اختيار واحد) ---------- */
+.segs{display:flex;gap:12px}
+.seg{flex:1;background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:var(--r-input);padding:15px;border:0;cursor:pointer;
+  font-family:var(--font-ar);font-size:15px;font-weight:700;color:var(--shouba-text-muted);display:flex;align-items:center;justify-content:center;gap:9px;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.16);transition:transform .06s}
+.seg .tick{width:20px;height:20px;border-radius:999px;flex:none;border:2px solid rgba(120,98,66,.3);display:grid;place-items:center}
+.seg.on{color:var(--shouba-navy);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.18), 0 0 0 2px var(--shouba-navy)}
+.seg.on .tick{background:var(--shouba-navy);border-color:var(--shouba-navy)}
+.seg:active{transform:translateY(1px)}
+
+/* ---------- زر العمل (CTA) ---------- */
+.cta{background:var(--shouba-cta);border-radius:var(--r-btn);padding:16px;border:0;cursor:pointer;text-align:center;font-family:var(--font-ar);font-size:15.5px;font-weight:700;color:#241D06;text-shadow:0 1px 0 rgba(255,255,255,.4);width:100%;
+  position:relative;overflow:hidden;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(140,95,15,.4), 0 5px 0 var(--shouba-amber-deep), 0 12px 20px rgba(90,72,48,.3);transition:transform .06s, box-shadow .06s, filter .2s, opacity .2s}
+/* الزر العنبري **بلا زخرفة** (معتمد 2026-08-15): عنصر فعل — قوته في وضوحه ولونه وبروزه.
+   التمييز بالتضاد: أسطح ورقية موشومة بصدى المجلد ⇄ زر عنبري نظيف صريح. */
+.cta:active{transform:translateY(3px);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.65), inset 0 -2px 0 rgba(140,95,15,.4), 0 0 0 var(--shouba-amber-deep), 0 6px 12px rgba(90,72,48,.28)}
+/* المعطل: لون صلب معتم (لا شفافية — وإلا ظهرت الزخرفة من خلفه فازدحم) */
+.cta[disabled]{background:linear-gradient(180deg,#E4DAC7 0%,#DCD1BA 100%);color:#9A8E79;text-shadow:none;cursor:not-allowed;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.65), 0 3px 0 #C9BCA1, 0 8px 14px rgba(90,72,48,.14)}
+.cta[disabled]:active{transform:none}
+
+/* زر ثانوي (شبح) */
+.btn-ghost{background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);border-radius:var(--r-btn);padding:15px;border:0;cursor:pointer;width:100%;
+  font-family:var(--font-ar);font-size:15px;font-weight:700;color:var(--shouba-text-muted);
+  position:relative;overflow:hidden;
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16)}
+/* صدى المجلد على الورقي — نبرة داكنة خفيفة (كصدى المجلدات على قماش الهوية) */
+.btn-ghost::before{content:"";position:absolute;left:-42px;bottom:-16px;width:225px;height:78px;pointer-events:none;
+  background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.11}
+
+/* زر الفعل الذي لا يسترد (حذف حساب — 2026-09-10): ورقي كالشبح، والأحمر للنص
+   والحلقة فقط — فلا ينافس العنبري ولا يضغط ظنا أنه الفعل المعتاد. بلا صدى المجلد.
+   والمعطل لون صلب بلا شفافية، كقاعدة .cta[disabled]. */
+.btn-danger{background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);border-radius:var(--r-btn);padding:15px;border:0;cursor:pointer;width:100%;
+  font-family:var(--font-ar);font-size:15px;font-weight:700;color:var(--shouba-error);
+  box-shadow:inset 0 0 0 1.5px rgba(183,68,58,.38), inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16)}
+.btn-danger:active{transform:translateY(1px)}
+.btn-danger[disabled]{color:#B3A68F;cursor:not-allowed;background:linear-gradient(180deg,#EFE8DA 0%,#E8E0CF 100%);
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.7), 0 2px 0 rgba(190,172,140,.4)}
+.btn-danger[disabled]:active{transform:none}
+/* تحذير قبل فعل لا يسترد — يقرأ قبل الحقل لا بعده */
+.warnbox{background:rgba(183,68,58,.08);color:var(--shouba-error);border-radius:12px;padding:12px 14px;
+  font-size:12.5px;font-weight:600;line-height:1.8}
+
+/* ---------- شريط التقدم + رجوع ---------- */
+.prog{display:flex;flex-direction:column;gap:7px;align-items:flex-start}
+.prog .lbl{font-size:12px;font-weight:700;color:var(--shouba-label)}
+.prog .lbl b{color:var(--shouba-navy);font-weight:700}
+.dots{display:flex;gap:5px;align-items:center}
+.dots i{width:26px;height:5px;border-radius:999px;background:#D9CCB2;transition:background .2s}
+.dots i.on{background:var(--shouba-navy)}
+.back,.iconbtn{width:38px;height:38px;border-radius:14px;background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);display:grid;place-items:center;flex:none;cursor:pointer;
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16)}
+
+/* ---------- بطاقة اختيار ورقية ---------- */
+/* قائمة رأسية موحدة (بطاقات متتابعة) — تغني عن تعريفها في كل شاشة */
+.stack{display:flex;flex-direction:column;gap:9px}
+.pick{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:20px;padding:15px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2)}
+.pick.on{box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2), 0 0 0 2px var(--shouba-navy)}
+.pick .mark{width:22px;height:22px;border-radius:999px;flex:none;display:grid;place-items:center;border:2px solid rgba(120,98,66,.3)}
+.pick.on .mark{background:var(--shouba-navy);border-color:var(--shouba-navy)}
+/* RTL: flex-start = اليمين — النص يحاذي حافة البطاقة اليمنى (flex-end كان يزيحه لليسار) */
+.pick .tx{flex:1;display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:right}
+.pick .tx b{font-size:15px;font-weight:700;color:var(--shouba-navy)}
+.pick .tx small{font-size:11.5px;color:var(--shouba-hint)}
+
+/* ===================================================================
+   اللوحة السفلية (Bottom Sheet) — تبنى مرة في <body> عبر components.js
+   =================================================================== */
+.sheet-backdrop{position:fixed;inset:0;background:rgba(36,33,28,.42);opacity:0;pointer-events:none;transition:opacity .25s;z-index:80}
+.sheet-backdrop.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;max-width:430px;margin:0 auto;
+  background:linear-gradient(180deg,#FBF6EC 0%,var(--shouba-paper) 100%);
+  border-radius:26px 26px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom));
+  transform:translateY(101%);transition:transform .30s cubic-bezier(.2,.85,.25,1);
+  box-shadow:0 -14px 44px rgba(90,72,48,.30), inset 0 1.5px 0 rgba(255,255,255,.9);
+  max-height:78vh;display:flex;flex-direction:column}
+.sheet.open{transform:translateY(0)}
+.sheet .grab{width:46px;height:5px;border-radius:999px;background:#D9CCB2;margin:6px auto 2px;flex:none}
+.sheet .sheet-title{font-family:var(--font-ar);font-size:15.5px;font-weight:700;color:var(--shouba-ink);text-align:center;padding:8px 0 14px;flex:none}
+/* الحاوية تمرر (overflow:auto) فتقص حلقة الاختيار الممتدة خارج العنصر (box-shadow spread).
+   الحل: فسحة داخلية بقدر الحلقة، وتعوض بهامش سالب كي تبقى الأسطر بمحاذاة العنوان. */
+.sheet .sheet-list{overflow:auto;display:flex;flex-direction:column;gap:9px;
+  padding:3px 3px 6px;margin-inline:-3px;-webkit-overflow-scrolling:touch}
+.sheet-opt{width:100%;border:0;cursor:pointer;text-align:right;font-family:var(--font-ar);font-size:15px;font-weight:600;color:var(--shouba-ink);
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F1E9DB 100%);border-radius:15px;padding:15px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+.sheet-opt .mk{width:22px;height:22px;border-radius:999px;flex:none;display:grid;place-items:center;border:2px solid rgba(120,98,66,.28)}
+.sheet-opt.on{color:var(--shouba-navy);box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 0 0 2px var(--shouba-navy)}
+.sheet-opt.on .mk{background:var(--shouba-navy);border-color:var(--shouba-navy)}
+
+/* ===================================================================
+   نمط الشاشات الرئيسية (تبويبات) — أضيف مع اللوحة 2026-08-20
+   =================================================================== */
+
+/* وسم صغير (نوع موعد · صف · حالة) */
+.chip{font-size:11.5px;font-weight:600;color:var(--shouba-amber-deep);background:rgba(169,112,27,.1);
+  border-radius:999px;padding:5px 11px;white-space:nowrap;flex:none}
+.chip.navy{color:var(--shouba-navy);background:rgba(22,69,110,.09)}
+.chip.muted{color:var(--shouba-label);background:rgba(120,98,66,.09)}
+
+/* شريط التبويبات — **عائم** بأربعة أقسام وزر إضافة عنبري في وسطه (دليل الهوية) */
+.tabbar{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));
+  max-width:calc(var(--screen-max) - 32px);margin:0 auto;z-index:3;
+  display:flex;align-items:center;gap:2px;padding:7px 8px;border-radius:26px;
+  background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);
+  box-shadow:inset 0 1.4px 0 rgba(255,255,255,.95), 0 3px 0 rgba(190,172,140,.55), 0 14px 26px rgba(90,72,48,.24)}
+.tab{flex:1;border:0;background:transparent;cursor:pointer;border-radius:19px;padding:8px 2px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-family:var(--font-ar);font-size:10.5px;font-weight:600;color:var(--shouba-label)}
+.tab.on{color:var(--shouba-navy);background:rgba(22,69,110,.08)}
+.tab:active{transform:translateY(1px)}
+/* زر الإضافة العنبري — وسط الشريط، الفعل الوحيد فيه */
+.tab-add{flex:none;width:46px;height:46px;border-radius:999px;border:0;cursor:pointer;margin:0 4px;
+  background:var(--shouba-cta);display:grid;place-items:center;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), 0 4px 0 var(--shouba-amber-deep), 0 10px 18px rgba(90,72,48,.3)}
+.tab-add:active{transform:translateY(3px);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6), 0 1px 0 var(--shouba-amber-deep)}
+
+/* ---------- البطاقة الكحلية: واحدة لكل شاشة، تحمل ما يجري الآن أو ما ينتظر القرار ---------- */
+.card-navy{margin:0 var(--gap-side);background:var(--shouba-navy);border-radius:var(--r-card);padding:17px 18px;
+  display:flex;flex-direction:column;gap:13px;color:var(--shouba-cream);position:relative;overflow:hidden;
+  box-shadow:var(--shadow-navy)}
+.card-navy .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-navy .kicker{font-size:12.5px;font-weight:700;color:var(--shouba-navy-light);display:flex;align-items:center;gap:8px}
+.card-navy .kicker .pulse{width:8px;height:8px;border-radius:999px;background:var(--shouba-amber);flex:none}
+.card-navy .left{font-size:12.5px;font-weight:700;color:var(--shouba-navy-light);font-family:var(--font-num)}
+.card-navy .ttl{font-size:17px;font-weight:700;line-height:1.5}
+.card-navy .sub{font-size:13px;font-weight:500;color:var(--shouba-navy-light);line-height:1.7}
+.card-navy .acts{display:flex;gap:10px;align-items:center;padding-top:3px}
+.card-navy .acts .cta{width:auto;flex:1;padding:13px 16px;font-size:14.5px}
+.card-navy .acts .ghost2{flex:none;border:0;cursor:pointer;background:rgba(244,241,234,.12);color:var(--shouba-cream);
+  font-family:var(--font-ar);font-size:14px;font-weight:700;border-radius:var(--r-btn);padding:13px 18px}
+.card-navy .acts .ghost2:active{transform:translateY(1px)}
+
+/* ---------- شرائح إنجاز المنهج (كل شريحة درس) ---------- */
+.slices{display:flex;gap:3px;padding:0 var(--gap-side)}
+.slices i{flex:1;height:9px;border-radius:3px;background:#E2D7C2}
+.slices i.done{background:var(--shouba-navy)}
+.slices i.now{background:var(--shouba-amber)}
+
+
+/* عنوان قسم داخل الشاشة */
+.sect{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 var(--gap-side)}
+.sect .h{font-size:15px;font-weight:700;color:var(--shouba-ink)}
+.sect .a{font-size:12px;font-weight:700;color:var(--shouba-link);cursor:pointer}
+
+/* ===================================================================
+   شريط الرأس المضغوط الثابت + الجداول المصفوفة (2026-08-20)
+   المبدأ: الوظيفة قبل الشكل — أقل ارتفاع للرأس والأسفل، وأوسع مساحة عمل.
+   =================================================================== */
+
+/* رأس ثابت مضغوط: شعار صغير · هوية الشعبة · التاريخ · إعدادات */
+.topbar{position:fixed;top:0;left:0;right:0;max-width:var(--screen-max);margin:0 auto;z-index:3;
+  display:flex;align-items:center;gap:11px;
+  padding:calc(9px + env(safe-area-inset-top)) var(--gap-side) 9px;
+  background:linear-gradient(180deg, var(--shouba-canvas) 72%, rgba(239,230,214,0))}
+.topbar > img{width:32px;height:auto;flex:none}
+.topbar .tt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.topbar .tt b{font-size:14px;font-weight:700;color:var(--shouba-navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .tt span{font-size:11px;font-weight:600;color:var(--shouba-label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .iconbtn{width:34px;height:34px;border-radius:12px}
+
+/* جدول مصفوف بأعمدة — يعرض أكثر من البطاقات في مساحة أقل */
+.tbl{margin:0 var(--gap-side);border-radius:18px;overflow:hidden;
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 8px 16px rgba(120,98,66,.14)}
+.tbl .tr{display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid rgba(226,215,194,.75)}
+.tbl .tr:last-child{border-bottom:0}
+.tbl .tr.hd{background:rgba(120,98,66,.07);padding:7px 13px}
+.tbl .tr.hd span{font-size:10.5px;font-weight:700;color:var(--shouba-label)}
+.tbl .tr.now{background:rgba(22,69,110,.08)}
+.tbl .tr.past{opacity:1;color:var(--shouba-label)}
+.tbl .c1{width:20px;flex:none;font-size:12.5px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num);text-align:center}
+.tbl .c2{width:42px;flex:none;font-size:11px;font-weight:600;color:var(--shouba-hint);font-family:var(--font-num)}
+.tbl .c3{flex:1;min-width:0;font-size:12.5px;font-weight:600;color:var(--shouba-ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbl .c4{flex:none;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+.tbl .tr.past .c1{color:var(--shouba-label)}
+.tbl .empty{padding:14px 13px;font-size:12.5px;color:var(--shouba-hint);line-height:1.8}
+
+/* مصفوفة الأسبوع: عمود لكل يوم ومواعيده تحته */
+.wmx{display:flex;gap:5px;padding:0 var(--gap-side);align-items:stretch}
+.wcol{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.wcol .wh{text-align:center;font-size:10.5px;font-weight:700;color:var(--shouba-label);padding:5px 2px;border-radius:9px;
+  background:rgba(120,98,66,.07);display:flex;flex-direction:column;gap:1px}
+.wcol .wh b{font-size:12px;color:var(--shouba-navy);font-family:var(--font-num)}
+.wcol.today .wh{background:var(--shouba-navy);color:var(--shouba-navy-light)}
+.wcol.today .wh b{color:var(--shouba-cream)}
+.wcol .wi{font-size:10px;font-weight:600;line-height:1.4;border-radius:9px;padding:6px 6px 6px 5px;color:var(--shouba-navy);
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-inline-start:3px solid var(--shouba-line);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85), 0 1.5px 0 rgba(190,172,140,.4);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.wcol .wi.t-exam{border-inline-start-color:var(--shouba-error)}
+.wcol .wi.t-meet{border-inline-start-color:var(--shouba-navy)}
+.wcol .wi.t-act{border-inline-start-color:var(--shouba-amber)}
+.wcol .wq{font-size:10px;color:var(--shouba-hint);text-align:center;padding:4px 0}
+
+/* ---------- شعار المدرسة أو رمز الشعبة (للواجهة فقط — النماذج لها إعداداتها لاحقا) ---------- */
+.crestpick{display:flex;flex-direction:column;align-items:center;gap:7px;padding:6px var(--gap-side) 0}
+.crest{width:74px;height:74px;border-radius:999px;border:0;cursor:pointer;display:grid;place-items:center;overflow:hidden;
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.18)}
+.crest:active{transform:translateY(1px)}
+.crest img{width:100%;height:100%;object-fit:cover}
+.crest .crest-svg{width:38px;height:38px}
+.crest-svg .m{fill:var(--shouba-navy)}
+.crest-svg .a{fill:var(--shouba-amber)}
+.crestpick .cap{font-size:12px;font-weight:600;color:var(--shouba-label)}
+.crestpick .cap b{color:var(--shouba-navy)}
+
+/* شبكة الرموز داخل اللوحة السفلية */
+.icongrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;width:100%}
+.icell{border:0;cursor:pointer;border-radius:16px;padding:11px 4px;display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F1E9DB 100%);font-family:var(--font-ar);
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+.icell span{font-size:9.5px;font-weight:600;color:var(--shouba-label);line-height:1.35;text-align:center}
+.icell .crest-svg{width:26px;height:26px}
+.icell.on{box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 0 0 2px var(--shouba-navy)}
+.icell.on span{color:var(--shouba-navy)}
+.icell:active{transform:translateY(1px)}
+/* سطر فاصل داخل اللوحة السفلية (بين خيار الرفع وشبكة الرموز) */
+.sheet-note{font-size:12px;font-weight:600;color:var(--shouba-label);text-align:center;padding:2px 0}
+/* خيار الرفع داخل اللوحة — صف كامل العرض ليتميز عن الرموز */
+.btn-ghost.wupload{display:flex;align-items:center;justify-content:center;gap:9px}
+/* طبقات رموز الشعب — الكحلي كتلة، العنبري لمسة، و«الفراغ» بلون السطح ليقرأ فوق الكتلة */
+.crest-svg .hole{fill:var(--shouba-paper)}
+.crest-svg .ca{fill:var(--shouba-amber)}
+.crest-svg .s{fill:none;stroke:var(--shouba-navy);stroke-width:1.9}
+.crest-svg .sa{fill:none;stroke:var(--shouba-amber);stroke-width:2.2;stroke-linecap:round}
+.crest-svg .ha{fill:none;stroke:var(--shouba-paper);stroke-width:1.6;stroke-linecap:round}
+
+/* ===================================================================
+   الرأس الكحلي للشاشات الرئيسية (معتمد 2026-08-27)
+   قاعدة: كتلة كحلية واحدة في الشاشة — والرأس أحق بها لأنه موضع العلامة.
+   لذلك تحولت بطاقة «التالي» إلى ورقية (.card-soft).
+   =================================================================== */
+.topbar{background:var(--shouba-navy);border-bottom:0}
+.topbar .tt b{color:var(--shouba-cream)}
+.topbar .tt span{color:var(--shouba-navy-light)}
+/* دائرة شعار المدرسة/رمز الشعبة داخل الرأس */
+.topbar .tbcrest{width:38px;height:38px;border-radius:999px;flex:none;display:grid;place-items:center;overflow:hidden;
+  background:rgba(244,241,234,.14)}
+.topbar .tbcrest img{width:100%;height:100%;object-fit:cover}
+.topbar .tbcrest .crest-svg .m{fill:var(--shouba-cream)}
+.topbar .tbcrest .crest-svg .a{fill:var(--shouba-amber)}
+.topbar .tbcrest .crest-svg .s{stroke:var(--shouba-cream)}
+.topbar .tbcrest .crest-svg .sa{stroke:var(--shouba-amber)}
+.topbar .tbcrest .crest-svg .hole,
+.topbar .tbcrest .crest-svg .ha{fill:var(--shouba-navy);stroke:var(--shouba-navy)}
+/* زر الإعدادات فوق الكحلي */
+.topbar .iconbtn{background:rgba(244,241,234,.14);box-shadow:none}
+.topbar .iconbtn svg path,.topbar .iconbtn svg circle{stroke:var(--shouba-cream)}
+
+/* بطاقة ورقية بارزة — بديل البطاقة الكحلية حين يحمل الرأس الكحلي */
+.card-soft{margin:0 var(--gap-side);border-radius:var(--r-card);padding:15px 16px;
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+  display:flex;flex-direction:column;gap:11px;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 10px 20px rgba(120,98,66,.2)}
+.card-soft .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-soft .kicker{font-size:12.5px;font-weight:700;color:var(--shouba-amber-deep);display:flex;align-items:center;gap:8px}
+.card-soft .kicker .pulse{width:8px;height:8px;border-radius:999px;background:var(--shouba-amber);flex:none}
+.card-soft .left{font-size:12.5px;font-weight:700;color:var(--shouba-label);font-family:var(--font-num)}
+.card-soft .ttl{font-size:16px;font-weight:700;color:var(--shouba-navy);line-height:1.5}
+.card-soft .sub{font-size:12.5px;font-weight:500;color:var(--shouba-text-muted);line-height:1.7}
+.card-soft .acts{display:flex;gap:10px;align-items:center;padding-top:2px}
+.card-soft .acts .cta{width:auto;flex:1;padding:12px 15px;font-size:14px}
+.card-soft .acts .ghost2{flex:none;border:0;cursor:pointer;background:rgba(22,69,110,.09);color:var(--shouba-navy);
+  font-family:var(--font-ar);font-size:13.5px;font-weight:700;border-radius:var(--r-btn);padding:12px 16px}
+.card-soft .acts .ghost2:active{transform:translateY(1px)}
+
+/* عناوين الأقسام — تمييز بلا كحلي (قرار المستخدم 2026-08-27):
+   شريط عنبري قصير + نص ترابي، فتتميز كل بطاقة عن أختها بلا منافسة الرأس. */
+.sect{align-items:center}
+.sect .h{font-size:14px;font-weight:700;color:var(--shouba-text-muted);
+  display:flex;align-items:center;gap:8px;letter-spacing:.1px}
+.sect .h::before{content:"";width:4px;height:15px;border-radius:3px;background:var(--shouba-amber-deep);flex:none}
+
+/* روح الرأس (معتمد 2026-08-27 — الخيار ج): تدرج كحلي + صدى المجلد همسا
+   + زوايا سفلية وظل فيصير سطحا مستقلا + حافة عنبرية + حلقة حول الشعار. */
+.topbar{background:linear-gradient(180deg,#1B5183 0%, var(--shouba-navy) 58%, #123A5E 100%);
+  border-radius:0 0 22px 22px;border-bottom:2px solid var(--shouba-amber);
+  box-shadow:0 6px 16px rgba(18,58,94,.28);position:fixed;overflow:hidden}
+/* صدى المجلد — توقيع العلامة، من الطرف الأيسر بعيدا عن الشعار (شفافية ١٦٪ ضمن حد الدليل) */
+.topbar::before{content:"";position:absolute;left:-30px;bottom:-18px;width:200px;height:78px;pointer-events:none;
+  background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(3);opacity:.16}
+.topbar > *{position:relative;z-index:1}
+.topbar .tbcrest{box-shadow:0 0 0 2px var(--shouba-amber)}
+/* فسحة بين عنوان القسم وبطاقته — كان ملتصقا بها (لاحظه المستخدم على جهازه 2026-08-27) */
+.sect{margin-bottom:11px}
+
+/* ===== جدول حصص اليوم (معتمد 2026-09-01) — شارة بسطرين لكل معلم =====
+   الاسم الأخير محاذى لليمين · تحته المادة والصف · والحصة الجارية مظللة بكاملها.
+   يقبل صفوف الفرص (.brk) — أوقاتها تأتي من جدول المدرسة. */
+.per{padding:10px 13px;border-bottom:1px solid rgba(226,215,194,.75)}
+.per:last-child{border-bottom:0}
+.per.now{background:rgba(22,69,110,.10);box-shadow:inset 3px 0 0 var(--shouba-navy)}
+.per .top{display:flex;align-items:center;gap:8px;font-size:12px}
+.per .top .ttl{font-weight:700;color:var(--shouba-navy)}
+.per .top .tm{color:var(--shouba-hint);font-family:var(--font-num);font-size:11px}
+.per .top .left{font-size:10.5px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+.per .top .cnt{margin-inline-start:auto;font-size:10.5px;font-weight:700;color:var(--shouba-label)}
+.per .pairs{display:flex;flex-wrap:wrap;gap:6px;padding-top:7px}
+.per .ch{display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px;
+  background:rgba(22,69,110,.08);border-radius:9px;padding:5px 9px}
+.per .ch .nm{font-size:11.5px;font-weight:700;color:var(--shouba-navy)}
+.per .ch .l2{display:flex;gap:6px;align-items:center;font-size:10px}
+.per .ch .l2 .sub{color:var(--shouba-text-muted);font-weight:600}
+.per .ch .l2 .cl{color:var(--shouba-amber-deep);font-family:var(--font-num);font-weight:700}
+.per .freechip{align-self:center;font-size:10.5px;font-weight:700;color:var(--shouba-label);
+  background:rgba(120,98,66,.08);border-radius:9px;padding:6px 10px}
+/* صف الفرصة — هادئ يميزه عن الحصص */
+.per.brk{background:rgba(120,98,66,.05)}
+.per.brk .top .ttl{color:var(--shouba-text-muted)}
+.per.brk.now{background:rgba(22,69,110,.10)}
+
+/* طي الجدول (معتمد 2026-09-05) — لا يفتح إلا ما يعني المستخدم الآن:
+   قبل الدوام: لقاء الصباح والحصة الأولى · أثناءه: الجارية وحدها، فتطوى
+   السابقة فوقها والتالية تحتها. وزر أسفل الجدول يفرده كاملا.
+   الطي حالة عامة (.fold)، و«الماضية» (.past) وصف زمني يبهت وحده. */
+.per.fold{padding:7px 13px;cursor:pointer}
+.per.fold .pairs{display:none}
+.per.fold .top .cnt::after{content:" ⌄";color:var(--shouba-hint)}
+.per.fold.open{padding:10px 13px}
+.per.fold.open .pairs{display:flex}
+.per.fold.open .top .cnt::after{content:" ⌃"}
+.per.past{opacity:.72}
+.per.past.open{opacity:1}
+
+/* زر فرد الجدول — شريط أسفل الجدول لا زر عائم، فلا يأخذ مساحة من العمل */
+.tblmore{width:100%;border:0;cursor:pointer;font-family:var(--font-ar);
+  font-size:12px;font-weight:700;color:var(--shouba-link);
+  background:rgba(120,98,66,.06);padding:11px 13px;text-align:center}
+
+/* لون لكل معلم — ليتتبع في الجدول المفرود بنظرة (طلب المستخدم 2026-09-05).
+   ألوان خافتة من عالم الورق، والتمييز بحافة الشارة واسم المعلم لا بمساحة صارخة. */
+.per .ch{border-inline-start:2.5px solid var(--tc, transparent);background:var(--tb, rgba(22,69,110,.08))}
+.per .ch .nm{color:var(--tc, var(--shouba-navy))}
+.per .ch.t0{--tc:#16456E;--tb:rgba(22,69,110,.10)}
+.per .ch.t1{--tc:#3E7FB4;--tb:rgba(62,127,180,.13)}
+.per .ch.t2{--tc:#A9701B;--tb:rgba(169,112,27,.14)}
+.per .ch.t3{--tc:#5E7A4A;--tb:rgba(94,122,74,.14)}
+.per .ch.t4{--tc:#A2553C;--tb:rgba(162,85,60,.13)}
+.per .ch.t5{--tc:#6B5B8A;--tb:rgba(107,91,138,.14)}
+.per .ch.t6{--tc:#2F7D74;--tb:rgba(47,125,116,.13)}
+.per .ch.t7{--tc:#7A5C3A;--tb:rgba(122,92,58,.14)}
+
+/* تنبيه المراقبة داخل صف الفرصة — «مراقبة الشعبة اليوم» */
+.per .duty{display:flex;align-items:center;gap:7px;margin-top:7px;padding:7px 10px;border-radius:10px;
+  background:rgba(232,163,61,.14);border-inline-start:3px solid var(--shouba-amber);
+  font-size:11.5px;font-weight:700;color:var(--shouba-amber-deep)}
+.per .duty a{margin-inline-start:auto;font-size:11px;font-weight:700;color:var(--shouba-link);cursor:pointer}
+/* حالة الحصة: «انتهت» للماضية · «الجارية الآن» للحالية (قرار المستخدم 2026-09-01) */
+.per .state{font-size:10.5px;font-weight:700;color:var(--shouba-label);
+  background:rgba(120,98,66,.10);border-radius:7px;padding:2px 7px}
+.per.now .state{color:#fff;background:var(--shouba-navy)}
+/* استواء أعمدة صف الحصة: العنوان والوقت والحالة بعروض ثابتة فتصطف رأسيا في كل الجدول */
+.per .top .ttl{width:88px;flex:none}
+.per .top .tm{width:42px;flex:none}
+.per .top .state{width:66px;flex:none;text-align:center}
+.per .top .state.is-empty{background:transparent}
+/* الحصة الجارية: وقتها مظلل بالكحلي و«الآن» بجانبه (قرار المستخدم 2026-09-01) */
+.per.now .top .tm{background:var(--shouba-navy);color:var(--shouba-cream);border-radius:7px;padding:2px 0;font-weight:700}
+.per.now .top .state{background:transparent;color:var(--shouba-navy);width:auto;padding:0}
+/* «الآن» داخل تظليل الوقت لا بجانبه — والحافة اليمنى تبقى مستوية مع بقية الصفوف */
+.per.now .top .tm{width:auto;padding:3px 9px;display:inline-flex;align-items:center;gap:6px}
+.per.now .top .tm em{font-style:normal;font-family:var(--font-ar);font-size:10.5px;font-weight:700;opacity:.92}
+/* عدد المعلمين في موضع واحد بكل الصفوف — المنتهية والقادمة والجارية سواء */
+.per .top .cnt{flex:none;width:88px;text-align:start;margin-inline-start:auto}   /* flex:none وإلا انكمشت في الصف الجاري فاختل الموضع */
+/* الصف الجاري يحمل عناصر أكثر (شارة الوقت + العداد) فكان يفيض فيختل الاصطفاف:
+   نخفي خانة الحالة الفارغة فيه، ونضبط عرض العداد والعدد. */
+.per.now .top .state.is-empty{display:none}
+.per .top .left{flex:none;font-size:10.5px}
+.per .top .ttl{width:82px}
+.per .top .cnt{width:80px}
+/* ضبط نهائي لعرض الأعمدة كي لا يفيض الصف الجاري (المتاح ٢٩٧px) */
+.per .top{gap:6px}
+.per .top .ttl{width:80px}
+.per .top .cnt{width:74px}
+
+/* ===== توحيد صف الجدول نهائيا (قرار المستخدم 2026-09-01) =====
+   [العنوان] [الوقت — يظلل للجارية وحدها ومعه «الآن»] [الحالة: «باقي …» ← «انتهت»] [العدد أقصى اليسار] */
+.per .top{gap:5px}
+.per .top .ttl{width:78px}
+.per .top .state{width:70px;flex:none;text-align:center}
+.per .top .cnt{width:66px;flex:none;text-align:end;margin-inline-start:auto}
+.per.now .top .tm{padding:3px 7px}
+.per.now .top .state{display:inline-block;width:70px;background:transparent;color:var(--shouba-amber-deep);padding:0;font-weight:700}
+/* عرض ثابت لعمود الوقت في كل الصفوف (حتى المظلل) وإلا أزاح عمود الحالة */
+.per .top .tm{width:72px;text-align:center;padding:2px 0}
+.per.now .top .tm{width:72px;padding:3px 0;justify-content:center}
+.per .top .state{width:64px}
+.per.now .top .state{width:64px}   /* توحيد عرض عمود الحالة حتى في الصف الجاري */
+/* سهم الطي يحجز مكانه في كل الصفوف (مخفي حيث لا طي) وإلا أزاح نص العدد ٩px
+   في الصفوف المنتهية وحدها — رصده المستخدم على جهازه. */
+.per .top .cnt::after{content:" ⌄";visibility:hidden;color:var(--shouba-hint)}
+.per.fold .top .cnt::after{visibility:visible}
+.per.fold.open .top .cnt::after{content:" ⌃";visibility:visible}
+
+/* توحيد عمود الوقت: الأرقام في خانة فرعية ثابتة، و«الآن» في خانتها — فتتحاذى الأرقام
+   في كل الصفوف سواء ظلل الصف أم لا (قرار المستخدم 2026-09-01). */
+.per .top .tm{display:flex;align-items:center;gap:0;width:72px;padding:2px 0;text-align:initial}
+.per .top .tm .hh{width:46px;flex:none;text-align:center}
+.per .top .tm em{width:26px;flex:none;font-style:normal;font-family:var(--font-ar);
+  font-size:10.5px;font-weight:700;text-align:center}
+.per.now .top .tm{width:72px;padding:3px 0;justify-content:flex-start}
+/* عمود الوقت يقترب من عنوان الحصة، ويترك فراغ واضح قبل عمود الحالة كي لا يتداخل
+   التظليل مع «انتهت / باقي» عند إضافة «الآن» (قرار المستخدم 2026-09-01). */
+.per .top{gap:0}
+.per .top .ttl{width:76px;margin-inline-end:2px}
+.per .top .tm{margin-inline-end:16px}
+/* «الآن» تزاح عن حافة التظليل اليسرى قليلا (عرض الخانة الكلي ٧٢px كما هو) */
+.per .top .tm .hh{width:41px}
+.per .top .tm em{margin-inline-end:5px}
+.per .top .tm em{width:24px}   /* يترك ~٧px بين «الآن» وحافة التظليل اليسرى */
+
+/* ===================================================================
+   رافدة القسم (معتمد 2026-09-01) — تمييز كل بطاقة عن أختها بلمسة واحدة
+   الفكرة: شريط العنوان العنبري لم يعد مربعا منفصلا، بل صار **رأس رافدة**
+   تنزل في الهامش بمحاذاة البطاقة ثم تتلاشى: عنوان ← رافدة ← بطاقة كتلة واحدة.
+   لا تضيف ارتفاعا ولا تقتطع من عرض البطاقة (المبدأ: الوظيفة قبل الشكل).
+   وفائدة تبعية: نص العنوان صار على محاذاة حافة البطاقة تماما.
+
+   **لون لكل قسم (2026-09-01):** اللون هنا **دلالة لا زينة** — كحلي لليوم الجاري ·
+   أزرق فاتح للأسبوع (مدى أوسع) · عنبري لإنجاز المنهج · أحمر لما ينتظر إجراء،
+   ويهدأ إلى الترابي حين لا شيء ينتظر (فلا ينذر الأحمر بلا سبب).
+   التلاشي بقناع لا بتدرج ألوان — فيبقى اللون واحدا متغيرا واحدا.
+   =================================================================== */
+.board > section{position:relative;--rail:var(--shouba-navy)}
+.board > section[data-rail="week"]{--rail:var(--shouba-link)}
+.board > section[data-rail="plan"]{--rail:var(--shouba-amber-deep)}
+.board > section[data-rail="todo"]{--rail:var(--shouba-error)}
+.board > section[data-rail="todo"].calm{--rail:var(--shouba-hint)}
+.board .sect .h::before{display:none}          /* الشريط انتقل إلى رأس الرافدة */
+.board > section::before{
+  content:"";position:absolute;pointer-events:none;
+  inset-inline-start:12px;                     /* في الهامش الفارغ — بعيدا عن البطاقة ١٢px */
+  top:2px;bottom:6px;width:2.5px;border-radius:2px;
+  background:var(--rail);
+  -webkit-mask-image:linear-gradient(180deg,#000 0,#000 18px,rgba(0,0,0,.34) 32px,rgba(0,0,0,.30) 60px,rgba(0,0,0,0) 100%);
+          mask-image:linear-gradient(180deg,#000 0,#000 18px,rgba(0,0,0,.34) 32px,rgba(0,0,0,.30) 60px,rgba(0,0,0,0) 100%);
+}
+
+/* تبويب قيد الإعداد (2026-09-05) — يبقى ظاهرا ليعرف شكل المنصة، ولا يفتح صفحة.
+   الضغطة تصرح بحاله بدل أن توقع المستخدم في نموذج قديم أو صفحة فارغة.
+   ⚠ لا opacity على سطح تفاعلي — التمييز باللون وحده (قاعدة الهوية). */
+.tab.soon{color:var(--shouba-hint)}
+.tab.soon svg{opacity:1}
+.soon-note{font-size:13.5px;font-weight:600;color:var(--shouba-text-muted);
+  line-height:1.9;text-align:center;padding:2px 6px 10px}
+
+/* قائمة الإعدادات داخل اللوحة السفلية (2026-09-05) */
+.setlist{display:flex;flex-direction:column;gap:9px}
+.setitem{width:100%;border:0;cursor:pointer;text-align:right;font-family:var(--font-ar);
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:var(--r-input);
+  padding:13px 15px;display:flex;flex-direction:column;gap:2px;
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+.setitem b{font-size:14.5px;font-weight:700;color:var(--shouba-navy)}
+.setitem small{font-size:11.5px;font-weight:500;color:var(--shouba-label)}
+.setnote{font-size:12.5px;font-weight:500;color:var(--shouba-text-muted);line-height:1.9;
+  background:rgba(120,98,66,.06);border-radius:14px;padding:12px 14px;margin-top:3px}
+.setnote b{color:var(--shouba-navy);font-weight:700}
+.setver{font-size:11.5px;font-weight:700;color:var(--shouba-hint);text-align:center;
+  font-family:var(--font-num);padding:4px 0 2px}
+/* شارة رئيس الشعبة في شريط الجداول — يدرس أيضا، ويتميز عن معلميه بلا ضجيج */
+.tch.me small{color:var(--shouba-amber-deep)}
+
+/* سطر شخص (معلم/بند) — مشترك بين اللوحة وشاشة «معلموك» */
+.titem{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;padding:10px 13px;
+  display:flex;align-items:center;gap:10px;width:100%;border:0;text-align:right;font-family:var(--font-ar);
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+.titem .ini{width:30px;height:30px;border-radius:999px;flex:none;display:grid;place-items:center;
+  background:var(--shouba-navy);color:var(--shouba-cream);font-size:12.5px;font-weight:700}
+.titem .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.titem .tx b{font-size:13px;font-weight:700;color:var(--shouba-navy)}
+.titem .tx small{font-size:11px;color:var(--shouba-label)}
+button.titem{cursor:pointer}
+.titem .chev{flex:none;color:var(--shouba-hint);font-size:15px;font-weight:700}
+.titem.none .tx small{color:var(--shouba-amber-deep)}
+
+/* قائمة عمودية بفجوة موحدة (معلمون · مداخل ملف المعلم) */
+.vlist{display:flex;flex-direction:column;gap:8px;padding:0 var(--gap-side)}
+/* مدخل في ملف المعلم: عنوان + عداده — فيعرف قبل الضغط أفيه شيء */
+.entry{width:100%;border:0;cursor:pointer;text-align:right;font-family:var(--font-ar);
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;
+  padding:14px 15px;display:flex;align-items:center;gap:10px;
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+.entry b{flex:1;font-size:14.5px;font-weight:700;color:var(--shouba-navy)}
+.entry .val{font-size:11.5px;font-weight:700;color:var(--shouba-label);font-family:var(--font-num)}
+.entry .chev{color:var(--shouba-hint);font-size:15px;font-weight:700}
+.entry.soon b{color:var(--shouba-text-muted)}
+.entry.soon .val{color:var(--shouba-hint);font-family:var(--font-ar)}
+/* قائمة المواد داخل اللوحة السفلية */
+.subrow{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+.subrow b{flex:1;font-size:13.5px;font-weight:700;color:var(--shouba-navy)}
+.subrow .cls{font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+.subrow .pc{font-size:11px;font-weight:700;color:var(--shouba-label);white-space:nowrap}
+/* وضع المعلم الواحد: يفتح جدوله من ملفه، فلا شريط معلمين ولا تنقل بينهم */
+body.solo .tsel{display:none}
+
+/* موعد في لوحة الرزنامة — نوعه بلونه وحافته، وحذفه بضغطة */
+.evrow{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+  border-inline-start:3px solid var(--shouba-navy);
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+.evrow b{flex:1;font-size:13.5px;font-weight:700;color:var(--shouba-navy)}
+.evrow .ty{font-size:11px;font-weight:700;color:var(--shouba-label)}
+.evrow .del{flex:none;width:26px;height:26px;border:0;cursor:pointer;border-radius:8px;
+  background:rgba(183,68,58,.10);color:var(--shouba-error);font-size:16px;font-weight:700;line-height:1}
+.evrow.t-exam{border-inline-start-color:var(--shouba-error)}
+.evrow.t-meet{border-inline-start-color:var(--shouba-navy)}
+.evrow.t-act{border-inline-start-color:var(--shouba-amber)}
+/* خانة اليوم الفارغة تدعو إلى الإضافة بدل أن تكون شرطة صماء */
+.wcol{cursor:pointer}
+.wcol .wq{color:var(--shouba-hint);font-weight:700}
+
+/* تقليب الأسابيع في رزنامة اللوحة — سهمان على جانبي الأسبوع */
+.wkarrow{border:0;cursor:pointer;background:transparent;font-family:var(--font-ar);
+  color:var(--shouba-link);font-size:17px;font-weight:700;line-height:1;
+  width:26px;height:26px;border-radius:9px;display:grid;place-items:center}
+.wkarrow:active{background:rgba(62,127,180,.12)}
+
+/* صف الأسبوع: سهمان على جانبيه دلالة على السحب، والمصفوفة تملأ ما بينهما */
+.wkrow{display:flex;align-items:center;gap:2px;padding:0 6px}
+.wkrow .wmx{flex:1;min-width:0;padding:0}
+.wkrow .wkarrow{flex:none}
+.wmx{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+/* رقم النسخة في مربع الرأس — يقرأ دائما فيسأل عنه عند أي شكوى */
+/* طرف الرأس: زر الإعدادات ورقم النسخة تحته ملصقا — كل بوظيفته */
+.topbar .tbend{flex:none;display:flex;flex-direction:column;align-items:center;gap:1px}
+.topbar .tbend .iconbtn{width:30px;height:30px;border-radius:11px;border:0;cursor:pointer;
+  color:var(--shouba-cream);display:grid;place-items:center;padding:0}
+.topbar .tbend .verlbl{font-family:var(--font-num);font-size:8.5px;font-weight:700;
+  letter-spacing:.2px;color:var(--shouba-navy-light);line-height:1}
+/* شرح تثبيت المنصة على الهاتف (Shouba.installGuide — 2026-09-13) */
+.guide{display:flex;flex-direction:column;gap:14px}
+.guide .gp{display:flex;flex-direction:column;gap:6px}
+.guide .gp b{font-size:14px;font-weight:700;color:var(--shouba-navy)}
+.guide ol{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--shouba-ink);line-height:1.7}
+.guide .hint{font-size:12px;font-weight:600;color:var(--shouba-hint);line-height:1.7}
+/* تسمية تحت زر الملاحظة — عربية لا رقمية كرقم النسخة؛ الرمز وحده قد لا يدل (2026-09-11) */
+.topbar .tbend .tblbl{font-family:var(--font-ar);font-size:9px;font-weight:700;color:var(--shouba-navy-light);line-height:1}
+/* الدلالة على موضع الإدخال داخل حالة الفراغ — بلون النص فوقها لا أبرز منه */
+.empty .goto{display:inline-block;margin-top:8px;color:var(--shouba-text-muted);font-weight:600}
+
+/* تنبيه المخزن المستقل — يظهر في التطبيق المثبت وحده حين يكون فارغا */
+.sepnote{margin:16px var(--gap-side) 0;font-size:12.5px;font-weight:500;
+  color:var(--shouba-text-muted);line-height:1.9;
+  background:rgba(232,163,61,.13);border-inline-start:3px solid var(--shouba-amber);
+  border-radius:12px;padding:12px 14px}
+.sepnote b{display:block;color:var(--shouba-amber-deep);font-weight:700;margin-bottom:2px}
+
+/* رقم النسخة داخل سطر نصي (شاشة الدخول) — باهت صغير لا يزاحم العنوان */
+.vernum{font-family:var(--font-num);font-size:11px;font-weight:700;letter-spacing:.2px;
+  color:var(--shouba-navy-light);opacity:.75}
+
+/* رقم النسخة في شريط كل شاشة — وسم باهت صغير لا يزاحم شيئا.
+   في الشريط العلوي (كحل) عنصر مستقل في طرفه؛ وفي شريط المعالج ملحق بسطر الخطوة. */
+.vertag{font-family:var(--font-num);font-size:9px;font-weight:700;letter-spacing:.2px;
+  line-height:1;flex:none;color:var(--shouba-hint);opacity:.85;pointer-events:none}
+.topbar .vertag{color:var(--shouba-navy-light);opacity:.7}
+.prog .lbl .vertag{margin-inline-start:8px;font-size:10px;color:var(--shouba-hint)}
+
+/* وسم بجانب المادة: «اختيار حر» أو «مشتركة» — بدل تكرار السطر لكل مسار */
+.subj .free{flex:none;order:2;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:999px;
+  white-space:nowrap;background:transparent;color:var(--shouba-label);
+  box-shadow:inset 0 0 0 1px var(--shouba-line)}
+.subj .free.shared{color:var(--shouba-link);box-shadow:inset 0 0 0 1px rgba(62,127,180,.35)}
+.subj .gt{order:3}
+
+
+/* ═══ استجابة اللمس (مراجعة الآيباد 2026-09-08) ═══════════════════════
+   معيار آبل ٤٤×٤٤ نقطة. وأزرارنا الصغيرة تمر على الجوال لضيق الشاشة،
+   وتصعب على اللوح لأن اليد أبعد والإصبع أعرض على شاشة ممسوكة.
+   ⚠ نوسع **منطقة اللمس** بعنصر زائف شفاف، ولا نوسع الزر:
+     فيبقى الشكل كما اعتمد ويكبر الهدف. */
+.wkarrow, .evrow .del, .topbar .tbend .iconbtn{position:relative}
+.wkarrow::after, .evrow .del::after, .topbar .tbend .iconbtn::after{
+  content:""; position:absolute; inset:-9px; border-radius:inherit}
+.topbar .tbend .iconbtn::after{inset:-7px}
+
+/* ═══ لوحة المفاتيح لا تحجب زر الإجراء ═══════════════════════════════
+   على iOS يبقى الثابت (fixed) في مكانه حين تفتح لوحة المفاتيح فتغطيه.
+   نرفع الزر واللوحة السفلية بمقدار ما تشغله — يقاس من المساحة المرئية
+   في components.js ويكتب في --kb. و‍.sheet لا تحرك بـtransform لأن
+   انزلاقها مبني عليه، فالرفع بـbottom في كليهما. */
+.foot{bottom:var(--kb, 0px)}
+.sheet{bottom:var(--kb, 0px)}
+
+/* شريط النسخة الأحدث — ينتظر ضغطة ولا يقاطع، ويوضع أسفل الرأس لا فوقه */
+.newver{position:fixed;left:50%;transform:translateX(-50%);z-index:80;
+  display:flex;align-items:center;gap:10px;border:0;
+  padding:9px 12px 9px 16px;border-radius:999px;font-family:var(--font-ar);
+  background:var(--shouba-navy);color:var(--shouba-cream);
+  box-shadow:0 6px 20px rgba(20,50,80,.32), inset 0 1px 0 rgba(255,255,255,.14);
+  animation:newverIn .32s cubic-bezier(.2,.85,.25,1) both}
+.newver span{font-size:12.5px;font-weight:600}
+.newver b{font-size:12.5px;font-weight:700;color:var(--shouba-navy);cursor:pointer;
+  background:var(--shouba-amber);border-radius:999px;padding:6px 14px}
+.newver b:active{transform:translateY(1px)}
+.newver .x{font-style:normal;font-size:17px;font-weight:700;line-height:1;cursor:pointer;
+  color:var(--shouba-navy-light);padding:0 4px;position:relative}
+.newver .x::after{content:"";position:absolute;inset:-12px}   /* هدف لمس ٤٤ */
+.newver.busy{opacity:.7;pointer-events:none}
+@keyframes newverIn{from{opacity:0;transform:translateX(-50%) translateY(-10px)}}
+@media (prefers-reduced-motion:reduce){.newver{animation:none}}
+
+/* شريط فشل الحفظ — صامت حين ينجح، صريح حين يفشل */
+.syncbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + var(--kb, 0px));z-index:85;
+  max-width:calc(var(--screen-max) - 32px);width:calc(100% - 32px);
+  font-family:var(--font-ar);font-size:12px;font-weight:600;line-height:1.6;text-align:center;
+  padding:10px 14px;border-radius:14px;background:var(--shouba-error);color:#FFF3F1;
+  box-shadow:0 8px 22px rgba(140,50,40,.28)}
+
+/* معاينة الاستيراد — ما في الملف قبل أن يحل محل شيء (2026-09-10).
+   التسميات بلون التسمية، والقيم بالكحلي (لغة اللون المعتمدة). */
+.impv{display:flex;flex-direction:column;gap:12px}
+.impv .rows{display:flex;flex-direction:column;background:var(--shouba-canvas);border-radius:var(--r-input);
+  box-shadow:var(--shadow-inset);padding:2px 14px}
+.impv .r{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;
+  border-top:1px solid rgba(120,98,66,.14)}
+.impv .r:first-child{border-top:0}
+.impv .r span{flex:none;font-size:12px;font-weight:600;color:var(--shouba-label)}
+.impv .r b{min-width:0;font-size:13.5px;font-weight:700;color:var(--shouba-navy);text-align:left;overflow-wrap:anywhere}
+.impv .warn{font-size:12.5px;font-weight:600;line-height:1.7;color:var(--shouba-error)}
+
+/* ═══ المزامنة والانتقال (2026-09-10) ═══════════════════════════ */
+/* الأشرطة العائمة سطر واحد — كان «حدثت شعبتك من جهاز آخر» ينكسر ثلاثة أسطر على ٣٧٥px */
+.newver{max-width:calc(100vw - 24px)}
+.newver span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.impv .lead{font-size:13px;line-height:1.8;color:var(--shouba-text-muted)}
+/* لوحة الخلاف: عمودان متقابلان، والتسمية فوق القيمة لضيق العمود، والفرق بالعنبري */
+.cfx{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cfx .rows{padding:2px 12px 6px}
+.cfx .h{font-size:11.5px;font-weight:700;color:var(--shouba-label);padding:10px 0 4px}
+.cfx .r{flex-direction:column;align-items:flex-start;gap:1px;padding:7px 0}
+.cfx .r b{text-align:right}
+.cfx .r.diff b{color:var(--shouba-amber-deep)}
+/* خطوات الانتقال */
+.moved ol{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:8px}
+.moved li{font-size:13px;line-height:1.7;color:var(--shouba-text-muted)}
+.moved li b{color:var(--shouba-navy)}
+/* رابط نصي بهدف لمس كامل — لما هو بديل لا فعل رئيسي */
+.linkbtn{border:0;background:none;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;
+  color:var(--shouba-link);min-height:44px;padding:0 2px;display:inline-flex;align-items:center}
+.impentry{display:flex;align-items:center;justify-content:center;gap:4px;font-size:13px;color:var(--shouba-label)}
+
+/* ═══ لبنات السجلات — شاشة الادخال (2026-09-12) ═══════════════════════
+   تولدها rec-form.js لكل القوالب — لا شاشة لسجل بعينه. من الوان الهوية ومكوناتها وحدها. */
+.rb-form{display:flex;flex-direction:column;gap:30px;padding:16px var(--gap-side) 0}
+.rb{display:flex;flex-direction:column;gap:22px}
+.rb-sec{display:flex;flex-direction:column;gap:12px}
+.rb-sec > .t{font-size:14.5px;font-weight:700;color:var(--shouba-text-muted)}
+.rb-form .hint{font-size:12px;color:var(--shouba-hint);font-weight:500;line-height:1.6}   /* كل اللبنات — لا ما داخل .rb وحده (فات سطر الحضور) */
+/* البند (محور · قرار · متابعة): لوح بحد رقيق يجمع حقوله وادواته — الرملي وحده يذوب في الارضية */
+.rb-item{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:18px;background:rgba(255,255,255,.3);box-shadow:inset 0 0 0 1.5px var(--shouba-line)}
+.rb-item .paper > textarea{min-height:0}   /* الاسطر من rows — تفاصيل البند سطران لا ١٢٠px */
+/* نائب التاريخ الفارغ (rec-form.js) — ::after لان ::before صدى المجلد */
+.paper.empty[data-ph]::after{content:attr(data-ph);position:absolute;inset-inline-start:16px;top:50%;transform:translateY(-50%);
+  color:var(--shouba-hint);font-family:var(--font-ar);font-size:15px;font-weight:500;pointer-events:none;z-index:2;white-space:nowrap}
+.paper.empty > input::-webkit-datetime-edit{color:transparent}
+.rb-q{font-size:14.5px;font-weight:700;color:var(--shouba-navy);line-height:1.7}
+.rb-tools{display:flex;gap:8px;justify-content:flex-end}
+.rb-btn{width:34px;height:34px;border-radius:999px;border:0;cursor:pointer;display:grid;place-items:center;
+  background:var(--shouba-paper);color:var(--shouba-text-muted);font-family:var(--font-ar);font-size:18px;font-weight:700}
+.rb-btn:disabled{background:transparent;color:var(--shouba-line);cursor:default}
+.rb-btn.del{color:var(--shouba-error)}
+.rb-btn.add{color:var(--shouba-navy);width:46px;height:46px;flex:none}
+.rb-row{display:flex;gap:8px;align-items:center}
+.rb-row > .paper,.rb-row > .sdrop{flex:1;min-width:0}
+.rb-add{display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700;color:var(--shouba-navy)}
+.segs.sm{gap:8px}
+.segs.sm .seg{padding:10px 12px;font-size:13.5px}
+/* الحضور: رقاقة لكل معلم — حاضر افتراضا، ولمسة تجعله غائبا */
+.att{display:flex;flex-wrap:wrap;gap:8px}
+.att-c{border:0;cursor:pointer;font-family:var(--font-ar);font-size:13.5px;font-weight:700;border-radius:999px;padding:9px 14px;
+  color:var(--shouba-navy);background:rgba(22,69,110,.1);display:inline-flex;align-items:center;gap:6px}
+.att-c.off{color:var(--shouba-hint);background:transparent;box-shadow:inset 0 0 0 1.5px var(--shouba-line);text-decoration:line-through}
+.att-c.guest{color:var(--shouba-amber-deep);background:rgba(169,112,27,.1)}
+.att-c .x{display:grid;place-items:center}
+/* شريط اجراءين (معاينة السجل): ثانوي بجانب الفعل العنبري — والعنبري اعرض */
+.foot .duo{display:flex;gap:12px}
+.foot .duo > .btn-ghost{flex:1}
+.foot .duo > .cta{flex:2}
+/* مقياس امتلاء الورقة: شريط وسطر — الكحلي يتسع بالخط الكامل · العنبري صغر الخط · الاحمر اطول من صفحة */
+.fillm{display:flex;flex-direction:column;gap:8px}
+.fillm .track{height:8px;border-radius:999px;background:var(--shouba-line);overflow:hidden}
+.fillm .bar{height:100%;border-radius:999px;background:var(--shouba-navy)}
+.fillm.shrunk .bar{background:var(--shouba-amber-deep)}
+.fillm.over .bar{background:var(--shouba-error)}
+.fillm .t{font-size:13px;font-weight:700;color:var(--shouba-text-muted);line-height:1.7}
+.fillm.over .t{color:var(--shouba-error)}
+/* بطاقة سجل في الارشيف (2026-09-12) — سطح .entry نفسه بسطرين: الرقم والموضوع مع شارة الحالة،
+   وتحته اليوم والتاريخ وما بقي مفتوحا من قراراته. الحالة: مسودة ترابي · مطبوع عنبري (ينتظر التوقيع) · موقع كحلي */
+.entry.rcard{flex-direction:column;align-items:stretch;gap:6px}
+.rcard .r1,.rcard .r2{display:flex;align-items:center;gap:8px}
+.rcard .r1 b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rcard .r2{font-size:12px;font-weight:600;color:var(--shouba-label)}
+.rcard .r2 .open{margin-inline-start:auto;color:var(--shouba-amber-deep);font-weight:700}
+/* ⑥ المرفقات في الادخال (2026-09-11): نوع الملف وحجمه يمينا وادواته يسارا · الحذف بلمستين */
+.rb-file{align-items:center}
+.rb-file .hint{margin-inline-end:auto}
+.rb-btn.del.sure{width:auto;padding:0 14px;background:var(--shouba-error);color:#fff;font-size:13px}
+/* عارض الملف في لوحة سفلية (ShoubaFiles.view) — للنسخة الموقعة والمرفقات معا */
+.fview{display:flex;flex-direction:column;gap:12px}
+.fview img{display:block;width:100%;border-radius:10px;background:#fff}
+.fview iframe{display:block;width:100%;height:60dvh;border:0;border-radius:10px;background:#fff}
+.fview .wait{margin:0;font-size:13.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8}
+.fview .miss{margin:0;font-size:13.5px;font-weight:600;color:var(--shouba-error);line-height:1.8}
+/* تأكيد ما لا يسترجع (Shouba.ask) — نص الاثر ثم زر الحذف ثم تراجع (2026-09-11) */
+.ask{display:flex;flex-direction:column;gap:12px}
+.ask p{margin:0 0 4px;font-size:13.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8}
+/* ③ الجدول في الادخال (المرحلة الثانية أ): كل صف بطاقة، تسمية كل خانة فوقها،
+   والمعلمون والاشهر رقاقات تتبدل بلمسة — المختار كحلي (لغة اللون: قيمة اختارها المستخدم) */
+.rb-cell{display:flex;flex-direction:column;gap:6px}
+.rb-lab{font-size:12.5px;font-weight:700;color:var(--shouba-text-muted)}
+.tgs{display:flex;flex-wrap:wrap;gap:8px}
+.tg{border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;border-radius:999px;padding:8px 13px;
+  color:var(--shouba-text-muted);background:transparent;box-shadow:inset 0 0 0 1.5px var(--shouba-line)}
+.tg.on{color:var(--shouba-cream);background:var(--shouba-navy);box-shadow:none}
+/* القسم المتكرر في الادخال (المرحلة الثانية ب): لوح لكل نسخة («محور») يطوى — رأسه اسمها وعدد صفوفها */
+.rb-rep{display:flex;flex-direction:column;gap:16px;padding:14px 12px;border-radius:20px;background:rgba(255,255,255,.45);box-shadow:inset 0 0 0 1.5px var(--shouba-line)}
+.rb-rep-h{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;cursor:pointer;font-family:var(--font-ar);text-align:right;padding:2px 0}
+.rb-rep-h b{flex:1;min-width:0;font-size:15.5px;font-weight:700;color:var(--shouba-navy);line-height:1.6}
+.rb-rep-h .hint{flex:none}
+.rb-rep-h .chv{display:grid;place-items:center;color:var(--shouba-text-muted);transition:transform .2s}
+.rb-rep.open .rb-rep-h .chv{transform:rotate(180deg)}
+.rb-rep:not(.open) .rb-rep-b{display:none}
+.rb-rep-b{display:flex;flex-direction:column;gap:22px}
+@media (prefers-reduced-motion: reduce){ .rb-rep-h .chv{transition:none} }
+/* المتابعة في الادخال (المرحلة الثانية ج): الحالة رقاقات، والملاحظة والشاهد بعد اختيارها ·
+   والصف المقصود من اللوحة (?focus=) مطوق بالعنبري — «ما ينتظر فعلك» */
+.rb-cell.fu{gap:10px}
+.rb-item.focus{box-shadow:inset 0 0 0 2px var(--shouba-amber-deep)}
+/* ── الجدول الذكي «ما قطع من المنهج» (smart:'plan' في rec-form.js — 2026-09-13؛ العينة المعتمدة _dev/plan-mark-sim.html):
+   بطاقة الموقع · الكشف صفوفا (الشهر · التاريخ · الموضوع · الحكم — لمسة تعدل الصف) · دروس الخطة بدائرة تأشير
+   تحت رأس كل اسبوع · واللوحة السفلية حيث اللمسة (.pm-jd). البطاقة والجدول داخل النموذج بلا هامش ثان */
+.rb-form .card-navy,.rb-form .tbl{margin:0}
+.pm-rec .m{width:46px;flex:none;font-size:11.5px;font-weight:700;color:var(--shouba-navy)}
+.pm-rec .d{width:36px;flex:none;font-size:11px;font-weight:600;color:var(--shouba-hint);font-family:var(--font-num)}
+.pm-rec .t{flex:1;min-width:0;font-size:12px;font-weight:600;color:var(--shouba-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pm-rec .s{flex:none}
+.tbl .tr.pm-rec:not(.hd){cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tbl .tr.pm-rec.new{background:rgba(232,163,61,.1)}
+.tbl .tr.pm-wk{background:rgba(120,98,66,.07)}
+.pm-wk span{font-size:10.5px;font-weight:700;color:var(--shouba-label)}
+.tbl .tr.pm-wk.now{background:rgba(22,69,110,.1)}
+.pm-wk.now span{color:var(--shouba-navy)}
+.tbl .tr.pm-l{cursor:pointer;-webkit-tap-highlight-color:transparent;align-items:flex-start}
+.pm-l .mk{width:20px;height:20px;border-radius:999px;flex:none;border:2px solid rgba(120,98,66,.3);display:grid;place-items:center;margin-top:1px}
+.pm-l.done .mk{background:var(--shouba-navy);border-color:var(--shouba-navy)}
+.pm-l .tx{flex:1;min-width:0;font-size:12.5px;font-weight:600;color:var(--shouba-ink);line-height:1.6}
+.pm-l.done .tx{color:var(--shouba-label)}
+.pm-l.reach .tx{color:var(--shouba-navy);font-weight:700}
+.pm-l em{font-style:normal;flex:none;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+.pm-miss{font-size:12px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8;background:rgba(120,98,66,.06);border-radius:14px;padding:12px 14px}
+.pm-miss b{color:var(--shouba-amber-deep)}
+.pm-jd{display:flex;flex-direction:column;gap:12px}
+.pm-jd .at{font-size:15px;font-weight:700;color:var(--shouba-navy);line-height:1.6}
+.pm-jd .wh{font-size:12px;font-weight:600;color:var(--shouba-label);line-height:1.7}
+.pm-jd .hint{font-size:11.5px;font-weight:600;color:var(--shouba-hint)}

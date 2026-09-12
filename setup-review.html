@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · الإعداد · مراجعة</title>
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#EFE6D6" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=57" />
+<link rel="stylesheet" href="shell.css?v=57" />
+<link rel="stylesheet" href="components.css?v=57" />
+<link rel="stylesheet" href="frame.css?v=57" />
+<!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصة لهذه الشاشة -->
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="screen has-foot">
+    <!-- فاصل بين المجموعتين — لا يحتسب خطوة، فلا نقاط تقدم -->
+    <div class="navrow">
+      <div class="brand">
+        <img src="identity/assets/logo-vec-color.svg" alt="شعبة" />
+        <span class="vsep"></span>
+        <div class="prog">
+          <div class="lbl">إعداد الشعبة · <b>اكتمل</b></div>
+        </div>
+      </div>
+      <div class="back" onclick="history.back()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M8 4 L14 10 L8 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <!-- العنوان خارج .content — موضعه ثابت في كل الشاشات (قاعدة LAYOUT) -->
+    <div class="head">
+      <div class="h">تمت المرحلة الأولى من بناء شعبتك</div>
+      <div class="s">راجع ما أدخلت، واضغط أي سطر لتعديله. ثم ننتقل إلى محتوى شعبتك.</div>
+    </div>
+
+    <div class="content center">
+    <div class="fields" id="rows"></div>
+    </div><!-- /content -->
+  </div>
+
+  <div class="foot">
+    <button class="cta" id="next">تابع — محتوى شعبتك</button>
+  </div>
+ </div></div>
+
+<script src="refdata.js?v=57"></script>
+<script src="derive.js?v=57"></script>
+<script src="build.js?v=57"></script>
+<script src="components.js?v=57"></script>
+<script>
+  var KEY = 'shouba.setup';
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+
+  var d = load();
+  var DASH = '—';
+  /* تاريخ أول يوم دراسي للطلاب — يعرض في المراجعة ليكتشف الخطأ فيه مبكرا */
+  function startText(d){
+    var v = (d.termStart && d.term) ? d.termStart[d.term] : '';
+    if(!v) return '';
+    var p = v.split('-');
+    return 'تبدأ الدراسة ' + (+p[2]) + '/' + (+p[1]);
+  }
+  function j(){ return [].slice.call(arguments).filter(function(x){ return x && String(x).trim(); }).join(' · '); }
+
+  // كل سطر يعيد لشاشته بـ ret=review فيعود إلى هنا بعد التعديل
+  var ROWS = [
+    { to:'setup-wizard.html',   main: d.schoolName || DASH,                    sub: j('المدرسة', d.region, d.schoolType) },
+    { to:'setup-wizard-2.html', main: d.department || DASH,                    sub: j('الشعبة', d.stage, (d.subjects && d.subjects.length) ? d.subjects.length + ' مواد' : '', Shouba.directorate ? Shouba.directorate() : '') },
+    { to:'setup-wizard-3.html', main: d.year || DASH,                          sub: j('العام الدراسي', d.term, startText(d)) },
+    { to:'setup-wizard-4.html', main: d.principal || 'لم تضف الإشراف بعد',   sub: j('الإشراف', d.supervisor || 'اختياري — لك إكماله لاحقا') }
+  ];
+
+  var CHEV = '<svg width="15" height="15" viewBox="0 0 20 20" fill="none">'
+           + '<path d="M12 4 L6 10 L12 16" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  var rows = document.getElementById('rows');
+  ROWS.forEach(function(r){
+    var el = document.createElement('div');
+    el.className = 'pick';
+    el.innerHTML = '<div class="tx"><b></b><small></small></div>' + CHEV;
+    el.querySelector('b').textContent = r.main;
+    el.querySelector('small').textContent = r.sub;
+    el.addEventListener('click', function(){ location.href = r.to + '?ret=review'; });
+    rows.appendChild(el);
+  });
+
+  document.getElementById('next').addEventListener('click', function(){
+    location.href = 'setup-wizard-5.html';   // ش⑤ المعلمون — تبنى تاليا
+  });
+</script>
+</body>
+</html>

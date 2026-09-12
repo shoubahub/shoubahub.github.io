@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · جداول المعلمين</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1B5183" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=57" />
+<link rel="stylesheet" href="shell.css?v=57" />
+<link rel="stylesheet" href="components.css?v=57" />
+<link rel="stylesheet" href="frame.css?v=57" />
+<style>
+  /* خاص بشاشة الجداول — الرأس والشريط السفلي واللوحة السفلية من components.css.
+     الهامش الجانبي هنا أضيق من الموحد عمدا: المصفوفة تحتاج كل بكسل (الوظيفة قبل الشكل). */
+  .wrap{display:flex;flex-direction:column;gap:12px;padding-top:12px}
+
+  /* شريط المعلمين — شارة لكل معلم وتحتها مؤشر اكتمال جدوله */
+  .tsel{display:flex;gap:7px;overflow-x:auto;padding:3px var(--gap-side);scrollbar-width:none}
+  .tsel::-webkit-scrollbar{display:none}
+  .tch{flex:none;border:0;cursor:pointer;font-family:var(--font-ar);text-align:center;
+    background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;padding:8px 12px;
+    display:flex;flex-direction:column;gap:2px;color:var(--shouba-text-muted);
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .tch b{font-size:13px;font-weight:700;color:var(--shouba-navy);white-space:nowrap}
+  .tch small{font-size:10.5px;font-weight:700;color:var(--shouba-hint);font-family:var(--font-num)}
+  .tch.on{box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 0 0 2px var(--shouba-navy)}
+  .tch.none small{color:var(--shouba-amber-deep)}
+
+  /* المصفوفة: أعمدة = الأيام · صفوف = الحصص */
+  .grid{margin:0 12px;border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 8px 16px rgba(120,98,66,.14)}
+  .grow{display:flex;align-items:stretch;gap:6px;padding:4px 6px}
+  .grow.hd{background:rgba(120,98,66,.07);padding:6px}
+  .grow.hd span{flex:1;text-align:center;font-size:10.5px;font-weight:700;color:var(--shouba-label);
+    padding:2px 0;border-radius:8px}
+  /* تمييز أعمدة الأيام: نطاق رأسي خفيف يوما بعد يوم، وإلا قرئت الخانات صفا واحدا متصلا
+     (لاحظه المستخدم 2026-09-01). النطاق يبدأ من اسم اليوم فيمتد العمود كله. */
+  .grow.hd span.alt{background:rgba(120,98,66,.09)}
+  .cell.alt{background:rgba(120,98,66,.13)}
+  .grow.hd .pl{flex:none;width:42px}
+  .pl{flex:none;width:42px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+  .pl b{font-size:13px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num);line-height:1.1}
+  .pl small{font-size:8.5px;font-weight:600;color:var(--shouba-hint)}
+  .cell{flex:1;min-width:0;border:0;cursor:pointer;font-family:var(--font-ar);
+    background:rgba(120,98,66,.025);border-radius:11px;padding:7px 3px;min-height:46px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+  .cell .cls{font-size:12.5px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num)}
+  .cell .sub{font-size:9px;font-weight:600;color:var(--shouba-text-muted);
+    max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cell.free{color:var(--shouba-hint);font-size:15px;font-weight:700}
+  .cell.clash{background:rgba(183,68,58,.10);box-shadow:inset 0 0 0 1.5px var(--shouba-error)}
+  .cell.clash .cls{color:var(--shouba-error)}
+  /* صف الفرصة — فاصل رفيع لا مربعات (لا تدخل فيه حصص) */
+  .gbrk{display:flex;align-items:center;gap:8px;padding:3px 12px;background:rgba(232,163,61,.10)}
+  .gbrk span{font-size:10px;font-weight:700;color:var(--shouba-amber-deep);white-space:nowrap}
+  .gbrk i{flex:1;height:1px;background:rgba(169,112,27,.28)}
+
+  /* تنبيه التعارض + سطر الإرشاد */
+  .clashes{margin:0 12px;display:none;flex-direction:column;gap:5px;
+    background:rgba(183,68,58,.08);border-radius:13px;padding:10px 12px}
+  .clashes.show{display:flex}
+  .clashes b{font-size:12.5px;font-weight:700;color:var(--shouba-error)}
+  .clashes small{font-size:11.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.7}
+  .hintline{padding:0 var(--gap-side);font-size:11.5px;font-weight:600;color:var(--shouba-hint);line-height:1.7}
+  .empty{margin:0 var(--gap-side);font-size:12.5px;color:var(--shouba-text-muted);line-height:1.8;
+    background:rgba(120,98,66,.06);border-radius:14px;padding:14px 15px;display:flex;flex-direction:column;gap:10px}
+
+  /* محتوى اللوحة السفلية: شارات الشعب + أزرار سريعة */
+  .secs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:2px 0 4px}
+  .secbtn{border:0;cursor:pointer;font-family:var(--font-num);font-size:16px;font-weight:700;
+    width:52px;height:48px;border-radius:14px;color:var(--shouba-navy);
+    background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .quick{display:flex;gap:8px;padding-bottom:4px}
+  .quick button{flex:1;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;
+    border-radius:13px;padding:11px 10px;color:var(--shouba-navy);background:rgba(22,69,110,.09)}
+  .quick button.amber{background:rgba(232,163,61,.18);color:var(--shouba-amber-deep)}
+  .endbtn{width:100%;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;
+    color:var(--shouba-label);background:transparent;padding:12px 0 2px}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+    <div class="topbar">
+      <div class="tbcrest" id="tbCrest"></div>
+      <div class="tt">
+        <b>جداول شعبتك</b>
+        <span id="headLine">—</span>
+      </div>
+      <div class="iconbtn" id="toBoard" data-home title="اللوحة">
+        
+      </div>
+    </div>
+
+  <div class="screen has-topbar has-tabbar">
+    <div class="content">
+      <div class="wrap" id="wrap">
+        <div class="tsel" id="tsel"></div>
+        <div class="grid" id="grid"></div>
+        <div class="clashes" id="clashes"></div>
+        <div class="hintline" id="hintline"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabbar">
+    <button class="tab" data-go="board.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 8.4 10 3l7 5.4V16a1 1 0 0 1-1 1h-3.5v-4.5h-5V17H4a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      اللوحة
+    </button>
+    <button class="tab" data-go="teachers.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 17c0-3 2.7-4.6 6-4.6S16 14 16 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      المعلمون
+    </button>
+    <button class="tab-add" id="add" aria-label="إضافة">
+      <svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#241D06" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </button>
+    <button class="tab" data-go="records.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 9h6M7 12.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      سجلاتك
+    </button>
+    <button class="tab on" data-go="schedule.html">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3.5" y="4.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 8.5h13M7 3v3M13 3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      الجدول
+    </button>
+  </div>
+ </div></div>
+
+<script src="build.js?v=57"></script>
+<script src="refdata.js?v=57"></script>
+<script src="derive.js?v=57"></script>
+<script src="icons.js?v=57"></script>
+<script src="components.js?v=57"></script>
+<script>
+  var R=window.SHOUBA_REF;
+  var d = Shouba.data();          /* المصدر الواحد — القراءة والكتابة من طبقة الاشتقاق */
+
+  var GRADE_NO = { 'الأول':1,'الثاني':2,'الثالث':3,'الرابع':4,'الخامس':5,
+                   'السادس':6,'السابع':7,'الثامن':8,'التاسع':9,
+                   'العاشر':10,'الحادي عشر':11,'الثاني عشر':12 };
+  var ORD  = ['الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة'];
+  var SHORT= ['أحد','اثن','ثلا','أرب','خمي'];
+
+  /* البنية والحقائق كلها من طبقة الاشتقاق — هذه الشاشة تعرض وتدخل، ولا تحسب */
+  var days     = Shouba.days();
+  var times    = Shouba.periods();
+  var subjects = Shouba.subjects();
+  var teachers = Shouba.roster();     /* رئيس الشعبة أولا ثم معلموه — يدرس هو أيضا */
+  var SELF     = Shouba.self();
+
+  var lastName    = Shouba.lastName;
+  var slotsOf     = function(t, day){ return Shouba.daySlots(t, day); };
+  var splitSlot   = Shouba.splitSlot;
+  var filledCount = Shouba.loadOf;
+
+  /* شعار المدرسة أو رمز الشعبة في الرأس (نفس منطق اللوحة) */
+  (function paintTopCrest(){
+    var el=document.getElementById('tbCrest'), c=d.crest;
+    if(c && c.type==='image') el.innerHTML='<img src="'+c.data+'" alt="شعار المدرسة" />';
+    else if(c && c.type==='icon' && window.SHOUBA_ICONS) el.innerHTML=SHOUBA_ICONS.svg(c.id,22);
+    else el.innerHTML='<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
+  })();
+
+  /* ===== لا معلمين بعد: الشاشة تدل على مصدرها ولا تعرض مصفوفة فارغة ===== */
+  if(!teachers.length){
+    document.getElementById('wrap').innerHTML =
+      '<div class="empty"><div>لم تضف معلمي شعبتك بعد — والجدول يبنى على أسمائهم.</div>'
+      + '<button class="cta" id="toTeachers">أضف معلميك</button></div>';
+    document.getElementById('headLine').textContent = 'بانتظار أسماء معلميك';
+    document.getElementById('toTeachers').addEventListener('click', function(){ location.href='setup-wizard-5.html'; });
+  } else {
+    /* ?t=اسم ⟵ **وضع المعلم الواحد**: قادم من ملفه، فيفرد جدوله وحده
+       بلا شريط المعلمين ولا تنقل بينهم (قرار المستخدم 2026-09-06). */
+    /* الاسم من الرابط ينظف كالبيانات: رابط قديم مشكول يبقى يجد معلمه (2026-09-11) */
+    var want = Shouba.plain(new URLSearchParams(location.search).get('t') || '') || null;
+    var solo = !!(want && teachers.indexOf(want) > -1);
+    var cur  = solo ? want : teachers[0];
+    if(solo){
+      document.body.classList.add('solo');
+      document.querySelector('.topbar .tt b').textContent = 'جدول أ. ' + Shouba.shortName(cur);
+    }
+    var lastSlot = null;                       /* آخر إدخال — لزر التكرار السريع */
+
+    /* ===== شريط المعلمين ===== */
+    var tsel = document.getElementById('tsel');
+    function paintTsel(){
+      tsel.innerHTML='';
+      teachers.forEach(function(t){
+        var n = filledCount(t);
+        var b = document.createElement('button');
+        var isMe = (t === SELF);
+        b.className = 'tch' + (t===cur ? ' on' : '') + (n ? '' : ' none') + (isMe ? ' me' : '');
+        var load = n ? Shouba.count(n,{one:'حصة',two:'حصتان',few:'حصص',many:'حصة'}) : 'بلا جدول';
+        b.innerHTML = '<b>'+lastName(t)+'</b><small>' + (isMe ? 'أنت · ' : '') + load + '</small>';
+        b.addEventListener('click', function(){ cur=t; paintAll(); });
+        tsel.appendChild(b);
+      });
+    }
+
+    /* ===== المصفوفة ===== */
+    var grid = document.getElementById('grid');
+    /* التعارضات تحسب في طبقة الاشتقاق؛ هنا نحولها إلى خريطة سريعة لتلوين المربعات.
+       المفتاح: «اليوم|رقم الحصة» ← اسم المعلم الآخر. */
+    var clashMap = {};
+    function buildClashMap(){
+      clashMap = {};
+      Shouba.clashes(cur).forEach(function(c){
+        var other = c.teachers[0] === cur ? c.teachers[1] : c.teachers[0];
+        clashMap[c.day + '|' + c.pIdx] = other;
+      });
+    }
+    function clashAt(day, pIdx, cls){ return cls ? (clashMap[day + '|' + pIdx] || null) : null; }
+    function paintGrid(){
+      buildClashMap();
+      grid.innerHTML='';
+      var hd = document.createElement('div');
+      hd.className='grow hd';
+      hd.innerHTML = '<div class="pl"></div>'
+        + SHORT.map(function(s,i){ return '<span'+(i%2===0?' class="alt"':'')+'>'+s+'</span>'; }).join('');
+      grid.appendChild(hd);
+
+      var clashes=[];
+      times.forEach(function(t){
+        if(t.brk){
+          var br=document.createElement('div');
+          br.className='gbrk';
+          br.innerHTML='<i></i><span>'+t.label+'</span><i></i>';
+          grid.appendChild(br);
+          return;
+        }
+        var pIdx = t.n - 1;
+        var row = document.createElement('div');
+        row.className='grow';
+        row.innerHTML = '<div class="pl"><b>'+t.n+'</b><small>الحصة</small></div>';
+        days.forEach(function(day, di){
+          var val = slotsOf(cur, day)[pIdx], s = splitSlot(val);
+          var c = document.createElement('button');
+          var who = clashAt(day, pIdx, s.cls);
+          c.className = 'cell' + (di%2===0 ? ' alt' : '') + (val ? '' : ' free') + (who ? ' clash' : '');
+          c.innerHTML = val
+            ? '<span class="cls">'+s.cls+'</span><span class="sub">'+s.subject+'</span>'
+            : '·';
+          if(who) clashes.push({ day:day, n:t.n, cls:s.cls, who:who });
+          c.addEventListener('click', function(){ openCell(day, pIdx, t.n); });
+          row.appendChild(c);
+        });
+        grid.appendChild(row);
+      });
+      paintClashes(clashes);
+    }
+
+    function paintClashes(list){
+      var box=document.getElementById('clashes');
+      if(!list.length){ box.className='clashes'; box.innerHTML=''; return; }
+      box.className='clashes show';
+      box.innerHTML = '<b>تعارض في الإسناد ('+list.length+')</b>'
+        + list.slice(0,3).map(function(c){
+            return '<small>'+c.day+' · الحصة '+c.n+' — الصف <b>'+c.cls+'</b> مسند أيضا إلى أ. '+lastName(c.who)+'</small>';
+          }).join('');
+    }
+
+    /* ===== اللوحة السفلية: المادة ← الشعبة ← حفظ فوري ← الحصة التالية ===== */
+    function openCell(day, pIdx, pNo){
+      /* حال الخانة **قبل** اللمس هو الذي يقرر: أهذه سلسلة إدخال أم تعديل مفرد؟
+         يقرأ هنا مرة ويمرر إلى advance في كل مسارات الاعتماد. */
+      var wasFilled = !!Shouba.slot(cur, day, pIdx);
+      var node = document.createElement('div');
+
+      var quick = document.createElement('div');
+      quick.className='quick';
+      var bFree = document.createElement('button');
+      bFree.textContent = 'أفرغ الخانة';
+      bFree.addEventListener('click', function(){ setSlot(day, pIdx, ''); advance(day, pIdx, wasFilled); });
+      quick.appendChild(bFree);
+      if(lastSlot){
+        var bRep = document.createElement('button');
+        bRep.className='amber';
+        bRep.textContent = 'كرر: ' + lastSlot;
+        bRep.addEventListener('click', function(){ setSlot(day, pIdx, lastSlot); advance(day, pIdx, wasFilled); });
+        quick.appendChild(bRep);
+      }
+      node.appendChild(quick);
+
+      if(!subjects.length){
+        var warn=document.createElement('div');
+        warn.className='sheet-note';
+        warn.textContent='لا مواد لهذه الشعبة في المرجعية — تضاف من الإدارة.';
+        node.appendChild(warn);
+      }
+      subjects.forEach(function(s){
+        var g = GRADE_NO[s.grade] || s.grade;
+        var b = document.createElement('button');
+        b.className='sheet-opt';
+        b.innerHTML='<span>'+s.name+' — '+s.grade+(s.track?' '+s.track:'')+'</span>';
+        b.addEventListener('click', function(){ pickSection(day, pIdx, pNo, s.name, g, wasFilled); });
+        node.appendChild(b);
+      });
+
+      /* مخرج صريح من الإدخال المتتابع — وإلا ظن المستخدم أن اللوحة لا تغلق إلا بالخلفية */
+      var done = document.createElement('button');
+      done.className='endbtn';
+      done.textContent='إنهاء الإدخال';
+      done.addEventListener('click', function(){ Shouba.sheet.close(); });
+      node.appendChild(done);
+
+      Shouba.sheet.open(day + ' · الحصة ' + ORD[pNo-1] + ' — أ. ' + lastName(cur), node);
+    }
+
+    /* الخطوة الثانية داخل اللوحة نفسها: رقم الشعبة */
+    function pickSection(day, pIdx, pNo, subject, grade, wasFilled){
+      var node = document.createElement('div');
+      var note = document.createElement('div');
+      note.className='sheet-note';
+      note.textContent = subject + ' · الصف ' + grade + ' — اختر الشعبة';
+      node.appendChild(note);
+      var secs = document.createElement('div');
+      secs.className='secs';
+      for(var i=1;i<=6;i++){
+        (function(n){
+          var b=document.createElement('button');
+          b.className='secbtn'; b.textContent=n;
+          b.addEventListener('click', function(){
+            setSlot(day, pIdx, grade + '/' + n + ' · ' + subject);
+            advance(day, pIdx, wasFilled);
+          });
+          secs.appendChild(b);
+        })(i);
+      }
+      node.appendChild(secs);
+      Shouba.sheet.open(day + ' · الحصة ' + ORD[pNo-1] + ' — أ. ' + lastName(cur), node);
+    }
+
+    function setSlot(day, pIdx, val){
+      Shouba.setSlot(cur, day, pIdx, val);     /* الكتابة والحفظ في مكان واحد */
+      if(val) lastSlot = val;
+      paintAll();
+    }
+
+    /* الإدخال المتتابع — **مشروطا بحال الخانة قبل اللمس** (قرار المستخدم 2026-09-08):
+       · خانة **ممتلئة** ⟵ تعديل مفرد، فتغلق اللوحة فور الاعتماد.
+       · خانة **فارغة**  ⟵ بداية سلسلة، فتفتح الحصة التالية بلا رجوع.
+       فتقرأ النية من الخانة نفسها بلا سؤال ولا إعداد؛ وإدخال الجدول أول مرة
+       يبقى متتابعا، والتعديل اللاحق لا يحبس المستخدم في اللوحة. */
+    function advance(day, pIdx, wasFilled){
+      if(wasFilled){ Shouba.sheet.close(); return; }
+      var next = null;
+      times.forEach(function(t){ if(!t.brk && t.n-1 > pIdx && next===null) next = t.n; });
+      if(next === null){ Shouba.sheet.close(); return; }
+      openCell(day, next-1, next);
+    }
+
+    function paintAll(){
+      paintTsel(); paintGrid();
+      /* العداد عن **معلميه** لا عن الشريط: رئيس الشعبة ليس من معلمي نفسه */
+      var mine  = Shouba.teachers();
+      var blank = mine.filter(function(t){ return filledCount(t)===0; }).length;
+      if(solo){                                  /* رأس عن صاحب الجدول وحده */
+        var sn = filledCount(cur);
+        document.getElementById('headLine').textContent = sn
+          ? Shouba.count(sn,{one:'حصة',two:'حصتان',few:'حصص',many:'حصة'}) + ' في الأسبوع'
+          : 'لم يدخل جدوله بعد';
+        document.getElementById('hintline').textContent =
+          'اضغط أي مربع لإسناد حصة — والتغيير يحفظ فورا.';
+        return;
+      }
+      document.getElementById('headLine').textContent =
+        Shouba.count(mine.length,{one:'معلم',two:'معلمان',few:'معلمين',many:'معلما'})
+        + ' · ' + (blank
+            ? Shouba.count(blank,{one:'جدول',two:'جدولان',few:'جداول',many:'جدولا'}) + ' بلا إدخال'
+            : 'كل الجداول مدخلة');
+      /* إرشاد يتقاعد بنفسه: نصيحة البداية لمن لم يدخل شيئا، ثم طريقة العمل. */
+      var anyLoad = teachers.some(function(t){ return filledCount(t) > 0; });
+      document.getElementById('hintline').textContent = anyLoad
+        ? 'اضغط أي مربع لإسناد حصة · وبعد كل اعتماد تفتح الحصة التالية في اليوم نفسه.'
+        : 'ابدأ بعمود يوم واحد لكل معلم — سبع ضغطات تكفي، وتضيء لوحتك في حينها. ثم أكمل بقية الأيام متى شئت.';
+    }
+    paintAll();
+  }
+
+  /* التنقل من الشريط السفلي */
+  [].forEach.call(document.querySelectorAll('.tab[data-go]'), function(b){
+    b.addEventListener('click', function(){ location.href = b.dataset.go; });
+  });
+  /* الرجوع يعود من حيث جئت: من ملف المعلم إليه، ومن التبويب إلى اللوحة.
+     ⚠ مستمع واحد لا onclick فوقه — اجتماعهما ينفذ السلوكين فيغلب الأخير. */
+  /* كان مشروطا: في وضع المفرد يرجع إلى ملف المعلم، وإلا إلى اللوحة.
+     صار منزلا واحدا يعيد إلى اللوحة دائما — والشرط هو الذي أربك المستخدم:
+     زر واحد بمقصدين. وتبويب «المعلمون» في الشريط السفلي يكفي للرجوع
+     إلى القائمة. ويتولاه bindHome في الطبقة المشتركة. */
+  document.getElementById('add').addEventListener('click', Shouba.quickAdd);
+</script>
+</body>
+</html>

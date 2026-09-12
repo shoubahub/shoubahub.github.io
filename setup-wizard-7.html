@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · الإعداد · المراجعة النهائية</title>
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#EFE6D6" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=57" />
+<link rel="stylesheet" href="shell.css?v=57" />
+<link rel="stylesheet" href="components.css?v=57" />
+<link rel="stylesheet" href="frame.css?v=57" />
+<style>
+  /* خاص بهذه الشاشة فقط — لا هيكل ولا هوامش عامة */
+  .tally{display:flex;gap:9px}
+  .tally .t{flex:1;background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:15px;
+    padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .tally .t b{font-size:19px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num)}
+  .tally .t span{font-size:11.5px;font-weight:600;color:var(--shouba-label)}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="screen has-foot">
+    <!-- ختام المعالج — النقاط الثلاث مضيئة والترويسة تعلن الاكتمال -->
+    <div class="navrow">
+      <div class="brand">
+        <img src="identity/assets/logo-vec-color.svg" alt="شعبة" />
+        <span class="vsep"></span>
+        <div class="prog">
+          <div class="lbl">محتوى الشعبة · <b>اكتمل</b></div>
+          <div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+        </div>
+      </div>
+      <div class="back" data-home title="اللوحة"></div>
+    </div>
+
+    <!-- العنوان خارج .content — موضعه ثابت في كل الشاشات (قاعدة LAYOUT) -->
+    <div class="head">
+      <div class="h">شعبتك جاهزة</div>
+      <div class="s">هذه حصيلة إعدادك — راجعها، واضغط أي سطر لتعديله. ثم ابدأ عملك.</div>
+    </div>
+
+    <div class="content">
+      <div class="fields">
+        <!-- الحصيلة في سطر واحد -->
+        <div class="field">
+          <div class="tally" id="tally"></div>
+        </div>
+
+        <!-- الأسطر القابلة للتعديل -->
+        <div class="field">
+          <label>ما أدخلته</label>
+          <div class="stack" id="rows"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <button class="cta" id="start">ابدأ العمل</button>
+  </div>
+ </div></div>
+
+<script src="build.js?v=57"></script>
+<!-- ⚠ المرجعية ثم الاشتقاق ثم المكونات — بهذا الترتيب.
+     أضيفا حين احتاجت الشاشة Shouba.termStart (2026-09-08): كانت تقرأ
+     البيانات خاما وتستغني عن الطبقة، فلما استدعيت دالة منها أخفقت
+     الشاشة كلها ولم يظهر سطر واحد. -->
+<script src="refdata.js?v=57"></script>
+<script src="derive.js?v=57"></script>
+<script src="components.js?v=57"></script>
+<script>
+  var KEY = 'shouba.setup';
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+  function save(patch){ var d = load(); Object.assign(d, patch); localStorage.setItem(KEY, JSON.stringify(d)); }
+
+  var d = load(), DASH = '—';
+  var teachers = d.teachers || [], records = d.records || [], subjects = d.subjects || [];
+
+  function j(){ return [].slice.call(arguments).filter(function(x){ return x && String(x).trim(); }).join(' · '); }
+
+  /* الحصيلة — ثلاثة أرقام تري ثقل ما أنجز (التسمية تصرف من الأساس) */
+  var TALLY = [
+    { n: teachers.length, label: Shouba.unit(teachers.length, { one:'معلم', two:'معلمان', few:'معلمين', many:'معلما' }) },
+    { n: subjects.length, label: Shouba.unit(subjects.length, { one:'مادة', two:'مادتان', few:'مواد', many:'مادة' }) },
+    { n: records.length,  label: Shouba.unit(records.length,  { one:'سجل', two:'سجلان', few:'سجلات', many:'سجلا' }) }
+  ];
+  var tallyEl = document.getElementById('tally');
+  TALLY.forEach(function(t){
+    var el = document.createElement('div'); el.className = 't';
+    el.innerHTML = '<b></b><span></span>';
+    el.querySelector('b').textContent = t.n;
+    el.querySelector('span').textContent = t.label;
+    tallyEl.appendChild(el);
+  });
+
+  var UKEY = 'shouba.user';
+  function userName(){
+    try { return (JSON.parse(localStorage.getItem(UKEY)) || {}).name || ''; } catch(e){ return ''; }
+  }
+  function nameSheet(){
+    var n = document.createElement('div');
+    n.innerHTML = '<div class="field" style="padding-bottom:6px">'
+      + '<label for="unm">الاسم الكامل</label>'
+      + '<div class="paper"><input id="unm" type="text" maxlength="60" placeholder="اكتب اسمك الكامل" /></div>'
+      + '<div class="hint" id="uwarn">كما يظهر في النماذج الرسمية.</div></div>';
+    var btn = document.createElement('button');
+    btn.className = 'cta'; btn.textContent = 'احفظ';
+    n.appendChild(btn);
+    Shouba.sheet.open('اسمك', n);
+    var inp = n.querySelector('#unm'), warn = n.querySelector('#uwarn');
+    inp.value = userName();
+    setTimeout(function(){ inp.focus(); }, 80);
+    function submit(){
+      var v = inp.value.trim().replace(/\s+/g, ' ');
+      if(v.length < 3){ warn.textContent = 'اكتب اسمك كاملا (ثلاثة أحرف فأكثر).'; return; }
+      var u; try { u = JSON.parse(localStorage.getItem(UKEY)) || {}; } catch(e){ u = {}; }
+      u.name = v;
+      localStorage.setItem(UKEY, JSON.stringify(u));
+      Shouba.sheet.close();
+      location.reload();                 /* السطر يعاد رسمه بالاسم الجديد */
+    }
+    btn.addEventListener('click', submit);
+    inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') submit(); });
+  }
+
+  /* أول يوم دراسي — يعرض هنا لأنه **مدخل خفي ذو أثر يومي**: عليه وحده
+     يبنى عد الأسابيع في اللوحة، ويدخل مرة ثم ينسى. فمن رأى أسبوعا
+     لا يتوقعه لم يجد سبيلا إلى مصدره إلا بفتح شاشة الإعداد (رصده المستخدم
+     2026-09-08 حين اختلف الأسبوع بين جهازيه). وغيابه نفسه خبر: بلا تاريخ
+     لا تعرض اللوحة أسبوعا إطلاقا. */
+  function startLine(){
+    var iso = Shouba.termStart();
+    if(!iso) return 'بلا تاريخ بداية';
+    var p = iso.split('-');
+    if(p.length !== 3) return '';
+    var ar = function(n){ return String(+n).replace(/\d/g, function(x){ return '٠١٢٣٤٥٦٧٨٩'[x]; }); };
+    return 'تبدأ ' + ar(p[2]) + '/' + ar(p[1]) + '/' + ar(p[0]);
+  }
+
+  /* كل سطر يعيد لشاشته بـ ret=final فيعود إلى هذه المراجعة بعد التعديل (لا إلى مراجعة المنتصف) */
+  var ROWS = [
+    { to:'setup-wizard.html',   main: d.schoolName || DASH, sub: j('المدرسة', d.region, d.schoolType) },
+    { to:'setup-wizard-2.html', main: d.department || DASH, sub: j('الشعبة', d.stage, subjects.length ? subjects.length + ' مواد' : '', Shouba.directorate ? Shouba.directorate() : '') },
+    { to:'setup-wizard-3.html', main: d.year || DASH,       sub: j('العام الدراسي', d.term, startLine()) },
+    { to:'setup-wizard-4.html', main: d.principal || 'لم تضف الإشراف بعد', sub: j('الإشراف', d.supervisor || 'اختياري — لك إكماله لاحقا') },
+    { to:'setup-wizard-5.html', main: teachers.length
+                                   ? teachers.slice(0,2).map(function(t){ return 'أ. ' + t; }).join(' · ')
+                                     + (teachers.length > 2 ? ' وآخرون' : '')
+                                   : 'لم تضف معلما',
+                                 sub: j('معلموك', teachers.length ? Shouba.count(teachers.length, { one:'معلم', two:'معلمان', few:'معلمين', many:'معلما' }) : '') },
+    { to:'setup-wizard-6.html', main: records.length ? Shouba.count(records.length, { one:'سجل', two:'سجلان', few:'سجلات', many:'سجلا' }) + ' مختارا' : 'لم تختر سجلا',
+                                 sub: j('سجلاتك', records.length === 15 ? 'الحزمة الجاهزة كاملة' : 'الحزمة معدلة') },
+    /* ⚠ اسمك — سطر سابع أضيف بعد أن رصد المستخدم أنه **محبوس منذ أول يوم**
+       (2026-09-08): يكتب مرة في شاشة الدخول، والموجه يمنع العودة إليها بعد
+       إتمام الإعداد. وهو يظهر في ترويسة السجلات، فخطأ مطبعي فيه يبقى أبدا.
+       ولوحة صغيرة لا شاشة الدخول: تلك باب الوافد الجديد بترحيبها وبطاقتها،
+       ولا تليق بتصحيح حرف. */
+    { sheet: nameSheet, main: userName() || DASH, sub: 'اسمك · يظهر في ترويسة سجلاتك' }
+  ];
+
+  var CHEV = '<svg width="15" height="15" viewBox="0 0 20 20" fill="none">'
+           + '<path d="M12 4 L6 10 L12 16" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  var rowsEl = document.getElementById('rows');
+  ROWS.forEach(function(r){
+    var el = document.createElement('div');
+    el.className = 'pick';
+    el.innerHTML = '<div class="tx"><b></b><small></small></div>' + CHEV;
+    el.querySelector('b').textContent = r.main;
+    el.querySelector('small').textContent = r.sub;
+    /* أكثر السطور تفتح شاشتها، وسطر الاسم يفتح لوحة في مكانه */
+    el.addEventListener('click', function(){
+      if(r.sheet) r.sheet();
+      else location.href = r.to + '?ret=final';
+    });
+    rowsEl.appendChild(el);
+  });
+
+  document.getElementById('start').addEventListener('click', function(){
+    save({ setupDone: true });
+    // وجهة اللوحة الجديدة — لم تبن بعد، فينقطع المسار كما في كل شاشة،
+    // ويوم تبنى تعمل الوصلة وحدها بلا تعديل.
+    location.href = 'board.html';
+  });
+</script>
+</body>
+</html>

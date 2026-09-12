@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-public>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · الإدارة</title>
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#1B5183" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=57" />
+<link rel="stylesheet" href="shell.css?v=57" />
+<link rel="stylesheet" href="components.css?v=57" />
+<link rel="stylesheet" href="frame.css?v=57" />
+<style>
+  /* خاص بالإدارة: صف الحساب وجدوله. لا هيكل ولا هوامش عامة. */
+  .urow{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;
+    padding:12px 14px;display:flex;align-items:center;gap:11px;
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .urow .ini{width:34px;height:34px;border-radius:999px;flex:none;display:grid;place-items:center;
+    background:var(--shouba-navy);color:var(--shouba-cream);font-size:13px;font-weight:700}
+  .urow .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .urow .tx b{font-size:13.5px;font-weight:700;color:var(--shouba-navy)}
+  .urow .tx small{font-size:11px;color:var(--shouba-label)}
+  .urow .rst{flex:none;border:0;cursor:pointer;font-family:var(--font-ar);font-size:11.5px;font-weight:700;
+    padding:7px 12px;border-radius:999px;background:rgba(22,69,110,.09);color:var(--shouba-navy)}
+  .urow .rst:active{transform:translateY(1px)}
+  .dot{width:7px;height:7px;border-radius:999px;flex:none}
+  .dot.on{background:#2E7D57} .dot.off{background:var(--shouba-hint)}
+
+  .inv{display:flex;align-items:center;gap:10px;background:var(--shouba-navy);border-radius:14px;padding:13px 15px}
+  .inv .k{font-size:11.5px;font-weight:600;color:var(--shouba-navy-light)}
+  .inv .v{flex:1;font-family:var(--font-num);font-size:18px;font-weight:700;letter-spacing:.1em;color:var(--shouba-cream)}
+  .inv button{border:0;cursor:pointer;font-family:var(--font-ar);font-size:11.5px;font-weight:700;
+    padding:7px 12px;border-radius:999px;background:rgba(244,241,234,.16);color:var(--shouba-cream)}
+
+  .note{font-size:12px;color:var(--shouba-text-muted);line-height:1.8;background:var(--shouba-sand);
+    border-radius:12px;padding:13px 15px}
+  .note b{color:var(--shouba-ink)}
+  .msg{font-size:12.5px;font-weight:600;min-height:18px;color:var(--shouba-error)}
+  .msg.ok{color:var(--shouba-navy)}
+  .hide{display:none !important}
+
+  /* رسالة الدعوة — زران متجاوران (2026-09-11) */
+  .invbtns{display:flex;gap:10px}
+  .invbtns .btn-ghost{padding:13px 8px;font-size:13.5px;color:var(--shouba-navy)}
+
+  /* الملاحظات — ورقة لكل ملاحظة، والجديدة بحلقة كحلية */
+  .fbrow{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;padding:12px 14px;
+    display:flex;flex-direction:column;gap:7px;box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .fbrow.new{box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 0 0 2px var(--shouba-navy)}
+  .fbrow .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:11px;color:var(--shouba-label)}
+  .fbrow .meta b{font-size:13px;color:var(--shouba-navy)}
+  .fbrow .kind{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(22,69,110,.09);color:var(--shouba-navy)}
+  .fbrow p{margin:0;font-size:13.5px;color:var(--shouba-ink);line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+  .fbrow .rd{align-self:flex-start;border:0;cursor:pointer;font-family:var(--font-ar);font-size:11.5px;font-weight:700;
+    padding:7px 12px;border-radius:999px;background:rgba(22,69,110,.09);color:var(--shouba-navy);min-height:32px}
+
+  /* خطط التوزيع (2026-09-13، الخطوة ب) — صف الخطة كصف الحساب، واللوحة السفلية اسابيعها ودروسها */
+  #tabs{margin-bottom:4px}
+  .plab{display:block;margin-top:8px;font-size:12px;font-weight:700;color:var(--shouba-text-muted)}
+  .prow{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;padding:12px 14px;
+    display:flex;align-items:center;gap:11px;cursor:pointer;box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .prow:active{transform:translateY(1px)}
+  .prow .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .prow .tx b{font-size:13.5px;font-weight:700;color:var(--shouba-navy)}
+  .prow .tx small{font-size:11px;color:var(--shouba-label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .prow.warn .tx small{color:var(--shouba-amber-deep)}
+  .prow .chip{flex:none}
+  .pview{display:flex;flex-direction:column;gap:6px}
+  .pmeta{font-size:12px;font-weight:600;color:var(--shouba-label);line-height:1.7}
+  .pwh{margin-top:8px;font-size:11.5px;font-weight:700;color:var(--shouba-navy);background:rgba(22,69,110,.07);border-radius:8px;padding:4px 9px}
+  .pl{display:flex;gap:10px;align-items:flex-start;font-size:13px;font-weight:600;color:var(--shouba-ink);line-height:1.7;padding:0 4px}
+  .pl span{flex:1;min-width:0}
+  .pl em{font-style:normal;flex:none;font-size:11.5px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+  .pacts{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+
+  <div class="topbar">
+    <div class="tt"><b>إدارة المنصة</b><span id="head">أدخل رقم الإدارة</span></div>
+    <!-- ⚠ لا زر منزل هنا (قرار المستخدم 2026-09-10): الإدارة ليست من شاشات الشعبة،
+         وكان زر المنزل يأخذ صاحبها إلى لوحته. استثناء مقصود من قاعدة «منزل في كل شاشة». -->
+  </div>
+
+  <div class="screen has-topbar">
+    <div class="content">
+
+      <!-- ① البوابة -->
+      <div class="fields" id="gate">
+        <div class="field">
+          <label for="apin">رقم الإدارة</label>
+          <!-- ⚠ لوحة المفاتيح كاملة لا الارقام وحدها (2026-09-11): رقم الادارة قد يحوي حروفا (الخادم يقبلها)،
+               وinputmode="numeric" كان يفتح في الجوال لوحة ارقام لا تكتب بها الحروف. ولا تكبير ولا تصحيح آلي -->
+          <div class="paper"><input id="apin" type="password" placeholder="اكتب رقم الإدارة" maxlength="24"
+               autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" /></div>
+          <div class="hint">لا يحفظ في المتصفح — يطلب في كل مرة.</div>
+        </div>
+        <button class="cta" id="enter">ادخل</button>
+        <div class="msg" id="gmsg"></div>
+      </div>
+
+      <!-- ② اللوحة -->
+      <div class="fields hide" id="panel">
+        <!-- قسمان (2026-09-13): الحسابات · خطط التوزيع — في الصفحة نفسها لان رقم الادارة لا يحفظ فينتقل -->
+        <div class="segs sm" id="tabs">
+          <button type="button" class="seg on" data-t="acc">الحسابات</button>
+          <button type="button" class="seg" data-t="plans">خطط التوزيع</button>
+        </div>
+
+        <div class="fields hide" id="tPlans">
+          <div class="field">
+            <label id="pcount">خطط التوزيع</label>
+            <div class="hint" id="psum">—</div>
+          </div>
+          <div class="segs sm" id="pfilter">
+            <button type="button" class="seg on" data-f="pending">تنتظر</button>
+            <button type="button" class="seg" data-f="approved">معتمدة</button>
+            <button type="button" class="seg" data-f="rejected">لا تعتمد</button>
+            <button type="button" class="seg" data-f="all">الكل</button>
+          </div>
+          <button type="button" class="btn-ghost" id="bulk" hidden>اعتمد السليمة كلها</button>
+          <div id="plist"></div>
+          <div class="note">
+            <b>لا تصل خطة رئيس شعبة قبل اعتمادك.</b> والخطة التي لا تعتمدها يظهر مكانها عنده «يجب رفع الخطة» —
+            ولا تظهر له بيانات ناقصة أو مخمنة.
+            <br><br>
+            <b>اعتمادك محفوظ في الخادم</b> ويبقى مع كل نشرة. وخطة ترفعها الوزارة من جديد تعود إلى «تنتظر».
+          </div>
+        </div>
+
+        <div class="fields" id="tAcc">
+        <div class="field">
+          <label>رمز الدعوة</label>
+          <div class="inv">
+            <div class="v" id="code">—</div>
+            <button type="button" id="newcode">رمز جديد</button>
+          </div>
+          <div class="hint">بلا هذا الرمز لا ينشئ أحد حسابا، مهما عرف الرابط.</div>
+        </div>
+
+        <!-- رسالة الدعوة — الرابط والرمز الحالي يضافان تلقائيا (طلب المستخدم 2026-09-11) -->
+        <div class="field">
+          <label>رسالة الدعوة</label>
+          <div class="invbtns">
+            <button type="button" class="btn-ghost" id="copyInvite">انسخ رسالة الدعوة</button>
+            <button type="button" class="btn-ghost" id="waInvite">أرسل عبر واتساب</button>
+          </div>
+          <div class="hint">فيها رابط المنصة ورمز الدعوة الحالي وخطوات التسجيل والتثبيت، ودعوة لكتابة الملاحظات.</div>
+          <div class="msg" id="imsg"></div>
+        </div>
+
+        <div class="field">
+          <label id="count">الحسابات</label>
+          <div class="stack" id="users"></div>
+        </div>
+
+        <!-- الملاحظات — يكتبها الزملاء من زر «ملاحظة» في لوحتهم -->
+        <div class="field">
+          <label id="fbcount">الملاحظات</label>
+          <div class="stack" id="fblist"></div>
+        </div>
+
+        <div class="note">
+          <b>ما تراه هنا وصف لا محتوى.</b> تعرف من سجل ومتى دخل وهل أتم إعداد شعبته —
+          <b>ولا تعرض هذه اللوحة جدول أحد ولا معلميه ولا سجلاته</b>، ولا مسار في الخادم يعيدها.
+          وقد صممت هكذا عمدا لا سهوا.
+          <br><br>
+          <b>والملاحظات</b> وحدها نص يصلك — يكتبها أصحابها لك بأنفسهم من زر «ملاحظة»، ولا يرسل معها شيء من بيانات شعبهم.
+          <br><br>
+          <b>والرقم السري لا يعرض</b> — يخزن مجزأ فلا يقرأ. ومن نسيه تعين له رقما جديدا وتسلمه إياه،
+          وتغلق جلساته كلها فورا.
+        </div>
+        </div><!-- /tAcc -->
+        <div class="msg" id="pmsg"></div>
+      </div>
+
+    </div>
+  </div>
+ </div></div>
+
+<script src="build.js?v=57"></script>
+<script src="components.js?v=57"></script>
+<script>
+  /* لوحة الإدارة — شاشة مستقلة لا رابط إليها من أي مكان (قرار المستخدم 2026-09-08).
+     ⚠ رقم الإدارة **لا يحفظ**: يبقى في الذاكرة ما دامت الصفحة مفتوحة فقط.
+       حفظه في المتصفح يجعل جهازا معارا بابا مفتوحا. */
+  var PIN = null;
+  var gate = document.getElementById('gate'), panel = document.getElementById('panel');
+  var gmsg = document.getElementById('gmsg'), pmsg = document.getElementById('pmsg');
+
+  function say(el, t, ok){ el.textContent = t || ''; el.className = 'msg' + (ok ? ' ok' : ''); }
+  /* اسم المستخدم إنجليزي داخل نص عربي — يعزل اتجاهه (LRI…PDI) وإلا انقلبت
+     علامته فظهر «uidel@» بدل «@uidel» (رصد في الفحص 2026-09-10). */
+  function uname(u){ return '⁦@' + u.username + '⁩'; }
+  function api(path, opt){
+    opt = opt || {};
+    opt.headers = Object.assign({ 'x-admin-pin': PIN, 'Content-Type': 'application/json' }, opt.headers || {});
+    opt.credentials = 'same-origin';
+    return fetch(path, opt).then(function(r){
+      return r.json().then(function(j){ if(!r.ok) throw new Error(j.error || 'خطأ'); return j; });
+    });
+  }
+
+  document.getElementById('enter').addEventListener('click', function(){
+    var v = Shouba.latinDigits(document.getElementById('apin').value).trim();   /* ٠١٢٣ = 0123 */
+    if(!v) return;
+    PIN = v;
+    say(gmsg, 'يجري التحقق…', true);
+    api('api/admin/invite').then(function(j){
+      gate.classList.add('hide'); panel.classList.remove('hide');
+      document.getElementById('head').textContent = 'الحسابات ورمز الدعوة';
+      document.getElementById('code').textContent = j.code;
+      load();
+    }).catch(function(e){ PIN = null; say(gmsg, e.message); });
+  });
+  document.getElementById('apin').addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); document.getElementById('enter').click(); }
+  });
+
+  document.getElementById('newcode').addEventListener('click', function(){
+    api('api/admin/invite', { method: 'POST' })
+      .then(function(j){ document.getElementById('code').textContent = j.code; say(pmsg, 'رمز جديد — والقديم بطل.', true); })
+      .catch(function(e){ say(pmsg, e.message); });
+  });
+
+  function when(t){
+    if(!t) return 'لم يدخل بعد';
+    var d = new Date(t.replace(' ', 'T') + 'Z');
+    return isNaN(d) ? t : d.toLocaleDateString('ar-KW', { day:'numeric', month:'long' });
+  }
+
+  /* ═══ رسالة الدعوة (2026-09-11) — النموذج (ب) باختيار المستخدم، ومعه دعوة الملاحظات.
+     الرابط من عنوان هذه الصفحة (فيتبع النطاق يوم يشترى)، والرمز مما يظهر الان — فمن ضغط
+     «رمز جديد» نسخ الرسالة بالجديد تلقائيا. ولا تشكيل فيها (قاعدة المنصة). */
+  function inviteText(){
+    var code = document.getElementById('code').textContent.trim();
+    /* الصيغة المختصرة (اعتمدها المستخدم 2026-09-13): ومعها تثبيت المنصة خطوة رابعة، و«في سفاري أو كروم»
+       لان متصفح واتساب الداخلي لا يثبت */
+    return [
+      'السلام عليكم ورحمة الله وبركاته',
+      'أدعوك لتجربة منصة «شعبة» لرئيس الشعبة: جداول المعلمين والسجلات والمواعيد من أي جهاز.',
+      '',
+      'للتسجيل:',
+      '١. افتح الرابط في سفاري أو كروم:',
+      location.origin + '/',
+      '٢. اختر «حساب جديد» واكتب رمز الدعوة: ' + code,
+      '٣. اختر اسم مستخدم بالإنجليزية ورقما سريا من ستة أرقام',
+      '٤. ثبت المنصة على شاشة هاتفك كتطبيق من زر «تثبيت» أعلى اللوحة',
+      '',
+      'رقمك السري وبيانات شعبتك لا يطلع عليها أحد.',
+      'المنصة تجريبية، فأرسل كل ملاحظة في وقتها من زر «ملاحظة» أعلى اللوحة، فتصلني مباشرة.'
+    ].join('\n');
+  }
+  /* النسخ: الحافظة الحديثة، وبديلها للمتصفحات الاقدم (سفاري قديم) */
+  function copyText(t){
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t);
+    return new Promise(function(ok, no){
+      var a = document.createElement('textarea'); a.value = t; a.setAttribute('readonly', '');
+      a.style.position = 'fixed'; a.style.top = '-1000px'; document.body.appendChild(a); a.select();
+      var done = false; try { done = document.execCommand('copy'); } catch (e) {}
+      a.remove(); done ? ok() : no();
+    });
+  }
+  var imsg = document.getElementById('imsg');
+  document.getElementById('copyInvite').addEventListener('click', function(){
+    copyText(inviteText())
+      .then(function(){ say(imsg, 'نسخت الرسالة — الصقها في واتساب أو حيث تشاء.', true); })
+      .catch(function(){ say(imsg, 'تعذر النسخ هنا — استعمل «أرسل عبر واتساب».'); });
+  });
+  document.getElementById('waInvite').addEventListener('click', function(){
+    window.open('https://wa.me/?text=' + encodeURIComponent(inviteText()), '_blank', 'noopener');
+  });
+
+  /* ═══ الملاحظات — النص يعرض بـtextContent (يكتبه غيرك) ═══ */
+  var KIND = { unclear:'خطوة غير واضحة', missing:'شيء ناقص', idea:'فكرة', bug:'خلل' };
+  var PAGE = { 'board.html':'اللوحة', 'teachers.html':'المعلمون', 'teacher.html':'ملف المعلم',
+               'schedule.html':'الجداول', 'records.html':'السجلات' };
+  function whenAt(t){
+    var d = new Date(String(t).replace(' ', 'T') + 'Z');
+    return isNaN(d) ? t : d.toLocaleString('ar-KW', { day:'numeric', month:'long', hour:'numeric', minute:'2-digit' });
+  }
+  function loadFeedback(){
+    api('api/admin/feedback').then(function(j){
+      var box = document.getElementById('fblist'); box.innerHTML = '';
+      document.getElementById('fbcount').textContent = j.feedback.length
+        ? 'الملاحظات' + (j.unread ? ' · ' + Shouba.count(j.unread, { one:'جديدة', two:'جديدتان', few:'جديدة', many:'جديدة' }) : '')
+        : 'لا ملاحظات بعد';
+      j.feedback.forEach(function(f){
+        var el = document.createElement('div'); el.className = 'fbrow' + (f.read_at ? '' : ' new');
+        var meta = document.createElement('div'); meta.className = 'meta';
+        var who = document.createElement('b'); who.textContent = f.display_name;
+        var at = document.createElement('span'); at.textContent = whenAt(f.created_at) + (f.page ? ' · ' + (PAGE[f.page] || f.page) : '');
+        meta.appendChild(who); meta.appendChild(at);
+        if (f.kind && KIND[f.kind]) { var k = document.createElement('span'); k.className = 'kind'; k.textContent = KIND[f.kind]; meta.appendChild(k); }
+        var p = document.createElement('p'); p.textContent = f.text;
+        el.appendChild(meta); el.appendChild(p);
+        if (!f.read_at) {
+          var rd = document.createElement('button'); rd.type = 'button'; rd.className = 'rd'; rd.textContent = 'قرأتها';
+          rd.addEventListener('click', function(){ api('api/admin/feedback/' + f.id + '/read', { method:'POST' }).then(loadFeedback); });
+          el.appendChild(rd);
+        }
+        box.appendChild(el);
+      });
+    }).catch(function(e){ say(pmsg, e.message); });
+  }
+
+  function load(){
+    loadFeedback();
+    api('api/admin/users').then(function(j){
+      var box = document.getElementById('users');
+      box.innerHTML = '';
+      document.getElementById('count').textContent = j.users.length
+        ? Shouba.count(j.users.length, { one:'حساب', two:'حسابان', few:'حسابات', many:'حسابا' })
+        : 'لا حسابات بعد';
+      j.users.forEach(function(u){
+        var el = document.createElement('div'); el.className = 'urow';
+        el.innerHTML = '<span class="ini"></span>'
+          + '<div class="tx"><b></b><small></small></div>'
+          + '<span class="dot"></span>'
+          + '<button type="button" class="rst">إدارة</button>';
+        el.querySelector('.ini').textContent = (u.display_name || u.username).charAt(0);
+        el.querySelector('b').textContent = u.display_name;
+        /* وصف فقط: الاسم · آخر دخول · هل أتم إعداده. ولا شيء من محتواه. */
+        el.querySelector('small').textContent =
+          uname(u) + ' · آخر دخول: ' + when(u.last_login) + (u.has_data ? ' · أتم إعداده' : ' · لم يعد شعبته');
+        el.querySelector('.dot').className = 'dot ' + (u.has_data ? 'on' : 'off');
+        el.querySelector('.rst').addEventListener('click', function(){ manage(u); });
+        box.appendChild(el);
+      });
+    }).catch(function(e){ say(pmsg, e.message); });
+  }
+
+  /* «إدارة» حساب: فعلان لا ثالث لهما — إعادة تعيين الرقم، أو حذف الحساب.
+     ولا «عرض» ولا «تصدير»: الإدارة لا ترى المحتوى (قرار المستخدم 2026-09-08). */
+  function manage(u){
+    var n = document.createElement('div'); n.className = 'fields';
+    var r = document.createElement('button'); r.className = 'btn-ghost'; r.textContent = 'أعد تعيين الرقم السري';
+    var d = document.createElement('button'); d.className = 'btn-danger'; d.textContent = 'احذف الحساب';
+    r.addEventListener('click', function(){ reset(u); });
+    d.addEventListener('click', function(){ removeUser(u); });
+    n.appendChild(r); n.appendChild(d);
+    Shouba.sheet.open(u.display_name + ' · ' + uname(u), n);
+  }
+
+  /* الحذف نهائي — فالتأكيد كتابة لا ضغطا: اسم المستخدم كما هو.
+     والخادم يفحص التأكيد نفسه، فلا تكفي الصفحة وحدها. */
+  function removeUser(u){
+    var n = document.createElement('div'); n.className = 'fields';
+    n.innerHTML = '<div class="warnbox"></div>'
+      + '<div class="field"><label for="cf"></label>'
+      + '<div class="paper"><input id="cf" type="text" dir="ltr" autocapitalize="none" autocomplete="off" spellcheck="false" /></div></div>';
+    n.querySelector('.warnbox').textContent = 'يحذف حساب ' + u.display_name + ' وجلساته'
+      + (u.has_data ? ' وبيانات شعبته كلها' : '') + ' نهائيا — ولا يسترد.'
+      + (u.has_data ? ' وإن أراد الاحتفاظ بشعبته فليصدرها من إعداداته قبل الحذف.' : '');
+    n.querySelector('label').textContent = 'للتأكيد اكتب اسم المستخدم: ' + uname(u);
+    var b = document.createElement('button'); b.className = 'btn-danger'; b.textContent = 'احذف نهائيا'; b.disabled = true;
+    n.appendChild(b);
+    Shouba.sheet.open('حذف الحساب', n);
+    var inp = n.querySelector('#cf');
+    function said(){ return Shouba.latinDigits(inp.value).trim().replace(/^@/, '').toLowerCase(); }
+    inp.addEventListener('input', function(){ b.disabled = said() !== u.username; });
+    b.addEventListener('click', function(){
+      if(said() !== u.username) return;
+      b.disabled = true; b.textContent = 'يحذف…';
+      api('api/admin/users/' + u.id, { method:'DELETE', body: JSON.stringify({ confirm: said() }) })
+        .then(function(){
+          Shouba.sheet.close();
+          say(pmsg, 'حذف حساب ' + u.display_name + (u.has_data ? ' وبيانات شعبته.' : '.'), true);
+          load();
+        })
+        .catch(function(e){ b.disabled = false; b.textContent = 'احذف نهائيا'; say(pmsg, e.message); });
+    });
+  }
+
+  function reset(u){
+    var n = document.createElement('div');
+    n.innerHTML = '<div class="field" style="padding-bottom:6px">'
+      + '<label for="np">الرقم الجديد لـ' + '</label>'
+      + '<div class="paper"><input id="np" type="text" inputmode="numeric" maxlength="6" placeholder="ستة أرقام" /></div>'
+      + '<div class="hint">سلمه إياه بنفسك — ولا يرسل تلقائيا.</div></div>';
+    n.querySelector('label').textContent = 'الرقم الجديد لـ' + u.display_name;
+    var b = document.createElement('button');
+    b.className = 'cta'; b.textContent = 'عين';
+    n.appendChild(b);
+    Shouba.sheet.open('إعادة تعيين', n);
+    var inp = n.querySelector('#np');
+    setTimeout(function(){ inp.focus(); }, 80);
+    inp.addEventListener('input', function(){ inp.value = Shouba.latinDigits(inp.value).replace(/[^0-9]/g,'').slice(0,6); });
+    b.addEventListener('click', function(){
+      if(!/^[0-9]{6}$/.test(inp.value)) return;
+      api('api/admin/users/' + u.id + '/reset-pin', { method:'POST', body: JSON.stringify({ pin: inp.value }) })
+        .then(function(){
+          Shouba.sheet.close();
+          say(pmsg, 'عين رقم جديد لـ' + u.display_name + ' — وأغلقت جلساته.', true);
+          load();
+        })
+        .catch(function(e){ say(pmsg, e.message); });
+    });
+  }
+
+  /* ═══ خطط التوزيع — مراجعة المالك قبل ان تصل رؤساء الشعب (2026-09-13، الخطوة ب) ═══
+     الخطط كما قرأها المختبر (plans.js في الخادم). لكل خطة قرار: معتمدة · لا تعتمد (يظهر مكانها عند رئيس
+     الشعبة «يجب رفع الخطة») · او تنتظر. والنظر قبل الاعتماد: اللوحة السفلية اسابيعها ودروسها وحصصها. */
+  var PL = { set: null, plans: [], filter: 'pending' };
+  var DECI = { approved: { t: 'معتمدة', c: 'chip navy' }, rejected: { t: 'لا تعتمد', c: 'chip' }, none: { t: 'تنتظر', c: 'chip muted' } };
+  var tabs = document.getElementById('tabs');
+  tabs.addEventListener('click', function(e){
+    var b = e.target.closest('.seg'); if(!b) return;
+    [].forEach.call(tabs.children, function(x){ x.classList.toggle('on', x === b); });
+    var t = b.getAttribute('data-t');
+    document.getElementById('tAcc').classList.toggle('hide', t !== 'acc');
+    document.getElementById('tPlans').classList.toggle('hide', t !== 'plans');
+    document.getElementById('head').textContent = t === 'plans' ? 'مراجعة خطط التوزيع' : 'الحسابات ورمز الدعوة';
+    say(pmsg, '');
+    if (t === 'plans' && !PL.set) loadPlans();
+  });
+  function pstate(p){ return p.decision || 'none'; }
+  function loadPlans(){
+    api('api/admin/plans').then(function(j){ PL.set = j.set; PL.plans = j.plans || []; paintPlans(); })
+      .catch(function(e){ say(pmsg, e.message); });
+  }
+  /* سبب الحال في سطر: السليمة بحصصها ومطابقة المعلن، والتي تراجع باول سبب يعني (لا اعلامات القراءة) */
+  function pwhy(p){
+    if (p.status === 'ok') return 'سليمة · ' + p.periods + ' حصة' + (p.stated != null ? (p.stated === p.periods ? ' · تطابق المعلن' : ' · والمعلن ' + p.stated) : '');
+    var real = (p.issues || []).filter(function(i){ return !/^قرئ ضوئيا|^أعداد حصص|الختم|نسب القسم بالصف/.test(i); });
+    return 'تراجع · ' + (real[0] || (p.issues || [])[0] || 'لم يقرأ جدول');
+  }
+  function paintPlans(){
+    var ps = PL.plans, cnt = function(k){ return ps.filter(function(p){ return pstate(p) === k; }).length; };
+    document.getElementById('pcount').textContent = PL.set ? 'خطط الفصل ' + (PL.set.term === 1 ? 'الأول' : 'الثاني') + ' · ' + String(PL.set.year || '').replace(/\s*\/\s*/, ' / ') : 'لا خطط بعد';   /* المسافة: يقرأ من اليمين 2026 اولا */
+    document.getElementById('psum').textContent = ps.length + ' خطة: ' + cnt('approved') + ' معتمدة · ' + cnt('none') + ' تنتظر · ' + cnt('rejected') + ' لا تعتمد';
+    var sound = ps.filter(function(p){ return p.status === 'ok' && !p.decision; }).length, bulk = document.getElementById('bulk');
+    bulk.hidden = !sound; bulk.textContent = 'اعتمد السليمة كلها (' + sound + ')';
+    [].forEach.call(document.querySelectorAll('#pfilter .seg'), function(b){ b.classList.toggle('on', b.getAttribute('data-f') === PL.filter); });
+    var box = document.getElementById('plist'); box.innerHTML = '';
+    var list = ps.filter(function(p){ return PL.filter === 'all' || (PL.filter === 'pending' ? !p.decision : p.decision === PL.filter); });
+    if (!list.length) {
+      var e = document.createElement('div'); e.className = 'hint';
+      e.textContent = PL.filter === 'pending' ? 'لا خطة تنتظر مراجعتك.' : 'لا شيء هنا.';
+      box.appendChild(e); return;
+    }
+    var stages = []; list.forEach(function(p){ if (stages.indexOf(p.stage) < 0) stages.push(p.stage); });
+    stages.forEach(function(st){
+      var grp = list.filter(function(p){ return p.stage === st; });
+      var lab = document.createElement('div'); lab.className = 'plab'; lab.textContent = st + ' · ' + grp.length; box.appendChild(lab);
+      var stack = document.createElement('div'); stack.className = 'stack'; box.appendChild(stack);
+      grp.forEach(function(p){
+        var el = document.createElement('div'); el.className = 'prow' + (p.status === 'ok' ? '' : ' warn');
+        el.innerHTML = '<div class="tx"><b></b><small></small></div><span></span>';
+        el.querySelector('b').textContent = p.subject + ' · ' + p.grade;
+        el.querySelector('small').textContent = pwhy(p);
+        var ch = el.querySelector('span'); ch.className = DECI[pstate(p)].c; ch.textContent = DECI[pstate(p)].t;
+        el.addEventListener('click', function(){ openPlan(p); });
+        stack.appendChild(el);
+      });
+    });
+  }
+  function decide(p, decision){
+    return api('api/admin/plans/decision', { method: 'POST', body: JSON.stringify({ set: PL.set && PL.set.id, key: p.key, decision: decision }) })
+      .then(function(){
+        p.decision = decision; Shouba.sheet.close(); paintPlans();
+        say(pmsg, decision === 'approved' ? 'اعتمدت ' + p.subject + ' · ' + p.grade + '.'
+          : decision === 'rejected' ? 'لن تصل ' + p.subject + ' · ' + p.grade + ' — ويظهر مكانها «يجب رفع الخطة».' : 'ألغي القرار — عادت إلى «تنتظر».', true);
+      })
+      .catch(function(e){ say(pmsg, e.message); });
+  }
+  function openPlan(p){
+    api('api/admin/plans/one?set=' + encodeURIComponent(PL.set.id) + '&key=' + encodeURIComponent(p.key)).then(function(j){
+      var pl = j.plan, cal = j.calendar || [], n = document.createElement('div'); n.className = 'pview';
+      var meta = document.createElement('div'); meta.className = 'pmeta';
+      meta.textContent = 'ملف مكتبة المعلم ' + pl.source.id + (pl.source.uploaded ? ' · رفع ' + pl.source.uploaded : '') + ' · '
+        + pl.weeks.length + ' أسبوعا · ' + pl.periods + ' حصة' + (pl.stated != null ? ' والمعلن ' + pl.stated : '');
+      n.appendChild(meta);
+      if (pl.status !== 'ok') { var w = document.createElement('div'); w.className = 'warnbox'; w.textContent = 'تراجع: ' + (pl.issues || []).join(' · '); n.appendChild(w); }
+      pl.weeks.forEach(function(wk){
+        var c = cal.filter(function(x){ return x.n === wk.n; })[0], h = document.createElement('div'); h.className = 'pwh';
+        h.textContent = 'الأسبوع ' + wk.n + (wk.span > 1 ? '–' + (wk.n + wk.span - 1) : '') + (c && c.from ? ' · ' + c.from.slice(5).split('-').reverse().join('/') : '');
+        n.appendChild(h);
+        wk.lessons.forEach(function(l){
+          var r = document.createElement('div'); r.className = 'pl';
+          var s = document.createElement('span'); s.textContent = l.t;
+          var em = document.createElement('em'); em.textContent = l.p + ' ح';
+          r.appendChild(s); r.appendChild(em); n.appendChild(r);
+        });
+      });
+      var acts = document.createElement('div'); acts.className = 'pacts';
+      var a = document.createElement('button'); a.className = 'cta';
+      a.textContent = pl.decision === 'approved' ? 'معتمدة — ألغ الاعتماد' : 'اعتمدها';
+      a.addEventListener('click', function(){ decide(p, pl.decision === 'approved' ? null : 'approved'); });
+      var r = document.createElement('button'); r.className = 'btn-ghost';
+      r.textContent = pl.decision === 'rejected' ? 'ألغ «لا تعتمد»' : 'لا تعتمد — يجب رفع الخطة';
+      r.addEventListener('click', function(){ decide(p, pl.decision === 'rejected' ? null : 'rejected'); });
+      acts.appendChild(a); acts.appendChild(r); n.appendChild(acts);
+      Shouba.sheet.open(pl.subject + ' · ' + pl.grade, n);
+    }).catch(function(e){ say(pmsg, e.message); });
+  }
+  document.getElementById('pfilter').addEventListener('click', function(e){
+    var b = e.target.closest('.seg'); if(!b) return;
+    PL.filter = b.getAttribute('data-f'); paintPlans();
+  });
+  /* اعتماد السليمة دفعة — بتأكيد، ولا يمس قرارا سابقا ولا الخطط التي تراجع */
+  document.getElementById('bulk').addEventListener('click', function(){
+    var sound = PL.plans.filter(function(p){ return p.status === 'ok' && !p.decision; }).length;
+    var n = document.createElement('div'); n.className = 'fields';
+    var t = document.createElement('div'); t.className = 'note';
+    t.textContent = 'تعتمد ' + sound + ' خطة قرئت سليمة ولم تقرر فيها بعد، فتصل رؤساء الشعب. وتبقى الخطط التي تراجع لنظرك، ولا يمس قرار سابق. وتستطيع إلغاء اعتماد أي خطة بعد.';
+    var b = document.createElement('button'); b.className = 'cta'; b.textContent = 'اعتمدها';
+    b.addEventListener('click', function(){
+      b.disabled = true;
+      api('api/admin/plans/approve-sound', { method: 'POST', body: JSON.stringify({ set: PL.set.id }) })
+        .then(function(j){ Shouba.sheet.close(); say(pmsg, 'اعتمدت ' + j.approved + ' خطة سليمة.', true); loadPlans(); })
+        .catch(function(e){ b.disabled = false; say(pmsg, e.message); });
+    });
+    n.appendChild(t); n.appendChild(b);
+    Shouba.sheet.open('اعتماد الخطط السليمة', n);
+  });
+</script>
+</body>
+</html>

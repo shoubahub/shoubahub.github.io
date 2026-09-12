@@ -267,6 +267,15 @@ badCv(t => { t.blocks[1].columns[1].split = true; }, 'التقسيم للاخت�
 badCv(t => { t.blocks[1].columns = t.blocks[1].columns.filter(c => c.kind !== 'date'); }, 'مجموعات اشهر بلا عمود تاريخ', 'يرفض مجموعات اشهر بلا عمود تاريخ');
 badCv(t => { t.blocks[1].rowGroups.months = [9, 13]; }, 'شهر خارج', 'يرفض شهرا خارج ١–١٢');
 
+// ١١) ترحيل العام الدراسي (الخطوة ٤، 2026-09-13): «٢٠٢٦/٢٠٢٧» ⟵ «٢٠٢٦ / ٢٠٢٧» في الشعبة وسجلاتها، والتاريخ لا يمس
+const oldDoc = { stage: 'ثانوي', department: 'الرياضيات', year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', refDataVersion: 3,
+  recs: [{ id: 'y1', tpl: 'meetings', v: 1, year: '٢٠٢٥/٢٠٢٦', term: 'الفصل الثاني', values: { meta: { no: 1, date: '2026-05-10', topic: 'ع' } } },
+         { id: 'y2', tpl: 'covered', v: 1, year: '2026/2027', term: '', values: { meta: { who: 'فهد', year: '٢٠٢٦/٢٠٢٧' }, rows: [] } }] };
+const Wy = world({ 'shouba.setup': JSON.stringify(oldDoc) }), dy = Wy.Shouba.data();
+ok(dy.year === '٢٠٢٦ / ٢٠٢٧' && dy.recs[0].year === '٢٠٢٥ / ٢٠٢٦' && dy.recs[1].year === '2026 / 2027' && dy.recs[1].values.meta.year === '٢٠٢٦ / ٢٠٢٧'
+   && dy.recs[0].values.meta.date === '2026-05-10' && dy.refDataVersion === 4, 'العام الدراسي يرحل بمسافة حول الشرطة، والتاريخ لا يمس', dy);
+ok(W.SHOUBA_REF.years.every(y => / \/ /.test(y)) && Wy.Shouba.yearText('2027/2028') === '2027 / 2028', 'اعوام المرجعية بالصيغة الجديدة');
+
 // ٩) بلا تشكيل في القوالب والمحرك
 const H = new RegExp('[' + String.fromCharCode(0x064B) + '-' + String.fromCharCode(0x0652) + String.fromCharCode(0x0670) + ']');
 ok(!H.test(read('rec-templates.js')) && !H.test(read('rec-engine.js')), 'القوالب والمحرك بلا تشكيل');

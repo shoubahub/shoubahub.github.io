@@ -282,8 +282,20 @@
        («سجل…» المحفوظ ⟵ «سجل…» في refdata). والمفاتيح كالقيم: الجداول مفاتيحها أسماء المعلمين.
      ⚠ المزامنة: إن كانت النسخة نظيفة قبل الترحيل ختمت بصمتها بعده — فجهاز ثان يرحل
        نسخته المطابقة فيجدها مطابقة لما رفعه الأول، ولا يعرض عليه «خلاف» كاذب.
-     ⚠ نمط الحركات بمهارب يونيكود لا بالحروف نفسها: أداة تنظيف المصدر تحذف الحروف. */
-  var REF_VERSION = 3;
+     ⚠ نمط الحركات بمهارب يونيكود لا بالحروف نفسها: أداة تنظيف المصدر تحذف الحروف.
+     ٤ (2026-09-13) **العام الدراسي بمسافة حول الشرطة** «٢٠٢٦ / ٢٠٢٧» — بلا مسافة يرسمه المتصفح في الصفحة العربية
+       عددا واحدا من اليسار فيقرأ ٢٠٢٧ اولا (رصد المستخدم). يرحل كل نص هو عام دراسي وحده (العام · عام كل سجل ·
+       خانة العام فيه) فتبقى المطابقة بين الشعبة وسجلاتها. وشفاء ذاتي كالحركات: نسخة قديمة تكتب الصيغة القديمة تصلح. */
+  var REF_VERSION = 4;
+  var YEAR_OLD = /^\s*([٠-٩0-9]{4})\s*\/\s*([٠-٩0-9]{4})\s*$/;
+  var HAS_YEAR_OLD = /"[٠-٩0-9]{4}\/[٠-٩0-9]{4}"/;
+  S.yearText = function (s) { return String(s == null ? '' : s).replace(YEAR_OLD, '$1 / $2'); };
+  function years(v) {
+    if (typeof v === 'string') return YEAR_OLD.test(v) ? S.yearText(v) : v;
+    if (Array.isArray(v)) return v.map(years);
+    if (v && typeof v === 'object') { var o = {}; Object.keys(v).forEach(function (k) { o[k] = years(v[k]); }); return o; }
+    return v;
+  }
   var HARAKAT = new RegExp('[' + String.fromCharCode(0x064B) + '-' + String.fromCharCode(0x0652) + String.fromCharCode(0x0670) + ']', 'g');
   function plain(v) {
     if (typeof v === 'string') return v.replace(HARAKAT, '');
@@ -306,8 +318,8 @@
     /* ⚠ شفاء ذاتي لا ترحيل مرة واحدة (2026-09-11): جهاز ما زال على نسخة قديمة من المنصة
        (في مخزن عامل الخدمة) قد يكتب نصا مشكولا بعد ان رحلت الوثيقة الى ٣ — فلا يكتفى
        برقم النسخة: اي حركة في الوثيقة تنظف متى وجدت، من اي مصدر جاءت. */
-    var marked = HAS_HARAKAT.test(JSON.stringify(d));
-    if (v === REF_VERSION && !marked) return;
+    var json = JSON.stringify(d), marked = HAS_HARAKAT.test(json), oldYear = HAS_YEAR_OLD.test(json);
+    if (v === REF_VERSION && !marked && !oldYear) return;
     var clean = !isDirty();
     if (v < 2) {
       var now = SHOUBA_REF.departmentOf(d.stage, d.department || '');
@@ -315,6 +327,7 @@
       delete d.subjects;                     // تشتق من جديد
     }
     if (v < 3 || marked) d = plain(d);
+    if (v < 4 || oldYear) d = years(d);
     d.refDataVersion = REF_VERSION;
     localStorage.setItem(KEY, JSON.stringify(d));
     cache = d;

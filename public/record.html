@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=53" />
-<link rel="stylesheet" href="shell.css?v=53" />
-<link rel="stylesheet" href="components.css?v=53" />
-<link rel="stylesheet" href="frame.css?v=53" />
-<link rel="stylesheet" href="rec-print.css?v=53" />
+<link rel="stylesheet" href="identity/tokens.css?v=54" />
+<link rel="stylesheet" href="shell.css?v=54" />
+<link rel="stylesheet" href="components.css?v=54" />
+<link rel="stylesheet" href="frame.css?v=54" />
+<link rel="stylesheet" href="rec-print.css?v=54" />
 <style>
   /* شاشة السجل (2026-09-12) — شاشة واحدة لكل القوالب، تولدها اللبنات من التعريف:
      ?tpl=<قالب> سجل جديد (لا يحفظ حتى يكتب فيه) · ?id=<سجل> سجل محفوظ باصداره هو.
@@ -75,17 +75,17 @@
   </div>
  </div></div>
 
-<script src="build.js?v=53"></script>
-<script src="refdata.js?v=53"></script>
-<script src="rec-templates.js?v=53"></script>
-<script src="rec-engine.js?v=53"></script>
-<script src="derive.js?v=53"></script>
-<script src="plan-data.js?v=53"></script>
-<script src="icons.js?v=53"></script>
-<script src="components.js?v=53"></script>
-<script src="rec-print.js?v=53"></script>
-<script src="rec-files.js?v=53"></script>
-<script src="rec-form.js?v=53"></script>
+<script src="build.js?v=54"></script>
+<script src="refdata.js?v=54"></script>
+<script src="rec-templates.js?v=54"></script>
+<script src="rec-engine.js?v=54"></script>
+<script src="derive.js?v=54"></script>
+<script src="plan-data.js?v=54"></script>
+<script src="icons.js?v=54"></script>
+<script src="components.js?v=54"></script>
+<script src="rec-print.js?v=54"></script>
+<script src="rec-files.js?v=54"></script>
+<script src="rec-form.js?v=54"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -183,8 +183,8 @@
   function lab(t){ var d = document.createElement('div'); d.className = 'rb-lab'; d.textContent = t; return d; }
   function buildOpts(){
     var box = document.getElementById('popts'), p = curPrint();
-    box.hidden = !p; box.textContent = '';
-    if (!p) return;
+    box.hidden = false; box.textContent = '';
+    if (p) {
     var sg = document.createElement('div');
     sg.className = 'segs sm';
     PR.forEach(function(x){
@@ -224,6 +224,32 @@
         box.appendChild(list);
       }
     }
+    }   /* نهاية خيارات المطبوعين */
+    signOpts(box);
+  }
+
+  /* ── التوقيعات اسفل النموذج (2026-09-13، اعتمده المستخدم): رئيس الشعبة يمينا · الموجه وسطا · المدير يسارا
+     (ShoubaPrint.approval). رقاقة لكل موقع تظهره او تخفيه، والمعاينة تتبع. والاختيار يحفظ في الشعبة لكل قالب
+     ومطبوعه (printSigns) فلا يعاد مع كل طباعة. الافتراض رئيس الشعبة والمدير — الا مطبوعا بغلاف فيه توقيعاهما
+     (الخطة التشغيلية) فلا يتكرران: يبدأ بلا توقيعات ويظهرها صاحبها ان شاء */
+  var SIGNERS = [{ v: 'head', t: 'رئيس الشعبة' }, { v: 'supervisor', t: 'الموجه الفني' }, { v: 'principal', t: 'مدير المدرسة' }];
+  function signKey(){ var p = curPrint(); return tpl.id + (p ? ':' + p.id : ''); }
+  function signs(){
+    var m = (S.data().printSigns || {})[signKey()], d0 = ShoubaPrint.SIGNS, p = curPrint();
+    if (m) return { head: !!m.head, supervisor: !!m.supervisor, principal: !!m.principal };
+    var cover = tpl.blocks.some(function(b){ return b.type === 'signatures' && b.mode === 'cover'; }) && (!p || p.cover !== false);
+    return cover ? { head: false, supervisor: false, principal: false } : { head: !!d0.head, supervisor: !!d0.supervisor, principal: !!d0.principal };
+  }
+  function signOpts(box){
+    var o = signs();
+    box.appendChild(lab('التوقيعات أسفل النموذج — المس اسما لتظهره أو تخفيه'));
+    box.appendChild(ShoubaForm.toggles(SIGNERS, function(k){ return !!o[k]; }, function(k){
+      o[k] = !o[k];
+      var m = S.data().printSigns || {};
+      m[signKey()] = { head: o.head, supervisor: o.supervisor, principal: o.principal };
+      S.save({ printSigns: m });
+      paint();
+    }));
   }
 
   /* الامتداد (fit: 'flow' — الخطة التشغيلية): صفحات مرقمة ذاتيا (ShoubaPrint.pages)، كل صفحة مصغرة الى
@@ -231,7 +257,7 @@
   function paintFlow(){
     var box = document.getElementById('pgs'), host = document.createElement('div'), m = document.getElementById('meter');
     pvw.hidden = true; box.hidden = false; box.textContent = ''; box.appendChild(host);
-    var pages = ShoubaPrint.pages(tpl, rec, { open: S.openDecisions(rec), print: printCfg() }, host);
+    var pages = ShoubaPrint.pages(tpl, rec, { open: S.openDecisions(rec), print: printCfg(), signs: signs() }, host);
     pages.forEach(function(p){
       var w = document.createElement('div');
       w.className = 'pvw';
@@ -258,7 +284,7 @@
     pvw.hidden = false; document.getElementById('pgs').hidden = true;
     document.getElementById('meter').querySelector('.track').hidden = false;
     pvw.textContent = '';
-    var sheet = ShoubaPrint.render(tpl, rec, { open: S.openDecisions(rec) });
+    var sheet = ShoubaPrint.render(tpl, rec, { open: S.openDecisions(rec), signs: signs() });
     pvw.appendChild(sheet);
     fit = ShoubaPrint.fit(sheet, tpl.page);
     var k = pvw.clientWidth / sheet.offsetWidth;

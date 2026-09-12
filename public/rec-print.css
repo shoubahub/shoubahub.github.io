@@ -14,7 +14,7 @@
   background:#fff; color:#000; direction:rtl;
   font-family:var(--paper-font); font-size:12pt; line-height:1.55;   /* ١٢ = P.BASE_PT */
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
-  display:flex; flex-direction:column;   /* عمود مرن: مساحة النص تبتلع ما بقي */
+  display:flex; flex-direction:column;   /* عمود مرن: مربع الاعتماد ينزل الى اسفل الورقة (.pp-appr) */
 }
 .pp-sheet.landscape{ width:297mm; min-height:210mm; }
 .pp-sheet *{ box-sizing:border-box; }
@@ -44,7 +44,8 @@
 .pp-fields td{ font-weight:500; }
 .pp-fields .gap{ display:inline-block; width:8mm; }
 /* ② مساحة النص: العبارة الافتتاحية ثم الاقسام مرقمة بالهندية، وما بقي اسطر منقطة */
-.pp-text{ flex:1; display:flex; flex-direction:column; gap:3mm; margin:0 0 5mm; }
+/* النص بقدره لا ممتدا الى آخر الصفحة (2026-09-13، طلب المستخدم: «الاولوية للكلام المطبوع») — فالحضور يلي النص */
+.pp-text{ flex:none; display:flex; flex-direction:column; gap:3mm; margin:0 0 5mm; }
 .pp-lead{ font-weight:700; font-size:1.08em; }
 .pp-sec .t{ font-weight:700; text-decoration:underline; text-underline-offset:1.3mm; }
 .pp-sec ol{ list-style:none; counter-reset:n; margin:1.2mm 0 0; padding:0; }
@@ -55,10 +56,18 @@
 .pp-meta{ font-size:.92em; }
 /* ⑥ المرفقات: قائمة الاسماء بين مساحة النص والحضور */
 .pp-files{ margin:0 0 5mm; }
-/* الاسطر المنقطة تملأ ما بقي فقط — لا حد ادنى لها، فلا تدفع سجلا ممتلئا الى تصغير الخط */
-.pp-fill{ flex:1; min-height:0; background-image:radial-gradient(circle,#666 .32mm,transparent .36mm); background-size:2.1mm 8.5mm; background-position:0 4mm; }
+/* (حذفت الاسطر المنقطة .pp-fill — قرار المستخدم 2026-09-13: «احذف الاسطر تماما») */
+/* ⑧ سطر التوقيعات (P.approval — 2026-09-13): اسفل كل نموذج، بلا اطار (قرار المستخدم: «حتى لا يأخذ مكان المحتوى»).
+   المدير يمينا ورئيس الشعبة يسارا والموجه وسطا — space-between يوزعهم. margin-top:auto ينزله الى اسفل الورقة،
+   وفوق الاسم فسحة للتوقيع والختم باليد. بالنقطة لا بـem كالترويسة: لا يصغره P.fit */
+.pp-appr{ margin-top:auto; padding-top:10mm; display:flex; justify-content:space-between; align-items:flex-start; break-inside:avoid; font-size:11.5pt; line-height:1.5; }
+.pp-appr .sg{ display:flex; flex-direction:column; align-items:center; gap:1.5mm; min-width:52mm; text-align:center; }
+.pp-appr .r{ font-weight:700; }
 /* ⑦ الحضور: مجموعتان متجاورتان، اليمنى تملأ اولا، والتوقيع فارغ لليد */
-.pp-att{ display:grid; grid-template-columns:1fr 1fr; border:1.6px solid #000; }
+/* جدول الحضور ثابت في اسفل الصفحة والفراغ فوقه (قرار المستخدم 2026-09-13) — margin-top:auto في العمود المرن،
+   وسطر التوقيعات يليه مباشرة */
+.pp-att{ display:grid; grid-template-columns:1fr 1fr; border:1.6px solid #000; margin-top:auto; }
+.pp-att + .pp-appr{ margin-top:0; }
 .pp-att table{ width:100%; border-collapse:collapse; }
 .pp-att table + table{ border-right:2px solid #000; }
 .pp-att th,.pp-att td{ border:1px solid #000; padding:1.2mm 2mm; height:8.5mm; font-size:.92em; text-align:right; }
@@ -102,9 +111,8 @@
 .pp-sign .s{ margin-top:5mm; }
 /* القسم المتكرر: رأس كل نسخة («محور ١: …») بشريط في بدايته */
 .pp-axis{ font-weight:700; font-size:1.15em; margin:1mm 0 2.5mm; padding:1mm 3mm; border-inline-start:2mm solid #000; }
-/* في صفحات الامتداد لا تتمدد مساحة النص ولا اسطر منقطة — ذلك لسجل الصفحة الواحدة */
+/* في صفحات الامتداد لا تتمدد مساحة النص */
 .pp-sheet.pp-page .pp-text{ flex:none; }
-.pp-sheet.pp-page .pp-fill{ display:none; }
 /* تقرير التنفيذ (المرحلة الثانية د): الملخص في اطار بعد الترويسة */
 .pp-sum{ border:1.2px solid #000; padding:2.5mm 4mm; margin:0 0 5mm; font-weight:700; font-size:1.05em; }
 .pp-sum small{ font-weight:500; font-size:.88em; margin-inline-start:4mm; }
@@ -123,7 +131,7 @@
 
 /* ── القياس (P.fit · P.pages): الورقة بطولها الطبيعي — بلا حد الصفحة ولا تمدد مساحة النص ── */
 .pp-sheet.pp-measure,.pp-sheet.pp-page.pp-measure{ min-height:0; height:auto; overflow:visible; }
-.pp-measure .pp-text,.pp-measure .pp-fill{ flex:none; }
+.pp-measure .pp-text{ flex:none; }
 
 /* ── الطباعة: الورق وحده ───────────────────────────────────────────
    P.print ينسخ الورقة الى .pp-print (ابن body)، ولا ترى على الشاشة */

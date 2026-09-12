@@ -109,15 +109,14 @@
     });
     return t;
   };
-  /* ② مساحة النص: العبارة الافتتاحية ثم الاقسام، وما بقي من المساحة اسطر منقطة (fill).
-     وبلا عبارة ولا قسم مكتوب ولا اسطر منقطة لا شيء يطبع (غايات محور فارغة) */
+  /* ② مساحة النص: العبارة الافتتاحية ثم الاقسام. وبلا عبارة ولا قسم مكتوب لا شيء يطبع (غايات محور فارغة).
+     ⚠ لا اسطر منقطة (قرار المستخدم 2026-09-13: «احذف الاسطر تماما») — كانت تملأ ما بقي من الصفحة (fill:'dotted' في
+     قالب الاجتماعات يبقى في تعريفه المنشور ولا يرسم) */
   PB.text = function (b, v, ctx) {
     var box = el('div', 'pp-text');
     if (b.lead) box.appendChild(el('div', 'pp-lead', b.lead));
     b.sections.forEach(function (s) { var n = PS[s.kind] && PS[s.kind](s, v, ctx); if (n) box.appendChild(n); });
-    if (!box.children.length && b.fill !== 'dotted') return null;
-    if (b.fill === 'dotted') box.appendChild(el('div', 'pp-fill'));
-    return box;
+    return box.children.length ? box : null;
   };
   PS.paragraph = function (s, v) {
     var t = String(v[s.id] || '').trim();
@@ -377,7 +376,27 @@
   }
   function blankOf(b) { return b.type === 'table' || b.type === 'repeat' ? [] : {}; }
 
-  /* الورقة كاملة: الترويسة المشتركة ثم اللبنات بترتيب القالب — الا ما وسم print:false. ctx: { open } */
+  /* ⑧ سطر التوقيعات — اسفل كل مطبوع (طلب المستخدم 2026-09-13): بلا اطار ولا «يعتمد» — لكل موقع منصبه وتحته اسمه:
+     رئيس الشعبة يمينا · الموجه الفني وسطا (ان اضيف) · مدير المدرسة يسارا. الاسماء من الاعداد (المدير والموجه من ش④،
+     رئيس الشعبة صاحب الحساب) او «أ. …» تكتب باليد. طبقة مشتركة كالترويسة لا يغيرها قالب، فتلحق كل سجل محفوظ او جديد،
+     وتنزل الى اسفل الصفحة (margin-top:auto). signs: { principal, supervisor, head } — الافتراض المدير ورئيس الشعبة */
+  P.SIGNS = { principal: true, supervisor: false, head: true };
+  P.approval = function (signs) {
+    var S = window.Shouba, d = S && S.data ? S.data() : {}, o = signs || P.SIGNS, n = el('div', 'pp-appr');
+    function nm(x) { x = String(x || '').trim().replace(/^أ\.\s*/, ''); return 'أ. ' + (x || '...........................'); }
+    var head = S && S.user ? S.user().name : '';
+    /* الترتيب من اليمين (قرار المستخدم 2026-09-13): رئيس الشعبة · الموجه الفني · مدير المدرسة */
+    [['head', 'رئيس الشعبة', head], ['supervisor', 'الموجه الفني', d.supervisor], ['principal', 'مدير المدرسة', d.principal]].forEach(function (r) {
+      if (!o[r[0]]) return;
+      var g = el('div', 'sg');
+      g.appendChild(el('div', 'r', r[1]));
+      g.appendChild(el('div', 'nm', nm(r[2])));
+      n.appendChild(g);
+    });
+    return n.children.length ? n : null;
+  };
+
+  /* الورقة كاملة: الترويسة المشتركة ثم اللبنات بترتيب القالب — الا ما وسم print:false — ثم مربع الاعتماد. ctx: { open } */
   P.body = function (sheet, tpl, rec, ctx) {
     ctx = drawCtx(ctx, tpl, rec);
     tpl.blocks.forEach(function (b) {
@@ -386,6 +405,8 @@
       if (!n) return;
       (Array.isArray(n) ? n : [n]).forEach(function (x) { sheet.appendChild(x); });
     });
+    var sg = P.approval(ctx.signs);
+    if (sg) sheet.appendChild(sg);
     return sheet;
   };
   P.render = function (tpl, rec, ctx, fontId) {
@@ -510,6 +531,9 @@
         if (x.classList.contains('pp-cover')) fresh = true;
       });
     });
+    /* سطر التوقيعات في آخر النموذج (قبل ملحق الشواهد) — ينزل الى اسفل صفحته، وان لم يتسع فالى صفحة بعدها */
+    var sg = P.approval(ctx.signs);
+    if (sg) place(sg);
     /* ملحق الشواهد (print.appendix): بعد التقرير، اربع صور في الصفحة وتحت كل صورة اجراؤها وتاريخها ومنفذه
        (من البيانات بلا ادخال). وملفات PDF لا تدمج — تذكر اسماؤها. والصور المستبعدة في print.off */
     if (ctx.print && ctx.print.appendix && window.ShoubaRec) {

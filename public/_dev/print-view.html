@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-public>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>شعبة · معاينة الورق بمقاسه (أداة تطوير)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../rec-print.css" />
+<style>
+  /* معاينة المطبوع بمقاسه الحقيقي مصغرا الى عرض الشاشة (2026-09-13) — لعرض شكل الورق على المستخدم قبل اعتماده:
+     سجلات مخزن المعاينة (page-sim) بقوالبها، كل ورقة كما تطبع. ?tpl=<قالب> لقالب واحد. على الجهاز المحلي وحده */
+  body{margin:0;background:#E9E4DA;font-family:"IBM Plex Sans Arabic",sans-serif;padding:20px 12px 60px}
+  h2{font-size:15px;margin:22px 4px 8px;color:#16456E}
+  .pw{position:relative;overflow:hidden;background:#fff;box-shadow:0 1px 8px rgba(40,30,15,.2);margin:0 auto 14px;max-width:820px}
+  .pw .pp-sheet{position:absolute;top:0;right:0;transform-origin:top right}
+</style>
+</head>
+<body>
+<div id="out"></div>
+<script>
+  (function(){ var h = location.hostname;
+    if (!(h === 'localhost' || h === '127.0.0.1')) { document.body.textContent = 'أداة تطوير — تعمل على الجهاز المحلي وحده.'; throw new Error('dev only'); }
+    try { sessionStorage.setItem('shouba.sim', '1'); } catch (e) {} })();
+</script>
+<script src="../build.js"></script>
+<script src="../refdata.js"></script>
+<script src="../rec-templates.js"></script>
+<script src="../rec-engine.js"></script>
+<script src="../derive.js"></script>
+<script src="../components.js"></script>
+<script src="../rec-print.js"></script>
+<script>
+  var S = Shouba, Q = new URLSearchParams(location.search), only = Q.get('tpl'), oneId = Q.get('id'), out = document.getElementById('out'), seen = {};
+  function wrap(sheet, title){
+    var h = document.createElement('h2'), w = document.createElement('div');
+    h.textContent = title; w.className = 'pw';
+    out.appendChild(h); out.appendChild(w); w.appendChild(sheet);
+    return w;
+  }
+  function size(w, s){ var k = w.clientWidth / s.offsetWidth; s.style.transform = 'scale(' + k + ')'; w.style.height = Math.ceil(s.offsetHeight * k) + 'px'; }
+  function paint(){
+    out.textContent = ''; seen = {};
+    S.recs().forEach(function(r){
+      var t = ShoubaRec.of(r);
+      if (!t || (oneId ? r.id !== oneId : (seen[t.id] || (only && t.id !== only)))) return;   /* ?id= سجل بعينه */
+      seen[t.id] = 1;
+      /* ?sup=1: سطر التوقيعات ومعه الموجه الفني وسطا — للمعاينة */
+      var ctx = { open: S.openDecisions(r), signs: Q.get('sup') ? { principal: true, supervisor: true, head: true } : null };
+      if (t.page.fit === 'flow') {
+        var host = document.createElement('div'); out.appendChild(host);
+        var pages = ShoubaPrint.pages(t, r, ctx, host);
+        out.removeChild(host);
+        pages.forEach(function(p, i){ var w = wrap(p, t.title + (r.who ? ' · أ. ' + r.who : '') + ' — صفحة ' + (i + 1) + ' من ' + pages.length); size(w, p); });
+      } else {
+        var s = ShoubaPrint.render(t, r, ctx), w = wrap(s, t.title + (r.who ? ' · أ. ' + r.who : ''));
+        ShoubaPrint.fit(s, t.page); size(w, s);
+      }
+    });
+    if (!out.children.length) out.textContent = 'لا سجلات في مخزن المعاينة — افتح page-sim.html?seed أولا.';
+  }
+  paint();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint);
+</script>
+</body>
+</html>

@@ -7,10 +7,10 @@
 <meta name="robots" content="noindex, nofollow" />
 <meta name="theme-color" content="#1B5183" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=51" />
-<link rel="stylesheet" href="shell.css?v=51" />
-<link rel="stylesheet" href="components.css?v=51" />
-<link rel="stylesheet" href="frame.css?v=51" />
+<link rel="stylesheet" href="identity/tokens.css?v=52" />
+<link rel="stylesheet" href="shell.css?v=52" />
+<link rel="stylesheet" href="components.css?v=52" />
+<link rel="stylesheet" href="frame.css?v=52" />
 <style>
   /* خاص بالإدارة: صف الحساب وجدوله. لا هيكل ولا هوامش عامة. */
   .urow{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;
@@ -147,7 +147,7 @@
             <button type="button" class="btn-ghost" id="copyInvite">انسخ رسالة الدعوة</button>
             <button type="button" class="btn-ghost" id="waInvite">أرسل عبر واتساب</button>
           </div>
-          <div class="hint">فيها رابط المنصة ورمز الدعوة الحالي وخطوات التسجيل، ودعوة لكتابة الملاحظات.</div>
+          <div class="hint">فيها رابط المنصة ورمز الدعوة الحالي وخطوات التسجيل والتثبيت، ودعوة لكتابة الملاحظات.</div>
           <div class="msg" id="imsg"></div>
         </div>
 
@@ -180,8 +180,8 @@
   </div>
  </div></div>
 
-<script src="build.js?v=51"></script>
-<script src="components.js?v=51"></script>
+<script src="build.js?v=52"></script>
+<script src="components.js?v=52"></script>
 <script>
   /* لوحة الإدارة — شاشة مستقلة لا رابط إليها من أي مكان (قرار المستخدم 2026-09-08).
      ⚠ رقم الإدارة **لا يحفظ**: يبقى في الذاكرة ما دامت الصفحة مفتوحة فقط.
@@ -236,26 +236,21 @@
      «رمز جديد» نسخ الرسالة بالجديد تلقائيا. ولا تشكيل فيها (قاعدة المنصة). */
   function inviteText(){
     var code = document.getElementById('code').textContent.trim();
+    /* الصيغة المختصرة (اعتمدها المستخدم 2026-09-13): ومعها تثبيت المنصة خطوة رابعة، و«في سفاري أو كروم»
+       لان متصفح واتساب الداخلي لا يثبت */
     return [
       'السلام عليكم ورحمة الله وبركاته',
-      'يسعدني أن أدعوك لتجربة منصة «شعبة»، منصة رئيس الشعبة لمتابعة جداول المعلمين والسجلات والمواعيد من أي جهاز.',
+      'أدعوك لتجربة منصة «شعبة» لرئيس الشعبة: جداول المعلمين والسجلات والمواعيد من أي جهاز.',
       '',
       'للتسجيل:',
-      '١. افتح الرابط:',
+      '١. افتح الرابط في سفاري أو كروم:',
       location.origin + '/',
-      '٢. اختر «حساب جديد»',
-      '٣. اكتب رمز الدعوة: ' + code,
-      '٤. اختر اسم مستخدم بالإنجليزية ورقما سريا من ستة أرقام',
+      '٢. اختر «حساب جديد» واكتب رمز الدعوة: ' + code,
+      '٣. اختر اسم مستخدم بالإنجليزية ورقما سريا من ستة أرقام',
+      '٤. ثبت المنصة على شاشة هاتفك كتطبيق من زر «تثبيت» أعلى اللوحة',
       '',
-      'رقمك السري لا يطلع عليه أحد، ولا أرى بيانات شعبتك.',
-      '',
-      'المنصة في مرحلة تجريبية، والهدف منها أن تتطور بتجربتكم. فأرجو أن ترصد أثناء استخدامك:',
-      '• خطوة لم تتضح لك',
-      '• شيئا احتجته ولم تجده',
-      '• فكرة ترى أنها تيسر عملك',
-      '',
-      'وأرسل ما ترصده في وقته من زر «ملاحظة» بجانب زر الإعدادات أعلى اللوحة، فتصلني مباشرة.',
-      'لا تنتظر نهاية التجربة — الملاحظة وهي حاضرة أدق.'
+      'رقمك السري وبيانات شعبتك لا يطلع عليها أحد.',
+      'المنصة تجريبية، فأرسل كل ملاحظة في وقتها من زر «ملاحظة» أعلى اللوحة، فتصلني مباشرة.'
     ].join('\n');
   }
   /* النسخ: الحافظة الحديثة، وبديلها للمتصفحات الاقدم (سفاري قديم) */

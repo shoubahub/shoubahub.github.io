@@ -530,36 +530,121 @@
     S.save();
   };
 
-  /* المواد التي لها خطة منهج */
-  S.planSubjects = function () { return Object.keys(S.data().plan || {}); };
-  /* تقدم المنهج: { total, done, pct, cells:[{done,now}] } */
-  S.planProgress = function () {
-    var d = S.data(), plan = d.plan || {}, progress = d.progress || {}, week = S.weekNo() || 1;
-    var total = 0, done = 0, cells = [];
-    S.planSubjects().forEach(function (s) {
-      plan[s].forEach(function (L) {
-        total++;
-        var isDone = Object.keys(progress).some(function (k) {
-          return k.indexOf('|' + s + '|' + L.week) > -1 && progress[k];
-        });
-        if (isDone) done++;
-        cells.push({ done: isDone, now: L.week === week });
-      });
-    });
-    return { total: total, done: done, pct: total ? Math.round(done / total * 100) : 0, cells: cells };
+  /* (حذفت 2026-09-13 planSubjects وplanProgress وbehindPlan: كانت على نموذج قديم لم يملأ قط — d.plan وd.progress
+     — فبقي قسم اللوحة «قيد الاعداد». البديل: خطط التوزيع المعتمدة ادناه (planLinks)، وما قطعه المعلم في سجل
+     «ما قطع من المنهج» — الخطوة هـ — مصدر الانجاز الحق، فلا حكم بتأخر بلا تأشير) */
+
+  /* ── خطط التوزيع المعتمدة (2026-09-13، الخطوة ج من بناء شريط الخطة) ────────
+     ما تدرسه الشعبة من جداول معلميها («10/2 · الرياضيات» ⟵ الرياضيات · العاشر)، ولكل مادة وصف خطتها المعتمدة
+     (ShoubaPlans في plan-data.js — من الخادم) او لا خطة، فيظهر مكانها «يجب رفع الخطة». والاسبوع الجاري من تقويم
+     الخطط نفسها (تواريخ الوثائق بالاغلبية) لا بالعد — وتاريخ بدء الفصل الذي ادخله رئيس الشعبة بديل حين لا تقويم.
+     ⚠ الخطط لا تدخل وثيقة الشعبة: بيانات مرجعية تمرر الى هذه الدوال. */
+  var STAGE_BASE = { 'ابتدائي': 1, 'متوسط': 6, 'ثانوي': 10 };
+  function latinNum(s) { return String(s == null ? '' : s).replace(/[٠-٩]/g, function (d) { return d.charCodeAt(0) - 0x660; }); }
+  /* الاسم بلا فروق الهمزة والتاء والياء ولا ما ليس حرفا («التربية البدنية- بنين» ⟵ التربيهالبدنيهبنين) */
+  function nameKey(s) { return String(s || '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').replace(/[^ء-ي]/g, ''); }
+  /* صف الفصل من رقمه: «10/2» ⟵ العاشر — بقاعدة المرحلة (الابتدائي من ١ · المتوسط من ٦ · الثانوي من ١٠) */
+  S.gradeOfClass = function (cls) {
+    var st = S.data().stage, n = parseInt(latinNum(String(cls || '').split('/')[0]), 10);
+    var gs = (SHOUBA_REF.gradesByStage || {})[st] || [], g = gs[n - (STAGE_BASE[st] || 1)];
+    return g ? g.grade : '';
   };
-  /* من تأخر عن الخطة: له درس في أسبوع مضى لم يؤشر */
-  S.behindPlan = function (limit) {
-    var d = S.data(), plan = d.plan || {}, progress = d.progress || {}, week = S.weekNo() || 1;
-    var names = S.planSubjects();
-    if (!names.length) return [];
-    var pool = S.teachers();
-    if (limit) pool = pool.slice(0, limit);
-    return pool.filter(function (t) {
-      return names.some(function (s) {
-        return plan[s].some(function (L) { return L.week < week && !progress[t + '|' + s + '|' + L.week]; });
+  /* ما تدرسه الشعبة: [{ subject, grade, classes, teachers }] بترتيب الصفوف ثم المواد.
+     ⚠ يقرأ الجداول ولا يمسها (daySlots ينشئ اياما فارغة لمن لا جدول له) */
+  S.planPairs = function () {
+    var d = S.data(), sch = d.schedules || {}, map = {}, gs = ((SHOUBA_REF.gradesByStage || {})[d.stage] || []).map(function (g) { return g.grade; });
+    Object.keys(sch).forEach(function (t) {
+      Object.keys(sch[t] || {}).forEach(function (day) {
+        (Array.isArray(sch[t][day]) ? sch[t][day] : []).forEach(function (v) {
+          if (!v) return;
+          var s = S.splitSlot(v), g = S.gradeOfClass(s.cls);
+          if (!s.subject || !g) return;
+          var k = g + '|' + s.subject, e = map[k] || (map[k] = { subject: s.subject, grade: g, classes: [], teachers: [] });
+          if (s.cls && e.classes.indexOf(s.cls) < 0) e.classes.push(s.cls);
+          if (e.teachers.indexOf(t) < 0) e.teachers.push(t);
+        });
       });
     });
+    return Object.keys(map).map(function (k) { return map[k]; })
+      .sort(function (a, b) { return (gs.indexOf(a.grade) - gs.indexOf(b.grade)) || (a.subject < b.subject ? -1 : a.subject > b.subject ? 1 : 0); });
+  };
+  /* خطة الزوج من المعتمد: الصف بالاسم، والمادة تامة قبل البادئة («التربية البدنية» ⟵ «التربية البدنية- بنين»)،
+     وبين خطتين للزوج الواحد (بنين · بنات) نوع المدرسة من الاعداد */
+  S.planFor = function (pair, plans) {
+    var g = nameKey(pair.grade), s = nameKey(pair.subject);
+    var hits = (plans || []).filter(function (p) { return nameKey(p.grade) === g && nameKey(p.subject).indexOf(s) === 0; });
+    var exact = hits.filter(function (p) { return nameKey(p.subject) === s; }), pool = exact.length ? exact : hits;
+    if (pool.length > 1) {
+      var ty = nameKey(S.data().schoolType || '');
+      var byType = ty ? pool.filter(function (p) { return nameKey(p.subject + ' ' + ((p.source || {}).desc || '')).indexOf(ty) > -1; }) : [];
+      if (byType.length) pool = byType;
+    }
+    return pool[0] || null;
+  };
+  /* الاسبوع من تقويم الخطط: { n, from, to } — n=0 قبل بدء الفصل، وبعد آخره آخره. والجمعة والسبت للاسبوع الذي مضى */
+  S.planWeek = function (calendar, today) {
+    var cal = (calendar || []).filter(function (w) { return w && w.from; });
+    if (!cal.length) return null;
+    var now = today ? new Date(today) : new Date();
+    var iso = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
+    if (iso < cal[0].from) return { n: 0, from: cal[0].from, to: cal[0].to };
+    for (var i = cal.length - 1; i >= 0; i--) if (iso >= cal[i].from) return { n: cal[i].n, from: cal[i].from, to: cal[i].to };
+    return null;
+  };
+  /* الربط كله في جواب واحد تسأله اللوحة وشاشة الخطة: { ready, week, pairs:[{…زوج, plan}], missing }.
+     data من ShoubaPlans.get() ان لم تمرر؛ وready=false: لم تجلب الخطط بعد (فلا يقال «يجب رفع الخطة» ظلما) */
+  S.planLinks = function (data, today) {
+    if (data === undefined) data = (window.ShoubaPlans && ShoubaPlans.get(S.data().stage)) || null;
+    var plans = data ? data.plans || [] : [];
+    var pairs = S.planPairs().map(function (p) {
+      return { subject: p.subject, grade: p.grade, classes: p.classes, teachers: p.teachers, plan: data ? S.planFor(p, plans) : null };
+    });
+    return { ready: !!data, week: data ? S.planWeek(data.calendar, today) : null, pairs: pairs,
+             missing: data ? pairs.filter(function (p) { return !p.plan; }) : [] };
+  };
+  /* دروس الخطة في اسبوع: الصف الممتد اسابيع (الخطط الموزعة بالوحدة — span) يشمل اسابيعه كلها، والدرس المتكرر في
+     حصص متتالية مرة بمجموع حصصه (خطط «لكل حصة درس»: الفهم والثروة اللغوية ثلاث حصص صفوفا ثلاثة) */
+  S.planLessons = function (plan, n) {
+    var out = [];
+    ((plan && plan.weeks) || []).forEach(function (w) {
+      if (!(n >= w.n && n <= w.n + (w.span || 1) - 1)) return;
+      (w.lessons || []).forEach(function (l) {
+        var last = out[out.length - 1];
+        if (last && last.t === l.t) last.p += (l.p || 0); else out.push({ t: l.t, p: l.p || 0 });
+      });
+    });
+    return out;
+  };
+  /* عدد اسابيع الخطة — آخر ما تغطيه صفوفها */
+  S.planWeeksOf = function (plan) {
+    return ((plan && plan.weeks) || []).reduce(function (m, w) { return Math.max(m, w.n + (w.span || 1) - 1); }, 0);
+  };
+  /* دروس الخطة مسطحة بترتيبها لتأشير ما قطع (سجل «ما قطع من المنهج» — الخطوة هـ): [{ n, end, t, p }] — n اسبوع
+     الصف وend آخر اسابيعه، فالصف الممتد بالوحدة (span) درس واحد لا درس في كل اسبوع، والمكرر المتتالي في
+     الاسبوع الواحد مدموج بمجموع حصصه كالشريط */
+  S.planFlat = function (plan) {
+    var out = [];
+    ((plan && plan.weeks) || []).slice().sort(function (a, b) { return a.n - b.n; }).forEach(function (w) {
+      var end = w.n + (w.span || 1) - 1, first = out.length;
+      (w.lessons || []).forEach(function (l) {
+        var last = out.length > first ? out[out.length - 1] : null;
+        if (last && last.t === l.t) last.p += (l.p || 0); else out.push({ n: w.n, end: end, t: l.t, p: l.p || 0 });
+      });
+    });
+    return out;
+  };
+  /* حكم ما قطع مقترحا (والقرار لرئيس الشعبة): الدرس الذي وصل اليه { n, end } والاسبوع الجاري في الخطة —
+     'ahead' ان سبق اسبوعه الجاري · 'match' ان كان فيه او في الذي قبله (بداية الاسبوع ليست تأخرا) · 'behind' قبل ذلك.
+     وقبل بدء الفصل (٠) يقاس بالاسبوع الاول */
+  S.paceOf = function (lesson, week) {
+    if (!lesson || !(week >= 0)) return '';
+    var W = Math.max(1, week);
+    return lesson.n > W ? 'ahead' : (lesson.end || lesson.n) >= W - 1 ? 'match' : 'behind';
+  };
+  /* مواد معلم وصفوفه بخططها — من الربط نفسه (planLinks) مقصورا على من يدرسها: { ready, week, pairs } */
+  S.planPairsOf = function (teacher, data, today) {
+    var L = S.planLinks(data, today);
+    return { ready: L.ready, week: L.week, pairs: L.pairs.filter(function (p) { return p.teachers.indexOf(teacher) > -1; }) };
   };
 
   /* ===== ⑥ السجلات — محرك السجلات، المرحلة الاولى (2026-09-12) =====

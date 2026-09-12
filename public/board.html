@@ -11,15 +11,31 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=49" />
-<link rel="stylesheet" href="shell.css?v=49" />
-<link rel="stylesheet" href="components.css?v=49" />
-<link rel="stylesheet" href="frame.css?v=49" />
+<link rel="stylesheet" href="identity/tokens.css?v=50" />
+<link rel="stylesheet" href="shell.css?v=50" />
+<link rel="stylesheet" href="components.css?v=50" />
+<link rel="stylesheet" href="frame.css?v=50" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
   .planline{padding:0 var(--gap-side);font-size:12px;color:var(--shouba-text-muted);font-weight:600}
   .planline b{color:var(--shouba-navy)}
+  /* شريط الخطة (2026-09-13): سطر لكل مادة وصف — دروس اسبوعها في سطر وحصصها، وسهم الى الخطة كاملة (plan.html) */
+  .planline.go{color:var(--shouba-link);cursor:pointer}
+  .ptbl{margin-top:4px}
+  .ptr{cursor:pointer;-webkit-tap-highlight-color:transparent;align-items:center;padding-top:8px;padding-bottom:8px}
+  .ptr:active{background:rgba(22,69,110,.05)}
+  .ptr.miss{cursor:default}
+  .ptr.miss:active{background:none}
+  /* عمود المادة ثابت العرض فتصطف الدروس عمودا واحدا في الصفوف كلها (⑪: العنصر المرن ينكمش فيختل العمود) */
+  .ptr .who{flex:none;width:104px;display:flex;gap:4px;align-items:baseline;white-space:nowrap}
+  .ptr .who b{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;font-weight:700;color:var(--shouba-navy)}
+  .ptr .who small{flex:none;font-size:10.5px;font-weight:600;color:var(--shouba-label)}
+  .ptr .ls{flex:1;min-width:0;font-size:12px;font-weight:600;color:var(--shouba-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ptr .ls.none{color:var(--shouba-hint)}
+  .ptr .pp{flex:none;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+  .ptr .chev{flex:none;color:var(--shouba-hint);font-size:14px;font-weight:700}
+  .ptr .chip{flex:none;font-size:10px;padding:2px 8px}
   .todo{padding:0 var(--gap-side);display:flex;flex-direction:column;gap:7px}
   .calopt{display:flex;align-items:flex-start;gap:10px;padding:10px 2px 14px;cursor:pointer}
   .calopt input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:var(--shouba-navy)}
@@ -94,6 +110,7 @@
           <div class="sect"><div class="h">خطة المنهج</div><div class="a" id="planPct">—</div></div>
           <div class="slices" id="slices"></div>
           <div class="planline" id="planLine"></div>
+          <div class="tbl ptbl" id="ptbl"></div>
         </section>
 
         <!-- ④ بحاجة إلى إجراء -->
@@ -134,13 +151,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=49"></script>
-<script src="refdata.js?v=49"></script>
-<script src="rec-templates.js?v=49"></script>
-<script src="rec-engine.js?v=49"></script>
-<script src="derive.js?v=49"></script>
-<script src="icons.js?v=49"></script>
-<script src="components.js?v=49"></script>
+<script src="build.js?v=50"></script>
+<script src="refdata.js?v=50"></script>
+<script src="rec-templates.js?v=50"></script>
+<script src="rec-engine.js?v=50"></script>
+<script src="derive.js?v=50"></script>
+<script src="plan-data.js?v=50"></script>
+<script src="icons.js?v=50"></script>
+<script src="components.js?v=50"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -687,24 +705,56 @@
   })();
   paintWeek();
 
-  /* ===== ④ إنجاز المنهج ===== */
-  var subjectNames=Shouba.planSubjects();
-  var slicesEl=document.getElementById('slices');
-  if(!subjectNames.length){
-    document.getElementById('planPct').textContent='';
-    slicesEl.style.display='none';
-    document.getElementById('planLine').textContent='رفع توزيع المنهج قيد الإعداد — يصل في تحديث قادم، ولا يلزمك شيء الآن.';
-  } else {
-    var pr=Shouba.planProgress(), total=pr.total, done=pr.done, cells=pr.cells;
-    cells.slice(0,40).forEach(function(c){
-      var i=document.createElement('i');
-      if(c.done) i.className='done'; else if(c.now) i.className='now';
-      slicesEl.appendChild(i);
+  /* ===== ③ خطة المنهج — الشريط المختصر (2026-09-13، الخطوة د من بناء شريط الخطة؛ العينة اعتمدها المستخدم) =====
+     ما تقوله خطة التوجيه المعتمدة لهذا الاسبوع في كل مادة وصف تدرسه الشعبة (Shouba.planLinks — derive.js)، والخطط من
+     الخادم (ShoubaPlans — plan-data.js): النسخة المحفوظة فورا، ثم تحدث في الخلفية فيعاد الرسم.
+     • شرائح الفصل: ما مضى كحلي والجاري عنبري — تقويم لا انجاز. ⚠ لا حكم على معلم بتأخر هنا (لا تأشير) —
+       ما قطعه المعلم في سجل «ما قطع من المنهج» (الخطوة هـ).
+     • «يجب رفع الخطة» للمادة التي لم تعتمد خطتها — ولا تقال قبل ان تجلب الخطط (ready)، ولا باب رفع الان
+       (مؤجل للتطوير القادم بقرار المستخدم).
+     • بلا جداول لا ازواج: الدعوة باب الى الجداول لا سطر فارغ. */
+  function paintPlan(){
+    var L = Shouba.planLinks(), pct = document.getElementById('planPct'), line = document.getElementById('planLine');
+    var sl = document.getElementById('slices'), tb = document.getElementById('ptbl');
+    sl.innerHTML = ''; tb.innerHTML = ''; line.onclick = null; line.classList.remove('go'); pct.onclick = null; pct.textContent = '';
+    if (!L.pairs.length || !L.ready) {
+      sl.style.display = 'none'; tb.style.display = 'none';
+      if (!L.pairs.length) {
+        line.textContent = 'أدخل جداول معلميك ليظهر أسبوع كل مادة في خطتها ›'; line.classList.add('go');
+        line.onclick = function(){ location.href = 'schedule.html'; };
+      } else line.textContent = 'تجلب خطط التوزيع…';
+      return;
+    }
+    var matched = L.pairs.filter(function(p){ return p.plan; });
+    var total = matched.reduce(function(m, p){ return Math.max(m, Shouba.planWeeksOf(p.plan)); }, 0) || 13;
+    var n = L.week ? L.week.n : 0, show = Math.max(1, Math.min(n || 1, total));
+    sl.style.display = ''; tb.style.display = '';
+    for (var i = 1; i <= total; i++) { var c = document.createElement('i'); if (i < n) c.className = 'done'; else if (i === n) c.className = 'now'; sl.appendChild(c); }
+    if (matched.length) { pct.textContent = 'الخطة كاملة ›'; pct.onclick = function(){ location.href = 'plan.html?w=' + show; }; }
+    line.innerHTML = !L.week ? 'حسب خطط التوجيه'
+      : n === 0 ? 'الفصل يبدأ الأحد <b>' + Shouba.dayMonth(L.week.from) + '</b> — وهذه دروس أسبوعه الأول'
+      : 'الأسبوع <b>' + n + '</b> من ' + total + ' · ' + Shouba.weekRange(L.week.from, L.week.to) + ' — حسب خطط التوجيه';
+    L.pairs.forEach(function(p){
+      var r = document.createElement('div'), who = document.createElement('div'), b = document.createElement('b'), s = document.createElement('small'), ls = document.createElement('div');
+      r.className = 'tr ptr' + (p.plan ? '' : ' miss'); who.className = 'who';
+      b.textContent = p.subject; s.textContent = p.grade; who.appendChild(b); who.appendChild(s); r.appendChild(who);
+      if (!p.plan) {
+        ls.className = 'ls none'; ls.textContent = 'لم تعتمد خطته بعد'; r.appendChild(ls);
+        var ch = document.createElement('span'); ch.className = 'chip'; ch.textContent = 'يجب رفع الخطة'; r.appendChild(ch);
+        tb.appendChild(r); return;
+      }
+      var lessons = Shouba.planLessons(p.plan, show), per = lessons.reduce(function(a, l){ return a + l.p; }, 0);
+      ls.className = 'ls' + (lessons.length ? '' : ' none');
+      ls.textContent = lessons.length ? lessons.map(function(l){ return l.t; }).join(' · ') : 'لا دروس في الخطة لهذا الأسبوع';
+      r.appendChild(ls);
+      var pp = document.createElement('div'); pp.className = 'pp'; pp.textContent = per ? per + ' ح' : ''; r.appendChild(pp);
+      var chev = document.createElement('span'); chev.className = 'chev'; chev.textContent = '‹'; r.appendChild(chev);
+      r.addEventListener('click', function(){ location.href = 'plan.html?key=' + encodeURIComponent(p.plan.key) + '&w=' + show; });
+      tb.appendChild(r);
     });
-    document.getElementById('planPct').textContent = pr.pct + '%';
-    document.getElementById('planLine').innerHTML =
-      Shouba.count(done,{one:'درس',two:'درسان',few:'دروس',many:'درسا'}) + ' من <b>' + total + '</b> · ' + (Shouba.weekLabel() || '') + (weekNo ? ' جار' : '');
   }
+  paintPlan();
+  if (window.ShoubaPlans) { ShoubaPlans.onChange(paintPlan); ShoubaPlans.load(Shouba.data().stage); }
 
   /* ===== ⑤ بحاجة إلى إجراء ===== */
   var todoEl=document.getElementById('todo'), items=[];
@@ -722,7 +772,8 @@
   });
   /* ⚠ حذف بند «دروس سابقة لم تؤشر» (2026-09-05): اتهام بلا دليل — لا باب تأشير
      أصلا، فكان كل معلم متأخرا بحكم البناء. يعود يوم يصير للإنجاز مصدر حقيقي
-     (تأشير المعلم بنفسه). والدالة Shouba.behindPlan باقية في طبقة الاشتقاق تنتظره. */
+     (تأشير ما قطعه المعلم في سجل «ما قطع من المنهج» — الخطوة هـ من شريط الخطة). وحذفت Shouba.behindPlan القديمة
+     (2026-09-13) مع نموذجها الذي لم يملأ قط. */
   document.getElementById('todoCount').textContent = items.length ? items.length : 'لا شيء';
   if(!items.length){
     todoEl.closest('section').classList.add('calm');

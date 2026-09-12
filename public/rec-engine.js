@@ -12,7 +12,8 @@
 
    شكل السجل المحفوظ (في وثيقة الشعبة تحت recs — انظر derive.js ⑥):
      { id, tpl, v, year, term, who?, status:'draft'|'printed'|'signed', created, updated,
-       values: { <معرف اللبنة>: قيمتها }, signed?: { file, mime, size } }
+       values: { <معرف اللبنة>: قيمتها }, signed?: { file, mime, size },
+       reach?: { <مفتاح الخطة>: { n, t } } }   ⟵ ما وصل اليه المعلم في كل خطة (الجدول الذكي smart:'plan')
    والقيم بمعرفات اللبنات والحقول لا بعناوينها، فتعديل العناوين لا يمسها.
    =================================================================== */
 (function () {
@@ -39,6 +40,12 @@
   R.ORIENTS  = ['portrait', 'landscape'];
   R.FITS     = ['single-page', 'flow'];
   R.FILES    = ['image', 'pdf'];
+  /* الجدول الذكي (table.smart): plan — دروس خطة التوجيه لمواد معلم السجل يؤشر عليها ما قطعه، والصف من التأشير
+     («ما قطع من المنهج» 2026-09-13). والاختيار المقسم (choice.split): عمود ✓ لكل خيار على الورق، واحد يؤشر */
+  R.SMART    = ['plan'];
+  /* مدى السجل: term (الافتراض — سجل لكل فصل) · year (سجل للعام كله كنموذجه: «ما قطع من المنهج» 2026-09-13) —
+     سجل العام بلا فصل (term '')، فيجتمع في الارشيف تحت عامه، وسجل المعلم الواحد يبقى واحدا في العام */
+  R.SCOPES   = ['term', 'year'];
 
   function isId(s) { return typeof s === 'string' && /^[a-z][a-zA-Z0-9_]*$/.test(s); }
   function arr(v) { return Array.isArray(v) ? v : []; }
@@ -55,6 +62,7 @@
     if (!(t.v >= 1) || Math.floor(t.v) !== t.v) bad(w, 'رقم الاصدار');
     if (!t.title) bad(w, 'العنوان');
     if (R.OWNERS.indexOf(t.owner) < 0) bad(w, 'صاحب السجل خارج القائمة: ' + t.owner);
+    if (t.scope && R.SCOPES.indexOf(t.scope) < 0) bad(w, 'مدى السجل خارج القائمة: ' + t.scope);
     var p = t.page || {};
     if (R.ORIENTS.indexOf(p.orient) < 0) bad(w, 'اتجاه الصفحة: ' + p.orient);
     if (R.FITS.indexOf(p.fit) < 0) bad(w, 'سلوك الامتلاء: ' + p.fit);
@@ -70,6 +78,7 @@
       kind(f.kind, fa);
       if (f.auto && R.AUTO.indexOf(f.auto) < 0) bad(fa, 'قيمة تلقائية خارج القائمة: ' + f.auto);
       if (f.kind === 'choice' && !arr(f.options).length) bad(fa, 'اختيار بلا خيارات');
+      if (f.split && f.kind !== 'choice') bad(fa, 'التقسيم للاختيار وحده');
     }
     function block(b, at, inRepeat) {
       var ba = at + '/' + (b && b.id || '؟');
@@ -104,6 +113,11 @@
           });
           if (b.rowGroups && ['months', 'list'].indexOf(b.rowGroups.from) < 0) bad(ba, 'مجموعات صفوف: ' + b.rowGroups.from);
           if (b.rowGroups && b.rowGroups.from === 'list' && !arr(b.rowGroups.items).length) bad(ba, 'مجموعات صفوف بلا بنود');
+          if (b.rowGroups && b.rowGroups.from === 'months') {
+            if (!arr(b.columns).some(function (c) { return c && c.kind === 'date'; })) bad(ba, 'مجموعات اشهر بلا عمود تاريخ');
+            if (arr(b.rowGroups.months).some(function (m) { return !(m >= 1 && m <= 12); })) bad(ba, 'شهر خارج ١–١٢');
+          }
+          if (b.smart && R.SMART.indexOf(b.smart) < 0) bad(ba, 'جدول ذكي خارج القائمة: ' + b.smart);
           arr(b.total).forEach(function (id) { if (!seen[id]) bad(ba, 'مجموع لعمود غير موجود: ' + id); });
           break;
         case 'rating':
@@ -360,7 +374,7 @@
     Object.keys(ctx).forEach(function (k) { cx[k] = ctx[k]; });
     cx.serial = R.nextSerial(ctx.records, t.id, ctx.year);
     var now = new Date().toISOString();
-    var rec = { id: R.newId('r'), tpl: t.id, v: t.v, year: ctx.year || '', term: ctx.term || '',
+    var rec = { id: R.newId('r'), tpl: t.id, v: t.v, year: ctx.year || '', term: t.scope === 'year' ? '' : (ctx.term || ''),
       status: 'draft', created: now, updated: now, values: {} };
     if (ctx.who) rec.who = ctx.who;          /* صاحب السجل ان كان معلما او طالبا */
     arr(t.blocks).forEach(function (b) { rec.values[b.id] = blank(b, cx); });

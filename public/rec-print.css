@@ -89,6 +89,9 @@
 .pp-tbl td.ck{ text-align:center; font-weight:700; }
 .pp-tbl tr{ break-inside:avoid; }
 .pp-tbl tbody tr.blank td{ height:8.5mm; }
+/* مجموعات الاشهر (نموذج ما قطع من المنهج ص١٤): الشهر في خانة ممتدة وسط صفيه، والصفوف بارتفاع النموذج */
+.pp-tbl td.mo,.pp-tbl th.mo{ text-align:center; vertical-align:middle; font-weight:700; }
+.pp-tbl.rg tbody td{ height:9mm; vertical-align:middle; }
 /* الغلاف (mode:'cover' — المرحلة الثانية ب): اسم السجل كبيرا وسط صفحته، وخانتا التوقيع تحته */
 .pp-cover{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5mm; text-align:center; padding:8mm 0; }
 .pp-cover-t{ font-size:26pt; font-weight:700; line-height:1.4; }

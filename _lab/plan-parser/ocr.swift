@@ -182,7 +182,21 @@ if let cs = opt["cells"] {
      dash: حبرها افقي قصير (عرضه اكثر من ضعفي ونصف طوله) = شرطة «-»: الدرس بلا حصص في الخطة نفسها،
      لا رقم فاتت قراءته (رياضيات الثاني عشر علمي «الارتباط والانحدار») */
   let dash = pieces.map { p -> Bool in guard let p = p else { return false }; return Double(p.width) > Double(p.height) * 2.5 }
-  let data = try JSONSerialization.data(withJSONObject: ["cells": cells, "ink": pieces.map { $0 != nil }, "dash": dash, "anchor": String(anchorChars.sorted { $0.0 < $1.0 }.map { $0.1 }), "raw": (rq.results ?? []).compactMap { $0.topCandidates(1).first?.string }])
+  /* dims: عرض الحبر وارتفاعه بعد القص (بهامشه) — لشكل الرقم حيث لا يقرؤه المحرك (2026-09-13: «١» خط رأسي مجرد) */
+  let dims = pieces.map { p -> [Int] in guard let p = p else { return [0, 0] }; return [p.width, p.height] }
+  /* sig: صورة الحبر مصغرة ١٠×١٤ ابيض واسود — الرقم المرسوم بخط واحد صورته واحدة، فتعرف الخانات المتماثلة ولو لم
+     يقرأ المحرك بعضها («1» اللاتينية بذيلها ورأسها لا تفرق عن «٢» بنسبة ابعادها، وتفرق بصورتها — التربية الإسلامية ١١) */
+  let sig = pieces.map { p -> String in
+    guard let p = p, let c = bitmap(10, 14) else { return "" }
+    c.interpolationQuality = .high
+    c.setFillColor(white); c.fill(CGRect(x: 0, y: 0, width: 10, height: 14))
+    c.draw(p, in: CGRect(x: 0, y: 0, width: 10, height: 14))
+    guard let d = c.data else { return "" }
+    let b = d.bindMemory(to: UInt8.self, capacity: c.bytesPerRow * 14)
+    var s = ""
+    for y in 0..<14 { for x in 0..<10 { let i = y * c.bytesPerRow + x * 4; s += (Int(b[i]) + Int(b[i + 1]) + Int(b[i + 2])) < 600 ? "1" : "0" } }
+    return s }
+  let data = try JSONSerialization.data(withJSONObject: ["cells": cells, "ink": pieces.map { $0 != nil }, "dash": dash, "dims": dims, "sig": sig, "anchor": String(anchorChars.sorted { $0.0 < $1.0 }.map { $0.1 }), "raw": (rq.results ?? []).compactMap { $0.topCandidates(1).first?.string }])
   print(String(data: data, encoding: .utf8)!)
   exit(0)
 }

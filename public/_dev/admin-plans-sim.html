@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · مراجعة الخطط في الادارة (معاينة — أداة تطوير)</title>
+<meta name="theme-color" content="#1B5183" />
+<style>
+  html,body{margin:0;padding:0;height:100%;background:#EFE6D6}
+  iframe{border:0;width:100%;height:100%;display:block}
+  .bar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:9;background:rgba(36,33,28,.86);color:#F4F1EA;
+    border-radius:999px;padding:7px 14px;font:600 11.5px 'IBM Plex Sans Arabic',sans-serif;white-space:nowrap}
+</style>
+</head>
+<body>
+  <div class="bar">معاينة بخادم محاكى — لا رقم إدارة ولا حساب</div>
+  <iframe id="f"></iframe>
+<script>
+  /* لوحة الادارة الحقيقية (admin.html كما هي) ومسارات api/admin/* يجيبها بديل في الذاكرة من بيانات مثال (خطط المختبر)
+     — فتعاين «مراجعة الخطط» شكلا وسلوكا بلا رقم ادارة ولا دخول. والبوابة تفتح بقيمة وهمية يقبلها البديل وحده.
+     على الجهاز المحلي وحده. ⚠ لا تحفظ القرارات: تبقى في ذاكرة الصفحة */
+  (function(){ var h = location.hostname;
+    if (!(h === 'localhost' || h === '127.0.0.1')) { document.body.textContent = 'أداة تطوير — تعمل على الجهاز المحلي وحده.'; throw new Error('dev only'); } })();
+  var f = document.getElementById('f');
+  var stub = function () {
+    var S = window.ADMIN_PLANS_SAMPLE, DEC = {};
+    function reply(obj, status) { return Promise.resolve(new Response(JSON.stringify(obj), { status: status || 200, headers: { 'Content-Type': 'application/json' } })); }
+    function sum(p) { var d = DEC[p.key]; return { key: p.key, stageId: p.stageId, stage: p.stage, grade: p.grade, subject: p.subject, status: p.status, issues: p.issues, stated: p.stated, periods: p.periods, weeks: p.weeks.length, source: p.source, decision: d || null }; }
+    var real = window.fetch;
+    window.fetch = function (url, opt) {
+      var u = String(url), m = (opt && opt.method) || 'GET', body = opt && opt.body ? JSON.parse(opt.body) : {};
+      if (u.indexOf('api/admin/invite') > -1) return reply({ code: 'SIM00000' });
+      if (u.indexOf('api/admin/users') > -1) return reply({ users: [] });
+      if (u.indexOf('api/admin/feedback') > -1) return reply({ feedback: [], unread: 0 });
+      if (/api\/admin\/plans\/one/.test(u)) { var key = decodeURIComponent((u.match(/key=([^&]+)/) || [])[1] || ''), p = S.plans.filter(function (x) { return x.key === key; })[0];
+        return p ? reply({ plan: Object.assign({}, p, { decision: DEC[p.key] || null }), calendar: S.calendar }) : reply({ error: 'الخطة غير موجودة' }, 404); }
+      if (/api\/admin\/plans\/decision/.test(u)) { if (body.decision == null) delete DEC[body.key]; else DEC[body.key] = body.decision; return reply({ ok: true, decision: body.decision }); }
+      if (/api\/admin\/plans\/approve-sound/.test(u)) { var n = 0; S.plans.forEach(function (p) { if (p.status === 'ok' && !DEC[p.key]) { DEC[p.key] = 'approved'; n++; } }); return reply({ ok: true, approved: n }); }
+      if (/api\/admin\/plans/.test(u)) return reply({ set: S.set, sets: [S.set.id], plans: S.plans.map(sum) });
+      return real.apply(this, arguments);
+    };
+  };
+  fetch('/admin.html?x=' + Date.now()).then(function(r){ return r.text(); }).then(function(html){
+    var head = '<head><base href="/"><scr' + 'ipt src="/_dev/admin-plans-sample.js"></scr' + 'ipt><scr' + 'ipt>(' + stub.toString() + ')();</scr' + 'ipt>';
+    var tail = '<scr' + 'ipt>document.getElementById("apin").value = "sim"; document.getElementById("enter").click();</scr' + 'ipt></body>';
+    var doc = f.contentDocument;
+    doc.open(); doc.write(html.replace('<head>', head).replace('</body>', tail)); doc.close();
+  });
+</script>
+</body>
+</html>

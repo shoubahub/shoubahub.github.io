@@ -252,6 +252,21 @@ ok(b.sheets.filter(s => s.doc === 'p').every(s => s.rotate && s.paper === 'portr
 const single = R.paginate([{ key: 'p', title: 'س', orient: 'landscape', pages: 1 }]);
 ok(!single.sheets[0].rotate && single.sheets[0].paper === 'landscape', 'السجل العرضي وحده يطبع على ورق عرضي');
 
+// ١٠) كشف ما قطع من المنهج (2026-09-13): سجل معلم، جدول ذكي، اختيار مقسم، مجموعات اشهر
+const cv = R.latest('covered');
+ok(!!cv && cv.owner === 'teacher' && R.byReady('ما قطع من المنهج') === cv, 'كشف ما قطع مسجل باسمه في readyRecords، وسجل معلم');
+const cvRec = S.newRec('covered', 'فهد المطيري');
+ok(cvRec.who === 'فهد المطيري' && Array.isArray(cvRec.values.rows) && R.newRow(cv.blocks[1]).pace === '', 'ينشأ باسم المعلم، وصفه الجديد بلا حكم');
+ok(cv.scope === 'year' && cvRec.term === '' && cvRec.year === S.data().year && !('term' in cvRec.values.meta), 'كشف العام كالنموذج: بعامه بلا فصل', { term: cvRec.term, meta: cvRec.values.meta });
+ok(S.newRec('meetings').term === S.data().term, 'وسائر السجلات لفصلها كما هي');
+const cvBase = clone(W.SHOUBA_TPL.covered[1]);
+const badCv = (mut, needle, name) => { const t = clone(cvBase); mut(t); const e = R.validate(t); ok(e.some(x => x.includes(needle)), name, e); };
+badCv(t => { t.blocks[1].smart = 'magic'; }, 'جدول ذكي خارج القائمة', 'يرفض جدولا ذكيا خارج القائمة');
+badCv(t => { t.scope = 'week'; }, 'مدى السجل خارج القائمة', 'يرفض مدى خارج القائمة');
+badCv(t => { t.blocks[1].columns[1].split = true; }, 'التقسيم للاختيار وحده', 'يرفض التقسيم لغير الاختيار');
+badCv(t => { t.blocks[1].columns = t.blocks[1].columns.filter(c => c.kind !== 'date'); }, 'مجموعات اشهر بلا عمود تاريخ', 'يرفض مجموعات اشهر بلا عمود تاريخ');
+badCv(t => { t.blocks[1].rowGroups.months = [9, 13]; }, 'شهر خارج', 'يرفض شهرا خارج ١–١٢');
+
 // ٩) بلا تشكيل في القوالب والمحرك
 const H = new RegExp('[' + String.fromCharCode(0x064B) + '-' + String.fromCharCode(0x0652) + String.fromCharCode(0x0670) + ']');
 ok(!H.test(read('rec-templates.js')) && !H.test(read('rec-engine.js')), 'القوالب والمحرك بلا تشكيل');

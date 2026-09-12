@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · خطة المنهج كاملة (عينة — أداة تطوير)</title>
+<meta name="theme-color" content="#1B5183" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../identity/tokens.css" />
+<link rel="stylesheet" href="../shell.css" />
+<link rel="stylesheet" href="../components.css" />
+<link rel="stylesheet" href="../frame.css" />
+<style>
+  /* الصورة المطولة لشريط الخطة (2026-09-13، طلب المستخدم «نموذج مطول للسجل») — عينة للاعتماد قبل البناء.
+     مادة واحدة في الشاشة: رقاقات المواد (.tgs من components.css) · سطر الحصيلة · اسابيع الفصل الثلاثة عشر في جدول
+     مصفوف (.tbl): رقم الاسبوع · مداه · دروسه بحصصها. الجاري مظلل (.tr.now) وتنزل اليه الشاشة، والماضي اهدأ (.tr.past).
+     ما يقوله الجدول ما تقوله خطة التوجيه — لا انجاز معلم (لا تأشير بعد) */
+  .plan{display:flex;flex-direction:column;gap:14px;padding-top:14px;padding-bottom:30px}
+  .plan .tgs{padding:3px var(--gap-side);margin:0;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .plan .tgs::-webkit-scrollbar{display:none}
+  .plan .tg{flex:none;white-space:nowrap}
+  .sumline{padding:0 var(--gap-side);font-size:12px;color:var(--shouba-text-muted);font-weight:600;line-height:1.7}
+  .sumline b{color:var(--shouba-navy)}
+  .wkr{align-items:flex-start}
+  .wkr .c1{padding-top:1px}
+  .wkr .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+  .wkr .d{font-size:10.5px;font-weight:700;color:var(--shouba-label);display:flex;gap:8px;align-items:center}
+  .wkr .d .chip{font-size:10px;padding:2px 8px}
+  .wkr .l{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;font-weight:600;color:var(--shouba-ink);line-height:1.6}
+  .wkr .l span{flex:1;min-width:0}
+  .wkr .l em{font-style:normal;flex:none;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+  .wkr .none{font-size:12px;color:var(--shouba-hint)}
+  .tbl .tr.past .l{color:var(--shouba-label)}
+  .devbar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9;display:flex;align-items:center;gap:10px;
+    background:rgba(36,33,28,.86);color:#F4F1EA;border-radius:999px;padding:6px 12px;font:600 11.5px 'IBM Plex Sans Arabic',sans-serif;white-space:nowrap}
+  .devbar a{color:#F2C879;text-decoration:underline}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+    <div class="topbar">
+      <div class="tbcrest"><img src="../identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" /></div>
+      <div class="tt"><b>خطة المنهج</b><span id="sub">—</span></div>
+      <div class="iconbtn" data-home title="اللوحة"></div>
+    </div>
+  <div class="screen has-topbar">
+    <div class="content">
+      <div class="plan">
+        <div class="tgs" id="subs"></div>
+        <div class="sumline" id="sum"></div>
+        <div class="tbl" id="weeks"></div>
+      </div>
+    </div>
+  </div>
+ </div></div>
+ <div class="devbar"><span>بيانات مثال</span><a id="setBtn">—</a></div>
+
+<script>
+  (function(){ var h = location.hostname;
+    if (!(h === 'localhost' || h === '127.0.0.1')) { document.body.textContent = 'أداة تطوير — تعمل على الجهاز المحلي وحده.'; throw new Error('dev only'); }
+    try { sessionStorage.setItem('shouba.sim', '1'); } catch (e) {} })();
+</script>
+<script src="plan-strip-data.js"></script>
+<script src="plan-strip-data-ar.js"></script>
+<script src="plan-strip.js"></script>
+<script src="../build.js"></script>
+<script src="../refdata.js"></script>
+<script src="../derive.js"></script>
+<script src="../icons.js"></script>
+<script src="../components.js"></script>
+<script>
+  var Q = new URLSearchParams(location.search), AR = Q.get('set') === 'ar';
+  var PLANS = (AR ? window.PLAN_SAMPLE_AR : window.PLAN_SAMPLE) || [], PS = PlanStrip;
+  var W = Math.min(PS.TOTAL, Math.max(1, +Q.get('w') || PS.current()));
+  var cur = PLANS.filter(function(p){ return String(p.id) === Q.get('plan'); })[0] || PLANS[0];
+  var sb = document.getElementById('setBtn'); sb.textContent = AR ? 'نموذج الرياضيات' : 'نموذج لكل حصة درس'; sb.href = AR ? '?' : '?set=ar';
+
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+
+  function paintSubs(){
+    var s = document.getElementById('subs'); s.innerHTML = '';
+    PLANS.forEach(function(p){
+      var b = el('button', 'tg' + (p === cur ? ' on' : ''), p.subject.replace('لغتي العربية', 'لغتي') + ' · ' + p.grade);
+      b.type = 'button'; b.setAttribute('aria-pressed', p === cur ? 'true' : 'false');
+      b.addEventListener('click', function(){ cur = p; paint(); });
+      s.appendChild(b);
+    });
+  }
+  function paint(){
+    paintSubs();
+    document.getElementById('sub').textContent = cur.subject + ' · ' + cur.grade;
+    var total = cur.weeks.reduce(function(a, w){ return a + PS.periods(w); }, 0);
+    document.getElementById('sum').innerHTML = cur.weeks.length + ' أسبوعا · <b>' + total + '</b> حصة حسب خطة التوجيه · الجاري الأسبوع <b>' + W + '</b>';
+    var t = document.getElementById('weeks'); t.innerHTML = '';
+    for (var n = 1; n <= PS.TOTAL; n++) {
+      var w = PS.weekOf(cur, n), r = el('div', 'tr wkr' + (n === W ? ' now' : n < W ? ' past' : ''));
+      r.id = 'w' + n;
+      r.appendChild(el('div', 'c1', String(n)));
+      var body = el('div', 'body'), d = el('div', 'd', 'الأسبوع ' + PS.ORD[n - 1] + ' · ' + PS.range(n));
+      if (n === W) d.appendChild(el('span', 'chip navy', 'هذا الأسبوع'));
+      body.appendChild(d);
+      var ls = PS.merged(w);
+      if (!ls.length) body.appendChild(el('div', 'none', 'لا دروس في الخطة لهذا الأسبوع'));
+      ls.forEach(function(l){ var x = el('div', 'l'); x.appendChild(el('span', null, l.t)); x.appendChild(el('em', null, l.p + ' ح')); body.appendChild(x); });
+      r.appendChild(body);
+      t.appendChild(r);
+    }
+    /* الاسبوع الجاري في اول الشاشة — ما بعد الرأس */
+    var now = document.getElementById('w' + W);
+    if (now) requestAnimationFrame(function(){ now.scrollIntoView({ block: 'center' }); });
+  }
+  paint();
+</script>
+</body>
+</html>

@@ -7,10 +7,10 @@
 <meta name="robots" content="noindex, nofollow" />
 <meta name="theme-color" content="#1B5183" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=49" />
-<link rel="stylesheet" href="shell.css?v=49" />
-<link rel="stylesheet" href="components.css?v=49" />
-<link rel="stylesheet" href="frame.css?v=49" />
+<link rel="stylesheet" href="identity/tokens.css?v=50" />
+<link rel="stylesheet" href="shell.css?v=50" />
+<link rel="stylesheet" href="components.css?v=50" />
+<link rel="stylesheet" href="frame.css?v=50" />
 <style>
   /* خاص بالإدارة: صف الحساب وجدوله. لا هيكل ولا هوامش عامة. */
   .urow{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;
@@ -54,6 +54,25 @@
   .fbrow p{margin:0;font-size:13.5px;color:var(--shouba-ink);line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
   .fbrow .rd{align-self:flex-start;border:0;cursor:pointer;font-family:var(--font-ar);font-size:11.5px;font-weight:700;
     padding:7px 12px;border-radius:999px;background:rgba(22,69,110,.09);color:var(--shouba-navy);min-height:32px}
+
+  /* خطط التوزيع (2026-09-13، الخطوة ب) — صف الخطة كصف الحساب، واللوحة السفلية اسابيعها ودروسها */
+  #tabs{margin-bottom:4px}
+  .plab{display:block;margin-top:8px;font-size:12px;font-weight:700;color:var(--shouba-text-muted)}
+  .prow{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;padding:12px 14px;
+    display:flex;align-items:center;gap:11px;cursor:pointer;box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .prow:active{transform:translateY(1px)}
+  .prow .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .prow .tx b{font-size:13.5px;font-weight:700;color:var(--shouba-navy)}
+  .prow .tx small{font-size:11px;color:var(--shouba-label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .prow.warn .tx small{color:var(--shouba-amber-deep)}
+  .prow .chip{flex:none}
+  .pview{display:flex;flex-direction:column;gap:6px}
+  .pmeta{font-size:12px;font-weight:600;color:var(--shouba-label);line-height:1.7}
+  .pwh{margin-top:8px;font-size:11.5px;font-weight:700;color:var(--shouba-navy);background:rgba(22,69,110,.07);border-radius:8px;padding:4px 9px}
+  .pl{display:flex;gap:10px;align-items:flex-start;font-size:13px;font-weight:600;color:var(--shouba-ink);line-height:1.7;padding:0 4px}
+  .pl span{flex:1;min-width:0}
+  .pl em{font-style:normal;flex:none;font-size:11.5px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+  .pacts{display:flex;flex-direction:column;gap:10px;margin-top:14px}
 </style>
 </head>
 <body class="framed">
@@ -84,6 +103,34 @@
 
       <!-- ② اللوحة -->
       <div class="fields hide" id="panel">
+        <!-- قسمان (2026-09-13): الحسابات · خطط التوزيع — في الصفحة نفسها لان رقم الادارة لا يحفظ فينتقل -->
+        <div class="segs sm" id="tabs">
+          <button type="button" class="seg on" data-t="acc">الحسابات</button>
+          <button type="button" class="seg" data-t="plans">خطط التوزيع</button>
+        </div>
+
+        <div class="fields hide" id="tPlans">
+          <div class="field">
+            <label id="pcount">خطط التوزيع</label>
+            <div class="hint" id="psum">—</div>
+          </div>
+          <div class="segs sm" id="pfilter">
+            <button type="button" class="seg on" data-f="pending">تنتظر</button>
+            <button type="button" class="seg" data-f="approved">معتمدة</button>
+            <button type="button" class="seg" data-f="rejected">لا تعتمد</button>
+            <button type="button" class="seg" data-f="all">الكل</button>
+          </div>
+          <button type="button" class="btn-ghost" id="bulk" hidden>اعتمد السليمة كلها</button>
+          <div id="plist"></div>
+          <div class="note">
+            <b>لا تصل خطة رئيس شعبة قبل اعتمادك.</b> والخطة التي لا تعتمدها يظهر مكانها عنده «يجب رفع الخطة» —
+            ولا تظهر له بيانات ناقصة أو مخمنة.
+            <br><br>
+            <b>اعتمادك محفوظ في الخادم</b> ويبقى مع كل نشرة. وخطة ترفعها الوزارة من جديد تعود إلى «تنتظر».
+          </div>
+        </div>
+
+        <div class="fields" id="tAcc">
         <div class="field">
           <label>رمز الدعوة</label>
           <div class="inv">
@@ -125,6 +172,7 @@
           <b>والرقم السري لا يعرض</b> — يخزن مجزأ فلا يقرأ. ومن نسيه تعين له رقما جديدا وتسلمه إياه،
           وتغلق جلساته كلها فورا.
         </div>
+        </div><!-- /tAcc -->
         <div class="msg" id="pmsg"></div>
       </div>
 
@@ -132,8 +180,8 @@
   </div>
  </div></div>
 
-<script src="build.js?v=49"></script>
-<script src="components.js?v=49"></script>
+<script src="build.js?v=50"></script>
+<script src="components.js?v=50"></script>
 <script>
   /* لوحة الإدارة — شاشة مستقلة لا رابط إليها من أي مكان (قرار المستخدم 2026-09-08).
      ⚠ رقم الإدارة **لا يحفظ**: يبقى في الذاكرة ما دامت الصفحة مفتوحة فقط.
@@ -356,6 +404,123 @@
         .catch(function(e){ say(pmsg, e.message); });
     });
   }
+
+  /* ═══ خطط التوزيع — مراجعة المالك قبل ان تصل رؤساء الشعب (2026-09-13، الخطوة ب) ═══
+     الخطط كما قرأها المختبر (plans.js في الخادم). لكل خطة قرار: معتمدة · لا تعتمد (يظهر مكانها عند رئيس
+     الشعبة «يجب رفع الخطة») · او تنتظر. والنظر قبل الاعتماد: اللوحة السفلية اسابيعها ودروسها وحصصها. */
+  var PL = { set: null, plans: [], filter: 'pending' };
+  var DECI = { approved: { t: 'معتمدة', c: 'chip navy' }, rejected: { t: 'لا تعتمد', c: 'chip' }, none: { t: 'تنتظر', c: 'chip muted' } };
+  var tabs = document.getElementById('tabs');
+  tabs.addEventListener('click', function(e){
+    var b = e.target.closest('.seg'); if(!b) return;
+    [].forEach.call(tabs.children, function(x){ x.classList.toggle('on', x === b); });
+    var t = b.getAttribute('data-t');
+    document.getElementById('tAcc').classList.toggle('hide', t !== 'acc');
+    document.getElementById('tPlans').classList.toggle('hide', t !== 'plans');
+    document.getElementById('head').textContent = t === 'plans' ? 'مراجعة خطط التوزيع' : 'الحسابات ورمز الدعوة';
+    say(pmsg, '');
+    if (t === 'plans' && !PL.set) loadPlans();
+  });
+  function pstate(p){ return p.decision || 'none'; }
+  function loadPlans(){
+    api('api/admin/plans').then(function(j){ PL.set = j.set; PL.plans = j.plans || []; paintPlans(); })
+      .catch(function(e){ say(pmsg, e.message); });
+  }
+  /* سبب الحال في سطر: السليمة بحصصها ومطابقة المعلن، والتي تراجع باول سبب يعني (لا اعلامات القراءة) */
+  function pwhy(p){
+    if (p.status === 'ok') return 'سليمة · ' + p.periods + ' حصة' + (p.stated != null ? (p.stated === p.periods ? ' · تطابق المعلن' : ' · والمعلن ' + p.stated) : '');
+    var real = (p.issues || []).filter(function(i){ return !/^قرئ ضوئيا|^أعداد حصص|الختم|نسب القسم بالصف/.test(i); });
+    return 'تراجع · ' + (real[0] || (p.issues || [])[0] || 'لم يقرأ جدول');
+  }
+  function paintPlans(){
+    var ps = PL.plans, cnt = function(k){ return ps.filter(function(p){ return pstate(p) === k; }).length; };
+    document.getElementById('pcount').textContent = PL.set ? 'خطط الفصل ' + (PL.set.term === 1 ? 'الأول' : 'الثاني') + ' · ' + PL.set.year : 'لا خطط بعد';
+    document.getElementById('psum').textContent = ps.length + ' خطة: ' + cnt('approved') + ' معتمدة · ' + cnt('none') + ' تنتظر · ' + cnt('rejected') + ' لا تعتمد';
+    var sound = ps.filter(function(p){ return p.status === 'ok' && !p.decision; }).length, bulk = document.getElementById('bulk');
+    bulk.hidden = !sound; bulk.textContent = 'اعتمد السليمة كلها (' + sound + ')';
+    [].forEach.call(document.querySelectorAll('#pfilter .seg'), function(b){ b.classList.toggle('on', b.getAttribute('data-f') === PL.filter); });
+    var box = document.getElementById('plist'); box.innerHTML = '';
+    var list = ps.filter(function(p){ return PL.filter === 'all' || (PL.filter === 'pending' ? !p.decision : p.decision === PL.filter); });
+    if (!list.length) {
+      var e = document.createElement('div'); e.className = 'hint';
+      e.textContent = PL.filter === 'pending' ? 'لا خطة تنتظر مراجعتك.' : 'لا شيء هنا.';
+      box.appendChild(e); return;
+    }
+    var stages = []; list.forEach(function(p){ if (stages.indexOf(p.stage) < 0) stages.push(p.stage); });
+    stages.forEach(function(st){
+      var grp = list.filter(function(p){ return p.stage === st; });
+      var lab = document.createElement('div'); lab.className = 'plab'; lab.textContent = st + ' · ' + grp.length; box.appendChild(lab);
+      var stack = document.createElement('div'); stack.className = 'stack'; box.appendChild(stack);
+      grp.forEach(function(p){
+        var el = document.createElement('div'); el.className = 'prow' + (p.status === 'ok' ? '' : ' warn');
+        el.innerHTML = '<div class="tx"><b></b><small></small></div><span></span>';
+        el.querySelector('b').textContent = p.subject + ' · ' + p.grade;
+        el.querySelector('small').textContent = pwhy(p);
+        var ch = el.querySelector('span'); ch.className = DECI[pstate(p)].c; ch.textContent = DECI[pstate(p)].t;
+        el.addEventListener('click', function(){ openPlan(p); });
+        stack.appendChild(el);
+      });
+    });
+  }
+  function decide(p, decision){
+    return api('api/admin/plans/decision', { method: 'POST', body: JSON.stringify({ set: PL.set && PL.set.id, key: p.key, decision: decision }) })
+      .then(function(){
+        p.decision = decision; Shouba.sheet.close(); paintPlans();
+        say(pmsg, decision === 'approved' ? 'اعتمدت ' + p.subject + ' · ' + p.grade + '.'
+          : decision === 'rejected' ? 'لن تصل ' + p.subject + ' · ' + p.grade + ' — ويظهر مكانها «يجب رفع الخطة».' : 'ألغي القرار — عادت إلى «تنتظر».', true);
+      })
+      .catch(function(e){ say(pmsg, e.message); });
+  }
+  function openPlan(p){
+    api('api/admin/plans/one?set=' + encodeURIComponent(PL.set.id) + '&key=' + encodeURIComponent(p.key)).then(function(j){
+      var pl = j.plan, cal = j.calendar || [], n = document.createElement('div'); n.className = 'pview';
+      var meta = document.createElement('div'); meta.className = 'pmeta';
+      meta.textContent = 'ملف مكتبة المعلم ' + pl.source.id + (pl.source.uploaded ? ' · رفع ' + pl.source.uploaded : '') + ' · '
+        + pl.weeks.length + ' أسبوعا · ' + pl.periods + ' حصة' + (pl.stated != null ? ' والمعلن ' + pl.stated : '');
+      n.appendChild(meta);
+      if (pl.status !== 'ok') { var w = document.createElement('div'); w.className = 'warnbox'; w.textContent = 'تراجع: ' + (pl.issues || []).join(' · '); n.appendChild(w); }
+      pl.weeks.forEach(function(wk){
+        var c = cal.filter(function(x){ return x.n === wk.n; })[0], h = document.createElement('div'); h.className = 'pwh';
+        h.textContent = 'الأسبوع ' + wk.n + (wk.span > 1 ? '–' + (wk.n + wk.span - 1) : '') + (c && c.from ? ' · ' + c.from.slice(5).split('-').reverse().join('/') : '');
+        n.appendChild(h);
+        wk.lessons.forEach(function(l){
+          var r = document.createElement('div'); r.className = 'pl';
+          var s = document.createElement('span'); s.textContent = l.t;
+          var em = document.createElement('em'); em.textContent = l.p + ' ح';
+          r.appendChild(s); r.appendChild(em); n.appendChild(r);
+        });
+      });
+      var acts = document.createElement('div'); acts.className = 'pacts';
+      var a = document.createElement('button'); a.className = 'cta';
+      a.textContent = pl.decision === 'approved' ? 'معتمدة — ألغ الاعتماد' : 'اعتمدها';
+      a.addEventListener('click', function(){ decide(p, pl.decision === 'approved' ? null : 'approved'); });
+      var r = document.createElement('button'); r.className = 'btn-ghost';
+      r.textContent = pl.decision === 'rejected' ? 'ألغ «لا تعتمد»' : 'لا تعتمد — يجب رفع الخطة';
+      r.addEventListener('click', function(){ decide(p, pl.decision === 'rejected' ? null : 'rejected'); });
+      acts.appendChild(a); acts.appendChild(r); n.appendChild(acts);
+      Shouba.sheet.open(pl.subject + ' · ' + pl.grade, n);
+    }).catch(function(e){ say(pmsg, e.message); });
+  }
+  document.getElementById('pfilter').addEventListener('click', function(e){
+    var b = e.target.closest('.seg'); if(!b) return;
+    PL.filter = b.getAttribute('data-f'); paintPlans();
+  });
+  /* اعتماد السليمة دفعة — بتأكيد، ولا يمس قرارا سابقا ولا الخطط التي تراجع */
+  document.getElementById('bulk').addEventListener('click', function(){
+    var sound = PL.plans.filter(function(p){ return p.status === 'ok' && !p.decision; }).length;
+    var n = document.createElement('div'); n.className = 'fields';
+    var t = document.createElement('div'); t.className = 'note';
+    t.textContent = 'تعتمد ' + sound + ' خطة قرئت سليمة ولم تقرر فيها بعد، فتصل رؤساء الشعب. وتبقى الخطط التي تراجع لنظرك، ولا يمس قرار سابق. وتستطيع إلغاء اعتماد أي خطة بعد.';
+    var b = document.createElement('button'); b.className = 'cta'; b.textContent = 'اعتمدها';
+    b.addEventListener('click', function(){
+      b.disabled = true;
+      api('api/admin/plans/approve-sound', { method: 'POST', body: JSON.stringify({ set: PL.set.id }) })
+        .then(function(j){ Shouba.sheet.close(); say(pmsg, 'اعتمدت ' + j.approved + ' خطة سليمة.', true); loadPlans(); })
+        .catch(function(e){ b.disabled = false; say(pmsg, e.message); });
+    });
+    n.appendChild(t); n.appendChild(b);
+    Shouba.sheet.open('اعتماد الخطط السليمة', n);
+  });
 </script>
 </body>
 </html>

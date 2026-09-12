@@ -794,3 +794,30 @@ body.solo .tsel{display:none}
    والصف المقصود من اللوحة (?focus=) مطوق بالعنبري — «ما ينتظر فعلك» */
 .rb-cell.fu{gap:10px}
 .rb-item.focus{box-shadow:inset 0 0 0 2px var(--shouba-amber-deep)}
+/* ── الجدول الذكي «ما قطع من المنهج» (smart:'plan' في rec-form.js — 2026-09-13؛ العينة المعتمدة _dev/plan-mark-sim.html):
+   بطاقة الموقع · الكشف صفوفا (الشهر · التاريخ · الموضوع · الحكم — لمسة تعدل الصف) · دروس الخطة بدائرة تأشير
+   تحت رأس كل اسبوع · واللوحة السفلية حيث اللمسة (.pm-jd). البطاقة والجدول داخل النموذج بلا هامش ثان */
+.rb-form .card-navy,.rb-form .tbl{margin:0}
+.pm-rec .m{width:46px;flex:none;font-size:11.5px;font-weight:700;color:var(--shouba-navy)}
+.pm-rec .d{width:36px;flex:none;font-size:11px;font-weight:600;color:var(--shouba-hint);font-family:var(--font-num)}
+.pm-rec .t{flex:1;min-width:0;font-size:12px;font-weight:600;color:var(--shouba-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pm-rec .s{flex:none}
+.tbl .tr.pm-rec:not(.hd){cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tbl .tr.pm-rec.new{background:rgba(232,163,61,.1)}
+.tbl .tr.pm-wk{background:rgba(120,98,66,.07)}
+.pm-wk span{font-size:10.5px;font-weight:700;color:var(--shouba-label)}
+.tbl .tr.pm-wk.now{background:rgba(22,69,110,.1)}
+.pm-wk.now span{color:var(--shouba-navy)}
+.tbl .tr.pm-l{cursor:pointer;-webkit-tap-highlight-color:transparent;align-items:flex-start}
+.pm-l .mk{width:20px;height:20px;border-radius:999px;flex:none;border:2px solid rgba(120,98,66,.3);display:grid;place-items:center;margin-top:1px}
+.pm-l.done .mk{background:var(--shouba-navy);border-color:var(--shouba-navy)}
+.pm-l .tx{flex:1;min-width:0;font-size:12.5px;font-weight:600;color:var(--shouba-ink);line-height:1.6}
+.pm-l.done .tx{color:var(--shouba-label)}
+.pm-l.reach .tx{color:var(--shouba-navy);font-weight:700}
+.pm-l em{font-style:normal;flex:none;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+.pm-miss{font-size:12px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8;background:rgba(120,98,66,.06);border-radius:14px;padding:12px 14px}
+.pm-miss b{color:var(--shouba-amber-deep)}
+.pm-jd{display:flex;flex-direction:column;gap:12px}
+.pm-jd .at{font-size:15px;font-weight:700;color:var(--shouba-navy);line-height:1.6}
+.pm-jd .wh{font-size:12px;font-weight:600;color:var(--shouba-label);line-height:1.7}
+.pm-jd .hint{font-size:11.5px;font-weight:600;color:var(--shouba-hint)}

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · ما قطع من المنهج (عينة — أداة تطوير)</title>
+<meta name="theme-color" content="#1B5183" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../identity/tokens.css" />
+<link rel="stylesheet" href="../shell.css" />
+<link rel="stylesheet" href="../components.css" />
+<link rel="stylesheet" href="../frame.css" />
+<style>
+  /* عينة «ما قطع من المنهج» (2026-09-13، طلب المستخدم «نضرب عصفورين بحجر»): تأشير ما قطعه المعلم على دروس الخطة،
+     ومنه صف في «كشف متابعة ما قطع من المنهج» (نموذج التوجيه ص١٤: الشهر · التاريخ · الموضوع · ما قطع من المقرر
+     متقدم/مطابق/متأخر · التوقيع · ملاحظات — صفان لكل شهر).
+     • لمسة على الدرس الذي وصل اليه المعلم تؤشره وما قبله، وتفتح اللوحة السفلية حيث يؤشر: وصل الى · الحكم · سجل.
+       (كان الحكم وزره اعلى الشاشة فيصعد رئيس الشعبة بعد كل تأشير — «هل من طريقة انفع؟»)
+     • الحكم اقتراح والقرار لرئيس الشعبة: متقدم ان تجاوز اسبوع الخطة الجاري · مطابق ان كان فيه او في الذي قبله ·
+       متأخر ان كان قبل ذلك — والاقتراح مظلل ويغير بلمسة («النظام يعرض ما يجب، والحكم قرار المستخدم»).
+     عينة للاعتماد قبل البناء — لا تحفظ شيئا. والمكونات من components.css */
+  .pg{display:flex;flex-direction:column;gap:16px;padding-top:14px;padding-bottom:40px}
+  .pg .tgs{padding:3px var(--gap-side);margin:0;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .pg .tgs::-webkit-scrollbar{display:none}
+  .pg .tg{flex:none;white-space:nowrap}
+  .blk{display:flex;flex-direction:column;gap:9px}
+  .note{padding:0 var(--gap-side);font-size:11.5px;font-weight:600;color:var(--shouba-hint);line-height:1.7}
+  /* صف الكشف: الشهر · التاريخ · الموضوع · ما قطع */
+  .rec .m{width:46px;flex:none;font-size:11.5px;font-weight:700;color:var(--shouba-navy)}
+  .rec .d{width:36px;flex:none;font-size:11px;font-weight:600;color:var(--shouba-hint);font-family:var(--font-num)}
+  .rec .t{flex:1;min-width:0;font-size:12px;font-weight:600;color:var(--shouba-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rec .s{flex:none}
+  .rec.new{background:rgba(232,163,61,.1)}
+  /* درس الخطة بدائرة تأشير */
+  .lr{cursor:pointer;-webkit-tap-highlight-color:transparent;align-items:flex-start}
+  .lr .mk{width:20px;height:20px;border-radius:999px;flex:none;border:2px solid rgba(120,98,66,.3);display:grid;place-items:center;margin-top:1px}
+  .lr.done .mk{background:var(--shouba-navy);border-color:var(--shouba-navy)}
+  .lr .tx{flex:1;min-width:0;font-size:12.5px;font-weight:600;color:var(--shouba-ink);line-height:1.6}
+  .lr.done .tx{color:var(--shouba-label)}
+  .lr.reach .tx{color:var(--shouba-navy);font-weight:700}
+  .lr em{font-style:normal;flex:none;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+  .wkh{background:rgba(120,98,66,.07)}
+  .wkh span{font-size:10.5px;font-weight:700;color:var(--shouba-label)}
+  .wkh.now{background:rgba(22,69,110,.1)}
+  .wkh.now span{color:var(--shouba-navy)}
+  /* اللوحة السفلية: وصل الى · الحكم · سجل */
+  .jd{display:flex;flex-direction:column;gap:12px}
+  .jd .at{font-size:15px;font-weight:700;color:var(--shouba-navy);line-height:1.6}
+  .jd .wh{font-size:12px;font-weight:600;color:var(--shouba-label);line-height:1.7}
+  .jd .lbl{font-size:12px;font-weight:700;color:var(--shouba-text-muted);margin-top:4px}
+  .jd .hint{font-size:11.5px;font-weight:600;color:var(--shouba-hint)}
+  .devbar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9;display:flex;align-items:center;gap:10px;
+    background:rgba(36,33,28,.86);color:#F4F1EA;border-radius:999px;padding:6px 12px;font:600 11.5px 'IBM Plex Sans Arabic',sans-serif;white-space:nowrap}
+  .devbar button{border:0;background:rgba(244,241,234,.16);color:#F4F1EA;border-radius:999px;width:26px;height:26px;font:700 14px sans-serif;cursor:pointer}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+    <div class="topbar">
+      <div class="tbcrest"><img src="../identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" /></div>
+      <div class="tt"><b>ما قطع من المنهج</b><span id="sub">—</span></div>
+      <div class="iconbtn" data-home title="اللوحة"></div>
+    </div>
+  <div class="screen has-topbar">
+    <div class="content">
+      <div class="pg">
+        <div class="tgs" id="who"></div>
+
+        <div class="card-navy" id="card"></div>
+
+        <div class="blk">
+          <div class="sect"><div class="h">كشف متابعة ما قطع من المنهج</div><div class="a" id="recN">—</div></div>
+          <div class="tbl" id="rec"></div>
+        </div>
+
+        <div class="blk">
+          <div class="sect"><div class="h">دروس الخطة</div><div class="a" id="wkNow">—</div></div>
+          <div class="note">المس الدرس الذي وصل إليه المعلم: يؤشر هو وما قبله، ويظهر لك الحكم حيث أنت.</div>
+          <div class="tbl" id="ls"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+ </div></div>
+ <div class="devbar"><button id="prev">›</button><span id="devLbl">—</span><button id="next">‹</button></div>
+
+<script>
+  (function(){ var h = location.hostname;
+    if (!(h === 'localhost' || h === '127.0.0.1')) { document.body.textContent = 'أداة تطوير — تعمل على الجهاز المحلي وحده.'; throw new Error('dev only'); }
+    try { sessionStorage.setItem('shouba.sim', '1'); } catch (e) {} })();
+</script>
+<script src="plan-strip-data.js"></script>
+<script src="plan-strip.js"></script>
+<script src="../build.js"></script>
+<script src="../refdata.js"></script>
+<script src="../derive.js"></script>
+<script src="../icons.js"></script>
+<script src="../components.js"></script>
+<script>
+  var PS = PlanStrip, MON = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  var START = new Date(2026, 8, 13), W = 6;   /* بيانات مثال: الاسبوع السادس — تظهر الحالات الثلاث */
+  var CHK = '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function planById(id){ return (window.PLAN_SAMPLE || []).filter(function(p){ return p.id === id; })[0]; }
+  /* دروس الخطة مسطحة بترتيبها، ولكل درس اسبوعه — والمكرر المتتالي مدموج كما في الشريط */
+  function flat(p){ var out = []; for (var n = 1; n <= PS.TOTAL; n++) PS.merged(PS.weekOf(p, n)).forEach(function(l){ out.push({ n: n, t: l.t, p: l.p }); }); return out; }
+  function lastIn(L, n){ var k = -1; L.forEach(function(l, i){ if (l.n <= n) k = i; }); return k; }
+  function firstIn(L, n){ for (var i = 0; i < L.length; i++) if (L[i].n === n) return i; return -1; }
+  function dateOfWeek(n, day){ return new Date(START.getTime() + (n - 1) * 6048e5 + (day || 0) * 864e5); }
+  function dm(d){ return d.getDate() + '/' + (d.getMonth() + 1); }
+  var ST = { ahead: 'متقدم', match: 'مطابق', behind: 'متأخر' };
+  /* الاقتراح: متقدم ان تجاوز اسبوع الخطة الجاري · مطابق فيه او في الذي قبله (بداية الاسبوع ليست تأخرا) · متأخر قبل ذلك */
+  function suggest(rw){ return rw == null ? null : rw > W ? 'ahead' : rw >= W - 1 ? 'match' : 'behind'; }
+
+  /* معلمون ومقرراتهم وما قطعوه (بيانات مثال) */
+  var T = [
+    { name: 'خالد العنزي',    plan: 3766, reach: { at: 'last', n: 4 } },
+    { name: 'فهد المطيري',    plan: 3800, reach: { at: 'last', n: 6 } },
+    { name: 'ناصر العجمي',    plan: 3802, reach: { at: 'first', n: 7 } },
+    { name: 'عبدالله الرشيدي', plan: 3801, reach: null }
+  ];
+  T.forEach(function(t){
+    t.p = planById(t.plan); t.L = flat(t.p);
+    t.r = !t.reach ? -1 : t.reach.at === 'last' ? lastIn(t.L, t.reach.n) : firstIn(t.L, t.reach.n);
+    /* صفوف سابقة في الكشف — صفان لكل شهر كنموذج التوجيه */
+    t.rows = t.r < 0 ? [] : [
+      { d: dateOfWeek(1, 4), t: t.L[lastIn(t.L, 1)].t, s: 'match' },
+      { d: dateOfWeek(3, 4), t: t.L[lastIn(t.L, t.name === 'خالد العنزي' ? 2 : 3)].t, s: t.name === 'خالد العنزي' ? 'behind' : 'match' }
+    ];
+  });
+  var cur = T[0];
+  function reachedWeek(t){ return t.r < 0 ? null : t.L[t.r].n; }
+
+  /* اللوحة السفلية حيث يؤشر: وصل الى · الحكم مقترحا · سجل او تأشير فقط */
+  function judge(){
+    if (cur.r < 0) return;
+    var rw = reachedWeek(cur), sel = suggest(rw), n = el('div', 'jd');
+    n.appendChild(el('div', 'at', 'وصل إلى: ' + cur.L[cur.r].t));
+    n.appendChild(el('div', 'wh', 'من الأسبوع ' + PS.ORD[rw - 1] + ' في الخطة — والخطة الآن في الأسبوع ' + PS.ORD[W - 1] + ' (' + PS.range(W) + ')'));
+    n.appendChild(el('div', 'lbl', 'ما قطع من المقرر'));
+    var segs = el('div', 'segs sm');
+    ['ahead', 'match', 'behind'].forEach(function(key){
+      var b = el('button', 'seg' + (sel === key ? ' on' : ''), ST[key]); b.type = 'button';
+      b.addEventListener('click', function(){ sel = key; [].forEach.call(segs.children, function(x){ x.classList.toggle('on', x === b); }); });
+      segs.appendChild(b);
+    });
+    n.appendChild(segs);
+    n.appendChild(el('div', 'hint', 'اقتراح من الخطة — والحكم لك، غيره بلمسة.'));
+    var go = el('button', 'cta', 'سجل متابعة اليوم'), no = el('button', 'btn-ghost', 'تأشير دون تسجيل');
+    go.addEventListener('click', function(){ cur.rows.push({ d: dateOfWeek(W, 3), t: cur.L[cur.r].t, s: sel, fresh: true }); Shouba.sheet.close(); paint(); });
+    no.addEventListener('click', function(){ Shouba.sheet.close(); });
+    n.appendChild(go); n.appendChild(no);
+    Shouba.sheet.open('أ. ' + cur.name + ' · ' + cur.p.subject + ' ' + cur.p.grade, n);
+  }
+
+  function paint(){
+    document.getElementById('devLbl').textContent = 'بيانات مثال · الأسبوع ' + W;
+    document.getElementById('sub').textContent = 'أ. ' + cur.name + ' · ' + cur.p.subject + ' ' + cur.p.grade;
+    var who = document.getElementById('who'); who.innerHTML = '';
+    T.forEach(function(t){ var b = el('button', 'tg' + (t === cur ? ' on' : ''), 'أ. ' + t.name); b.type = 'button';
+      b.addEventListener('click', function(){ cur = t; paint(); }); who.appendChild(b); });
+    /* البطاقة: ملخص الموقع — وزرها يفتح اللوحة نفسها */
+    var rw = reachedWeek(cur), sg = suggest(rw), c = document.getElementById('card'); c.innerHTML = '';
+    var top = el('div', 'top'), k = el('div', 'kicker'); k.appendChild(el('span', 'pulse')); k.appendChild(document.createTextNode(cur.p.subject + ' · ' + cur.p.grade));
+    top.appendChild(k); top.appendChild(el('div', 'left', sg ? ST[sg] : 'الخطة: الأسبوع ' + W));
+    c.appendChild(top);
+    c.appendChild(el('div', 'ttl', cur.r < 0 ? 'لم يؤشر ما قطعه بعد' : 'آخر ما قطع: ' + cur.L[cur.r].t));
+    c.appendChild(el('div', 'sub', cur.r < 0 ? 'المس الدرس الذي وصل إليه في دروس الخطة أدناه.'
+      : 'من الأسبوع ' + PS.ORD[rw - 1] + ' — والخطة في الأسبوع ' + PS.ORD[W - 1] + ' (' + PS.range(W) + ')'));
+    var acts = el('div', 'acts'), go = el('button', 'cta', 'سجل متابعة اليوم'), pr = el('button', 'ghost2', 'اطبع الكشف');
+    go.disabled = cur.r < 0; go.addEventListener('click', judge);
+    acts.appendChild(go); acts.appendChild(pr); c.appendChild(acts);
+    /* الكشف */
+    var rec = document.getElementById('rec'); rec.innerHTML = '';
+    document.getElementById('recN').textContent = cur.rows.length ? cur.rows.length + ' من ٨ أشهر × ٢' : 'فارغ';
+    var hd = el('div', 'tr hd rec'); ['الشهر', 'التاريخ', 'الموضوع', 'ما قطع'].forEach(function(h, i){ hd.appendChild(el('span', ['m', 'd', 't', 's'][i], h)); }); rec.appendChild(hd);
+    if (!cur.rows.length) rec.appendChild(el('div', 'empty', 'لا صفوف بعد — أول متابعة تضيف صفها هنا.'));
+    cur.rows.forEach(function(r){
+      var row = el('div', 'tr rec' + (r.fresh ? ' new' : ''));
+      row.appendChild(el('span', 'm', MON[r.d.getMonth()])); row.appendChild(el('span', 'd', dm(r.d)));
+      row.appendChild(el('span', 't', r.t)); row.appendChild(el('span', 's chip' + (r.s === 'behind' ? '' : ' navy'), ST[r.s]));
+      rec.appendChild(row);
+    });
+    /* دروس الخطة بالتأشير — واللمسة تفتح اللوحة حيث يؤشر */
+    document.getElementById('wkNow').textContent = 'الأسبوع ' + W + ' جار';
+    var ls = document.getElementById('ls'); ls.innerHTML = ''; var lastN = 0;
+    cur.L.forEach(function(l, i){
+      if (l.n !== lastN) { lastN = l.n; var h = el('div', 'tr wkh' + (l.n === W ? ' now' : '')); h.appendChild(el('span', null, 'الأسبوع ' + PS.ORD[l.n - 1] + ' · ' + PS.range(l.n) + (l.n === W ? ' — هذا الأسبوع' : ''))); ls.appendChild(h); }
+      var r = el('div', 'tr lr' + (i <= cur.r ? ' done' : '') + (i === cur.r ? ' reach' : ''));
+      var mk = el('span', 'mk'); if (i <= cur.r) mk.innerHTML = CHK; r.appendChild(mk);
+      r.appendChild(el('span', 'tx', l.t)); r.appendChild(el('em', null, l.p + ' ح'));
+      r.addEventListener('click', function(){ cur.r = (i === cur.r) ? i - 1 : i; paint(); judge(); });
+      ls.appendChild(r);
+    });
+  }
+  document.getElementById('prev').addEventListener('click', function(){ if (W > 1) { W--; paint(); } });
+  document.getElementById('next').addEventListener('click', function(){ if (W < PS.TOTAL) { W++; paint(); } });
+  paint();
+</script>
+</body>
+</html>

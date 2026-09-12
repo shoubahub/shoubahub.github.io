@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=49" />
-<link rel="stylesheet" href="shell.css?v=49" />
-<link rel="stylesheet" href="components.css?v=49" />
-<link rel="stylesheet" href="frame.css?v=49" />
-<link rel="stylesheet" href="rec-print.css?v=49" />
+<link rel="stylesheet" href="identity/tokens.css?v=50" />
+<link rel="stylesheet" href="shell.css?v=50" />
+<link rel="stylesheet" href="components.css?v=50" />
+<link rel="stylesheet" href="frame.css?v=50" />
+<link rel="stylesheet" href="rec-print.css?v=50" />
 <style>
   /* شاشة السجل (2026-09-12) — شاشة واحدة لكل القوالب، تولدها اللبنات من التعريف:
      ?tpl=<قالب> سجل جديد (لا يحفظ حتى يكتب فيه) · ?id=<سجل> سجل محفوظ باصداره هو.
@@ -75,16 +75,17 @@
   </div>
  </div></div>
 
-<script src="build.js?v=49"></script>
-<script src="refdata.js?v=49"></script>
-<script src="rec-templates.js?v=49"></script>
-<script src="rec-engine.js?v=49"></script>
-<script src="derive.js?v=49"></script>
-<script src="icons.js?v=49"></script>
-<script src="components.js?v=49"></script>
-<script src="rec-print.js?v=49"></script>
-<script src="rec-files.js?v=49"></script>
-<script src="rec-form.js?v=49"></script>
+<script src="build.js?v=50"></script>
+<script src="refdata.js?v=50"></script>
+<script src="rec-templates.js?v=50"></script>
+<script src="rec-engine.js?v=50"></script>
+<script src="derive.js?v=50"></script>
+<script src="plan-data.js?v=50"></script>
+<script src="icons.js?v=50"></script>
+<script src="components.js?v=50"></script>
+<script src="rec-print.js?v=50"></script>
+<script src="rec-files.js?v=50"></script>
+<script src="rec-form.js?v=50"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -328,7 +329,14 @@
   function start(){
     document.getElementById('ttl').textContent = tpl.title;
     document.title = 'شعبة · ' + tpl.title;
-    ShoubaForm.render(formEl, tpl, rec, { teachers: S.teachers(), open: S.openDecisions(rec), focus: Q.get('focus') || '' }, changed);
+    function renderForm(){ ShoubaForm.render(formEl, tpl, rec, { teachers: S.teachers(), open: S.openDecisions(rec), focus: Q.get('focus') || '' }, changed); }
+    renderForm();
+    /* الجدول الذكي «ما قطع من المنهج» يقرأ خطط التوزيع المعتمدة (plan-data.js): النسخة المحفوظة فورا، وتجلب
+       في الخلفية — فيعاد رسم التحرير حين تتغير (لا المعاينة: تعاد عند فتحها) */
+    if (window.ShoubaPlans && tpl.blocks.some(function(b){ return b.smart === 'plan'; })) {
+      ShoubaPlans.onChange(function(){ if (pv.hidden) renderForm(); });
+      ShoubaPlans.load(d.stage);
+    }
     /* الوصول المباشر من اللوحة (?focus=صف): ينزل الى الاجراء المقصود في محوره المفتوح */
     var fr = Q.get('focus') && formEl.querySelector('[data-row="' + Q.get('focus').replace(/[^A-Za-z0-9_\-]/g, '') + '"]');
     if (fr) setTimeout(function(){ fr.scrollIntoView({ block: 'center' }); }, 60);

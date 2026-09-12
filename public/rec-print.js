@@ -183,6 +183,7 @@
       case 'date': return P.date(x);
       case 'number': case 'class': return P.ar(x == null ? '' : x);
       case 'check': return x ? '✓' : '';
+      case 'pick': return x === c.opt ? '✓' : '';   /* خيار من اختيار مقسم (split) */
       case 'teacher': return Array.isArray(x) ? x.map(P.whoLabel).join('، ') : P.whoLabel(x);
       case 'months': return P.monthsLabel(x);
       case 'signature': return '';
@@ -190,7 +191,24 @@
       default: return String(x == null ? '' : x);
     }
   }
-  var COLW = { date: 26, number: 16, 'class': 14, check: 11, signature: 28, teacher: 44, months: 42, choice: 30, followup: 42 };   /* بالمليمتر */
+  var COLW = { date: 26, number: 16, 'class': 14, check: 11, signature: 28, teacher: 44, months: 42, choice: 30, followup: 42, pick: 15 };   /* بالمليمتر */
+  /* صفوف الجدول في اشهرها (rowGroups.from 'months' — نموذج ما قطع ص١٤): اشهر النموذج التي في فصل السجل
+     (refdata.termMonths)، ومعها كل شهر فيه صف وان لم يكن في النموذج (يناير في الاول) — بترتيب العام الدراسي
+     من سبتمبر، والصف بلا تاريخ في آخرها بلا شهر. يعيد [{ m, rows }] والصفوف بتاريخها */
+  function monthGroups(rg, rows, cols, ctx) {
+    var dc = cols.filter(function (c) { return c.kind === 'date'; })[0], term = (ctx && ctx.rec && ctx.rec.term) || '';
+    var tm = (REF().termMonths || {})[term] || [], form = rg.months || [], by = {};
+    var list = tm.length ? form.filter(function (m) { return tm.indexOf(m) > -1; }) : form.slice();
+    rows.forEach(function (r) {
+      var m = dc ? +(String(r[dc.id] || '').split('-')[1]) || 0 : 0;
+      (by[m] = by[m] || []).push(r);
+      if (list.indexOf(m) < 0) list.push(m);
+    });
+    function aca(m) { return m ? (m + 3) % 12 : 99; }      /* سبتمبر ٠ … أغسطس ١١ */
+    return list.sort(function (a, b) { return aca(a) - aca(b); }).map(function (m) {
+      return { m: m, rows: (by[m] || []).slice().sort(function (a, b) { return String(a[dc.id] || '').localeCompare(String(b[dc.id] || '')); }) };
+    });
+  }
   PB.table = function (b, v, ctx) {
     /* الشبكة: الاعمدة المختارة وحدها، والمجموعة التي لم يختر منها شيء تسقط من الرأس تلقائيا. وحين
        يقل المختار تتسع اعمدة ✓ لما بقي من العرض (بلا عرض ثابت)، ويبقى للتاريخ والتوقيع عرضهما */
@@ -199,9 +217,18 @@
     /* الرأس الرأسي للاعمدة الضيقة وحدها: فاذا قل المختار (١٢ فما دون) اتسعت الاعمدة فكتب الرأس افقيا يقرأ بلا ميل الرأس */
     var upright = fewer && cols.filter(function (c) { return c.kind === 'check'; }).length <= 12;
     var rows = Array.isArray(v) ? v : [], groups = {}, num = b.numbered !== false;
-    var t = el('table', 'pp-tbl' + (b.dense ? ' dense' : '')), cg = el('colgroup'), th = el('thead'), r1 = el('tr');   /* dense: الشبكات العريضة */
-    var grouped = cols.some(function (c) { return c.group; }), r2 = grouped ? el('tr') : null;
     (b.groups || []).forEach(function (g) { groups[g.id] = g; });
+    /* الاختيار المقسم (split — «ما قطع من المقرر»): عمود لكل خيار تحت رأس الاختيار، والعلامة في المختار —
+       كنموذج التوجيه (متقدم · مطابق · متأخر). وسائر الاعمدة كما هي */
+    var src = cols; cols = [];
+    src.forEach(function (c) {
+      if (c.kind !== 'choice' || !c.split) return cols.push(c);
+      groups['$' + c.id] = { id: '$' + c.id, label: c.label };
+      (c.options || []).forEach(function (o) { cols.push({ id: c.id, label: o, kind: 'pick', opt: o, group: '$' + c.id, w: c.w }); });
+    });
+    var rg = b.rowGroups && b.rowGroups.from === 'months' ? b.rowGroups : null;
+    var t = el('table', 'pp-tbl' + (b.dense ? ' dense' : '') + (rg ? ' rg' : '')), cg = el('colgroup'), th = el('thead'), r1 = el('tr');   /* dense: الشبكات العريضة */
+    var grouped = cols.some(function (c) { return c.group; }), r2 = grouped ? el('tr') : null;
     if (b.title) t.appendChild(el('caption', null, b.title));
     function col(w) { var c = el('col'); if (w) c.style.width = w + 'mm'; return c; }
     function head(c, span2) {
@@ -210,6 +237,7 @@
       if (span2) h.rowSpan = 2;
       return h;
     }
+    if (rg) { cg.appendChild(col(18)); var hmo = el('th', 'mo', rg.label || 'الشهر'); if (grouped) hmo.rowSpan = 2; r1.appendChild(hmo); }   /* الشهر يمينا كالنموذج */
     if (num) { cg.appendChild(col(8)); var hm = el('th', 'm', 'م'); if (grouped) hm.rowSpan = 2; r1.appendChild(hm); }
     cols.forEach(function (c) { cg.appendChild(col(fewer && c.kind === 'check' ? 0 : (c.w || COLW[c.kind]))); });
     for (var i = 0; i < cols.length;) {
@@ -224,14 +252,29 @@
     th.appendChild(r1);
     if (r2) th.appendChild(r2);
     t.appendChild(cg); t.appendChild(th);
-    var tb = el('tbody'), n = Math.max(rows.length, (b.rows && b.rows.min) || 0);
-    for (var k = 0; k < n; k++) {
-      var row = rows[k], tr = el('tr', row ? null : 'blank');
+    var tb = el('tbody');
+    function line(row, k, lead) {
+      var tr = el('tr', row ? null : 'blank');
+      if (lead) tr.appendChild(lead);
       if (num) tr.appendChild(el('td', 'm', P.ar(k + 1)));
       cols.forEach(function (c) {
-        tr.appendChild(el('td', c.kind === 'check' ? 'ck' : c.kind === 'signature' ? 'sig' : null, row ? cellText(c, row[c.id], ctx) : ''));
+        tr.appendChild(el('td', c.kind === 'check' || c.kind === 'pick' ? 'ck' : c.kind === 'signature' ? 'sig' : null, row ? cellText(c, row[c.id], ctx) : ''));
       });
       tb.appendChild(tr);
+    }
+    if (rg) {
+      /* لكل شهر صفوفه او per صفوف فارغة، وخانة الشهر تمتد عليها */
+      var k = 0;
+      monthGroups(rg, rows, cols, ctx).forEach(function (g) {
+        var n = Math.max(g.rows.length, rg.per || 1);
+        for (var j = 0; j < n; j++) {
+          var lead = null;
+          if (!j) { lead = el('td', 'mo', g.m ? (REF().months || [])[g.m - 1] || '' : ''); lead.rowSpan = n; }
+          line(g.rows[j], k++, lead);
+        }
+      });
+    } else {
+      for (var i2 = 0, n2 = Math.max(rows.length, (b.rows && b.rows.min) || 0); i2 < n2; i2++) line(rows[i2], i2, null);
     }
     t.appendChild(tb);
     return t;

@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=49" />
-<link rel="stylesheet" href="shell.css?v=49" />
-<link rel="stylesheet" href="components.css?v=49" />
-<link rel="stylesheet" href="frame.css?v=49" />
+<link rel="stylesheet" href="identity/tokens.css?v=50" />
+<link rel="stylesheet" href="shell.css?v=50" />
+<link rel="stylesheet" href="components.css?v=50" />
+<link rel="stylesheet" href="frame.css?v=50" />
 <style>
   /* ارشيف السجل (2026-09-12) — شاشة واحدة لكل القوالب: ?tpl=<قالب>.
      مجموعات (الفصل · العام) الاحدث اولا، وبحث في المحتوى وتصفية بالحالة، وبطاقة لكل سجل تفتح لوحة اجراءاته
@@ -57,14 +57,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=49"></script>
-<script src="refdata.js?v=49"></script>
-<script src="rec-templates.js?v=49"></script>
-<script src="rec-engine.js?v=49"></script>
-<script src="derive.js?v=49"></script>
-<script src="icons.js?v=49"></script>
-<script src="components.js?v=49"></script>
-<script src="rec-files.js?v=49"></script>
+<script src="build.js?v=50"></script>
+<script src="refdata.js?v=50"></script>
+<script src="rec-templates.js?v=50"></script>
+<script src="rec-engine.js?v=50"></script>
+<script src="derive.js?v=50"></script>
+<script src="icons.js?v=50"></script>
+<script src="components.js?v=50"></script>
+<script src="rec-files.js?v=50"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -128,7 +128,8 @@
         var mine = S.recs(t.id).filter(function(r){ return r.who === nm && isNow(r); })[0], b = el('button', 'setitem');
         b.type = 'button';
         b.appendChild(el('b', null, 'أ. ' + nm));
-        b.appendChild(el('small', null, mine ? noun.one + 'ه لهذا الفصل — افتحه' : noun.one + ' جديد لهذا الفصل'));
+        var span = t.scope === 'year' ? 'لهذا العام' : 'لهذا الفصل';   /* سجل العام (scope:'year') واحد في العام */
+        b.appendChild(el('small', null, mine ? noun.one + 'ه ' + span + ' — افتحه' : noun.one + ' جديد ' + span));
         b.addEventListener('click', function(){
           location.href = mine ? 'record.html?id=' + encodeURIComponent(mine.id) : 'record.html?tpl=' + encodeURIComponent(t.id) + '&who=' + encodeURIComponent(nm);
         });
@@ -219,7 +220,8 @@
 
     /* النسخ الى الفصل الحالي (المرحلة الثانية هـ — tpl.copy): سجل جديد بمحتوى المصدر، بعام الفصل الحالي وفصله،
        والمتابعة ممسوحة والملفات لا تنسخ (S.copyRec) — ثم يفتح لتعدله */
-    function isNow(r){ return (r.year || '') === (d.year || '') && (r.term || '') === (d.term || ''); }
+    /* الحالي: عام الشعبة وفصلها — وسجل العام (scope:'year') بعامه وحده */
+    function isNow(r){ return (r.year || '') === (d.year || '') && (t.scope === 'year' || (r.term || '') === (d.term || '')); }
     function copyToNow(r){ var n = S.copyRec(r); if (n) location.href = 'record.html?id=' + encodeURIComponent(n.id); }
 
     /* لوحة الاجراءات: فتح وتعديل (او عرض لعام سابق) · المعاينة والطباعة · النسخة الموقعة · حذف بتأكيد */

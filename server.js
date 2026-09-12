@@ -47,6 +47,9 @@ require('./auth').routes(app);
 /* المرفقات (النسخ الموقعة) — لصاحب الحساب وحده · files.js */
 require('./files').routes(app, require('./auth').requireUser);
 
+/* خطط التوزيع: مراجعة المالك خلف رقم الادارة، والمعتمد لرئيس الشعبة بجلسته · plans.js (2026-09-13) */
+require('./plans').routes(app, require('./auth').requireAdmin, require('./auth').requireUser);
+
 app.get('/health', (_req, res) => res.json({ ok: true, stage: 'server' }));
 
 // SPA fallback — أي مسار غير معروف يعيد index.html

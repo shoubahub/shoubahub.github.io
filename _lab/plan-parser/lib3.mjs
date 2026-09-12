@@ -1,6 +1,8 @@
 import { openDoc, ligatureMap, makeFixer, rects, norm } from './lib2.mjs';
 export { openDoc, norm };
 
+/* تسمية اسبوع في خانته: ترتيبي او «من» وتاريخ (بالارقام اللاتينية او الهندية) — لصف لا تمر به خطوط الاعمدة */
+const WEEKLBL = /الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|السابع|الثامن|التاسع|العاشر|عشر|العشرون|من\s*[\d٠-٩]|week\s*\d/i;   /* لا «Weeks» وحدها: عنوان ترويسة */
 const clusterVals = (vals, t) => {
   const s=[...vals].sort((a,b)=>a-b), out=[];
   for (const v of s){ if(!out.length || v-out[out.length-1]>t) out.push(v); else out[out.length-1]=(out[out.length-1]+v)/2; }
@@ -24,14 +26,17 @@ export async function readTable(page, hint){
     rot: Math.abs(i.transform[0]) < 0.01 && Math.abs(i.transform[1]) > 0.01,
     fs: Math.hypot(i.transform[2], i.transform[3]) || 10, dir: Math.sign(i.transform[1]) || 1
   }));
-  return tableFrom(rs, items, hint);
+  /* vector: الجدول من رسم الملف لا من القراءة الضوئية — انظر شرط «through» */
+  return tableFrom(rs, items, { ...(hint || {}), vector: true });
 }
 
 /* النواة: خطوط (x,y,w,h بنقاط الصفحة) ونص ({s,x,y,w,rot}) من اي مصدر — رسم الملف او القراءة الضوئية
    (ocrpage.mjs للخطط الممسوحة وذات الخط المرمز). فصلت عن pdf.js كي لا يكتب الجدول مرتين (2026-09-12) */
 export function tableFrom(rs, items, hint){
-  const H = rs.filter(r => Math.abs(r.h) <= 2.5 && Math.abs(r.w) > 5)
-              .map(r => ({ x1:Math.min(r.x,r.x+r.w), x2:Math.max(r.x,r.x+r.w), y:r.y }));
+  /* ⚠ وحد الاسبوع قد يرسم عريضا (٣ نقاط — الكيمياء ١١ تفصل اسابيعها بخط ثخين وحدود الدروس رفيعة)، فكان حد ٢٫٥ يسقطه
+     فتندمج الاسابيع او تسقط (2026-09-13). الحد ٤ نقاط، والخلايا المظللة اعلى من ١٠ فلا تظن خطا؛ وارتفاع الثخين من وسطه */
+  const H = rs.filter(r => Math.abs(r.h) <= 4 && Math.abs(r.w) > 5)
+              .map(r => ({ x1:Math.min(r.x,r.x+r.w), x2:Math.max(r.x,r.x+r.w), y: Math.abs(r.h) > 2.5 ? Math.min(r.y, r.y + r.h) + Math.abs(r.h) / 2 : r.y }));
   const V = rs.filter(r => Math.abs(r.w) <= 2.5 && Math.abs(r.h) > 8)
               .map(r => ({ y1:Math.min(r.y,r.y+r.h), y2:Math.max(r.y,r.y+r.h), x:r.x, len:Math.abs(r.h) }));
   if (!H.length || !V.length) return null;
@@ -52,7 +57,13 @@ export function tableFrom(rs, items, hint){
      منها «الأسبوع» وحدها، فظنت ترويسة في جسم إنجليزي الثانوي ص٢ فانقلب الاتجاه وسقطت الصفحة */
   const HDR = /المجال|الوحدة|الدرس|المفاهيم|الحصص|عدد|ملاحظ|دليل|unit|lesson|period|remark|note/i;
   const nearHdr = i => items.some(j => j !== i && Math.abs(j.y - i.y) < 20 && HDR.test(norm(j.s)));
-  const head = items.filter(i => (!i.rot && (WEEK.test(bareS(i.s)) || /^weeks?$/i.test(i.s.trim()) || merged(i))) || (i.rot && WEEK.test(bareS(i.s)) && nearHdr(i)))
+  /* ⚠ والكلمة قد تنقسم في آخرها ايضا («األسبو» + «ع» — لغتي العربية للمتوسط، ثماني صفحات من عشرين): فسقط
+     جدولها الى القراءة الضوئية فدمجت اسابيعها ثلاثة ثلاثة (2026-09-12). يقبل العنصر ان جاوره على سطره
+     ذيل قصير (حرف او حرفان) تتم به «الأسبوع» — لا عنوان تام مجاور كـ«الوحدة» */
+  const tail = i => items.some(j => j !== i && !j.rot && Math.abs(j.y - i.y) < 3 && bareS(j.s).length <= 2
+    && Math.min(Math.abs(j.x + j.w - i.x), Math.abs(i.x + i.w - j.x)) < (i.fs || 10) * 0.8
+    && (WEEK.test(bareS(i.s + j.s)) || WEEK.test(bareS(j.s + i.s))));
+  const head = items.filter(i => (!i.rot && (WEEK.test(bareS(i.s)) || /^weeks?$/i.test(i.s.trim()) || merged(i) || tail(i))) || (i.rot && WEEK.test(bareS(i.s)) && nearHdr(i)))
                     .sort((p, q) => q.y - p.y);
   /* ⚠ صفحة تكمل جدول سابقتها بلا ترويسة (إنجليزي الثانوي: الترويسة في الصفحات الفردية وحدها، فسقط
      نصف الاسابيع) — تقرأ باعمدة سابقتها من الملف نفسه (hint)، وكل ما تحت اعلاها جسم (2026-09-12) */
@@ -120,6 +131,9 @@ export function tableFrom(rs, items, hint){
     if (centers.filter(x => x != null).length >= n - 1 && !fits(colX) && ordered) {
       const hdrV = V.filter(v => v.y1 <= hy + 4 && v.y2 >= hy - 4).map(v => v.x);
       const dist = x => hdrV.length ? Math.min(...hdrV.map(h => Math.abs(h - x))) : 0;
+      /* (جرب 2026-09-13 تقييد هذه الاعادة ثلاث مرات — طول الخط، ثم بدؤه تحت الترويسة، ثم استبعاد جدول الاعتماد بنصه — لعلاج
+         الصفحة الاخيرة من المواد الحرة #4370 (خط من جدول الاعتماد اخذ حدا). الاولان افسدا تسع خطط (حدود البدنية قطع قصيرة
+         لكل خانة والاعادة تعتمد عليها)، والثالث لم يفسد ولم يصلح — فرد الى اصله، و#4370 يراجع وسببه مكتوب) */
       const best = (lo, hi) => weight.filter(w => w.x > lo && w.x < hi).sort((a, b) => b.len - a.len || dist(a.x) - dist(b.x))[0];
       const cs = [...centers].sort((a, b) => a - b);
       const picks = [best(-Infinity, cs[0])];
@@ -139,7 +153,13 @@ export function tableFrom(rs, items, hint){
      متتابعة، فسقط جدول صفحة كاملة (رياضيات الرابع ص١٨) (2026-09-12).
      ⚠ والمسموح غير المغطى ٦٫٥ نقطة (ثلاث عند كل طرف كالشرط القديم) او ١٠٪ ايهما اكبر — النسبة وحدها
      اسقطت حدود اسابيع في الاعمدة الضيقة (الحصص ٤٠ نقطة) فاندمج اسبوعان في خطط سليمة (رياضيات العاشر) */
-  const covers = (y, c) => {
+  /* ⚠ وطرف الجدول الخارجي قد يكون اطارا مزدوجا: حد الصف ينتهي عند الاطار الداخلي (٥٥٨) والعمود الى الخارجي
+     (٥٦٥)، فنقص ٧ نقاط عن المسموح فسقطت حدود الاسابيع كلها (لغتي العربية للمتوسط ص١٢ و١٣ و١٨، 2026-09-12).
+     فلا يحسب على الخط ما بين الاطارين: حتى ٨ نقاط من الجهة الخارجية للعمودين الطرفيين وحدهما */
+  const OUTER = 8, xL = colX[0], xR = colX[colX.length - 1];
+  const covers = (y, c0) => {
+    const c = { a: c0.a <= xL + 0.5 ? c0.a + Math.min(OUTER, (c0.b - c0.a) / 4) : c0.a,
+                b: c0.b >= xR - 0.5 ? c0.b - Math.min(OUTER, (c0.b - c0.a) / 4) : c0.b };
     const segs = bodyH.filter(h => Math.abs(h.y-y) <= 2.5 && h.x2 > c.a && h.x1 < c.b)
                       .map(h => [Math.max(h.x1, c.a), Math.min(h.x2, c.b)]).sort((p, q) => p[0] - q[0]);
     let cov = 0, end = c.a;
@@ -151,6 +171,8 @@ export function tableFrom(rs, items, hint){
 
   /* حدّ الأسبوع: قطعٌ في عمود الأسبوع والحصص **وعمود الدرس** — والأخير هو ما
      يستبعد جدول الاعتماد أسفل الصفحة (خطوطه لا تعبر عمود الدرس كاملاً). */
+  /* (جرب 2026-09-12 تخفيف التغطية في القراءة الضوئية الى ٦٠٪ للدرس والحصص — لخطوط الديكور الممسوحة المتقطعة — فلم
+     يتحسن شيء وسقطت خطتان الى «بلا جدول»، فرد. خطوط الديكور تحتاج علاجا غير هذا) */
   const weekY   = ys.filter(y => covers(y, cols[COL.week]) && covers(y, cols[COL.periods]) && covers(y, cols[COL.lesson]));
   /* صفحة التكملة: اول صفوفها يكمل صفا بدأ في سابقتها فلا خط فوقه — حده الاعلى اعلى خطوط الاعمدة الداخلية
      (إنجليزي الثانوي ص٢ سقطت لانها بلا حد علوي) */
@@ -179,6 +201,53 @@ export function tableFrom(rs, items, hint){
       .map(i => i.s.trim()).filter(Boolean);
   };
   const pickAny = (ci, bd) => pick(ci, bd, false).join(' ') || pick(ci, bd, true).join(' ');
+  /* نص خانة الدرس بمواضع عناصره (2026-09-13): العنصران المتلاصقان على سطر واحد كلمة واحدة («تهي»«ئ»«ة» = تهيئة، و«الل»«غوية»
+     — كانت تضم بفاصل فتنقسم الكلمة في نصف عناوين الدروس)، والفجوة الواسعة او الفراغ في العنصر فراغ، والاسطر المختلفة اسطر.
+     والاتجاه لكل سطر: العربي من اليمين، واللاتيني (الفرنسية والإنجليزية) من اليسار */
+  const lines = (ci, bd) => {
+    const c = cols[ci];
+    const its = items.filter(it => !it.rot && it.y > bd.bot - 1 && it.y < bd.top - 2 && ctr(it) > c.a && ctr(it) < c.b && it.s.trim());
+    const L = [];
+    for (const it of its.sort((p, q) => q.y - p.y)) {
+      const l = L.find(l => Math.abs(l.y - it.y) < (it.fs || 10) * 0.5);
+      if (l) l.a.push(it); else L.push({ y: it.y, a: [it] });
+    }
+    return L.map(l => {
+      const txt = l.a.map(i => i.s).join('');
+      const lat = (txt.match(/[A-Za-z]/g) || []).length > (txt.match(/[ء-ي]/g) || []).length;
+      const a = l.a.sort((p, q) => lat ? p.x - q.x : q.x - p.x);
+      let s = '';
+      a.forEach((it, k) => {
+        if (!k) { s = it.s.trim(); return; }
+        const pr = a[k - 1], gap = lat ? it.x - (pr.x + pr.w) : pr.x - (it.x + it.w);
+        const sp = /\s$/.test(pr.s) || /^\s/.test(it.s) || gap >= (it.fs || 10) * 0.2;
+        s += (sp ? ' ' : '') + it.s.trim();
+      });
+      return s.trim();
+    }).filter(Boolean);
+  };
+  /* اعداد خانة الحصص بمواضعها (2026-09-12): الارقام المتجاورة على سطر واحد عدد واحد يقرأ من اليسار («1»«4» = ١٤ —
+     الإنجليزي العاشر: قرئ ٥ فنقص المجموع ٩)، والاعداد على اسطر مختلفة تجمع (دروس في خانة واحدة — «٩ ٢ ٦ ١» في
+     الكيمياء ١٢ لا تضم). ويبقى ما في العنصر الواحد مفصولا بفراغ اعدادا منفصلة كما كان */
+  const perNums = (ci, bd) => {
+    const c = cols[ci];
+    const its = items.filter(it => !it.rot && it.y > bd.bot - 1 && it.y < bd.top - 2 && ctr(it) > c.a && ctr(it) < c.b)
+      .map(it => ({ x: it.x, w: it.w, y: it.y, fs: it.fs || 10, d: it.s.trim().replace(/[٠-٩]/g, d => d.charCodeAt(0) - 0x660).replace(/[۰-۹]/g, d => d.charCodeAt(0) - 0x6F0) }));
+    const lines = [];
+    for (const it of its.sort((p, q) => q.y - p.y)) { const L = lines.find(l => Math.abs(l.y - it.y) < 2); if (L) L.a.push(it); else lines.push({ y: it.y, a: [it] }); }
+    const nums = [];
+    for (const L of lines) {
+      let cur = null;
+      for (const it of L.a.sort((p, q) => p.x - q.x)) {
+        if (/^\d+$/.test(it.d) && cur && it.x - cur.x2 < it.fs * 0.6) { cur.s += it.d; cur.x2 = it.x + it.w; continue; }
+        if (cur) nums.push(cur.s); cur = null;
+        if (/^\d+$/.test(it.d)) cur = { s: it.d, x2: it.x + it.w };
+        else (it.d.match(/\d+/g) || []).forEach(n => nums.push(n));
+      }
+      if (cur) nums.push(cur.s);
+    }
+    return nums.map(Number).filter(v => v > 0 && v <= 30);
+  };
 
   /* بناء الصفوف: أسبوع ⊃ دروس */
   const weeks = [];
@@ -190,7 +259,16 @@ export function tableFrom(rs, items, hint){
   const through = y => inner.filter(x => V.some(v => Math.abs(v.x - x) <= 4 && v.y1 <= y + 1 && v.y2 >= y - 1)).length >= inner.length - 1;
   for (let i = 0; i < wy.length-1; i++){
     const bd = band(wy[i], wy[i+1]);
-    if (!through((wy[i] + wy[i+1]) / 2)) continue;
+    /* ⚠ وفي جدول رسم الملف صف خانته ممتدة عبر الاعمدة («مراجعة عامة» — آخر اسابيع القرآن السادس) لا تمر به
+       خطوط الاعمدة، فسقط اسبوعه (2026-09-12). وجدول الاعتماد في رسم الملف يستبعده شرط عمود الدرس اصلا؛ فيقبل
+       الصف ان كانت في خانة اسبوعه تسمية اسبوع (ترتيبي او «من» وتاريخ) وفي خانة حصصه عدد، ولا «المجموع» ولا «الصف».
+       ⚠ شرط العدد هو الفاصل: قبلت بدونه ترويسة مكررة («Weeks الأسابيع») وعنوان («الفصل الدراسي الأول 2027») واسم
+       الصف («الصف الثاني عشر») صفوفا — ولا عدد حصص في شيء منها، والاسبوع الحق له حصصه («مراجعة عامة ١») */
+    if (!through((wy[i] + wy[i+1]) / 2)) {
+      const wl = norm(pickAny(COL.week, bd));
+      if (!(hint && hint.vector && WEEKLBL.test(wl) && perNums(COL.periods, bd).length
+            && !/المجموع|(^|\s)ا?\s?لصف(?=\s|:|$)/.test(wl + ' ' + norm(pickAny(COL.lesson, bd))))) continue;
+    }
     const innerY = lessonY.filter(y => y < wy[i]-1 && y > wy[i+1]+1).sort((a,b)=>b-a);
     const bounds = [wy[i], ...innerY, wy[i+1]];
     const lessons = [];
@@ -200,12 +278,11 @@ export function tableFrom(rs, items, hint){
       const tc = COL.title != null ? cellAt(titleY, (lb.top + lb.bot) / 2) : null;
       const title = tc && Math.abs(tc.top - lb.top) < 1.5 ? pickAny(COL.title, tc) : '';
       lessons.push({
-        دروس:   [title, ...pick(COL.lesson, lb, false)].filter(Boolean),
+        دروس:   [title, ...lines(COL.lesson, lb)].filter(Boolean),
         /* ⚠ الاعداد تفصل ثم تجمع: ضمها بلا فاصل جعل «٩ ٢ ٦ ١» «9261» (الكيمياء ١٢) */
         /* ⚠ والارقام الهندية («١») تحول لاتينية قبل المطابقة — \d لا يعرفها، فظنت خانات التربية الإسلامية
            غير مقروءة (2026-09-12) */
-        حصص:    (() => { const n = (pick(COL.periods, lb, false).join(' ').replace(/[٠-٩]/g, d => d.charCodeAt(0) - 0x660).replace(/[۰-۹]/g, d => d.charCodeAt(0) - 0x6F0).match(/\d+/g) || []).map(Number).filter(v => v > 0 && v <= 30);
-                         return n.length ? String(n.reduce((a, b) => a + b, 0)) : ''; })(),
+        حصص:    (() => { const n = perNums(COL.periods, lb); return n.length ? String(n.reduce((a, b) => a + b, 0)) : ''; })(),
         مراجع:  pick(COL.notes, lb, false).join(' '),
         /* نص خانة الحصص كما جاء — ان كان ولم يقرأ رقما فهو رقم بخط مرمز يقرأ ضوئيا (ocrpage.mjs) */
         حصصنص: pick(COL.periods, lb, false).join(' '),

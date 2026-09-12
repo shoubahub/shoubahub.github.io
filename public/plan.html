@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · خطة المنهج</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1B5183" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=50" />
+<link rel="stylesheet" href="shell.css?v=50" />
+<link rel="stylesheet" href="components.css?v=50" />
+<link rel="stylesheet" href="frame.css?v=50" />
+<style>
+  /* خطة المنهج — الصورة المطولة لشريط الخطة (2026-09-13، الخطوة د؛ العينة اعتمدها المستخدم: «نموذج مطول للسجل
+     ونموذج للوحة مختصر»). تفتح من شريط اللوحة. مادة واحدة في الشاشة: رقاقات المواد (.tgs) · سطر الحصيلة ·
+     اسابيع الفصل في جدول مصفوف (.tbl): رقمه ومداه ودروسه بحصصها — الجاري مظلل وتنزل اليه الشاشة، والماضي اهدأ.
+     ما يقوله الجدول ما تقوله خطة التوجيه المعتمدة — لا انجاز معلم (ما قطعه في سجل «ما قطع من المنهج»). لا هيكل هنا */
+  .plan{display:flex;flex-direction:column;gap:14px;padding-top:14px;padding-bottom:30px}
+  .plan .tgs{padding:3px var(--gap-side);margin:0;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .plan .tgs::-webkit-scrollbar{display:none}
+  .plan .tg{flex:none;white-space:nowrap}
+  .sumline{padding:0 var(--gap-side);font-size:12px;color:var(--shouba-text-muted);font-weight:600;line-height:1.7}
+  .sumline b{color:var(--shouba-navy)}
+  .wkr{align-items:flex-start}
+  .wkr .c1{padding-top:1px}
+  .wkr .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+  .wkr .d{font-size:10.5px;font-weight:700;color:var(--shouba-label);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .wkr .d .chip{font-size:10px;padding:2px 8px}
+  .wkr .l{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;font-weight:600;color:var(--shouba-ink);line-height:1.6}
+  .wkr .l span{flex:1;min-width:0}
+  .wkr .l em{font-style:normal;flex:none;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+  .wkr .none{font-size:12px;color:var(--shouba-hint)}
+  .tbl .tr.past .l{color:var(--shouba-label)}
+  .miss{margin:0 var(--gap-side);font-size:12px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8;
+    background:rgba(120,98,66,.06);border-radius:14px;padding:12px 14px}
+  .miss b{color:var(--shouba-amber-deep)}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="topbar">
+    <div class="tbcrest" id="tbCrest"></div>
+    <div class="tt"><b>خطة المنهج</b><span id="sub">—</span></div>
+    <div class="iconbtn" data-home title="اللوحة"></div>
+  </div>
+
+  <div class="screen has-topbar">
+    <div class="content">
+      <div class="plan">
+        <div class="tgs" id="subs"></div>
+        <div class="sumline" id="sum"></div>
+        <div class="tbl" id="weeks"></div>
+        <div class="miss" id="miss" hidden></div>
+      </div>
+    </div>
+  </div>
+ </div></div>
+
+<script src="build.js?v=50"></script>
+<script src="refdata.js?v=50"></script>
+<script src="derive.js?v=50"></script>
+<script src="plan-data.js?v=50"></script>
+<script src="icons.js?v=50"></script>
+<script src="components.js?v=50"></script>
+<script>
+  var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search), curKey = Q.get('key') || '', W0 = +Q.get('w') || 0, scrolled = false;
+
+  (function paintTopCrest(){
+    var el = document.getElementById('tbCrest'), c = d.crest;
+    if (c && c.type === 'image') el.innerHTML = '<img src="' + c.data + '" alt="شعار المدرسة" />';
+    else if (c && c.type === 'icon' && window.SHOUBA_ICONS) el.innerHTML = SHOUBA_ICONS.svg(c.id, 22);
+    else el.innerHTML = '<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
+  })();
+
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+
+  function paint(){
+    var L = S.planLinks(), matched = L.pairs.filter(function(p){ return p.plan; });
+    var data = window.ShoubaPlans ? ShoubaPlans.get(d.stage) : null, cal = data ? data.calendar || [] : [];
+    var subs = document.getElementById('subs'), sum = document.getElementById('sum'), wk = document.getElementById('weeks'), miss = document.getElementById('miss');
+    subs.innerHTML = ''; wk.innerHTML = '';
+    /* المواد بلا خطة معتمدة — ذكرها هنا ايضا فلا تغيب عن الخطة الكاملة */
+    miss.hidden = !L.missing.length;
+    miss.innerHTML = L.missing.length ? '<b>يجب رفع الخطة</b> — لم تعتمد بعد خطة: ' : '';
+    if (L.missing.length) miss.appendChild(document.createTextNode(L.missing.map(function(p){ return p.subject + ' · ' + p.grade; }).join('، ')));
+    if (!matched.length) {
+      document.getElementById('sub').textContent = '—';
+      wk.style.display = 'none';
+      sum.textContent = !L.pairs.length ? 'أدخل جداول معلميك ليظهر أسبوع كل مادة في خطتها.'
+        : !L.ready ? 'تجلب خطط التوزيع…' : 'لا خطة معتمدة لمواد شعبتك بعد — تظهر هنا حين تعتمد.';
+      return;
+    }
+    wk.style.display = '';
+    var cur = matched.filter(function(p){ return p.plan.key === curKey; })[0] || matched[0];
+    curKey = cur.plan.key;
+    var n = L.week ? L.week.n : 0, total = S.planWeeksOf(cur.plan), W = W0 || Math.max(1, n);
+    matched.forEach(function(p){
+      var b = el('button', 'tg' + (p === cur ? ' on' : ''), p.subject + ' · ' + p.grade);
+      b.type = 'button'; b.setAttribute('aria-pressed', p === cur ? 'true' : 'false');
+      b.addEventListener('click', function(){ curKey = p.plan.key; scrolled = false; paint(); });
+      subs.appendChild(b);
+    });
+    document.getElementById('sub').textContent = cur.subject + ' · ' + cur.grade;
+    var per = 0; for (var k = 1; k <= total; k++) per += S.planLessons(cur.plan, k).reduce(function(a, l){ return a + l.p; }, 0);
+    sum.innerHTML = total + ' أسبوعا · <b>' + per + '</b> حصة حسب خطة التوجيه'
+      + (n ? ' · الجاري الأسبوع <b>' + n + '</b>' : L.week ? ' · الفصل يبدأ الأحد <b>' + S.dayMonth(L.week.from) + '</b>' : '');
+    for (var i = 1; i <= total; i++) {
+      var c = cal.filter(function(x){ return x.n === i; })[0], r = el('div', 'tr wkr' + (i === n ? ' now' : i < n ? ' past' : ''));
+      r.id = 'w' + i;
+      r.appendChild(el('div', 'c1', String(i)));
+      var body = el('div', 'body'), dl = el('div', 'd', 'الأسبوع ' + i + (c && c.from ? ' · ' + S.weekRange(c.from, c.to) : ''));
+      if (i === n) dl.appendChild(el('span', 'chip navy', 'هذا الأسبوع'));
+      body.appendChild(dl);
+      var ls = S.planLessons(cur.plan, i);
+      if (!ls.length) body.appendChild(el('div', 'none', 'لا دروس في الخطة لهذا الأسبوع'));
+      ls.forEach(function(l){ var x = el('div', 'l'); x.appendChild(el('span', null, l.t)); x.appendChild(el('em', null, l.p + ' ح')); body.appendChild(x); });
+      r.appendChild(body); wk.appendChild(r);
+    }
+    /* الاسبوع المطلوب (او الجاري) في وسط الشاشة — مرة واحدة، لا مع كل تحديث في الخلفية.
+       فورا لا في اطار الرسم التالي: الصف مرسوم والتخطيط يحسب عند النداء، والاطار قد لا يأتي (نافذة في الخلفية) */
+    var target = document.getElementById('w' + W);
+    if (target && !scrolled) { scrolled = true; target.scrollIntoView({ block: 'center' }); }
+  }
+  paint();
+  if (window.ShoubaPlans) { ShoubaPlans.onChange(paint); ShoubaPlans.load(d.stage); }
+</script>
+</body>
+</html>

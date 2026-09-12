@@ -14,6 +14,9 @@ const BIN = `${os.homedir()}/.cache/shouba-lab/ocr`;
 const OCR_VER = 4;   /* 3: الخانات تحمل dash (الشرطة) · 4: ارتفاع حبر الرقم موحد ٤٨ بكسلا */
 /* واصدار الخطوط وحدها (--lines): مد البكسل للمسح المائل غير خطوط الصفحة لا غير — فلا يعاد ما سواها */
 const OCR_VER_LINES = 3;
+/* واصدار الخانات وحدها (--cells): اضيف dims (ابعاد حبر كل خانة، 2026-09-13) — فتعاد قراءة الخانات وحدها، وقراءة
+   الصفحات كاملة في المخبأ كما هي (مفتاحها باصدارها) */
+const OCR_VER_CELLS = 6;   /* 6: sig (صورة الحبر مصغرة) */
 function bin() {
   const fresh = fs.existsSync(BIN) && fs.statSync(BIN).mtimeMs >= fs.statSync(SRC).mtimeMs;
   if (!fresh) { fs.mkdirSync(BIN.replace(/\/[^/]+$/, ''), { recursive: true }); execFileSync('swiftc', ['-O', SRC, '-o', BIN], { stdio: 'inherit' }); }
@@ -22,7 +25,7 @@ function bin() {
 /* المخبأ لمخرج المحرك الخام لا للجدول المبني: تعديل طريقة البناء لا يعيد القراءة الضوئية */
 let CACHE = null;
 function run(args) {
-  const key = CACHE && `${CACHE}/${crypto.createHash('sha1').update(args.join('') + '|' + fs.statSync(args[0]).size + '|v' + (args.includes('--lines') ? OCR_VER_LINES : OCR_VER)).digest('hex').slice(0, 24)}.json`;
+  const key = CACHE && `${CACHE}/${crypto.createHash('sha1').update(args.join('') + '|' + fs.statSync(args[0]).size + '|v' + (args.includes('--lines') ? OCR_VER_LINES : args.includes('--cells') ? OCR_VER_CELLS : OCR_VER)).digest('hex').slice(0, 24)}.json`;
   if (key && fs.existsSync(key)) return JSON.parse(fs.readFileSync(key, 'utf8'));
   const out = execFileSync(bin(), args, { maxBuffer: 256 << 20 }).toString();
   if (key) { fs.mkdirSync(CACHE, { recursive: true }); fs.writeFileSync(key, out); }
@@ -79,6 +82,9 @@ function skewOf(lines) {
 /* شواهد كل ملف: خانات حصص عرفت قيمها (من نص الصفحة او الجولة الاولى) — للجولة الثانية.
    مواضعها في اطار الصورة الاصلي لصفحتها، فتقص كما هي ولو اختلف ميل الصفحتين */
 const POOL = new Map();
+/* صور حبر خانات عرفت قيمها في الملف — لتطابق الصور عبر صفحاته (الجولة الرابعة): صفحة الملف الممسوح الواحد
+   بتكبير واحد، والاسبوع الاخير قد يقع وحده في صفحته فلا شقيق له فيها (المواد الحرة #4370، 2026-09-13) */
+const GLYPHS = new Map();
 const fmt = (p, r) => p + '@' + r.map(v => v.toFixed(1)).join(',');
 /* شواهد متنوعة القيم، الاقرب صفحة اولا: قيمة لكل شاهد ما امكن، والى اربعة */
 function pickRefs(pool, n) {
@@ -124,7 +130,7 @@ export function ocrTable(file, n, { cache } = {}) {
   /* خانة بالاطار المعدل ⟵ مستطيل في الصورة الاصلية (المركز يرد، والابعاد كما هي) */
   const orig = r => { const [cx, cy] = back(r[0] + r[2] / 2, r[1] + r[3] / 2); return [cx - r[2] / 2, cy - r[3] / 2, r[2], r[3]]; };
   const text = pageText(items);
-  let cellsRead = 0, cellsMissed = 0, cellsAnchored = 0, anchor = null;
+  let cellsRead = 0, cellsMissed = 0, cellsAnchored = 0, anchor = null, glyph = 0;
   if (t) {
     for (const w of t.weeks) for (const l of w.دروس) {
       /* سطر الدرس الملتف («(٢-١) قراءة الاعداد العشرية …» ثم «وكتابتها») تتمة لما قبله لا درس جديد */
@@ -139,9 +145,9 @@ export function ocrTable(file, n, { cache } = {}) {
       r.cells.forEach((s, i) => { if (s.trim()) { wk[i].أسبوع = latin(s.normalize('NFKC')).replace(/\s+/g, ' ').trim(); wk[i].rotRead = true; } });
     }
     const fp = fillPeriods(file, n, t, orig);
-    cellsRead = fp.read; cellsAnchored = fp.anchored; cellsMissed = fp.missed; anchor = fp.anchor;
+    cellsRead = fp.read; cellsAnchored = fp.anchored; cellsMissed = fp.missed; anchor = fp.anchor; glyph = fp.glyph;
   }
-  return { t, text, cellsRead, cellsAnchored, cellsMissed, anchor, skew: tilt };
+  return { t, text, cellsRead, cellsAnchored, cellsMissed, anchor, glyph, skew: tilt };
 }
 
 /* ── خانات الحصص الفارغة تقرأ ضوئيا — للصفحة الممسوحة، ولجدول الرسم الذي ارقام حصصه بخط مرمز
@@ -160,7 +166,9 @@ function fillPeriods(file, n, t, orig = r => r, vector = false) {
     const raw = String(l.حصصنص || '').trim();
     if (l.حصص && +l.حصص <= 9) pool.push({ p: n, r: rect(l), v: +l.حصص, src: 'نص' });
     /* نصها شرطة او خط مكتوب: درس بلا حصص في الخطة نفسها — لا يرسل للمحرك (قرأ «-» «١» في الحادي عشر أدبي) */
-    else if (!l.حصص && raw && /^[-–—ـ_.·\s]+$/.test(raw)) l.noPeriods = true;
+    /* والشرطة باشكالها كلها («‐» «‒» «―» «−»، 2026-09-13) — احتياط عام. ⚠ لم يصلح الكيمياء ١٢: شرطة خانة «معلق» فيها تقرأ
+       «١» فيزيد المجموع حصة (٤٠ والمعلن ٣٩)، ونص خانتها ليس شرطة — سببها لم يعرف بعد */
+    else if (!l.حصص && raw && /^[-–—ـ_.·\s‐-―−﹘﹣－]+$/.test(raw)) l.noPeriods = true;
     /* وفي جدول الرسم: نص فيه حروف عربية فاض من عمود الدرس («في خلق») لا رقم مرمز — لا يرسل.
        الرقم المرمز يصل رموزا لا حروفا («˺» مكان ١ و«˻» مكان ٢ في رياضيات الأدبي) */
     else if (!l.حصص && l.band && (!vector || (raw && !/[ء-ي]/.test(raw)))) need.push(l);
@@ -204,7 +212,32 @@ function fillPeriods(file, n, t, orig = r => r, vector = false) {
     }
     miss = miss.filter(l => !l.حصص);
   }
-  return { read: read + anchored, anchored, missed: miss.length, anchor };
+  /* الجولة الرابعة — تطابق الصور (2026-09-13): المحرك لا يقرأ الرقم المفرد في خانات كثيرة («1» اللاتينية بذيلها
+     ورأسها — ١٤ خانة من ٢٣ في التربية الإسلامية ١١)، والرقم المرسوم بخط واحد صورته واحدة. فتقرن خانات الصفحة بصور
+     حبرها المصغرة (فرق ٦ نقاط من ١٤٠ على الاكثر): المجموعة التي اتفق ما عرف من قيمها تعطي قيمتها لما لم يقرأ منها،
+     والمجموعة التي اختلفت قراءاتها توسم — والحكم بينها المجموع المعلن في batch.mjs (الصورة الواحدة لا تكون رقمين) */
+  let glyph = 0;
+  const cellsAll = [];
+  for (const w of t.weeks) for (const l of w.دروس) if (l.band && !l.noPeriods) cellsAll.push(l);
+  /* ولو خانة واحدة: المخزن من صفحات الملف السابقة يكفيها (كان الشرط ثلاثا فلم تدخل صفحات المواد الحرة البتة — بها خانتان) */
+  if (cellsAll.length) {
+    const r = run([file, String(n), '--scale', '6', '--cells', cellsAll.map(l => fmt(n, rect(l))).join(';'), '--tile', '1']);
+    const sig = r.sig || [], ham = (a, b) => { let d = 0; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++; return d; };
+    const groups = [];
+    cellsAll.forEach((l, i) => { const s = sig[i]; if (!s || !s.includes('1')) return; const g = groups.find(g => ham(g.s, s) <= 6); if (g) g.m.push(l); else groups.push({ s, m: [l] }); });
+    if (!GLYPHS.has(file)) GLYPHS.set(file, []);
+    const store = GLYPHS.get(file);
+    /* ما عرف في الصفحة يضاف الى المخزن بعد الحكم فيها — والمملوء بالتطابق لا يضاف، فلا يبنى تخمين على تخمين */
+    const known = cellsAll.map((l, i) => l.حصص && sig[i] ? { s: sig[i], v: +l.حصص } : null).filter(Boolean);
+    groups.forEach((g, k) => {
+      const vals = [...new Set([...g.m.filter(l => l.حصص).map(l => +l.حصص), ...store.filter(e => ham(e.s, g.s) <= 6).map(e => e.v)])];
+      if (vals.length === 1) g.m.forEach(l => { if (!l.حصص) { l.حصص = String(vals[0]); l.glyph = true; glyph++; } });
+      else if (vals.length > 1) g.m.forEach(l => { l.glyphGroup = file.split('/').pop() + ':' + n + ':' + k; l.glyphVals = vals; });
+    });
+    miss = miss.filter(l => !l.حصص);
+    store.push(...known);
+  }
+  return { read: read + anchored + glyph, anchored, glyph, missed: miss.length, anchor };
 }
 /* لجدول قرئ من رسم الملف وبقيت خانات حصصه فارغة */
 export function fillVectorPeriods(file, n, t, { cache } = {}) {

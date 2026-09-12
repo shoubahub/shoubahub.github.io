@@ -6,7 +6,7 @@
 import fs from 'fs';
 import { openDoc } from './lib2.mjs';
 import { readTable, norm } from './lib3.mjs';
-import { ocrTable, ocrText, fillVectorPeriods, readWeekCells } from './ocrpage.mjs';
+import { ocrTable, ocrText, fillVectorPeriods, readWeekCells, latin } from './ocrpage.mjs';
 /* OCR=0 يعطل القراءة الضوئية (للمقارنة بما قبلها) */
 const OCR = process.env.OCR !== '0';
 
@@ -34,7 +34,9 @@ const picked = [];
 for (const [k, arr] of Object.entries(groups)) {
   const [g, s] = k.split('|');
   const cur = arr.filter(x => CUR(x) && !HOME(x)).sort((a, b) => b.bookFileID - a.bookFileID);
-  const home = arr.filter(x => CUR(x) && HOME(x));
+  /* خطط المنازل لا شأن للمنصة بها البتة (قرار المستخدم 2026-09-13: «كل ما يخص المنازل للخطط احذفه») — تستبعد من
+     القراءة كما كانت، ولا تسجل ارقامها بجانب الخطة الاصلية. والبديل الباقي: الفصول الخاصة وبطء التعلم */
+  const home = arr.filter(x => CUR(x) && HOME(x) && !/منازل/.test(x.fileDescription || ''));
   const elective = gname[g] && /اختيار/.test(gname[g]);
   if (elective) cur.forEach(x => picked.push({ x, g, s, why: 'current', elective: true }));
   else if (cur.length) cur.forEach((x, i) => picked.push({ x, g, s, why: i ? 'current-extra' : 'current', homeVariant: home.map(h => h.bookFileID) }));
@@ -70,10 +72,31 @@ const weekDates = s => {
    الابتدائي) — فيعطي رقم اول اسبوع وعدد ما يغطيه. والتسمية المفردة («الرابع من … إلى …») كما كانت */
 /* ⚠ مسح متتابع للكلمات لا تقسيم بـ«و»: خانة فيها «الحادي عشر … الثاني عشر» بلا فاصل (الاجتماعيات) —
    ذو الكلمتين اولا («الحادي عشر» قبل «الحادي»)، ومقلوبه («عشر الثاني» كما يصل من pdf.js) */
+/* ثلاثة اخطاء قراءة (2026-09-12، مراجعة الخطط الباقية):
+   ① «الصف الحادي عشر» في خانة الاسبوع ليس اسبوعا — عد الحادي عشر مرتين (عربي الحادي عشر).
+   ② القراءة الضوئية تسقط الف «ال» اول الكلمة («لثاني» · «لثالث عشر» — إسلامية الثاني عشر).
+   ③ pdf.js يبعثر حروف التسمية المدارة («ر لا ش عا» = العاشر — الفلسفة): فان لم يوجد ترتيبي طوبقت حروف
+      التسمية كلها بحروف ترتيبي مطابقة تامة — لا اشتراك بين الترتيبيات في حروفها (فحص)، والزائد يمنع المطابقة */
+const letters = s => bare(s).replace(/ى/g, 'ي').split('').sort().join('');
+const ORDL = ORD.map(letters);
 const ordsIn = s => {
-  const toks = ordOnly(s).replace(/(^|\s)(ال)?[أا]سابيع(?=\s|$)|(^|\s)(ال)?[أا]سبوع(?=\s|$)/g, ' ')
-    .split(/[\s،,\-–+]+/).map(t => t.replace(/^و(?=ال)/, '')).filter(t => bare(t).length > 1);
+  /* ⚠ خانة فيها «الصف» ليست تسمية اسبوع البتة — لا يحذف الاسم وحده: «الصف ا لثاني عشر» (فراغ داخل الكلمة) حذف منها
+     «الصف ا» فبقي «لثاني عشر» فأصلحت الفه فعدت اسبوعا ثانيا عشر مكررا (عربي الثاني عشر، 2026-09-12) */
+  if (/(^|\s)ا?\s?لصف(?=\s|:|$)/.test(String(s || '').replace(HARAKAT, ''))) return [];
+  const clean = ordOnly(s)
+    .replace(/(^|\s)(ال)?[أا]سابيع(?=\s|$)|(^|\s)(ال)?[أا]سبوع(?=\s|$)/g, ' ');
+  /* و«ال» المنفصلة تلحق بما بعدها: «ال ثاني عشر» قرئت «الثاني» فعد الاسبوع الثاني عشر ثانيا (الكيمياء ١٢) */
+  const raw = clean.split(/[\s،,\-–+]+/).filter(Boolean), joined = [];
+  for (let i = 0; i < raw.length; i++) { if (bare(raw[i]) === 'ال' && i + 1 < raw.length) { joined.push('ال' + raw[i + 1]); i++; } else joined.push(raw[i]); }
+  const toks = joined.map(t => t.replace(/^و(?=ال)/, '').replace(/^ل(?!ل|ا)/, 'ال')).filter(t => bare(t).length > 1);
   const hit = p => { const i = ORD.findIndex(o => bare(o) === bare(p)); return i < 0 ? null : i + 1; };
+  const all = ordsInToks(toks, hit);
+  if (all.length) return all;
+  const L = letters(clean.replace(/[^ء-ي\s]/g, ''));
+  const k = L.length > 3 ? ORDL.indexOf(L) : -1;
+  return k < 0 ? [] : [k + 1];
+};
+const ordsInToks = (toks, hit) => {
   const out = [];
   for (let i = 0; i < toks.length; ) {
     const two = i + 1 < toks.length ? (hit(toks[i] + ' ' + toks[i + 1]) || hit(toks[i + 1] + ' ' + toks[i])) : null;
@@ -84,12 +107,47 @@ const ordsIn = s => {
   return [...new Set(out)].sort((a, b) => a - b);
 };
 const spanOf = os => os.length > 1 && os[os.length - 1] - os[0] + 1 === os.length ? os.length : undefined;
-const fixLig = s => s.replace(/اال/g, 'الا').replace(/لال/g, 'للا').replace(/اإل/g, 'الإ').replace(/اآل/g, 'الآ');
+/* و«األ» ⟵ «الأ» (2026-09-12): كانت ناقصة من الاخوات فبقي «األسبو» مبعثرا */
+const fixLig = s => s.replace(/اال/g, 'الا').replace(/لال/g, 'للا').replace(/اإل/g, 'الإ').replace(/اآل/g, 'الآ').replace(/األ/g, 'الأ');
+/* عنوان الدرس للمنصة (2026-09-13، الخطوة أ من البناء): «ٌ» وسط الكلمة ياء (ترميز خط الرياضيات «القٌمة» = القيمة — والتنوين
+   لا يقع الا آخر الكلمة)، ثم ينزع التشكيل والتطويل (قاعدة المنصة)، وتسقط القطع التي كلها ارقام وعلامات (بقايا ترقيم الدرس
+   المقلوب «1) · - · (1») والحرف المفرد الشارد. والكلمات المنقسمة تضم من اصلها في lib3 (نص الخانة بمواضع عناصره) */
+const cleanTitle = s => String(s || '').replace(/([ء-ي])ٌ(?=[ء-ي])/g, '$1ي').replace(HARAKAT, '').replace(/ـ/g, '')
+  .split(/\s*·\s*/).map(x => x.replace(/\s+/g, ' ').replace(/^[\s•\-–—.:،]+|[\s\-–—:،]+$/g, '').trim())
+  .filter(x => x && !/^[\d()\[\]\-–—.:،\s]+$/.test(x) && !/^[ء-ي]$/.test(x)).join(' · ');
+/* المجموع المعلن: «المجموع الكلي لعدد الحصص … للعام الدراسي ٢٠٢٦/٢٠٢٧ : ٣٩ حصة» (2026-09-12). كان يأخذ اول عدد بعده
+   فأخذ من العام: «6» من «٢٠٢6» (ارقام مختلطة — القرآن الثامن، ولا مجموع فيها اصلا) و«202» من «202 7/2026» (الكيمياء ١٢)،
+   واخذ «24» من «24 + 2 اختبار عملي = 26» (الأحياء). فالارقام توحد لاتينية، ويحذف العام ولو انقسمت ارقامه، ثم الحكم:
+   ما بعد «=» ⟵ العدد قبل «حصة» (وقد ينقسم «7 6 حصة» = ٧٦) ⟵ ما بعد النقطتين ⟵ اول عدد باق. يعيد [النص، العدد] او null */
+/* ⚠ والعام قد يأتي بين قوسين بشرطة ومقلوب الاجزاء «( 2026 – 7 202 )» (العلوم التاسع) — فيحذف ما بين القوسين من
+   ارقام؛ والعدد قبل «حصة» قد ينقسم «6 4» (= ٦٤، الإنجليزي) او يلحقه رقم شارد «26 1» (= ٢٦، القراءة الضوئية): فالارقام
+   المفردة كلها تضم، والا فالاول. ويعاد مع القراءات الاخرى الممكنة، ويحكم بينها مجموع الحصص المقروء ان طابق احداها */
+const YEAR = /2\s?0\s?[12]\s?\d(?:\s*[\/\-–—]\s*2\s?0\s?[12]\s?\d)?/g;
+const statedIn = txt => {
+  const t = latin(String(txt || '')), i = t.search(/المجموع\s*الكلي/);
+  if (i < 0) return null;
+  const seg = t.slice(i, i + 170).replace(/\(\s*[\d\s\/\-–—]+\)/g, ' ').replace(YEAR, ' ');
+  let m = seg.match(/=\s*(\d{1,3})(?!\d)/);
+  if (m) return [m[0], m[1], []];
+  m = seg.match(/(?<![\d\/])(\d{1,3}(?:\s\d{1,3}){0,2})\s*حص/);
+  if (m) {
+    const toks = m[1].split(/\s+/), joined = toks.join('');
+    const primary = toks.length > 1 && toks.every(x => x.length === 1) ? joined : toks[0];
+    return [m[0], primary, [...new Set([joined, ...toks])].filter(x => x.length <= 3).map(Number)];
+  }
+  m = seg.match(/[:：]\s*(\d{1,3})(?![\d\/])/) || seg.match(/^[^\d]{0,80}?(?<![\d\/])(\d{1,3})(?![\d\/])/);
+  return m ? [m[0], m[1], []] : null;
+};
 /* صف الصفحة من اسماء صفوف المرحلة نفسها (لا «عاشر/حادي» الثانوي وحده) — الاطول اولا؛ و«ى» ياء (القراءة الضوئية «الحادى») */
+/* ⚠ والقراءة الضوئية قد تسقط الف «الصف» وتشكل الاسم («لصف السادس» مشكلة — لغتي العربية للمتوسط، 2026-09-12):
+   فالتشكيل ينزع، و«لصف» يقبل اول كلمة وحده — لا «للصف» في جملة من الجسم («يراجع ما درسه للصف الحادي عشر»
+   قلبت صف عربي الثاني عشر حادي عشر فانقسم ملفه، 2026-09-12). فالمطابقة على النص بفراغاته، والفراغ داخل
+   الاسم محتمل («الصف ا لثاني عشر») */
+const spaced = s => s.split('').map(ch => ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s*');
 const gradeIn = txt => {
-  const bt = bare(txt).replace(/ى/g, 'ي');
+  const T = norm(String(txt || '')).replace(HARAKAT, '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي');
   return Object.values(gname).filter(g => !/اختيار/.test(g)).sort((a, b) => b.length - a.length)
-    .find(g => { const b = bare(g).replace(/ى/g, 'ي'); return bt.includes('الصف' + b) || bt.includes('الصف:' + b); }) || '';
+    .find(g => new RegExp('(?:' + spaced('الصف') + '|(?:^|\\s)' + spaced('لصف') + ')\\s*:?\\s*' + spaced(bare(g).replace(/ى/g, 'ي'))).test(T)) || '';
 };
 /* المسار بعد الصف في الترويسة («الصف: الحادي عشر علمي») */
 const trackIn = txt => { const m = String(txt).replace(/ى/g, 'ي').match(/الصف\s*:?\s*\S+(?:\s+عشر)?\s+(علمي|أدبي|ادبي)/); return m ? (/علمي/.test(m[1]) ? 'علمي' : 'أدبي') : ''; };
@@ -124,7 +182,7 @@ async function extract(p) {
   let doc;
   try { doc = await openDoc(f); } catch (e) { return { ...out, status: 'unreadable', error: String(e.message || e) }; }
   out.pages = doc.numPages;
-  let head = '', all = '', noTable = 0, stated = null, ocrPages = 0, vecCells = 0, weekCells = 0, lastCols = null;
+  let head = '', all = '', noTable = 0, stated = null, ocrPages = 0, vecCells = 0, weekCells = 0, lastCols = null, glyphCells = 0;
   const ocrCells = [0, 0];
   let weeks = [];
   /* ⚠ الملف الواحد قد يحوي عدة مقررات (الرياضيات والاحصاء للصفين في ملف واحد من ٢٠ صفحة، رفع
@@ -136,6 +194,9 @@ async function extract(p) {
     let t = null; try { t = await readTable(page); } catch (e) {}
     /* صفحة تكمل جدول سابقتها بلا ترويسة (إنجليزي الثانوي: الترويسة في الصفحات الفردية) ⟵ تقرأ باعمدة سابقتها */
     if (!t && lastCols) { try { t = await readTable(page, lastCols); } catch (e) {} }
+    /* ⚠ جدول بلا صف واحد كلا جدول: وجدت ترويسته ولم تقرأ حدود اسابيعه (لغتي العربية للمتوسط ص١٢ و١٣ و١٨ —
+       لا يعرف الا خطوط جدول الاعتماد اسفلها)، فكان لا يسقط الى القراءة الضوئية وتضيع اسابيع الصفحة صامتة (2026-09-12) */
+    if (t && !t.weeks.length) t = null;
     if (t) lastCols = { colX: t.colX, roles: t.roles, ltr: t.ltr };
     /* لا جدول من رسم الملف ⟵ قراءة ضوئية (ocrpage.mjs): الصفحة الممسوحة (رياضيات الابتدائي) وذات الخط المرمز
        (رياضيات المتوسط). ونصها يحل محل نص الملف ان قرأت جدولا، او كان نص الملف فقيرا، او سبقتها صفحة قرئت
@@ -143,7 +204,7 @@ async function extract(p) {
     let pageMissed = 0;
     /* جدول من رسم الملف وخانات حصص فارغة (ارقام بخط مرمز — رياضيات الأدبي) ⟵ تقرأ خاناتها ضوئيا */
     if (t && OCR && t.weeks.some(w => w.دروس.some(l => !l.حصص))) {
-      try { const r = fillVectorPeriods(f, n, t, { cache: `${W}/ocr-cache` }); vecCells += r.read; pageMissed = r.missed; ocrCells[0] += r.read; ocrCells[1] += r.missed; }
+      try { const r = fillVectorPeriods(f, n, t, { cache: `${W}/ocr-cache` }); vecCells += r.read; glyphCells += r.glyph || 0; pageMissed = r.missed; ocrCells[0] += r.read; ocrCells[1] += r.missed; }
       catch (e) { console.log('  (تعذرت قراءة خانات الحصص ضوئيا في الصفحة ' + n + ': ' + String(e.message || e).slice(0, 80) + ')'); }
     }
     /* وتسمية الاسبوع بلا ترتيبي مقروء ⟵ تقرأ خانتها ضوئيا — ولو كان فيها تاريخان: الترتيبيات ادل
@@ -156,7 +217,7 @@ async function extract(p) {
       try {
         const o = ocrTable(f, n, { cache: `${W}/ocr-cache` });
         const poor = (txt.match(/[ء-ي]/g) || []).length < 40;
-        if (o.t) { t = { ...o.t, ocr: true }; ocrPages++; ocrCells[0] += o.cellsRead; ocrCells[1] += o.cellsMissed; pageMissed = o.cellsMissed; }
+        if (o.t) { t = { ...o.t, ocr: true }; ocrPages++; ocrCells[0] += o.cellsRead; ocrCells[1] += o.cellsMissed; pageMissed = o.cellsMissed; glyphCells += o.glyph || 0; }
         if (o.t || poor || ocrPages) txt = fixLig(o.text.replace(/\s+/g, ' '));
       } catch (e) { console.log('  (تعذرت القراءة الضوئية للصفحة ' + n + ': ' + String(e.message || e).slice(0, 80) + ')'); }
     }
@@ -166,7 +227,13 @@ async function extract(p) {
     /* ⚠ وتبدل الصف في الترويسة يبدأ قسما جديدا: ملف رياضيات الابتدائي الواحد (٢٥ صفحة) يجمع الصفوف
        الخمسة ورفع باسم كل صف، ولا «مجموع كلي» فيه يقسم عنده — فقرئ ٧٢ اسبوعا للثالث (2026-09-12) */
     let seg = segs[segs.length - 1];
-    if (pageGrade && seg.grade && pageGrade !== seg.grade && seg.pages.length) { segs.push({ pages: [], weeks: [], stated: null, grade: '' }); seg = segs[segs.length - 1]; }
+    /* ⚠ وعودة الاسابيع الى «الأول» بعد اسبوع متقدم تبدأ قسما جديدا: ملف لغتي العربية للمتوسط (٢٠ صفحة) يجمع
+       الصفوف الاربعة خمس صفحات لكل صف، واسم الصف في ترويسته صورة لا نص ولا «مجموع كلي» فيه — فقرئت الاسابيع
+       ١–١٢ اربع مرات (2026-09-12). وصف القسم يقرأ بعدئذ ضوئيا من اول صفحاته كسائر الملفات المجموعة */
+    const firstN = t && t.weeks.length ? (ordsIn(t.weeks[0].أسبوع)[0] ?? null) : null;
+    const segMax = seg.weeks.reduce((a, w) => Math.max(a, w.n || 0), 0);
+    const restart = firstN === 1 && segMax >= 4;
+    if (((pageGrade && seg.grade && pageGrade !== seg.grade) || restart) && seg.pages.length) { segs.push({ pages: [], weeks: [], stated: null, grade: '' }); seg = segs[segs.length - 1]; }
     seg.pages.push(n);
     if (!seg.grade && pageGrade) seg.grade = pageGrade;
     /* الخانات الفائتة تحسب لقسم المقرر لا للملف كله (ملف الابتدائي يجمع خمسة صفوف) */
@@ -174,20 +241,24 @@ async function extract(p) {
     if (pageMissed) seg.ocrMissed = (seg.ocrMissed || 0) + pageMissed;
     /* المعلن: عدد من ثلاث خانات على الاكثر — كان يلتقط «2026» من سطر العام الدراسي */
     /* ⚠ والعدد قد يصل مقطعا بفراغ قبل «حصة» («7 6 حصة» = ٧٦) — فقرئ ٧ في ملف رياضيات الحادي عشر */
-    const m0 = txt.match(/المجموع\s*الكلي[^\d]{0,60}?(?<!\d)(\d(?:\s\d){1,2})\s*حص/);
-    const m = m0 ? [m0[0], m0[1].replace(/\s/g, '')] : txt.match(/المجموع\s*الكلي[^\d]{0,60}?(?<!\d)(\d{1,3})(?!\d)/);
+    const m = statedIn(txt);
     if (!t) noTable++;
     else for (const [wi, w] of t.weeks.entries()) { const row = { label: (w.أسبوع || '').replace(/\s+/g, ' ').trim(), n: ordsIn(w.أسبوع)[0] ?? null, spanOrd: spanOf(ordsIn(w.أسبوع)), ...weekDates(w.أسبوع),
       unit: (w.وحدة || '').replace(/\s+/g, ' ').trim(), ocr: !!t.ocr || undefined,
-      lessons: (w.دروس || []).map(l => ({ title: (l.دروس || []).join(' · ').replace(/\s+/g, ' ').trim(), periods: parseInt(l.حصص || '0') || 0 })) };
+      lessons: (w.دروس || []).map(l => ({ title: cleanTitle((l.دروس || []).join(' · ')), periods: parseInt(l.حصص || '0') || 0,
+        ...(l.glyphGroup ? { glyphGroup: l.glyphGroup, glyphVals: l.glyphVals } : {}) })) };
       /* ⚠ صف يمتد صفحات (إنجليزي الثانوي: وحدة واحدة على ثلاث صفحات بتسميتها نفسها، وحصصها في الاولى) —
          اول صف في الصفحة بترتيبيات سابقه (او تسميته) ووحدته نفسيهما تكملة له لا اسبوع جديد */
       const prev = seg.weeks[seg.weeks.length - 1];
       const key = r => (ordsIn(r.label).join(',') || bare(r.label)) + '|' + bare(r.unit);
-      if (wi === 0 && prev && (ordsIn(row.label).length || bare(row.label).length > 5) && key(prev) === key(row)) { prev.lessons.push(...row.lessons); continue; }
+      /* ⚠ وخانة الاسبوع تكتب في الصفحة الاولى وحدها: اول صف في الصفحة بلا تسمية ولا تاريخ تكملة لسابقه (الفرنسية ١٢:
+         الحادي عشر ٣ دروس + درسان في اول الصفحة التالية = ٥ كسائر اسابيعها) — كان يعد صفا مجهولا فظهرت فجوة (2026-09-13).
+         وان كان في الحق اسبوعا جديدا لم تقرأ تسميته، ظهرت فجوة فيراجع — لا يمر سليما خطأ */
+      const bareRow = !bare(row.label) && !row.from;
+      if (wi === 0 && prev && (bareRow || ((ordsIn(row.label).length || bare(row.label).length > 5) && key(prev) === key(row)))) { prev.lessons.push(...row.lessons); continue; }
       seg.weeks.push(row);
     }
-    if (m && +m[1] > 0) { seg.stated = +m[1]; if (n < doc.numPages) segs.push({ pages: [], weeks: [], stated: null, grade: '' }); }
+    if (m && +m[1] > 0) { seg.stated = +m[1]; seg.statedAlts = m[2] || []; if (n < doc.numPages) segs.push({ pages: [], weeks: [], stated: null, grade: '' }); }
   }
   const real = segs.filter(s => s.weeks.length);
   /* الملف المجموع وصف قسمه لا يقرأ من نص الملف (خط مشوه «الصف: ا»): تقرأ ترويسة اول صفحة من كل قسم ضوئيا.
@@ -267,7 +338,28 @@ async function extract(p) {
   const gaps = []; for (let i = 1; i <= maxW; i++) if (!uniq.includes(i)) gaps.push(i);
   const dups = [...new Set(seq.filter((v, i) => seq.indexOf(v) !== i))];
   const lessons = weeks.reduce((a, w) => a + w.lessons.length, 0);
-  const periods = weeks.reduce((a, w) => a + w.lessons.reduce((b, l) => b + l.periods, 0), 0);
+  let periods = weeks.reduce((a, w) => a + w.lessons.reduce((b, l) => b + l.periods, 0), 0);
+  /* المعلن المبهم («26 1 حصة»): ان خالف المقروء وطابقته قراءة اخرى ممكنة لارقامه اخذت ووسمت — حكم بين
+     قراءات النص نفسه، لا تغطية لفرق حقيقي (ما لا تطابقه قراءة يبقى فرقا يراجع) */
+  if (stated != null && stated !== periods && (chosen.statedAlts || []).includes(periods)) { stated = periods; out.statedAmbiguous = true; }
+  /* خانات صورة حبرها واحدة وقراءاتها مختلفة (ocrpage.mjs، الجولة الرابعة): الصورة الواحدة لا تكون رقمين، فاحدى
+     القراءتين خطأ. ان خالف المجموع المعلن، وجعلت قيمة واحدة لكل مجموعة من قيمها المقروءة يطابقه على وجه واحد لا
+     غير — اخذ ووسم؛ وما لم يطابق او احتمل وجهين يبقى فرقا يراجع */
+  if (stated != null && stated !== periods) {
+    const G = new Map();
+    for (const w of weeks) for (const l of w.lessons) if (l.glyphGroup) { if (!G.has(l.glyphGroup)) G.set(l.glyphGroup, []); G.get(l.glyphGroup).push(l); }
+    const gs = [...G.values()].filter(m => m.length > 1).slice(0, 6), sols = [];
+    const rec = (k, delta, pick) => {
+      if (k === gs.length) { if (periods + delta === stated) sols.push(pick.slice()); return; }
+      for (const v of gs[k][0].glyphVals) { pick.push(v); rec(k + 1, delta + gs[k].reduce((a, l) => a + v - l.periods, 0), pick); pick.pop(); }
+    };
+    if (gs.length) rec(0, 0, []);
+    if (sols.length === 1) {
+      gs.forEach((m, k) => m.forEach(l => { l.periods = sols[0][k]; }));
+      periods = weeks.reduce((a, w) => a + w.lessons.reduce((b, l) => b + l.periods, 0), 0);
+      out.glyphResolved = gs.length;
+    }
+  }
   Object.assign(out, { weeks: weeks.length, lessons, periods, stated, noTable, labeled: seq.length, gaps, dups,
     totalMatch: stated == null ? null : stated === periods, plan: weeks,
     ocr: ocrPages ? { pages: chosen.ocrPages || ocrPages, cellsMissed: chosen.ocrMissed || 0, filePages: ocrPages, fileCellsRead: ocrCells[0], fileCellsMissed: ocrCells[1] } : null });
@@ -277,6 +369,9 @@ async function extract(p) {
   /* ومطابقة المجموع المعلن برهان اكتمال: ما بقي من خانات فيها حبر ليس حصصا */
   if (chosen.ocrMissed && !(stated != null && stated === periods)) issues.push(chosen.ocrMissed + ' خانة حصص لم تقرأ ضوئيا');
   if (vecCells) issues.push('أعداد حصص قرئت ضوئيا (' + vecCells + ')');
+  /* اعلام لا عيب: ما عرف بتطابق الصور، وما صحح منها بالمجموع المعلن */
+  if (glyphCells) issues.push('أعداد حصص عرفت بتطابق صورها (' + glyphCells + ')');
+  if (out.glyphResolved) issues.push('خانات متماثلة الصورة صححت بالمجموع المعلن (' + out.glyphResolved + ')');
   if (!weeks.length) issues.push('لم يقرأ جدول');
   /* صف يمتد اسابيع (الخطط الموزعة بالوحدة: «من 14/9 إلى 6/10» صف واحد لاربعة اسابيع — إنجليزي الابتدائي):
      عدد اسابيعه من مدى تاريخيه، والحكم بمجموع ما تغطيه الصفوف لا بعددها (2026-09-12) */
@@ -300,18 +395,37 @@ async function extract(p) {
   if (out.segments) issues.push('ملف يجمع ' + out.segments.length + ' أقسام — ' + (out.segmentPick === 'grade' ? 'نسب القسم بالصف' : out.segmentPick === 'track' ? 'نسب القسم بالصف والمسار' : 'نسب القسم تقديرا ويراجع'));
   if (!out.directorate) issues.push('لم يقرأ الختم');
   out.issues = issues;
-  out.status = !weeks.length ? 'no-table' : issues.filter(i => !/الختم|^قرئ ضوئيا \(|^أعداد حصص قرئت ضوئيا|نسب القسم بالصف/.test(i)).length ? 'review' : 'ok';
+  out.status = !weeks.length ? 'no-table' : issues.filter(i => !/الختم|^قرئ ضوئيا \(|^أعداد حصص قرئت ضوئيا|^أعداد حصص عرفت بتطابق|متماثلة الصورة صححت|نسب القسم بالصف/.test(i)).length ? 'review' : 'ok';
   return out;
 }
 
+/* ── الاستئناف وقراءة خطط بعينها (2026-09-13، قرار المستخدم «يجب ان تكون العملية ان تواصل حيث توقفت»):
+   • كل خطة تحفظ نتيجتها فور قراءتها في partial-…json مع بصمة الكود (batch · lib2 · lib3 · ocrpage · ocr.swift):
+     فان انقطع القياس اكمل من حيث وقف — ما دام الكود نفسه (كود تغير يبطل النتائج فتعاد، والمخبأ يسرعها).
+   • ONLY=٣٧٧٣,٤٣٧٠ يقرأ هذه وحدها ويبقي ما سواها من القياس السابق — لتجربة اصلاح على الباقي في دقائق،
+     ثم قياس كامل واحد في الختام يحرس السليم من التراجع (لا قياس كامل بعد كل تعديل) */
+import crypto from 'crypto';
+const CODE = crypto.createHash('sha1').update(['batch.mjs', 'lib2.mjs', 'lib3.mjs', 'ocrpage.mjs', 'ocr.swift']
+  .map(f => fs.readFileSync(new URL('./' + f, import.meta.url))).join('')).digest('hex').slice(0, 12);
+const PART = `${W}/plans/partial-${STAGE}-t${TERM}.json`;
+const ONLY = (process.env.ONLY || '').split(',').map(s => s.trim()).filter(Boolean);
+let prevPart = null; try { prevPart = JSON.parse(fs.readFileSync(PART, 'utf8')); } catch (e) {}
+const done = new Map(!ONLY.length && prevPart && prevPart.code === CODE ? prevPart.results.map(r => [String(r.id), r]) : []);
+if (done.size) console.log(`(استئناف: ${done.size} خطة قرئت بالكود نفسه — تتخطى)`);
+const OLD = new Map();
+if (ONLY.length) try { JSON.parse(fs.readFileSync(`${W}/plans/extract-${STAGE}-t${TERM}.json`, 'utf8')).results.forEach(r => OLD.set(String(r.id), r)); } catch (e) {}
 const results = [];
 let i = 0;
 for (const p of picked) {
   i++;
-  const r = await extract(p);
+  const id = String(p.x.bookFileID);
+  let r = done.get(id) || (ONLY.length && !ONLY.includes(id) ? OLD.get(id) : null);
+  const fresh = !r;
+  if (!r) r = await extract(p);
   results.push(r);
+  if (fresh && !ONLY.length) fs.writeFileSync(PART, JSON.stringify({ code: CODE, results }));
   console.log(`[${i}/${picked.length}] ${r.status.padEnd(8)} ${r.grade} · ${r.subject} (#${r.id}) — ${r.weeks ?? '-'} أسبوعا · ${r.periods ?? '-'} حصة${r.stated != null ? ' / ' + r.stated : ''} · ${r.directorate || 'بلا ختم'}${r.issues && r.issues.length ? ' ⟵ ' + r.issues.join(' | ') : ''}`);
-  await sleep(300);
+  if (fresh) await sleep(300);
 }
 /* المواد في شجرة الوزارة بلا خطة تختار */
 const missing = [];
@@ -321,5 +435,6 @@ for (const [gid, G] of Object.entries(st.grades)) for (const s of G.subjects) {
 }
 fs.writeFileSync(`${W}/plans/extract-${STAGE}-t${TERM}.json`, JSON.stringify({ stage: st.name.trim(), stageId: STAGE, term: TERM, at: new Date().toISOString(),
   grades: Object.values(gname), results, missing }, null, 1));
+if (!ONLY.length) try { fs.unlinkSync(PART); } catch (e) {}   /* القياس تم — لا استئناف بعده */
 const c = s => results.filter(r => r.status === s).length;
 console.log(`\nالمجموع ${results.length} · سليم ${c('ok')} · يراجع ${c('review')} · بلا جدول ${c('no-table')} · تعذر تنزيله ${c('download-failed')} · لا يقرأ ${c('unreadable')} · مواد بلا خطة ${missing.length}`);

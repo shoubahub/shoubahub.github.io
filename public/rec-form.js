@@ -327,7 +327,23 @@
   CELL.date = function (c, row, ctx, changed) {
     return input(row[c.id], function (x) { row[c.id] = x; changed(); }, { type: 'date', ph: 'التاريخ', label: c.label }).box;
   };
+  /* اختيار بازرار متجاورة (واحد يؤشر، ولمس المؤشر يلغيه) — للاختيار المقسم (split: «ما قطع من المقرر»)
+     وللوحة الحكم في «ما قطع من المنهج» */
+  function choiceSegs(opts, get, set) {
+    var s = el('div', 'segs sm');
+    opts.forEach(function (o) {
+      var b = el('button', 'seg' + (get() === o ? ' on' : ''), o);
+      b.type = 'button';
+      b.addEventListener('click', function () {
+        set(get() === o ? '' : o);
+        [].forEach.call(s.children, function (x, i) { x.classList.toggle('on', get() === opts[i]); });
+      });
+      s.appendChild(b);
+    });
+    return s;
+  }
   CELL.choice = function (c, row, ctx, changed) {
+    if (c.split) return choiceSegs(c.options || [], function () { return row[c.id]; }, function (x) { row[c.id] = x; changed(); });
     return drop(c.label, (c.options || []).map(function (o) { return { v: o, t: o }; }), row[c.id],
       function (x) { row[c.id] = x; changed(); }, 'اختر');
   };
@@ -456,6 +472,7 @@
 
   function groupLabel(b, id) { var g = (b.groups || []).filter(function (x) { return x.id === id; })[0]; return g ? g.label : ''; }
   BLOCK.table = function (b, v, ctx, changed) {
+    if (b.smart && SMART[b.smart]) return SMART[b.smart](b, v, ctx, changed);   /* الجدول الذكي (ادناه) */
     var rows = v, noun = b.rowLabel || 'صف', sec = section(b.title || '', b.hint), box = el('div', 'stack');
     /* الشبكة: عناصر النموذج المختارة وحدها (لقطة السجل او اختيار الشعبة) — وسائر الجداول كل اعمدتها */
     var cols = (window.Shouba && Shouba.colsOf ? Shouba.colsOf(ctx.rec, b) : b.columns).filter(function (c) { return CELL[c.kind]; });
@@ -614,6 +631,219 @@
     sec.appendChild(addBtn(b.add || 'أرفق ملفا', attach));
     paint();
     return sec;
+  };
+
+  /* ── الجدول الذكي «ما قطع من المنهج» (smart:'plan' — 2026-09-13، الخطوة هـ؛ العينة المعتمدة _dev/plan-mark-sim.html) ──
+     دروس خطة التوجيه المعتمدة لمواد معلم السجل من جدوله (Shouba.planPairsOf)، ولمسة على الدرس الذي وصل اليه تؤشره
+     وما قبله وتفتح اللوحة السفلية حيث اللمسة — لا في رأس الشاشة («كل مرة يجب ان ارجع للاعلى لارى الحكم»): وصل الى ·
+     الحكم مقترحا من اسبوع الخطة الجاري (Shouba.paceOf) والقرار له · «سجل متابعة اليوم» يضيف صف اليوم او يحدثه.
+     ما وصل اليه يحفظ في rec.reach[مفتاح الخطة] = { n, t } — بالاسبوع والعنوان لا بالترتيب (الخطة قد يعاد تصديرها).
+     والصف يعدل او يحذف بلمسة عليه، ويضاف بيد لمن لا خطة له. الاعمدة بانواعها لا باسمائها */
+  var MARK = '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var PACE = ['ahead', 'match', 'behind'];   /* بترتيب خيارات «ما قطع» في القالب: متقدم · مطابق · متأخر */
+  var SMART = {};
+  SMART.plan = function (b, rows, ctx, changed) {
+    var S = window.Shouba, rec = ctx.rec, who = rec.who || '', MON = REF().months || [];
+    var dc = b.columns.filter(function (c) { return c.kind === 'date'; })[0];
+    var texts = b.columns.filter(function (c) { return c.kind === 'text'; }), tc = texts[0], nc = texts[1];
+    var pc = b.columns.filter(function (c) { return c.kind === 'choice' && c.split; })[0];
+    var P = S.planPairsOf ? S.planPairsOf(who) : { ready: false, week: null, pairs: [] };
+    var pairs = P.pairs.filter(function (p) { return p.plan; }), miss = P.ready ? P.pairs.filter(function (p) { return !p.plan; }) : [];
+    var data = window.ShoubaPlans ? ShoubaPlans.get(S.data().stage) : null, cal = (data && data.calendar) || [];
+    var W = P.week ? P.week.n : 0, cur = pairs[0] || null, fresh = null;
+    var reach = rec.reach = (rec.reach && typeof rec.reach === 'object' && !Array.isArray(rec.reach)) ? rec.reach : {};
+
+    var wrap = el('div', 'rb'), note = el('div', 'hint'), chips = el('div'), card = el('div', 'card-navy');
+    var recSec = section('الكشف'), cnt = el('div', 'hint'), recBox = el('div', 'tbl');
+    var lsSec = section('دروس الخطة', 'المس الدرس الذي وصل إليه المعلم: يؤشر هو وما قبله، ويظهر لك الحكم حيث أنت.');
+    var missBox = el('div', 'pm-miss'), lsBox = el('div', 'tbl');
+
+    function ch() { changed(); }
+    function label(p) { return p.subject + ' · ' + p.grade; }
+    function paceText(k) { return pc ? pc.options[PACE.indexOf(k)] || '' : ''; }
+    function flat() { return cur ? S.planFlat(cur.plan) : []; }
+    /* موضع ما وصل اليه في الدروس: بعنوانه في اسبوعه، والا (تغيرت الخطة) آخر درس في اسبوعه فما قبله */
+    function reachIdx(L) {
+      var r = cur && reach[cur.plan.key], i, k = -1;
+      if (!r) return -1;
+      for (i = 0; i < L.length; i++) if (L[i].n === r.n && L[i].t === r.t) return i;
+      L.forEach(function (l, j) { if (l.n <= r.n) k = j; });
+      return k;
+    }
+    function calOf(n) { return cal.filter(function (x) { return x.n === n; })[0]; }
+    function spanText(l) { var a = calOf(l.n), z = calOf(l.end) || a; return a && a.from ? S.weekRange(a.from, z.to) : ''; }
+    function wkName(l) { return 'الأسبوع ' + l.n + (l.end > l.n ? '–' + l.end : ''); }
+    function planNow() {
+      if (!P.week) return '';
+      return !W ? 'والفصل يبدأ الأحد ' + S.dayMonth(P.week.from)
+                : 'والخطة الآن في الأسبوع ' + W + ' (' + S.weekRange(P.week.from, P.week.to) + ')';
+    }
+    /* الموضوع في الكشف: الدرس، ومعه صفه (او مادته وصفه) ان درس المعلم اكثر من مقرر */
+    function topicOf(l) {
+      if (pairs.length < 2) return l.t;
+      var one = pairs.every(function (p) { return p.subject === pairs[0].subject; });
+      return (one ? cur.grade : label(cur)) + ': ' + l.t;
+    }
+    function monthOf(iso) { var m = +(String(iso || '').split('-')[1]); return m ? MON[m - 1] || '' : ''; }
+
+    /* البطاقة: موقع المعلم في المقرر المختار، وزرها يفتح لوحة الحكم نفسها */
+    function paintCard() {
+      card.textContent = '';
+      card.hidden = !cur;
+      if (!cur) return;
+      var L = flat(), ri = reachIdx(L), l = ri > -1 ? L[ri] : null, sg = l ? S.paceOf(l, W) : '';
+      var top = el('div', 'top'), k = el('div', 'kicker');
+      k.appendChild(el('span', 'pulse')); k.appendChild(document.createTextNode(label(cur)));
+      top.appendChild(k); top.appendChild(el('div', 'left', sg ? paceText(sg) : W ? 'الخطة: الأسبوع ' + W : ''));
+      card.appendChild(top);
+      card.appendChild(el('div', 'ttl', l ? 'آخر ما قطع: ' + l.t : 'لم يؤشر ما قطعه بعد'));
+      card.appendChild(el('div', 'sub', l ? 'من ' + wkName(l) + (planNow() ? ' — ' + planNow() : '') : 'المس الدرس الذي وصل إليه في دروس الخطة أدناه.'));
+      var acts = el('div', 'acts'), go = el('button', 'cta', 'سجل متابعة اليوم');
+      go.type = 'button'; go.disabled = !l;
+      go.addEventListener('click', judge);
+      acts.appendChild(go); card.appendChild(acts);
+    }
+
+    /* الكشف: الشهر · التاريخ · الموضوع · الحكم — بترتيب التاريخ، ولمسة على الصف تعدله */
+    function paintRows() {
+      recBox.textContent = '';
+      var hd = el('div', 'tr hd pm-rec');
+      [['m', 'الشهر'], ['d', dc.label], ['t', tc.label], ['s', 'ما قطع']].forEach(function (h) { hd.appendChild(el('span', h[0], h[1])); });
+      recBox.appendChild(hd);
+      if (!rows.length) recBox.appendChild(el('div', 'empty', 'لا متابعات بعد — أول متابعة تضيف صفها هنا.'));
+      rows.slice().sort(function (a, c) { return String(a[dc.id] || '').localeCompare(String(c[dc.id] || '')); }).forEach(function (row) {
+        var r = el('div', 'tr pm-rec' + (row === fresh ? ' new' : ''));
+        r.setAttribute('role', 'button'); r.tabIndex = 0;
+        r.appendChild(el('span', 'm', monthOf(row[dc.id])));
+        r.appendChild(el('span', 'd', dm(row[dc.id])));
+        r.appendChild(el('span', 't', String(row[tc.id] || '').trim() || '—'));
+        var pv = pc && row[pc.id];
+        r.appendChild(el('span', 's chip' + (!pv ? ' muted' : pv === paceText('behind') ? '' : ' navy'), pv || 'بلا حكم'));
+        r.addEventListener('click', function () { editRow(row, false); });
+        r.addEventListener('keydown', function (e) { if (e.key === 'Enter') editRow(row, false); });
+        recBox.appendChild(r);
+      });
+      cnt.textContent = rows.length && b.count ? S.count(rows.length, b.count) : '';
+    }
+
+    /* تعديل صف (او صف جديد باليد): خانات الكشف بمولداتها نفسها في اللوحة السفلية — والجديد لا يضاف الا بزره */
+    function editRow(row, isNew) {
+      var n = el('div', 'pm-jd'), live = isNew ? function () {} : function () { ch(); paintRows(); };
+      [dc, tc, pc, nc].forEach(function (c) {
+        if (!c || !CELL[c.kind]) return;
+        var cell = el('div', 'rb-cell');
+        cell.appendChild(el('div', 'rb-lab', c.label));
+        cell.appendChild(CELL[c.kind](c, row, ctx, live));
+        n.appendChild(cell);
+      });
+      var ok = el('button', 'cta', isNew ? 'أضف المتابعة' : 'تم');
+      ok.type = 'button';
+      ok.addEventListener('click', function () {
+        if (isNew) { rows.push(row); fresh = row; ch(); }
+        S.sheet.close(); paintRows();
+      });
+      n.appendChild(ok);
+      if (!isNew) {
+        var del = el('button', 'btn-ghost', 'احذف هذه المتابعة');
+        del.type = 'button';
+        del.addEventListener('click', function () {
+          S.sheet.close();
+          setTimeout(function () {
+            S.ask('حذف المتابعة', 'تحذف متابعة ' + (dm(row[dc.id]) || 'بلا تاريخ') + ' من الكشف.', 'احذفها', function () {
+              var i = rows.indexOf(row);
+              if (i > -1) rows.splice(i, 1);
+              ch(); paintRows();
+            });
+          }, 320);
+        });
+        n.appendChild(del);
+      }
+      S.sheet.open(isNew ? 'متابعة جديدة' : 'متابعة ' + (dm(row[dc.id]) || ''), n);
+    }
+
+    /* لوحة الحكم حيث اللمسة: وصل الى · اسبوعه والاسبوع الجاري · الحكم مقترحا · سجل او تأشير فقط */
+    function judge() {
+      var L = flat(), i = reachIdx(L);
+      if (i < 0) return;
+      var l = L[i], sel = paceText(S.paceOf(l, W)), n = el('div', 'pm-jd');
+      n.appendChild(el('div', 'at', 'وصل إلى: ' + l.t));
+      n.appendChild(el('div', 'wh', 'من ' + wkName(l) + ' في الخطة' + (planNow() ? ' — ' + planNow() : '')));
+      if (pc) {
+        n.appendChild(el('div', 'rb-lab', pc.label));
+        n.appendChild(choiceSegs(pc.options, function () { return sel; }, function (x) { sel = x; }));
+        n.appendChild(el('div', 'hint', 'اقتراح من الخطة — والحكم لك، غيره بلمسة.'));
+      }
+      var go = el('button', 'cta', 'سجل متابعة اليوم'), no = el('button', 'btn-ghost', 'تأشير دون تسجيل');
+      go.type = no.type = 'button';
+      go.addEventListener('click', function () {
+        var today = S.today(), row = rows.filter(function (r) { return r[dc.id] === today && r.plan === cur.plan.key; })[0];
+        if (!row) { row = window.ShoubaRec.newRow(b); rows.push(row); }   /* متابعة اليوم للمقرر مرة: الثانية تحدثها */
+        row[dc.id] = today; row[tc.id] = topicOf(l); if (pc) row[pc.id] = sel;
+        row.plan = cur.plan.key; row.n = l.n;
+        fresh = row; ch(); S.sheet.close(); paintRows();
+      });
+      no.addEventListener('click', function () { S.sheet.close(); });
+      n.appendChild(go); n.appendChild(no);
+      S.sheet.open((who ? 'أ. ' + who + ' · ' : '') + label(cur), n);
+    }
+
+    /* دروس الخطة تحت رأس كل اسبوع (الجاري مظلل)، ولمسة الدرس تؤشره وما قبله — ولمس المؤشر الاخير يرجع خطوة */
+    function paintLessons() {
+      lsBox.textContent = '';
+      var L = flat(), ri = reachIdx(L), lastN = 0;
+      lsBox.hidden = !L.length;
+      L.forEach(function (l, i) {
+        if (l.n !== lastN) {
+          lastN = l.n;
+          var now = W >= l.n && W <= l.end, h = el('div', 'tr pm-wk' + (now ? ' now' : ''));
+          h.appendChild(el('span', null, wkName(l) + (spanText(l) ? ' · ' + spanText(l) : '') + (now ? ' — هذا الأسبوع' : '')));
+          lsBox.appendChild(h);
+        }
+        var r = el('div', 'tr pm-l' + (i <= ri ? ' done' : '') + (i === ri ? ' reach' : '')), mk = el('span', 'mk');
+        r.setAttribute('role', 'button'); r.tabIndex = 0;
+        if (i <= ri) mk.innerHTML = MARK;
+        r.appendChild(mk); r.appendChild(el('span', 'tx', l.t)); r.appendChild(el('em', null, l.p ? l.p + ' ح' : ''));
+        function tap() {
+          var k = i === ri ? i - 1 : i;
+          if (k < 0) delete reach[cur.plan.key]; else reach[cur.plan.key] = { n: L[k].n, t: L[k].t };
+          ch(); paintCard(); paintLessons();
+          if (k >= 0) judge();
+        }
+        r.addEventListener('click', tap);
+        r.addEventListener('keydown', function (e) { if (e.key === 'Enter') tap(); });
+        lsBox.appendChild(r);
+      });
+    }
+
+    function paintAll() {
+      note.textContent = !P.ready ? 'تجلب خطط التوزيع…'
+        : !P.pairs.length ? 'لا جدول ' + (who ? 'لأ. ' + who + ' ' : '') + 'بعد — أدخل جدوله ليظهر هنا ما في خطط مواده، وأضف المتابعة بيدك الآن.'
+        : '';
+      note.hidden = !note.textContent;
+      chips.textContent = '';
+      if (pairs.length > 1) chips.appendChild(toggles(pairs.map(function (p) { return { v: p.plan.key, t: label(p) }; }),
+        function (k) { return !!cur && cur.plan.key === k; },
+        function (k) { cur = pairs.filter(function (p) { return p.plan.key === k; })[0] || cur; paintCard(); paintLessons(); }));
+      missBox.hidden = !miss.length;
+      missBox.textContent = '';
+      if (miss.length) {
+        missBox.appendChild(el('b', null, 'يجب رفع الخطة'));
+        missBox.appendChild(document.createTextNode(' — لم تعتمد بعد خطة: ' + miss.map(label).join('، ')));
+      }
+      lsSec.hidden = !cur && !miss.length;
+      paintCard(); paintRows(); paintLessons();
+    }
+
+    recSec.appendChild(cnt); recSec.appendChild(recBox);
+    recSec.appendChild(addBtn(b.add || 'أضف صفا', function () {
+      var row = window.ShoubaRec.newRow(b);
+      row[dc.id] = S.today();
+      editRow(row, true);
+    }));
+    lsSec.appendChild(missBox); lsSec.appendChild(lsBox);
+    [note, chips, card, recSec, lsSec].forEach(function (x) { wrap.appendChild(x); });
+    paintAll();
+    return wrap;
   };
 
   F.toggles = toggles;   /* الرقاقات المتبدلة — تستعملها خيارات الطباعة في شاشة السجل */

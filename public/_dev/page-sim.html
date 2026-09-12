@@ -12,6 +12,7 @@
 </head>
 <body>
   <iframe id="f" title="المنصة"></iframe>
+<script src="admin-plans-sample.js"></script>
 <script>
   /* معاينة المنصة ببيانات مثال بلا دخول (2026-09-12) — على الجهاز المحلي وحده.
      ?p=<الشاشة بعنوانها> (records.html افتراضا) · &seed — يعيد وثيقة المثال ولو امتلأ المخزن
@@ -102,17 +103,27 @@
   var SAMPLE = { stage: 'ثانوي', department: 'الرياضيات', refDataVersion: 3, schoolName: 'ثانوية الأمل', schoolType: 'بنين',
     year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', teachers: T, setupDone: true, principal: 'عبدالعزيز الفلاح',
     records: ['سجل اجتماعات الشعبة', 'متابعة سجلات الإعداد', 'متابعة الأعمال التحريرية', 'سجل الزيارات الصفية'], recs: recs,
-    /* جدول فهد المطيري وحده — فتظهر فصوله رقاقات في كشفه، ويكتب غيره الفصل بيده (لا جدول له) */
+    /* جدولا فهد المطيري (رياضيات العاشر الى الثاني عشر) وخالد العنزي (الإحصاء) — فتظهر فصولهما رقاقات في كشفيهما
+       وازواجهما في شريط الخطة؛ ويكتب غيرهما الفصل بيده (لا جدول له) */
     schedules: { 'فهد المطيري': {
       'الأحد':    ['10/2 · الرياضيات', '', '11/1 · الرياضيات'],
       'الاثنين':  ['', '10/4 · الرياضيات', '12/3 · الرياضيات'],
       'الثلاثاء': ['10/2 · الرياضيات', '10/4 · الرياضيات'],
       'الأربعاء': ['', '', '11/1 · الرياضيات', '12/3 · الرياضيات'],
-      'الخميس':   ['10/4 · الرياضيات'] } } };
+      'الخميس':   ['10/4 · الرياضيات'] },
+      'خالد العنزي': { 'الأحد': ['11/3 · الإحصاء'], 'الثلاثاء': ['', '12/1 · الإحصاء'] } } };
 
   try {
     if (Q.has('seed') || !localStorage.getItem('shouba.setup')) localStorage.setItem('shouba.setup', JSON.stringify(SAMPLE));
     if (!localStorage.getItem('shouba.user')) localStorage.setItem('shouba.user', JSON.stringify({ name: 'محمد البراك' }));
+    /* خطط التوزيع المعتمدة (2026-09-13): بلا دخول لا يعطيها الخادم — فتبذر نسخة المخزن (shouba.plans) من خطط المختبر:
+       سليمة الثانوي معتمدة الا «الإحصاء · الثاني عشر»، مثالا لـ«يجب رفع الخطة» */
+    if ((Q.has('seed') || !localStorage.getItem('shouba.plans')) && window.ADMIN_PLANS_SAMPLE) {
+      var AP = window.ADMIN_PLANS_SAMPLE;
+      localStorage.setItem('shouba.plans', JSON.stringify({ stage: 'ثانوي', v: 'sim', set: AP.set, calendar: AP.calendar,
+        plans: AP.plans.filter(function (p) { return p.stageId === '17' && p.status === 'ok' && !(p.subject === 'الإحصاء' && p.grade === 'الثاني عشر'); })
+          .map(function (p) { return { key: p.key, grade: p.grade, subject: p.subject, source: p.source, stated: p.stated, periods: p.periods, weeks: p.weeks }; }) }));
+    }
     sessionStorage.setItem('shouba.sim', '1');
   } catch (e) {}
   document.getElementById('f').src = '/' + P;

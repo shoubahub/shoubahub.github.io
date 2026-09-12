@@ -27,6 +27,18 @@ document.addEventListener('DOMContentLoaded', function () { Shouba.greet(); });
 Shouba.unit = function (n, f) {
   return n === 1 ? f.one : n === 2 ? f.two : (n >= 3 && n <= 10) ? f.few : f.many;
 };
+/* اليوم والشهر ومدى الاسبوع للعرض (2026-09-13، شريط الخطة) — من تاريخ YYYY-MM-DD:
+   «13 سبتمبر» · «11 – 15 أكتوبر» · «27 سبتمبر – 1 أكتوبر» (الشهر مرة ان اتحد) */
+Shouba.dayMonth = function (iso) {
+  var p = String(iso || '').split('-'), M = (window.SHOUBA_REF || {}).months || [];
+  return p.length === 3 ? (+p[2]) + ' ' + (M[+p[1] - 1] || '') : '';
+};
+Shouba.weekRange = function (from, to) {
+  var a = String(from || '').split('-'), b = String(to || '').split('-'), M = (window.SHOUBA_REF || {}).months || [];
+  if (a.length !== 3) return '';
+  if (b.length !== 3) return Shouba.dayMonth(from);
+  return (+a[2]) + (a[1] !== b[1] ? ' ' + (M[+a[1] - 1] || '') : '') + ' – ' + (+b[2]) + ' ' + (M[+b[1] - 1] || '');
+};
 Shouba.count = function (n, f) {
   if (!n && f.zero) return f.zero;
   /* ⚠ «واحد» تؤنث تبعا للمعدود: «معلم واحد» و«حصة واحدة».

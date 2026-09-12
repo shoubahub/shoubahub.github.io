@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=56" />
-<link rel="stylesheet" href="shell.css?v=56" />
-<link rel="stylesheet" href="components.css?v=56" />
-<link rel="stylesheet" href="frame.css?v=56" />
-<link rel="stylesheet" href="rec-print.css?v=56" />
+<link rel="stylesheet" href="identity/tokens.css?v=57" />
+<link rel="stylesheet" href="shell.css?v=57" />
+<link rel="stylesheet" href="components.css?v=57" />
+<link rel="stylesheet" href="frame.css?v=57" />
+<link rel="stylesheet" href="rec-print.css?v=57" />
 <style>
   /* شاشة السجل (2026-09-12) — شاشة واحدة لكل القوالب، تولدها اللبنات من التعريف:
      ?tpl=<قالب> سجل جديد (لا يحفظ حتى يكتب فيه) · ?id=<سجل> سجل محفوظ باصداره هو.
@@ -77,17 +77,17 @@
   </div>
  </div></div>
 
-<script src="build.js?v=56"></script>
-<script src="refdata.js?v=56"></script>
-<script src="rec-templates.js?v=56"></script>
-<script src="rec-engine.js?v=56"></script>
-<script src="derive.js?v=56"></script>
-<script src="plan-data.js?v=56"></script>
-<script src="icons.js?v=56"></script>
-<script src="components.js?v=56"></script>
-<script src="rec-print.js?v=56"></script>
-<script src="rec-files.js?v=56"></script>
-<script src="rec-form.js?v=56"></script>
+<script src="build.js?v=57"></script>
+<script src="refdata.js?v=57"></script>
+<script src="rec-templates.js?v=57"></script>
+<script src="rec-engine.js?v=57"></script>
+<script src="derive.js?v=57"></script>
+<script src="plan-data.js?v=57"></script>
+<script src="icons.js?v=57"></script>
+<script src="components.js?v=57"></script>
+<script src="rec-print.js?v=57"></script>
+<script src="rec-files.js?v=57"></script>
+<script src="rec-form.js?v=57"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -232,15 +232,15 @@
 
   /* ── التوقيعات اسفل النموذج (2026-09-13، اعتمده المستخدم): رئيس الشعبة يمينا · الموجه وسطا · المدير يسارا
      (ShoubaPrint.approval). رقاقة لكل موقع تظهره او تخفيه، والمعاينة تتبع. والاختيار يحفظ في الشعبة لكل قالب
-     ومطبوعه (printSigns) فلا يعاد مع كل طباعة. الافتراض رئيس الشعبة والمدير — الا مطبوعا بغلاف فيه توقيعاهما
-     (الخطة التشغيلية) فلا يتكرران: يبدأ بلا توقيعات ويظهرها صاحبها ان شاء */
+     ومطبوعه (printSigns) فلا يعاد مع كل طباعة. الافتراض رئيس الشعبة والمدير في كل مطبوع (قرار المستخدم) */
   var SIGNERS = [{ v: 'head', t: 'رئيس الشعبة' }, { v: 'supervisor', t: 'الموجه الفني' }, { v: 'principal', t: 'مدير المدرسة' }];
   function signKey(){ var p = curPrint(); return tpl.id + (p ? ':' + p.id : ''); }
   function signs(){
-    var m = (S.data().printSigns || {})[signKey()], d0 = ShoubaPrint.SIGNS, p = curPrint();
+    /* الافتراض رئيس الشعبة والمدير في كل مطبوع (قرار المستخدم 2026-09-13) — كانت الخطة التشغيلية بغلافها تبدأ بلا
+       توقيعات، فخالفت قراره. وما اختاره صاحبه لقالب يبقى له */
+    var m = (S.data().printSigns || {})[signKey()], d0 = ShoubaPrint.SIGNS;
     if (m) return { head: !!m.head, supervisor: !!m.supervisor, principal: !!m.principal };
-    var cover = tpl.blocks.some(function(b){ return b.type === 'signatures' && b.mode === 'cover'; }) && (!p || p.cover !== false);
-    return cover ? { head: false, supervisor: false, principal: false } : { head: !!d0.head, supervisor: !!d0.supervisor, principal: !!d0.principal };
+    return { head: !!d0.head, supervisor: !!d0.supervisor, principal: !!d0.principal };
   }
   /* رقاقات تحت الورقة (#psigns — 2026-09-13): جربت اسطرا كبيرة بدائرة تأشير فوق الورقة فدفعتها الى الاسفل،
      وقال المستخدم ان الرقاقات «كانت تظهر النتيجة بشكل اوضح» لو كانت تحت المعاينة — فعادت رقاقات، تحت الورقة

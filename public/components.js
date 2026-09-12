@@ -241,10 +241,11 @@ Shouba.returnTo = function () {
     });
     /* قابلية النقل (2026-09-10) — ميزة دائمة: نسخ احتياطي · تسليم الشعبة · انتقال.
        ⚠ الاستدعاء متزامن داخل النقرة: المشاركة واختيار الملف يشترطان فعلا من المستخدم. */
-    item('صدر شعبتك', 'ملف فيه بياناتك كلها — تحتفظ به أو تنقله', function () {
+    /* العبارتان واضحتان (طلب المستخدم 2026-09-13): كانتا «صدر شعبتك» و«استورد شعبة من ملف» */
+    item('تصدير ملف الشعبة', 'ملف فيه بياناتك كلها — تحتفظ به نسخة أو تنقله إلى جهاز آخر', function () {
       Shouba.sheet.close(); Shouba.exportData();
     });
-    item('استورد شعبة من ملف', 'تحل محل بياناتك الحالية بعد أن تؤكد', function () {
+    item('استيراد ملف شعبة', 'يحل محل بياناتك الحالية بعد أن تؤكد', function () {
       Shouba.importData();
     });
 
@@ -255,7 +256,7 @@ Shouba.returnTo = function () {
     note.innerHTML = (Shouba.online && Shouba.online())
       ? '<b>بياناتك على خادم المنصة</b> — تصلك من أي جهاز تدخل منه، ورقمك السري لا يراه أحد.'
       : '<b>بياناتك على هذا الجهاز وحده</b> — إن مسحت متصفحك أو بدلت جهازك ضاعت.'
-        + ' فصدر شعبتك ملفا تحتفظ به.';
+        + ' فاحفظ نسخة منها من «تصدير ملف الشعبة».';
     n.appendChild(note);
 
     var ver = document.createElement('div');
@@ -274,7 +275,7 @@ Shouba.returnTo = function () {
        فملف مصنوع لا يحقن في الصفحة شيئا. */
   var IMPORT_ERR = {
     bad:    'الملف ليس ملف شعبة سليما — ربما تلف أو عدل.',
-    format: 'هذا ليس ملفا صدرته منصة شعبة.',
+    format: 'هذا ليس ملف شعبة مصدرا من المنصة.',
     newer:  'الملف من نسخة أحدث من المنصة — حدثها ثم أعد المحاولة.',
     read:   'تعذرت قراءة الملف.'
   };
@@ -322,7 +323,7 @@ Shouba.returnTo = function () {
       ['المعلمون', Shouba.count(s.teachers,  Shouba.FORMS.teachers)],
       ['الجداول',  Shouba.count(s.schedules, Shouba.FORMS.schedules)],
       ['المواعيد', Shouba.count(s.events,    Shouba.FORMS.events)],
-      ['صدر',    whenTx + (s.owner ? ' · ' + s.owner : '')]
+      ['تاريخ التصدير', whenTx + (s.owner ? ' · ' + s.owner : '')]
     ].forEach(function (r) {
       var el = document.createElement('div'); el.className = 'r';
       var k = document.createElement('span'); k.textContent = r[0];
@@ -356,7 +357,7 @@ Shouba.returnTo = function () {
       });
     });
     n.appendChild(go); n.appendChild(no);
-    Shouba.sheet.open('استيراد شعبة', n);
+    Shouba.sheet.open('استيراد ملف شعبة', n);
   }
 
   Shouba.importData = function (after) {
@@ -434,7 +435,7 @@ Shouba.returnTo = function () {
     row('أضف موعدا', 'اختبار · اجتماع · فعالية — في أي يوم من عامك', function () {
       location.href = 'board.html?add=event';
     });
-    row('الإعدادات', 'مراجعة بيانات شعبتك ونسختها', function () {
+    row('الإعدادات', 'مراجعة بيانات شعبتك وتصدير ملفها', function () {
       Shouba.settings();
     });
 
@@ -867,6 +868,57 @@ Shouba.returnTo = function () {
     });
   }
 
+  /* ── تثبيت المنصة على الهاتف (طلب المستخدم 2026-09-13) ──────────────────────────────
+     زر في الرأس: <button class="iconbtn" data-install></button> داخل .tbend — الرمز والشرح من هنا كزر الملاحظة.
+     يخفى طرفه كله ان كانت مثبتة (وضع التطبيق). والمتصفح الذي يعرض التثبيت بنفسه (كروم الاندرويد:
+     beforeinstallprompt) يثبت بلمسة «ثبتها الآن»؛ وسفاري الآيفون لا يعرضه، فخطواته مكتوبة */
+  var installEvt = null;
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); installEvt = e; });
+  function installed() {
+    return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  }
+  Shouba.installGuide = function () {
+    var n = document.createElement('div'), ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    n.className = 'guide';
+    function part(title, steps) {
+      var g = document.createElement('div'), b = document.createElement('b'), ol = document.createElement('ol');
+      g.className = 'gp'; b.textContent = title;
+      steps.forEach(function (s) { var li = document.createElement('li'); li.textContent = s; ol.appendChild(li); });
+      g.appendChild(b); g.appendChild(ol);
+      return g;
+    }
+    var p1 = part('الآيفون — من سفاري', ['المس زر المشاركة (مربع يخرج منه سهم) أسفل الشاشة.', 'اختر «إضافة إلى الشاشة الرئيسية».', 'المس «إضافة» — فتظهر شعبة بين تطبيقاتك.']);
+    var p2 = part('الأندرويد — من كروم', ['المس القائمة (ثلاث نقاط) أعلى الشاشة.', 'اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».', 'المس «تثبيت».']);
+    if (installEvt) {
+      var go = document.createElement('button');
+      go.className = 'cta'; go.type = 'button'; go.textContent = 'ثبتها الآن';
+      go.addEventListener('click', function () {
+        var e = installEvt; installEvt = null;
+        e.prompt();
+        Shouba.sheet.close();
+      });
+      n.appendChild(go);
+    }
+    n.appendChild(ios ? p1 : p2); n.appendChild(ios ? p2 : p1);
+    var h = document.createElement('div');
+    h.className = 'hint';
+    h.textContent = 'إن فتحت الرابط من واتساب فافتحه في سفاري أو كروم أولا — ثم ثبته. وبعد التثبيت تفتح المنصة من أيقونتها كتطبيق.';
+    n.appendChild(h);
+    Shouba.sheet.open('ثبت شعبة على هاتفك', n);
+  };
+  function bindInstall() {
+    [].forEach.call(document.querySelectorAll('[data-install]'), function (b) {
+      if (b.dataset.bound) return; b.dataset.bound = '1';
+      var end = b.closest('.tbend') || b;
+      if (installed()) { end.hidden = true; return; }
+      b.setAttribute('aria-label', 'ثبت المنصة على هاتفك');
+      if (!b.innerHTML.trim()) b.innerHTML = '<svg width="15" height="15" viewBox="0 0 20 20" fill="none">'
+        + '<rect x="5.4" y="2.4" width="9.2" height="15.2" rx="2.2" stroke="currentColor" stroke-width="1.7"/>'
+        + '<path d="M10 5.8v5.6M7.7 9.2 10 11.5l2.3-2.3M8.6 15h2.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      b.addEventListener('click', Shouba.installGuide);
+    });
+  }
+
   function connectServer() {
     if (!window.Shouba || !Shouba.connect) return;
     Shouba.onConflict = conflictSheet;
@@ -879,6 +931,6 @@ Shouba.returnTo = function () {
     });
   }
 
-  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindFeedback(); updateBanner(); connectServer(); }
-  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindFeedback(); updateBanner(); connectServer(); });
+  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); });
 })();

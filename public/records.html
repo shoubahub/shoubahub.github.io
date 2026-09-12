@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=50" />
-<link rel="stylesheet" href="shell.css?v=50" />
-<link rel="stylesheet" href="components.css?v=50" />
-<link rel="stylesheet" href="frame.css?v=50" />
+<link rel="stylesheet" href="identity/tokens.css?v=51" />
+<link rel="stylesheet" href="shell.css?v=51" />
+<link rel="stylesheet" href="components.css?v=51" />
+<link rel="stylesheet" href="frame.css?v=51" />
 <style>
   .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
   .note{padding:0 var(--gap-side);font-size:12px;font-weight:600;color:var(--shouba-hint);line-height:1.8}
@@ -69,13 +69,13 @@
   </div>
  </div></div>
 
-<script src="build.js?v=50"></script>
-<script src="refdata.js?v=50"></script>
-<script src="rec-templates.js?v=50"></script>
-<script src="rec-engine.js?v=50"></script>
-<script src="derive.js?v=50"></script>
-<script src="icons.js?v=50"></script>
-<script src="components.js?v=50"></script>
+<script src="build.js?v=51"></script>
+<script src="refdata.js?v=51"></script>
+<script src="rec-templates.js?v=51"></script>
+<script src="rec-engine.js?v=51"></script>
+<script src="derive.js?v=51"></script>
+<script src="icons.js?v=51"></script>
+<script src="components.js?v=51"></script>
 <script>
   var d = Shouba.data();
 
@@ -97,38 +97,54 @@
     listEl.innerHTML = '<div class="invite">لم تعتمد سجلات في الإعداد بعد —'
       + ' وهي قوالب رسمية جاهزة تختار منها ما يخص شعبتك.</div>';
   }
-  records.forEach(function(name){
-    var t = ShoubaRec.byReady(name), b = document.createElement('button');
+  /* الترتيب (طلب المستخدم 2026-09-13): الجاهز اولا وفي رأسه الاجتماعات والخطة التشغيلية — في قائمتك كانا او
+     «جديد — أضفه» — ثم سائر الجاهز في قائمتك، ثم الجاهز الذي ليس فيها، ثم ما هو قيد الإعداد.
+     وبين المتساويين ترتيبك في الإعداد */
+  var FIRST = ['سجل اجتماعات الشعبة', 'الخطة التشغيلية للشعبة'];
+  function entry(name){
+    var b = document.createElement('button');
     b.innerHTML = '<b></b><span class="val"></span><span class="chev">‹</span>';
     b.querySelector('b').textContent = name;
-    if (t) {
-      b.className = 'entry';
-      b.querySelector('.val').textContent = Shouba.count(Shouba.recs(t.id).length, t.noun || {});
-      b.addEventListener('click', function(){ location.href = 'archive.html?tpl=' + encodeURIComponent(t.id); });
-    } else {
-      b.className = 'entry soon';
-      b.querySelector('.val').textContent = 'قالب فارغ';
-      b.addEventListener('click', function(){
-        var n = document.createElement('div');
-        n.className = 'soon-note';
-        n.textContent = 'سجل «' + name + '» قيد الإعداد — يصل في تحديث قادم بحقوله الرسمية،'
-                      + ' وما تدخله اليوم في اللوحة والجداول يغذيه حين يجهز.';
-        Shouba.sheet.open(name, n);
-      });
-    }
-    listEl.appendChild(b);
-  });
-
+    return b;
+  }
+  var soonNames = records.filter(function(n){ return !ShoubaRec.byReady(n); });
   /* قالب رسمي جاهز ليس في قائمتك (بني بعد اعدادك — كالخطة التشغيلية 2026-09-12): يعرض «جديد» ويضاف بلمسة
      ثم يفتح ارشيفه. القائمة تبقى قرارك — لا يضاف اليها شيء دون لمستك */
-  ShoubaRec.list().filter(function(t){ return t.ready && records.indexOf(t.ready) < 0; }).forEach(function(t){
-    var b = document.createElement('button');
-    b.className = 'entry';
-    b.innerHTML = '<b></b><span class="chip">جديد — أضفه</span>';
-    b.querySelector('b').textContent = t.ready;
+  var readyList = records.filter(function(n){ return ShoubaRec.byReady(n); }).map(function(n){ return { n: n, fresh: false }; })
+    .concat(ShoubaRec.list().filter(function(t){ return t.ready && records.indexOf(t.ready) < 0; }).map(function(t){ return { n: t.ready, fresh: true }; }));
+  function rank(x){ var i = FIRST.indexOf(x.n); return i > -1 ? i : x.fresh ? 11 : 10; }
+  readyList.map(function(x, i){ x.i = i; return x; })
+    .sort(function(a, b){ return rank(a) - rank(b) || a.i - b.i; })
+    .forEach(function(x){
+      var t = ShoubaRec.byReady(x.n), b;
+      if (x.fresh) {
+        b = document.createElement('button');
+        b.innerHTML = '<b></b><span class="chip">جديد — أضفه</span>';
+        b.querySelector('b').textContent = x.n;
+        b.addEventListener('click', function(){
+          Shouba.save({ records: (Shouba.data().records || []).concat(x.n) });
+          location.href = 'archive.html?tpl=' + encodeURIComponent(t.id);
+        });
+      } else {
+        b = entry(x.n);
+        b.querySelector('.val').textContent = Shouba.count(Shouba.recs(t.id).length, t.noun || {});
+        b.addEventListener('click', function(){ location.href = 'archive.html?tpl=' + encodeURIComponent(t.id); });
+      }
+      b.className = 'entry';
+      listEl.appendChild(b);
+    });
+
+  /* ما لم يبن قالبه بعد — في الآخر */
+  soonNames.forEach(function(name){
+    var b = entry(name);
+    b.className = 'entry soon';
+    b.querySelector('.val').textContent = 'قيد الإعداد';
     b.addEventListener('click', function(){
-      Shouba.save({ records: (Shouba.data().records || []).concat(t.ready) });
-      location.href = 'archive.html?tpl=' + encodeURIComponent(t.id);
+      var n = document.createElement('div');
+      n.className = 'soon-note';
+      n.textContent = 'سجل «' + name + '» قيد الإعداد — يصل في تحديث قادم بحقوله الرسمية،'
+                    + ' وما تدخله اليوم في اللوحة والجداول يغذيه حين يجهز.';
+      Shouba.sheet.open(name, n);
     });
     listEl.appendChild(b);
   });

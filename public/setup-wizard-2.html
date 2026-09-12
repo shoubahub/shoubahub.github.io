@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=50" />
-<link rel="stylesheet" href="shell.css?v=50" />
-<link rel="stylesheet" href="components.css?v=50" />
-<link rel="stylesheet" href="frame.css?v=50" />
+<link rel="stylesheet" href="identity/tokens.css?v=51" />
+<link rel="stylesheet" href="shell.css?v=51" />
+<link rel="stylesheet" href="components.css?v=51" />
+<link rel="stylesheet" href="frame.css?v=51" />
 <style>
   /* خاص بهذه الشاشة فقط */
   .sdrop.locked{opacity:.5;pointer-events:none;filter:grayscale(.3)}
@@ -94,9 +94,9 @@
   </div>
  </div></div>
 
-<script src="refdata.js?v=50"></script>
-<script src="build.js?v=50"></script>
-<script src="components.js?v=50"></script>
+<script src="refdata.js?v=51"></script>
+<script src="build.js?v=51"></script>
+<script src="components.js?v=51"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{return JSON.parse(localStorage.getItem(KEY))||{};}catch(e){return {};} }
@@ -134,12 +134,22 @@
     var list=R.subjectsOf(stageSel.value, dp);
     subjects.innerHTML='';
     if(list.length){
+      /* العرض وحده (قرار المستخدم 2026-09-13): لكل صف سطره، والمادة التي تدرس للقسمين في الصف الواحد سطر
+         واحد «الحادي عشر · أدبي وعلمي» بدل سطرين — كانت التربية الإسلامية للثانوي تطول بهما. والمحفوظ (subjects
+         ادناه) القائمة كاملة بمساراتها كما هي: الانصبة والجداول والخطط تقرؤها ولا تتغير */
+      var rows=[], byKey={};
       list.forEach(function(s){
+        var k=s.name+'|'+s.grade, g=byKey[k];
+        if(!g){ g=byKey[k]={ name:s.name, grade:s.grade, tracks:[], elective:false, shared:false }; rows.push(g); }
+        if(s.track && g.tracks.indexOf(s.track)<0) g.tracks.push(s.track);
+        g.elective=g.elective || !!s.elective; g.shared=g.shared || !!s.shared;
+      });
+      rows.forEach(function(s){
         var row=document.createElement('div'); row.className='subj';
         // المرحلة بلا مسارات ⇒ لا فاصل معلق بعد الصف
         // ومادة الاختيار الحر تثبت بصف واحد بلا مسار، ويقال ذلك بجانبها
         // بدل تكرارها للأدبي والعلمي (قرار المستخدم 2026-09-08)
-        var meta = s.track ? s.grade + ' · ' + s.track : s.grade;
+        var meta = s.tracks.length ? s.grade + ' · ' + s.tracks.join(' و') : s.grade;
         row.innerHTML='<b></b><span class="gt"></span>';
         row.querySelector('b').textContent = s.name;
         row.querySelector('.gt').textContent = meta;

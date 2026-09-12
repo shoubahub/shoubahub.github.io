@@ -41,6 +41,7 @@ const mark = surface => (logo(surface) ? `<div class="lock"><img src="${logo(sur
 const foot = sign => /^[\x20-\x7E]*$/.test(sign)
   ? `<div class="foot" dir="ltr">${e(sign)}</div>`
   : `<div class="foot ar" dir="rtl">${e(sign)}</div>`;
+const ARROW = '<svg width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const missing = (what, name) => `<div class="ph-holder"><span>${what}</span>${name ? `<b dir="ltr">${e(name)}</b>` : ''}</div>`;
 
 /* اطار الهاتف: لقطة حقيقية من screens/ ، والا مربع بديل يسمي الناقص فلا يتعطل البناء */
@@ -58,10 +59,12 @@ export function renderSlide(slide, post, cfg) {
   const sign = signOf(cfg);
   const step = slide.step ?? post.column;
 
+  /* رأس العمود: الاسم في الوسط وسهم يدل على العمود تحته — كله في وسط السطح فلا تقصه
+     الشبكة الطولية. ولا شارة «مثبّت»: انستجرام يضع علامة التثبيت على المربع بنفسه. */
   if (tpl === 'head') {
     const l = logo(surface);
     return `<div class="cv ${surface} hd"><div class="echo"></div>${l ? `<img class="hd-mark" src="${l}" alt="">` : ''}`
-      + `<div class="pin">مثبّت</div><h1>${e(slide.title)}</h1><p>${e(slide.sub)}</p>${foot(sign)}</div>`;
+      + `<h1>${e(slide.title)}</h1><p>${e(slide.sub)}</p><div class="hd-arrow">${ARROW}</div>${foot(sign)}</div>`;
   }
 
   if (tpl === 'num') {

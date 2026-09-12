@@ -1,8 +1,10 @@
 /* ==========================================================================
-   شعبة · أنماط شرائح انستجرام
+   شعبة · أنماط شرائح انستجرام — مقاس 4:5 (1080×1350)
    الالوان والخطوط من هوية المنصة نفسها: public/identity/tokens.css يحقن قبل
    هذا الملف (src/templates.mjs)، وهنا أسماء مختصرة لها فقط — لا تكتب لون
    هوية بقيمته في مكان آخر.
+   ⚠ شبكة صفحة الحساب (3:4) تعرض من الغلاف وسطه بعرض ١٠١٢ — تقص ٣٤ نقطة من كل
+     جانب: الهوامش الجانبية هنا ٧٢ فما فوق، والفحص في render.mjs يقيسها.
    ========================================================================== */
 
 :root{
@@ -18,7 +20,7 @@ html,body{background:transparent}
 body{font-family:var(--font-ar);direction:rtl}
 
 /* ---------- السطح ---------- */
-.cv{width:1080px;height:1080px;position:relative;overflow:hidden}
+.cv{width:1080px;height:1350px;position:relative;overflow:hidden}
 .cv.navy {background:var(--navy); color:var(--cream)}
 .cv.cream{background:var(--paper);color:var(--ink)}
 .cv.amber{background:var(--amber);color:var(--navy)}
@@ -39,7 +41,6 @@ body{font-family:var(--font-ar);direction:rtl}
 
 /* ---------- النصوص ---------- */
 .cap{position:absolute;top:206px;right:76px;left:76px}
-.cap.high{top:150px}
 .step{display:inline-block;font-size:27px;font-weight:500;margin-bottom:12px}
 .navy  .step{color:var(--navy-light)}
 .cream .step{color:var(--label)}
@@ -62,9 +63,9 @@ body{font-family:var(--font-ar);direction:rtl}
 .phone{position:absolute;border:12px solid #0F3355;border-radius:56px;
        background:var(--canvas);overflow:hidden;box-shadow:0 26px 56px rgba(0,0,0,.3)}
 .phone img{width:100%;display:block}
-/* قالب أ — ٥٢٠ لا ٥٦٠: كان النطاق في الزاوية يختفي خلف الإطار (2026-09-11) */
-.phone.center{width:520px;right:280px;top:560px;height:560px}
-.phone.side  {width:470px;right:64px;top:300px;height:800px}
+/* قالب أ — الإطار يصعد من أسفل السطح. عرضه ٥٢٠ لا ٥٦٠: كان النطاق في الزاوية يختفي خلفه */
+.phone.center{width:520px;right:280px;top:600px;height:820px}
+.phone.side  {width:470px;right:64px;top:330px;height:1080px}
 
 /* البديل حين تنقص اللقطة: في وسط الإطار، واسم الملف سطر وحده */
 .ph-holder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
@@ -72,7 +73,7 @@ body{font-family:var(--font-ar);direction:rtl}
 .ph-holder b{font-family:var(--font-num);font-weight:500;font-size:26px;word-break:break-all}
 
 /* ---------- قالب ب: الهاتف على الجانب ---------- */
-.side-txt{position:absolute;top:190px;left:72px;width:400px}
+.side-txt{position:absolute;top:290px;left:72px;width:400px}
 .side-txt .rule{display:block;width:88px;height:10px;border-radius:6px;background:var(--amber);margin-bottom:30px}
 .amber .side-txt .rule{background:var(--navy)}
 .side-txt h1{font-size:58px;font-weight:700;line-height:1.28;letter-spacing:-1.2px}
@@ -82,7 +83,8 @@ body{font-family:var(--font-ar);direction:rtl}
 .side-txt .foot{position:static;display:block;margin-top:36px}
 
 /* ---------- قالب ج: تكبير تفصيل ---------- */
-.zoom{position:absolute;right:76px;left:76px;bottom:170px;border-radius:40px;padding:56px 54px;
+/* البطاقة في منتصف ما تحت العنوان أيا كان طولها — لا ملتصقة بالثلث الأسفل وفوقها فراغ */
+.zoom{position:absolute;right:76px;left:76px;top:820px;transform:translateY(-50%);border-radius:40px;padding:56px 54px;
       box-shadow:0 26px 54px rgba(0,0,0,.22)}
 .navy  .zoom,.amber .zoom{background:var(--cream);color:var(--navy)}
 .cream .zoom{background:var(--navy);color:var(--cream)}
@@ -109,14 +111,18 @@ body{font-family:var(--font-ar);direction:rtl}
 .num .n-sub{font-size:44px;font-weight:500;line-height:1.5;margin-top:18px;max-width:19ch}
 .num .foot{position:static;margin-top:36px}
 
-/* ---------- رأس العمود المثبّت ---------- */
-.hd .hd-mark{position:absolute;top:70px;right:76px;height:84px}
-.hd .pin{position:absolute;top:78px;left:70px;font-size:40px;font-weight:700;border-radius:999px;padding:14px 40px}
-.navy.hd .pin{background:var(--amber);color:var(--navy)}
-.cream.hd .pin{background:var(--navy);color:var(--cream)}
-.amber.hd .pin{background:var(--navy);color:var(--cream)}
-.hd h1{position:absolute;top:420px;right:76px;font-size:120px;font-weight:700;letter-spacing:-3px}
-.hd p{position:absolute;top:590px;right:76px;left:76px;font-size:36px}
+/* ---------- رأس العمود المثبّت ----------
+   كل عناصره في وسط السطح: شبكة الحساب الطولية (3:4) تقص الجانبين، فلا شيء عند الحافة. */
+.cv.hd{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 110px}
+.hd .hd-mark{position:absolute;top:120px;left:50%;transform:translateX(-50%);height:92px}
+/* سطر الاسم أرحب من حجمه: الحركات تحت الحروف (كسرة «تابِع») تنزل عن السطر فتلمس ما تحته */
+.hd h1{font-size:200px;font-weight:700;letter-spacing:-4px;line-height:1.45}
+.hd p{font-size:46px;font-weight:500;line-height:1.5;margin-top:14px}
 .navy.hd p{color:var(--navy-light)}
 .cream.hd p{color:var(--muted)}
-.amber.hd p{color:var(--navy);opacity:.78}
+.amber.hd p{color:var(--navy);opacity:.8}
+/* السهم: العمود يبدأ من هنا ويمتد تحته */
+.hd .hd-arrow{margin-top:64px;width:104px;height:104px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.navy.hd .hd-arrow{background:var(--amber);color:var(--navy)}
+.cream.hd .hd-arrow,.amber.hd .hd-arrow{background:var(--navy);color:var(--cream)}
+.hd .foot{left:0;right:0;text-align:center}

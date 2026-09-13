@@ -332,7 +332,8 @@
     if (b.mode !== 'smart:attendance') return null;
     var pr = b.print || {}, groups = pr.groups || 2, absent = v.absent || [];
     var names = (v.roster || []).filter(function (n) { return absent.indexOf(n) < 0; }).concat(v.guests || []).map(who);
-    var per = Math.max(pr.rows || 6, Math.ceil(names.length / groups)), wrap = el('div', 'pp-att');
+    /* pp-keep: جدول الحضور يلزم سطر التوقيعات بعده — ان لم يتسعا انتقلا معا، فلا ترويسة اسماء وحدها في ذيل صفحة */
+    var per = Math.max(pr.rows || 6, Math.ceil(names.length / groups)), wrap = el('div', 'pp-att pp-keep');
     for (var g = 0; g < groups; g++) {
       var t = el('table'), hr = el('tr');
       [['m', 'م'], ['nm', 'اسم الحضور'], ['sig', 'التوقيع']].forEach(function (h) { hr.appendChild(el('th', h[0], h[1])); });
@@ -518,7 +519,48 @@
           t = shell(t); tb = t.tBodies[0];
           page(false); cur.appendChild(t); tb.appendChild(tr);
         });
-      } else breakBefore(n);
+      } else if (n.classList.contains('pp-text') && n.children.length) splitText(n);
+      else breakBefore(n);
+    }
+    /* ⚠ قيد يقسم الصفحة بحسب المحتوى (2026-09-13، طلب المستخدم بعد طباعة محضر طويل): مساحة النص (محضر بمحاور
+       وقرارات كثيرة) تنقسم بين الصفحات قسما قسما، والقسم ذو القائمة بندا بندا والترقيم متصل (٤، ٥… لا من ١) —
+       والباقي في تكملة بالصنف نفسه في الصفحة التالية. كانت كتلة لا تنقسم: يقص ما جاوز الصفحة او يقسمها المتصفح
+       حيث اتفق. وعنوان قسم لا يترك وحده في ذيل صفحة */
+    function splitText(box) {
+      var kids = [].slice.call(box.children), bx = box;
+      box.textContent = '';
+      function fresh() { bx = box.cloneNode(false); bx.classList.remove('pp-keep'); page(false); cur.appendChild(bx); }
+      function moveBox() { cur.removeChild(bx); page(false); cur.appendChild(bx); }   /* الصندوق فارغ في ذيل الصفحة */
+      function splitList(sec, ol) {
+        var lis = [].slice.call(ol.children), n = 0, s = sec, o = ol;
+        o.textContent = '';
+        bx.appendChild(s);
+        lis.forEach(function (li) {
+          o.appendChild(li);
+          if (!over()) { n++; return; }
+          o.removeChild(li);
+          if (!o.children.length) {
+            bx.removeChild(s);
+            if (bx.children.length) fresh(); else moveBox();
+            bx.appendChild(s);
+          } else {
+            fresh();
+            s = sec.cloneNode(false); o = ol.cloneNode(false);
+            o.style.counterReset = 'n ' + n;
+            s.appendChild(o); bx.appendChild(s);
+          }
+          o.appendChild(li); n++;
+        });
+      }
+      kids.forEach(function (k) {
+        bx.appendChild(k);
+        if (!over()) return;
+        bx.removeChild(k);
+        var ol = k.querySelector ? k.querySelector(':scope > ol') : null;
+        if (ol && ol.children.length > 1) return splitList(k, ol);
+        if (bx.children.length) fresh(); else moveBox();
+        bx.appendChild(k);
+      });
     }
     page(true);
     /* ملخص التقرير (print.summary): «نفذ ٨ من ١١ اجراء» وتفصيل الحالات — للمحاور المختارة */
@@ -591,14 +633,17 @@
     var docs = [], sets = [];
     (entries || []).forEach(function (e, i) {
       var t = e.tpl, list;
-      if (t.page && t.page.fit === 'flow') {
+      var s = null;
+      if (!(t.page && t.page.fit === 'flow')) {
+        s = P.render(t, e.rec, e.ctx, fontId);
+        host.appendChild(s);
+        if (P.fit(s, t.page).over) { host.removeChild(s); s = null; }   /* لا يتسع صفحة ولو صغر الخط ⟵ يقسم بحسب محتواه */
+        else s.classList.add('pp-page');
+      }
+      if (s) list = [s];
+      else {
         list = P.pages(t, e.rec, e.ctx, host, fontId);
         list.forEach(function (p) { var no = p.querySelector('.pp-pageno'); if (no) no.parentNode.removeChild(no); });
-      } else {
-        var s = P.render(t, e.rec, e.ctx, fontId);
-        host.appendChild(s);
-        if (!P.fit(s, t.page).over) s.classList.add('pp-page');   /* صفحة ثابتة؛ والاطول منها يمتد (نادر) */
-        list = [s];
       }
       list = list.map(function (p) {
         if (!p.classList.contains('landscape')) return p;

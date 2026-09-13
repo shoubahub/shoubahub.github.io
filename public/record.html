@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=59" />
-<link rel="stylesheet" href="shell.css?v=59" />
-<link rel="stylesheet" href="components.css?v=59" />
-<link rel="stylesheet" href="frame.css?v=59" />
-<link rel="stylesheet" href="rec-print.css?v=59" />
+<link rel="stylesheet" href="identity/tokens.css?v=60" />
+<link rel="stylesheet" href="shell.css?v=60" />
+<link rel="stylesheet" href="components.css?v=60" />
+<link rel="stylesheet" href="frame.css?v=60" />
+<link rel="stylesheet" href="rec-print.css?v=60" />
 <style>
   /* شاشة السجل (2026-09-12) — شاشة واحدة لكل القوالب، تولدها اللبنات من التعريف:
      ?tpl=<قالب> سجل جديد (لا يحفظ حتى يكتب فيه) · ?id=<سجل> سجل محفوظ باصداره هو.
@@ -77,17 +77,17 @@
   </div>
  </div></div>
 
-<script src="build.js?v=59"></script>
-<script src="refdata.js?v=59"></script>
-<script src="rec-templates.js?v=59"></script>
-<script src="rec-engine.js?v=59"></script>
-<script src="derive.js?v=59"></script>
-<script src="plan-data.js?v=59"></script>
-<script src="icons.js?v=59"></script>
-<script src="components.js?v=59"></script>
-<script src="rec-print.js?v=59"></script>
-<script src="rec-files.js?v=59"></script>
-<script src="rec-form.js?v=59"></script>
+<script src="build.js?v=60"></script>
+<script src="refdata.js?v=60"></script>
+<script src="rec-templates.js?v=60"></script>
+<script src="rec-engine.js?v=60"></script>
+<script src="derive.js?v=60"></script>
+<script src="plan-data.js?v=60"></script>
+<script src="icons.js?v=60"></script>
+<script src="components.js?v=60"></script>
+<script src="rec-print.js?v=60"></script>
+<script src="rec-files.js?v=60"></script>
+<script src="rec-form.js?v=60"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -316,8 +316,9 @@
     fit = null;
     m.className = 'fillm';
     m.querySelector('.track').hidden = true;
-    document.getElementById('mt').textContent = 'الصفحات: ' + pages.length + ' — الورق '
-      + (tpl.page.orient === 'landscape' ? 'عرضي' : 'عمودي') + '، ورأس كل جدول يتكرر في صفحاته';
+    document.getElementById('mt').textContent = (tpl.page.fit === 'flow' ? 'الصفحات: ' + pages.length
+        : 'أطول من صفحة ولو صغر الخط — قسم على ' + S.count(pages.length, { one: 'صفحة', two: 'صفحتين', few: 'صفحات', many: 'صفحة' }) + ' بحسب محتواه')
+      + ' — الورق ' + (tpl.page.orient === 'landscape' ? 'عرضي' : 'عمودي') + '، ورأس كل جدول يتكرر في صفحاته';
     var miss = missing(), me = document.getElementById('miss');
     me.hidden = !miss.length;
     me.textContent = miss.length ? 'لم تكتب ' + miss.join(' و') + ' بعد — يطبع فارغا إن طبعته الآن.' : '';
@@ -332,6 +333,9 @@
     var sheet = ShoubaPrint.render(tpl, rec, { open: S.openDecisions(rec), signs: signs(), noLogo: logoOff() });
     pvw.appendChild(sheet);
     fit = ShoubaPrint.fit(sheet, tpl.page);
+    /* لا يتسع صفحة ولو صغر الخط الى حده ⟵ يقسم بحسب محتواه كالممتد (2026-09-13، طلب المستخدم: «قيد يقسم الصفحة
+       بحسب المحتوى») — لا ورقة طويلة يقسمها المتصفح حيث اتفق فتنفصل ترويسة الحضور عن اسمائه */
+    if (fit.over) return paintFlow();
     var k = pvw.clientWidth / sheet.offsetWidth;
     sheet.style.transform = 'scale(' + k + ')';
     pvw.style.height = Math.ceil(sheet.offsetHeight * k) + 'px';

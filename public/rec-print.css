@@ -68,6 +68,9 @@
    وسطر التوقيعات يليه مباشرة */
 .pp-att{ display:grid; grid-template-columns:1fr 1fr; border:1.6px solid #000; margin-top:auto; }
 .pp-att + .pp-appr{ margin-top:0; }
+/* حارس ثان ان قسم المتصفح: الحضور والتوقيعات لا ينقسمان، والتوقيعات لا تفارق ما قبلها */
+.pp-att,.pp-appr{ break-inside:avoid; }
+.pp-appr{ break-before:avoid; }
 .pp-att table{ width:100%; border-collapse:collapse; }
 .pp-att table + table{ border-right:2px solid #000; }
 .pp-att th,.pp-att td{ border:1px solid #000; padding:1.2mm 2mm; height:8.5mm; font-size:.92em; text-align:right; }
@@ -156,6 +159,7 @@
   .pp-print .pp-sheet{ break-after:page; }
   .pp-print .pp-sheet:last-child{ break-after:auto; }
   .pp-print .pp-rot > .pp-sheet{ break-after:auto; }   /* الورقة المدارة داخل ورقتها — لا صفحة بعدها */
-  /* الآيفون: هوامش سفاري المفروضة تنقص الصفحة — الورقة ٨٥٪ (١٧٨×٢٥٢مم) فتتسع صفحتها (P.print يسم .ios) */
-  .pp-print.ios{ zoom:.85; }
+  /* الآيفون: هوامش سفاري المفروضة وسطرا العنوان والتاريخ فيها تنقص الصفحة — الورقة ٨٠٪ (١٦٨×٢٣٨مم) فتتسع صفحتها
+     بفسحة امان (P.print يسم .ios). كانت ٨٥٪ فبقي المحضر يفيض (رصد المستخدم 2026-09-13) */
+  .pp-print.ios{ zoom:.8; }
 }

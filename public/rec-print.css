@@ -12,7 +12,7 @@
   --paper-font: "IBM Plex Sans Arabic", sans-serif;   /* المعتمد للورق (قرار المستخدم 2026-09-12) */
   box-sizing:border-box; width:210mm; min-height:297mm; padding:12mm 13mm;
   background:#fff; color:#000; direction:rtl;
-  font-family:var(--paper-font); font-size:12pt; line-height:1.55;   /* ١٢ = P.BASE_PT */
+  font-family:var(--paper-font); font-size:14pt; line-height:1.55;   /* ١٤ = P.BASE_PT (قرار المستخدم 2026-09-13 — كان ١٢) */
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
   display:flex; flex-direction:column;   /* عمود مرن: مربع الاعتماد ينزل الى اسفل الورقة (.pp-appr) */
 }

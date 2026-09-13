@@ -434,11 +434,13 @@
      ⚠ تقاس الورقة وهي في الصفحة (لا display:none)؛ والتحجيم بـtransform لا يغير مقاسها.
      يرجع { pt, base, min, ratio (امتلاء الصفحة بطولها الطبيعي), over (اطول من صفحة ولو صغر) } */
   var PX_MM = 96 / 25.4;
-  P.BASE_PT = 12;
+  /* ١٤ نقطة بلا تصغير (قرار المستخدم 2026-09-13: «حجم الخط صغير جدا»): كان ١٢ ويصغر حتى page.minPt (١٠ للمحضر)
+     ليتسع في صفحة — والطويل الآن يقسم بحسب محتواه (P.pages) فلا حاجة الى تصغير خطه */
+  P.BASE_PT = 14;
   P.pageH = function (orient) { return (orient === 'landscape' ? 210 : 297) * PX_MM; };
   P.fit = function (sheet, page) {
     page = page || {};
-    var base = P.BASE_PT, min = page.minPt || base, H = P.pageH(page.orient), pt = base, h;
+    var base = P.BASE_PT, min = base, H = P.pageH(page.orient), pt = base, h;   /* لا تصغير: page.minPt في القوالب المنشورة لا يعمل به */
     function measure() { sheet.classList.add('pp-measure'); var x = sheet.offsetHeight; sheet.classList.remove('pp-measure'); return x; }
     for (;;) {
       sheet.style.fontSize = pt + 'pt';
@@ -689,6 +691,94 @@
     });
     return out;
   };
+
+  /* ── ملف PDF جاهز (2026-09-13، طلب المستخدم: «اسفل الصفحة يظهر رابط شعبة والساعة… احذف») ──────────────────
+     سفاري الآيفون يكتب في هوامش الطباعة عنوان الصفحة والتاريخ ولا يزال ذلك من داخلها، ويفرض هوامشه فتصغر الورقة.
+     فتصنع المنصة الملف بنفسها: كل ورقة صورة عالية الدقة (html2canvas — يحمل من cdnjs عند الحاجة وحدها) في صفحة
+     PDF بمقاس ورقتها (A4 عمودية او عرضية)، ثم تطبع او تحفظ او ترسل من قائمة المشاركة بلا ذيل ولا تصغير.
+     وصيغة الملف تكتب هنا بلا مكتبة: صور JPEG في صفحات (PDF ١٫٤). sheets: اوراق المعاينة (تنسخ ولا تمس) */
+  var H2C = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  function loadH2C() {
+    if (window.html2canvas) return Promise.resolve(window.html2canvas);
+    return new Promise(function (ok, no) {
+      var s = document.createElement('script');
+      s.src = H2C; s.async = true;
+      s.onload = function () { if (window.html2canvas) ok(window.html2canvas); else no(new Error('h2c')); };
+      s.onerror = function () { no(new Error('h2c')); };
+      document.head.appendChild(s);
+    });
+  }
+  P.isIOS = function () { var ua = navigator.userAgent; return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1); };
+  /* الجهاز يشارك الملفات (الآيفون والاندرويد) — فالملف الجاهز يفتح قائمة المشاركة */
+  P.canShareFiles = function () {
+    try { return !!(navigator.canShare && window.File && navigator.canShare({ files: [new File(['x'], 'x.pdf', { type: 'application/pdf' })] })); }
+    catch (e) { return false; }
+  };
+  /* ⚠ انماط الورق تحقن نصا في نسخة html2canvas (رصد 2026-09-13): نسخته تحل روابط الانماط النسبية على غير مسار
+     الصفحة احيانا (داخل اطار) فتخرج الورقة بلا اطر ولا خط. rec-print.css قائم بذاته (لا رموز tokens.css) */
+  var cssText = null;
+  function printCss() {
+    if (cssText !== null) return Promise.resolve(cssText);
+    var l = document.querySelector('link[href*="rec-print.css"]');
+    if (!l) return Promise.resolve(cssText = '');
+    return fetch(l.href).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) { return (cssText = t); }, function () { return ''; });
+  }
+  P.pdf = function (sheets, onPage) {
+    var list = Array.isArray(sheets) ? sheets : [sheets], css = '';
+    return Promise.all([loadH2C(), printCss()]).then(function (r) {
+      var h2c = r[0];
+      css = r[1];
+      var stage = el('div'), pages = [], i = 0;
+      stage.style.cssText = 'position:fixed;left:-12000px;top:0;';
+      document.body.appendChild(stage);
+      function next() {
+        if (i >= list.length) { document.body.removeChild(stage); return pages; }
+        /* الورقة المدارة في ملف الفصل (.pp-rot): ورقتها العرضية كما هي في صفحة PDF عرضية — html2canvas يبعثر النص المدار
+           (رصد 2026-09-13)، وقارئ PDF وطابعته يجمعان الاتجاهين بلا حاجة الى الادارة */
+        var src = list[i].classList.contains('pp-rot') && list[i].firstElementChild ? list[i].firstElementChild : list[i];
+        var c = src.cloneNode(true), land;
+        c.style.transform = '';
+        c.classList.add('pp-page');                  /* الورقة بطول صفحتها بالضبط */
+        land = c.classList.contains('landscape');
+        stage.appendChild(c);
+        return h2c(c, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false,
+          onclone: function (doc) { if (css) { var st = doc.createElement('style'); st.textContent = css; doc.head.appendChild(st); } } }).then(function (cv) {
+          stage.removeChild(c);
+          pages.push({ jpg: cv.toDataURL('image/jpeg', 0.9), w: cv.width, h: cv.height, land: land });
+          i++;
+          if (onPage) onPage(i, list.length);
+          return next();
+        });
+      }
+      return next();
+    }).then(function (pages) { return new Blob([pdfBytes(pages)], { type: 'application/pdf' }); });
+  };
+  function b64bytes(url) { var b = atob(url.split(',')[1]), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+  function pdfBytes(pages) {
+    var chunks = [], len = 0, offs = [], enc = new TextEncoder(), kids = [], n = pages.length;
+    function add(x) { var u = typeof x === 'string' ? enc.encode(x) : x; chunks.push(u); len += u.length; }
+    function obj(k, body) { offs[k] = len; add(k + ' 0 obj\n'); body(); add('\nendobj\n'); }
+    add('%PDF-1.4\n');
+    for (var k = 0; k < n; k++) kids.push((3 + 3 * k) + ' 0 R');
+    obj(1, function () { add('<< /Type /Catalog /Pages 2 0 R >>'); });
+    obj(2, function () { add('<< /Type /Pages /Kids [' + kids.join(' ') + '] /Count ' + n + ' >>'); });
+    pages.forEach(function (p, k) {
+      var W = p.land ? '841.89' : '595.28', Hh = p.land ? '595.28' : '841.89', img = b64bytes(p.jpg), cs = 'q ' + W + ' 0 0 ' + Hh + ' 0 0 cm /Im0 Do Q';
+      obj(3 + 3 * k, function () { add('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + W + ' ' + Hh + '] /Resources << /XObject << /Im0 ' + (5 + 3 * k) + ' 0 R >> >> /Contents ' + (4 + 3 * k) + ' 0 R >>'); });
+      obj(4 + 3 * k, function () { add('<< /Length ' + cs.length + ' >>\nstream\n' + cs + '\nendstream'); });
+      obj(5 + 3 * k, function () {
+        add('<< /Type /XObject /Subtype /Image /Width ' + p.w + ' /Height ' + p.h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + img.length + ' >>\nstream\n');
+        add(img); add('\nendstream');
+      });
+    });
+    var xref = len, total = 3 + 3 * n;
+    add('xref\n0 ' + total + '\n0000000000 65535 f \n');
+    for (var o = 1; o < total; o++) add(('0000000000' + offs[o]).slice(-10) + ' 00000 n \n');
+    add('trailer\n<< /Size ' + total + ' /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF');
+    var out = new Uint8Array(len), pos = 0;
+    chunks.forEach(function (c) { out.set(c, pos); pos += c.length; });
+    return out;
+  }
 
   /* الطباعة: نسخة من الورقة — او صفحات الامتداد — بمقاسها في .pp-print (ابن body)، وrec-print.css يخفي سواها.
      المتسع في صفحة يوسم «one» فيثبت بطولها، وكل صفحة امتداد صفحة ثابتة. واتجاه الورق من الورقة نفسها:

@@ -12,10 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=66" />
-<link rel="stylesheet" href="shell.css?v=66" />
-<link rel="stylesheet" href="components.css?v=66" />
-<link rel="stylesheet" href="frame.css?v=66" />
+<link rel="stylesheet" href="identity/tokens.css?v=67" />
+<link rel="stylesheet" href="shell.css?v=67" />
+<link rel="stylesheet" href="components.css?v=67" />
+<link rel="stylesheet" href="frame.css?v=67" />
 <style>
   /* خاص بهذه الشاشة فقط: صف الإضافة (حقل + زر) وحرفا المعلم — لا هيكل ولا هوامش عامة */
   .addrow{display:flex;gap:12px;align-items:stretch}
@@ -92,8 +92,8 @@
   </div>
  </div></div>
 
-<script src="build.js?v=66"></script>
-<script src="components.js?v=66"></script>
+<script src="build.js?v=67"></script>
+<script src="components.js?v=67"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -137,8 +137,12 @@
                     + '<button type="button" class="del" aria-label="احذف">' + DEL + '</button>';
       row.querySelector('.ini').textContent = initial(name);
       row.querySelector('b').textContent = 'أ. ' + name;
+      /* لا حذف بلا تراجع (قاعدة الادخال 2026-09-13) */
       row.querySelector('.del').addEventListener('click', function(){
-        teachers.splice(i, 1); persist(); render();
+        var gone = teachers.splice(i, 1)[0]; persist(); render();
+        if(window.Shouba && Shouba.toast) Shouba.toast('حذف أ. ' + gone, function(){
+          teachers.splice(Math.min(i, teachers.length), 0, gone); persist(); render();
+        });
       });
       listEl.appendChild(row);
     });

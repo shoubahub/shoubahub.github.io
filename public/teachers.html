@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=66" />
-<link rel="stylesheet" href="shell.css?v=66" />
-<link rel="stylesheet" href="components.css?v=66" />
-<link rel="stylesheet" href="frame.css?v=66" />
+<link rel="stylesheet" href="identity/tokens.css?v=67" />
+<link rel="stylesheet" href="shell.css?v=67" />
+<link rel="stylesheet" href="components.css?v=67" />
+<link rel="stylesheet" href="frame.css?v=67" />
 <style>
   /* خاص بهذه الشاشة — القائمة والسطور من components.css */
   .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
@@ -69,11 +69,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=66"></script>
-<script src="refdata.js?v=66"></script>
-<script src="derive.js?v=66"></script>
-<script src="icons.js?v=66"></script>
-<script src="components.js?v=66"></script>
+<script src="build.js?v=67"></script>
+<script src="refdata.js?v=67"></script>
+<script src="derive.js?v=67"></script>
+<script src="icons.js?v=67"></script>
+<script src="components.js?v=67"></script>
 <script>
   var d = Shouba.data();
 
@@ -132,11 +132,13 @@
     setTimeout(function(){ inp.focus(); }, 80);
     function submit(){
       var v = inp.value.trim().replace(/\s+/g,' ');
-      if(v.length < 3) return;
+      /* لا اهمال صامت ولا حفظ صامت (قاعدة الادخال 2026-09-13) */
+      if(v.length < 3){ warn.textContent = 'الاسم قصير — اكتبه كما في النماذج الرسمية.'; inp.focus(); return; }
       if(Shouba.teachers().indexOf(v) > -1){ warn.textContent = 'هذا الاسم مضاف سلفا.'; return; }
       var list = Shouba.teachers(); list.push(v);
       Shouba.save({ teachers: list });
       Shouba.sheet.close(); paint();
+      Shouba.toast('أضيف أ. ' + v + ' إلى معلميك');
     }
     btn.addEventListener('click', submit);
     inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') submit(); });

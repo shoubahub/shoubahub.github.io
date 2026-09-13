@@ -153,6 +153,23 @@
 .sheet.open{transform:translateY(0)}
 .sheet .grab{width:46px;height:5px;border-radius:999px;background:#D9CCB2;margin:6px auto 2px;flex:none}
 .sheet .sheet-title{font-family:var(--font-ar);font-size:15.5px;font-weight:700;color:var(--shouba-ink);text-align:center;padding:8px 0 14px;flex:none}
+/* ازرار المخرج (قاعدة الادخال 2026-09-13) — اسفل اللوحة بعد محتواها، بقرار المستخدم: «الزرين يجب ان يكونا بعد
+   الادخال فوقهما». ثابتة تحت القائمة وان مررت. «رجوع» يمينا حين تكون خطوة سابقة، و«تم» دائما ويملأ الصف وحده */
+.sheet .sheet-foot{display:flex;gap:8px;padding-top:12px;flex:none}
+.sheet .sh-back,.sheet .sh-done{flex:1;border:0;cursor:pointer;font-family:var(--font-ar);font-size:14px;font-weight:700;
+  border-radius:14px;padding:12px 10px}
+.sheet .sh-done{color:var(--shouba-navy);background:rgba(22,69,110,.09)}
+.sheet .sh-back{display:none;color:var(--shouba-label);background:rgba(120,98,66,.08)}
+.sheet .sh-back.on{display:block}
+/* سطر التاكيد العابر (Shouba.toast) — تحت الرأس، فوق اللوحة السفلية */
+.toast{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top) + 66px);z-index:120;width:calc(100% - 32px);max-width:400px;margin:0 auto;
+  display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;background:var(--shouba-navy);color:#fff;
+  font-family:var(--font-ar);font-size:13px;font-weight:700;line-height:1.6;box-shadow:0 10px 26px rgba(20,40,70,.28);
+  opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .2s, transform .2s}
+.toast.on{opacity:1;transform:none;pointer-events:auto}
+.toast span{flex:1;min-width:0}
+.toast button{flex:none;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;color:var(--shouba-amber);background:transparent;padding:2px 4px}
+@media (prefers-reduced-motion: reduce){ .toast{transition:none} }
 /* الحاوية تمرر (overflow:auto) فتقص حلقة الاختيار الممتدة خارج العنصر (box-shadow spread).
    الحل: فسحة داخلية بقدر الحلقة، وتعوض بهامش سالب كي تبقى الأسطر بمحاذاة العنوان. */
 .sheet .sheet-list{overflow:auto;display:flex;flex-direction:column;gap:9px;

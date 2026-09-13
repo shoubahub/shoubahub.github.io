@@ -102,25 +102,73 @@ Shouba.returnTo = function () {
     return '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
 
+  /* ── المخرج بعد الادخال (قاعدة المنصة 2026-09-13، رصد المستخدم: «بعد اي ادخالات لا يتم اضافة زر تم او الرجوع
+     للخطوة السابقة») — في اللوحة نفسها فتأخذه كل لوحة:
+     · «تم» ظاهر في رأس كل لوحة (كانت لا تغلق الا بلمس الخلفية).
+     · الخطوات مكدسة: open(title, node, { step:true }) يحفظ الخطوة الحاضرة، و«رجوع» يعيدها بمحتواها كما ترك.
+       والمنسدلة داخل لوحة خطوة كذلك: الاختيار يعود الى اللوحة لا يغلقها.
+     · زر الرجوع في الهاتف يرجع خطوة او يغلق — لا يخرج من الصفحة: فتح اللوحة يضيف مدخلا في التاريخ.
+       ⚠ والاغلاق لا ينادي history.back (قد يلغي انتقالا تبدؤه الشيفرة بعده): يسم المدخل «خاملا» فيعاد استعماله
+       في الفتح التالي، ومن رجع منه الى ما قبله يمضى به خطوة اخرى — فلا يلمس الرجوع مرتين */
+  var stack = [], current = null, hist = false, atInert = false, backBtn;
   function ensure() {
     if (sheet) return;
     backdrop = document.createElement('div');
     backdrop.className = 'sheet-backdrop';
     sheet = document.createElement('div');
     sheet.className = 'sheet';
-    sheet.innerHTML = '<div class="grab"></div><div class="sheet-title"></div><div class="sheet-list"></div>';
+    /* الزران اسفل اللوحة بعد محتواها (قرار المستخدم 2026-09-13: «الزرين يجب ان يكونا بعد الادخال فوقهما») */
+    sheet.innerHTML = '<div class="grab"></div><div class="sheet-title"></div><div class="sheet-list"></div>'
+      + '<div class="sheet-foot"><button type="button" class="sh-back">رجوع</button><button type="button" class="sh-done">تم</button></div>';
     document.body.appendChild(backdrop);
     document.body.appendChild(sheet);
     titleEl = sheet.querySelector('.sheet-title');
     list = sheet.querySelector('.sheet-list');
+    backBtn = sheet.querySelector('.sh-back');
     backdrop.addEventListener('click', close);
+    backBtn.addEventListener('click', back);
+    sheet.querySelector('.sh-done').addEventListener('click', close);
+    window.addEventListener('popstate', onPop);
+  }
+  function isOpen() { return !!(sheet && sheet.classList.contains('open')); }
+  /* حال التاريخ منسوخا (قد يحمل حال الشاشة — معاينة السجل) بعلامة اللوحة او بلا علامة */
+  function stateWith(k) {
+    var s = {}, o = history.state || {};
+    for (var p in o) if (Object.prototype.hasOwnProperty.call(o, p) && p !== 'shSheet' && p !== 'shInert') s[p] = o[p];
+    if (k) s[k] = 1;
+    return s;
+  }
+  function show(title, nodes, step) {
+    ensure();
+    if (step && isOpen() && current) stack.push(current); else stack = [];
+    current = { title: title || '', nodes: nodes };
+    paint();
+    if (!hist) {
+      try {
+        if (history.state && history.state.shInert) history.replaceState(stateWith('shSheet'), '');
+        else history.pushState(stateWith('shSheet'), '');
+        hist = true; atInert = false;
+      } catch (e) {}
+    }
+  }
+  function paint() {
+    titleEl.textContent = current.title;
+    list.innerHTML = '';
+    current.nodes.forEach(function (x) { list.appendChild(x); });
+    backBtn.classList.toggle('on', stack.length > 0);
+    list.scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+    backdrop.classList.add('open');
+    reveal();
+  }
+  function back() {
+    if (!stack.length) { close(); return; }
+    current = stack.pop();
+    paint();
   }
 
   function open(drop) {
-    ensure();
-    var sel = drop.querySelector('select');
-    titleEl.textContent = drop.dataset.label || 'اختر';
-    list.innerHTML = '';
+    var sel = drop.querySelector('select'), opts = [];
     [].forEach.call(sel.options, function (o) {
       if (o.disabled && o.value === '') return;            // تجاهل عنصر الـplaceholder
       var isOn = o.selected && o.value !== '';
@@ -129,12 +177,9 @@ Shouba.returnTo = function () {
       b.className = 'sheet-opt' + (isOn ? ' on' : '');
       b.innerHTML = '<span>' + o.textContent + '</span><span class="mk">' + (isOn ? check() : '') + '</span>';
       b.addEventListener('click', function () { choose(drop, o.value, o.textContent); });
-      list.appendChild(b);
+      opts.push(b);
     });
-    list.scrollTop = 0;
-    document.body.style.overflow = 'hidden';
-    backdrop.classList.add('open');
-    reveal();
+    show(drop.dataset.label || 'اختر', opts, isOpen());
   }
 
   /* إظهار اللوحة — **بلا requestAnimationFrame** (إصلاح 2026-09-08):
@@ -159,14 +204,35 @@ Shouba.returnTo = function () {
     v.textContent = txt;
     v.classList.remove('ph');
     sel.dispatchEvent(new Event('change', { bubbles: true }));   // يبقي التحقق الحالي يعمل
-    close();
+    if (stack.length) back(); else close();                       // داخل لوحة: يعود اليها
   }
 
-  function close() {
+  function hide() {
     if (!sheet) return;
     sheet.classList.remove('open');
     backdrop.classList.remove('open');
     document.body.style.overflow = '';
+    stack = []; current = null;
+  }
+  function close() {
+    hide();
+    if (hist) {
+      hist = false;
+      try { history.replaceState(stateWith('shInert'), ''); atInert = true; } catch (e) {}
+    }
+  }
+  function onPop(e) {
+    var s = e.state || {};
+    if (isOpen()) {                                   /* الرجوع واللوحة مفتوحة: خطوة الى الوراء، او اغلاق */
+      hist = false; atInert = false;
+      if (stack.length) {
+        current = stack.pop(); paint();
+        try { history.pushState(stateWith('shSheet'), ''); hist = true; } catch (x) {}
+      } else hide();
+      return;
+    }
+    if (atInert && !s.shInert) { atInert = false; history.back(); return; }   /* خرج من مدخل خامل: امض خطوة */
+    atInert = !!s.shInert;
   }
 
   /* ربط منسدلة واحدة — ويصدر (Shouba.bindDrop) للمنسدلات التي تنشأ بعد التحميل
@@ -185,7 +251,7 @@ Shouba.returnTo = function () {
   function init() {
     [].forEach.call(document.querySelectorAll('.sdrop'), bind);
     Shouba.tagNeeds(document);
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen()) { if (stack.length) back(); else close(); } });
   }
 
   /* ── وسم الحقول «مطلوب» · «اختياري» (2026-09-13، طلب المستخدم: «توسم الحقول لكل المنصة») ──
@@ -202,20 +268,39 @@ Shouba.returnTo = function () {
     });
   };
 
-  /* لوحة سفلية عامة لأي محتوى (شبكة رموز مثلا) — تعيد استعمال نفس العنصر */
+  /* لوحة سفلية عامة لأي محتوى (شبكة رموز مثلا) — تعيد استعمال نفس العنصر.
+     opt.step: خطوة تالية في اللوحة نفسها، و«رجوع» في رأسها يعيد السابقة (انظر اعلاه) */
   Shouba.sheet = {
-    open: function (title, node) {
-      ensure();
-      titleEl.textContent = title || '';
-      list.innerHTML = '';
-      list.appendChild(node);
+    open: function (title, node, opt) {
+      show(title, [node], !!(opt && opt.step));
       Shouba.tagNeeds(node);
-      list.scrollTop = 0;
-      document.body.style.overflow = 'hidden';
-      backdrop.classList.add('open');
-      reveal();
     },
+    back: function () { back(); },
+    isOpen: isOpen,
     close: function () { close(); }
+  };
+
+  /* سطر تاكيد عابر (قاعدة الادخال 2026-09-13: «لا حفظ صامت · لا حذف بلا تراجع») — اعلى الشاشة تحت رأسها،
+     فيرى فوق اللوحة السفلية ولوحة المفاتيح. undo اختياري: زر «تراجع» يعيد ما حذف او افرغ */
+  var toastEl, toastTm;
+  Shouba.toast = function (text, undo) {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'toast'; toastEl.setAttribute('role', 'status');
+      document.body.appendChild(toastEl);
+    }
+    function off() { toastEl.classList.remove('on'); }
+    toastEl.textContent = '';
+    var s = document.createElement('span'); s.textContent = text; toastEl.appendChild(s);
+    if (undo) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = 'تراجع';
+      b.addEventListener('click', function () { clearTimeout(toastTm); off(); undo(); });
+      toastEl.appendChild(b);
+    }
+    clearTimeout(toastTm);
+    void toastEl.offsetWidth;
+    toastEl.classList.add('on');
+    toastTm = setTimeout(off, undo ? 5000 : 2400);
   };
 
   /* يصغر صورة مرفوعة الى مربع (٢٥٦ افتراضا) قبل الحفظ — مخزن المتصفح محدود، والتصغير شرط ألا ينكسر الحفظ.
@@ -291,7 +376,7 @@ Shouba.returnTo = function () {
                     + ' · بناء ' + (window.SHOUBA_BUILD || '؟');
     n.appendChild(ver);
 
-    Shouba.sheet.open('الإعدادات', n);
+    Shouba.sheet.open('الإعدادات', n, { step: Shouba.sheet.isOpen() });   /* من «إضافة سريعة»: خطوة يرجع منها */
   };
 
   /* ═══ التصدير والاستيراد — الواجهة (2026-09-10) ═══════════════════════
@@ -414,19 +499,19 @@ Shouba.returnTo = function () {
      يحمل ما لا موضع له في الشريط — وفيه **الإعدادات** التي كانت مخفية خلف
      مربع رقم النسخة، فلما صار الرقم ملصقا فقد الزر دلالته. */
   /* تأكيد لما لا يسترجع (2026-09-11): نص يصرح بالاثر + زر الحذف + تراجع، في لوحة سفلية.
-     يغلق اي لوحة مفتوحة اولا ثم يفتح بعد حركة الاغلاق — فينادى من لوحة اجراءات او من الشاشة سواء */
+     من لوحة مفتوحة (اجراءات السجل مثلا) يفتح خطوة فيها، و«تراجع» يعيد اليها لا يغلق كل شيء (قاعدة الادخال 2026-09-13) */
   Shouba.ask = function (title, text, yesLabel, onYes) {
     var n = document.createElement('div'), p = document.createElement('p');
     var yes = document.createElement('button'), no = document.createElement('button');
+    var step = Shouba.sheet.isOpen();
     n.className = 'ask'; p.textContent = text;
     yes.type = no.type = 'button';
     yes.className = 'btn-danger'; no.className = 'btn-ghost';
     yes.textContent = yesLabel; no.textContent = 'تراجع';
     yes.addEventListener('click', function () { Shouba.sheet.close(); onYes(); });
-    no.addEventListener('click', function () { Shouba.sheet.close(); });
+    no.addEventListener('click', function () { if (step) Shouba.sheet.back(); else Shouba.sheet.close(); });
     n.appendChild(p); n.appendChild(yes); n.appendChild(no);
-    Shouba.sheet.close();
-    setTimeout(function () { Shouba.sheet.open(title, n); }, 320);
+    Shouba.sheet.open(title, n, { step: step });
   };
 
   /* حذف سجل بتأكيد — **مصدر واحد** للأرشيف وشاشة السجل: يصرح بما يذهب معه (ملفاته، واثره

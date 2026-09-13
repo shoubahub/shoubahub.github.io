@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=66" />
-<link rel="stylesheet" href="shell.css?v=66" />
-<link rel="stylesheet" href="components.css?v=66" />
-<link rel="stylesheet" href="frame.css?v=66" />
+<link rel="stylesheet" href="identity/tokens.css?v=67" />
+<link rel="stylesheet" href="shell.css?v=67" />
+<link rel="stylesheet" href="components.css?v=67" />
+<link rel="stylesheet" href="frame.css?v=67" />
 <style>
   /* خاص بشاشة الجداول — الرأس والشريط السفلي واللوحة السفلية من components.css.
      الهامش الجانبي هنا أضيق من الموحد عمدا: المصفوفة تحتاج كل بكسل (الوظيفة قبل الشكل). */
@@ -63,26 +63,15 @@
   .gbrk span{font-size:10px;font-weight:700;color:var(--shouba-amber-deep);white-space:nowrap}
   .gbrk i{flex:1;height:1px;background:rgba(169,112,27,.28)}
 
-  /* الجدول الكامل — الافتراضي (2026-09-13، بطلب المستخدم): يوم واحد · صف لكل معلم · عمود لكل حصة.
-     ولمس الاسم او المربع يفتح جدول المعلم للاسبوع (الوضع الثاني) */
-  .days{display:flex;gap:6px;padding:3px 12px}
-  .day{flex:1;border:0;cursor:pointer;font-family:var(--font-ar);font-size:12px;font-weight:700;color:var(--shouba-text-muted);
-    background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:12px;padding:8px 0;
-    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
-  .day.on{color:var(--shouba-navy);box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 0 0 2px var(--shouba-navy)}
-  .mx .grow{gap:3px;padding:3px 5px}
-  .mx .grow.hd{padding:5px}
-  .mx .grow.hd .pl, .mx .pl{width:58px}
-  .mx button.pl{border:0;background:transparent;cursor:pointer;font-family:var(--font-ar);padding:0;color:inherit}
-  .mx .pl b{font-family:var(--font-ar);font-size:12px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-  .mx .pl small{font-size:9.5px;white-space:nowrap}
-  .mx .cell{min-height:38px;padding:4px 0;border-radius:9px}
-  .mx .cell .cls{font-size:10.5px;white-space:nowrap}
-  .mx .cell.wide{font-size:11px;font-weight:700;color:var(--shouba-amber-deep);background:rgba(232,163,61,.10)}
-  .toall{align-self:flex-start;margin:0 12px;border:0;cursor:pointer;font-family:var(--font-ar);font-size:12.5px;font-weight:700;
-    color:var(--shouba-navy);background:rgba(22,69,110,.09);border-radius:11px;padding:8px 12px}
-  body.mode-all .tsel, body.mode-all #grid, body.mode-all .toall, body.solo .toall{display:none}
-  body:not(.mode-all) .days, body:not(.mode-all) .mx{display:none}
+  /* الجدول الكامل — الافتراضي (2026-09-13، بطلب المستخدم: «أضف للتصميم السابق قبل اسم رئيس الشعبة مربع الجدول
+     الكامل»): اول مربع في شريط المعلمين، والجدول الاسبوعي نفسه وفي كل خانة حصص كل المعلمين (الصف ثم اسم المعلم).
+     للعرض — والتعديل من جدول المعلم */
+  .cell.full{cursor:default;gap:4px;padding:5px 2px}
+  .cell.full .ent{display:flex;flex-direction:column;align-items:center;line-height:1.15;max-width:100%}
+  .cell.full .cls{font-size:11.5px;white-space:nowrap}
+  .cell.full small{font-size:9px;font-weight:600;color:var(--shouba-text-muted);max-width:100%;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cell.full .ent.clash .cls, .cell.full .ent.clash small{color:var(--shouba-error)}
 
   /* تنبيه التعارض + سطر الإرشاد */
   .clashes{margin:0 12px;display:none;flex-direction:column;gap:5px;
@@ -104,8 +93,6 @@
   .quick button{flex:1;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;
     border-radius:13px;padding:11px 10px;color:var(--shouba-navy);background:rgba(22,69,110,.09)}
   .quick button.amber{background:rgba(232,163,61,.18);color:var(--shouba-amber-deep)}
-  .endbtn{width:100%;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;
-    color:var(--shouba-label);background:transparent;padding:12px 0 2px}
 </style>
 </head>
 <body class="framed">
@@ -124,9 +111,6 @@
   <div class="screen has-topbar has-tabbar">
     <div class="content">
       <div class="wrap" id="wrap">
-        <div class="days" id="days"></div>
-        <div class="grid mx" id="mx"></div>
-        <button class="toall" id="toAll" type="button">عرض الجدول الكامل للشعبة</button>
         <div class="tsel" id="tsel"></div>
         <div class="grid" id="grid"></div>
         <div class="clashes" id="clashes"></div>
@@ -158,11 +142,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=66"></script>
-<script src="refdata.js?v=66"></script>
-<script src="derive.js?v=66"></script>
-<script src="icons.js?v=66"></script>
-<script src="components.js?v=66"></script>
+<script src="build.js?v=67"></script>
+<script src="refdata.js?v=67"></script>
+<script src="derive.js?v=67"></script>
+<script src="icons.js?v=67"></script>
+<script src="components.js?v=67"></script>
 <script>
   var R=window.SHOUBA_REF;
   var d = Shouba.data();          /* المصدر الواحد — القراءة والكتابة من طبقة الاشتقاق */
@@ -212,23 +196,28 @@
       document.querySelector('.topbar .tt b').textContent = 'جدول أ. ' + Shouba.shortName(cur);
     }
     var lastSlot = null;                       /* آخر إدخال — لزر التكرار السريع */
-    /* وضعان (2026-09-13، بطلب المستخدم: «الافتراضي ان يعرض الجدول الكامل للحصص لجميع المعلمين»):
-       all ⟵ الشعبة كلها في يوم · one ⟵ جدول معلم للاسبوع يعدل. والقادم من ملف المعلم (?t=) يبقى على معلمه */
-    var mode  = solo ? 'one' : 'all';
-    var mxDay = days[Shouba.schoolDay().next.getDay()] || days[0];   /* اليوم، او اول يوم دراسي قادم */
+    /* الجدول الكامل (2026-09-13، بطلب المستخدم): يفتح عليه افتراضا — اول مربع في الشريط قبل رئيس الشعبة —
+       ولمس اسم معلم يعرض جدوله للاطلاع او التعديل. والقادم من ملف المعلم (?t=) يبقى على معلمه.
+       ⚠ جربت قبله شاشة يوم واحد بصف لكل معلم (بناء ٦٦) فردها: «ليس بهذا التنسيق وانما كما كان سابقا» */
+    var full = !solo;
 
     /* ===== شريط المعلمين ===== */
     var tsel = document.getElementById('tsel');
     function paintTsel(){
       tsel.innerHTML='';
+      var all = document.createElement('button');
+      all.className = 'tch all' + (full ? ' on' : '');
+      all.innerHTML = '<b>الجدول الكامل</b><small>كل المعلمين</small>';
+      all.addEventListener('click', function(){ full = true; paintAll(); });
+      tsel.appendChild(all);
       teachers.forEach(function(t){
         var n = filledCount(t);
         var b = document.createElement('button');
         var isMe = (t === SELF);
-        b.className = 'tch' + (t===cur ? ' on' : '') + (n ? '' : ' none') + (isMe ? ' me' : '');
+        b.className = 'tch' + (!full && t===cur ? ' on' : '') + (n ? '' : ' none') + (isMe ? ' me' : '');
         var load = n ? Shouba.count(n,{one:'حصة',two:'حصتان',few:'حصص',many:'حصة'}) : 'بلا جدول';
         b.innerHTML = '<b>'+lastName(t)+'</b><small>' + (isMe ? 'أنت · ' : '') + load + '</small>';
-        b.addEventListener('click', function(){ cur=t; paintAll(); });
+        b.addEventListener('click', function(){ cur=t; full=false; paintAll(); });
         tsel.appendChild(b);
       });
     }
@@ -246,7 +235,52 @@
       });
     }
     function clashAt(day, pIdx, cls){ return cls ? (clashMap[day + '|' + pIdx] || null) : null; }
+    /* الجدول الكامل: الجدول الاسبوعي نفسه، وفي كل خانة حصص كل المعلمين (الصف ثم اسم المعلم) — للعرض */
+    function paintFull(){
+      var list = Shouba.clashes(), hot = {};
+      list.forEach(function(c){ hot[c.day+'|'+c.pIdx+'|'+c.teachers[0]] = hot[c.day+'|'+c.pIdx+'|'+c.teachers[1]] = 1; });
+      grid.innerHTML='';
+      var hd = document.createElement('div');
+      hd.className='grow hd';
+      hd.innerHTML = '<div class="pl"></div>'
+        + SHORT.map(function(s,i){ return '<span'+(i%2===0?' class="alt"':'')+'>'+s+'</span>'; }).join('');
+      grid.appendChild(hd);
+      times.forEach(function(t){
+        if(t.brk){
+          var br=document.createElement('div');
+          br.className='gbrk';
+          br.innerHTML='<i></i><span>'+t.label+'</span><i></i>';
+          grid.appendChild(br);
+          return;
+        }
+        var pIdx = t.n - 1, row = document.createElement('div');
+        row.className='grow';
+        row.innerHTML = '<div class="pl"><b>'+t.n+'</b><small>الحصة</small></div>';
+        days.forEach(function(day, di){
+          var c = document.createElement('div'), html = '';
+          teachers.forEach(function(who){
+            var val = Shouba.slot(who, day, pIdx);
+            if(!val) return;
+            var cl = Shouba.splitClass(splitSlot(val).cls);
+            html += '<span class="ent'+(hot[day+'|'+pIdx+'|'+who] ? ' clash' : '')+'"><span class="cls">'+cl.base
+              + (cl.mark ? ' <i>'+cl.mark+'</i>' : '')+'</span><small>'+lastName(who)+'</small></span>';
+          });
+          c.className = 'cell full' + (di%2===0 ? ' alt' : '') + (html ? '' : ' free');
+          c.innerHTML = html || '·';
+          row.appendChild(c);
+        });
+        grid.appendChild(row);
+      });
+      var box=document.getElementById('clashes');
+      if(!list.length){ box.className='clashes'; box.innerHTML=''; return; }
+      box.className='clashes show';
+      box.innerHTML = '<b>تعارض في الإسناد ('+list.length+')</b>'
+        + list.slice(0,3).map(function(c){
+            return '<small>'+c.day+' · الحصة '+c.n+' — الصف <b>'+c.cls+'</b> عند أ. '+lastName(c.teachers[0])+' وأ. '+lastName(c.teachers[1])+'</small>';
+          }).join('');
+    }
     function paintGrid(){
+      if(full){ paintFull(); return; }
       buildClashMap();
       grid.innerHTML='';
       var hd = document.createElement('div');
@@ -332,12 +366,8 @@
         node.appendChild(b);
       });
 
-      /* مخرج صريح من الإدخال المتتابع — وإلا ظن المستخدم أن اللوحة لا تغلق إلا بالخلفية */
-      var done = document.createElement('button');
-      done.className='endbtn';
-      done.textContent='إنهاء الإدخال';
-      done.addEventListener('click', function(){ Shouba.sheet.close(); });
-      node.appendChild(done);
+      /* المخرج الصريح من الإدخال المتتابع صار «تم» اسفل كل لوحة (components.js، قاعدة الادخال 2026-09-13)
+         — فحذف زر «إنهاء الإدخال» الذي كان هنا لئلا يتتابع زران بمعنى واحد */
 
       Shouba.sheet.open(day + ' · الحصة ' + ORD[pNo-1] + ' — أ. ' + lastName(cur), node);
     }
@@ -364,13 +394,19 @@
         })(i);
       }
       node.appendChild(secs);
-      Shouba.sheet.open(day + ' · الحصة ' + ORD[pNo-1] + ' — أ. ' + lastName(cur), node);
+      /* خطوة ثانية: «رجوع» في رأس اللوحة يعيد قائمة المواد (قاعدة الادخال 2026-09-13) */
+      Shouba.sheet.open(day + ' · الحصة ' + ORD[pNo-1] + ' — أ. ' + lastName(cur), node, { step: true });
     }
 
     function setSlot(day, pIdx, val){
-      Shouba.setSlot(cur, day, pIdx, val);     /* الكتابة والحفظ في مكان واحد */
+      var who = cur, was = Shouba.slot(who, day, pIdx);
+      Shouba.setSlot(who, day, pIdx, val);     /* الكتابة والحفظ في مكان واحد */
       if(val) lastSlot = val;
       paintAll();
+      /* لا حفظ صامت: الانتقال الى الحصة التالية كان يخفي ما حفظ (قاعدة الادخال 2026-09-13) */
+      var where = day + ' · الحصة ' + (pIdx + 1);
+      if(val) Shouba.toast('تم الحفظ: ' + val + ' — ' + where);
+      else if(was) Shouba.toast('أفرغت الخانة: ' + where, function(){ Shouba.setSlot(who, day, pIdx, was); paintAll(); });
     }
 
     /* الإدخال المتتابع — **مشروطا بحال الخانة قبل اللمس** (قرار المستخدم 2026-09-08):
@@ -386,73 +422,8 @@
       openCell(day, next-1, next);
     }
 
-    /* ===== الجدول الكامل: ايام · صف لكل معلم (رئيس الشعبة اولا) · عمود لكل حصة ===== */
-    var daysEl = document.getElementById('days'), mx = document.getElementById('mx');
-    function paintDays(){
-      daysEl.innerHTML = '';
-      days.forEach(function(day){
-        var b = document.createElement('button');
-        b.type = 'button'; b.className = 'day' + (day === mxDay ? ' on' : ''); b.textContent = day;
-        b.addEventListener('click', function(){ mxDay = day; paintAll(); });
-        daysEl.appendChild(b);
-      });
-    }
-    /* الى جدول المعلم للتعديل — ومن المربع تفتح حصته نفسها */
-    function openTeacher(t, day, pIdx, pNo){
-      cur = t; mode = 'one'; paintAll(); window.scrollTo(0, 0);
-      if(day) openCell(day, pIdx, pNo);
-    }
-    function paintMatrix(){
-      var per = times.filter(function(t){ return !t.brk; }), hot = {}, list = [];
-      Shouba.clashes().forEach(function(c){
-        if(c.day !== mxDay) return;
-        hot[c.pIdx + '|' + c.teachers[0]] = hot[c.pIdx + '|' + c.teachers[1]] = 1;
-        list.push(c);
-      });
-      mx.innerHTML = '';
-      var hd = document.createElement('div');
-      hd.className = 'grow hd';
-      hd.innerHTML = '<div class="pl"></div>'
-        + per.map(function(t, i){ return '<span' + (i%2===0 ? ' class="alt"' : '') + '>' + t.n + '</span>'; }).join('');
-      mx.appendChild(hd);
-      teachers.forEach(function(t){
-        var n = filledCount(t), row = document.createElement('div'), nm = document.createElement('button');
-        row.className = 'grow';
-        nm.type = 'button'; nm.className = 'pl';
-        nm.innerHTML = '<b>' + lastName(t) + '</b><small>' + (t === SELF ? 'أنت · ' : '') + (n ? n + ' ح' : 'بلا جدول') + '</small>';
-        nm.addEventListener('click', function(){ openTeacher(t); });
-        row.appendChild(nm);
-        if(!n){
-          var w = document.createElement('button');
-          w.type = 'button'; w.className = 'cell wide';
-          w.textContent = t === SELF ? 'المس لإدخال جدولك' : 'المس لإدخال جدوله';
-          w.addEventListener('click', function(){ openTeacher(t); });
-          row.appendChild(w);
-        } else per.forEach(function(p, i){
-          var pIdx = p.n - 1, val = Shouba.slot(t, mxDay, pIdx), s = splitSlot(val), cl = Shouba.splitClass(s.cls);
-          var c = document.createElement('button');
-          c.type = 'button';
-          c.className = 'cell' + (i%2===0 ? ' alt' : '') + (val ? '' : ' free') + (hot[pIdx + '|' + t] ? ' clash' : '');
-          c.innerHTML = val ? '<span class="cls">' + cl.base + (cl.mark ? ' <i>' + cl.mark + '</i>' : '') + '</span>' : '·';
-          if(val) c.title = s.subject;
-          c.addEventListener('click', function(){ openTeacher(t, mxDay, pIdx, p.n); });
-          row.appendChild(c);
-        });
-        mx.appendChild(row);
-      });
-      var box = document.getElementById('clashes');
-      if(!list.length){ box.className = 'clashes'; box.innerHTML = ''; return; }
-      box.className = 'clashes show';
-      box.innerHTML = '<b>تعارض في الإسناد يوم ' + mxDay + ' (' + list.length + ')</b>'
-        + list.slice(0, 3).map(function(c){
-            return '<small>الحصة ' + c.n + ' — الصف <b>' + c.cls + '</b> عند أ. ' + lastName(c.teachers[0]) + ' وأ. ' + lastName(c.teachers[1]) + '</small>';
-          }).join('');
-    }
-    document.getElementById('toAll').addEventListener('click', function(){ mode = 'all'; paintAll(); window.scrollTo(0, 0); });
-
     function paintAll(){
-      document.body.classList.toggle('mode-all', mode === 'all');
-      if(mode === 'all'){ paintDays(); paintMatrix(); } else { paintTsel(); paintGrid(); }
+      paintTsel(); paintGrid();
       /* العداد عن **معلميه** لا عن الشريط: رئيس الشعبة ليس من معلمي نفسه */
       var mine  = Shouba.teachers();
       var blank = mine.filter(function(t){ return filledCount(t)===0; }).length;
@@ -472,8 +443,8 @@
             : 'كل الجداول مدخلة');
       /* إرشاد يتقاعد بنفسه: نصيحة البداية لمن لم يدخل شيئا، ثم طريقة العمل. */
       var anyLoad = teachers.some(function(t){ return filledCount(t) > 0; });
-      document.getElementById('hintline').textContent = mode === 'all'
-        ? 'المس اسم المعلم أو أي مربع لتعديل جدوله — والتغيير يحفظ فورا.'
+      document.getElementById('hintline').textContent = full
+        ? 'المس اسم المعلم في الشريط لعرض جدوله أو تعديله.'
         : anyLoad
         ? 'اضغط أي مربع لإسناد حصة · وبعد كل اعتماد تفتح الحصة التالية في اليوم نفسه.'
         : 'ابدأ بعمود يوم واحد لكل معلم — سبع ضغطات تكفي، وتضيء لوحتك في حينها. ثم أكمل بقية الأيام متى شئت.';

@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=66" />
-<link rel="stylesheet" href="shell.css?v=66" />
-<link rel="stylesheet" href="components.css?v=66" />
-<link rel="stylesheet" href="frame.css?v=66" />
+<link rel="stylesheet" href="identity/tokens.css?v=67" />
+<link rel="stylesheet" href="shell.css?v=67" />
+<link rel="stylesheet" href="components.css?v=67" />
+<link rel="stylesheet" href="frame.css?v=67" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -160,14 +160,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=66"></script>
-<script src="refdata.js?v=66"></script>
-<script src="rec-templates.js?v=66"></script>
-<script src="rec-engine.js?v=66"></script>
-<script src="derive.js?v=66"></script>
-<script src="plan-data.js?v=66"></script>
-<script src="icons.js?v=66"></script>
-<script src="components.js?v=66"></script>
+<script src="build.js?v=67"></script>
+<script src="refdata.js?v=67"></script>
+<script src="rec-templates.js?v=67"></script>
+<script src="rec-engine.js?v=67"></script>
+<script src="derive.js?v=67"></script>
+<script src="plan-data.js?v=67"></script>
+<script src="icons.js?v=67"></script>
+<script src="components.js?v=67"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -495,9 +495,10 @@
       r.innerHTML = '<b>' + ev.title + '</b><span class="ty">' + ev.type + '</span>';
       var x = document.createElement('button');
       x.className = 'del'; x.setAttribute('aria-label','حذف'); x.textContent = '×';
-      /* الحذف يغلق كالإضافة — والمصفوفة خلفها تظهر النتيجة فورا */
+      /* الحذف يغلق كالإضافة — والمصفوفة خلفها تظهر النتيجة فورا، و«تراجع» يعيده (قاعدة الادخال 2026-09-13) */
       x.addEventListener('click', function(){
         Shouba.removeEvent(ev.id); paintWeek(); paintCard(); Shouba.sheet.close();
+        undoEvent(ev);
       });
       r.appendChild(x);
       n.appendChild(r);
@@ -505,13 +506,7 @@
 
     var add = document.createElement('button');
     add.className = 'cta'; add.textContent = 'أضف موعدا';
-    add.addEventListener('click', function(){
-      /* الرجوع إلى يوم الموعد إن بقي في الأسبوع المعروض، وإلا إلى التقويم */
-      addSheet(iso(DAY_DATE[day]), function(dv){
-        if(dv >= iso(DAY_DATE[R.days[0]]) && dv <= iso(DAY_DATE[R.days[4]])) daySheet(day);
-        else calendarSheet();
-      });
-    });
+    add.addEventListener('click', function(){ addSheet(iso(DAY_DATE[day]), true); });
     n.appendChild(add);
 
     Shouba.sheet.open('مواعيد ' + dayLabel(day), n);
@@ -547,7 +542,14 @@
   }
   function hash(t){ var h=0,i; for(i=0;i<t.length;i++){ h=(h*31 + t.charCodeAt(i))|0; } return h; }
 
-  function addSheet(startIso, back){
+  /* حذف موعد بتراجع: يعاد بحقوله كلها (addEvent يعطيه معرفا جديدا) — قاعدة الادخال 2026-09-13 */
+  function undoEvent(ev){
+    var copy = JSON.parse(JSON.stringify(ev)); delete copy.id;
+    Shouba.toast('حذف الموعد: ' + ev.title, function(){ Shouba.addEvent(copy); paintWeek(); paintCard(); });
+  }
+
+  /* fromList: فتح من لوحة اليوم او التقويم، فهو خطوة و«رجوع» في رأس اللوحة يعيد اليها (قاعدة الادخال 2026-09-13) */
+  function addSheet(startIso, fromList){
     var n = document.createElement('div');
     var chosen = EV_TYPES[0];
     n.innerHTML = '<div class="field" data-need="req" style="padding-bottom:4px"><label for="evd">تاريخ الموعد</label>'
@@ -585,7 +587,7 @@
     calRow.querySelector('span').innerHTML =
       'أضفه إلى رزنامة جهازي <span class="chip muted">قيد الإعداد</span><small>تصل في تحديث قادم — والموعد يحفظ في المنصة الآن</small>';
     n.insertBefore(calRow, save);
-    Shouba.sheet.open('موعد جديد', n);
+    Shouba.sheet.open('موعد جديد', n, { step: !!fromList });
     var inp = n.querySelector('#evt');
     setTimeout(function(){ inp.focus(); }, 80);
     /* الإغلاق فور الإضافة (قرار المستخدم 2026-09-08): كان يعيد فتح لوحة اليوم
@@ -594,8 +596,11 @@
        خلف اللوحة فور إغلاقها، فلا يضيع أثر الإضافة. */
     function submit(){
       var v = inp.value.trim(), dv = n.querySelector('#evd').value;
-      if(v.length < 2 || !dv) return;
+      /* لا اهمال صامت ولا حفظ صامت (قاعدة الادخال 2026-09-13) */
+      if(!dv){ Shouba.toast('اختر تاريخ الموعد أولا.'); return; }
+      if(v.length < 2){ Shouba.toast('اكتب عنوان الموعد — حرفان على الأقل.'); inp.focus(); return; }
       Shouba.addEvent({ date: dv, type: chosen, title: v });
+      Shouba.toast('أضيف الموعد: ' + v + ' — ' + Shouba.dm(dv));
       if(n.querySelector('#tocal').checked) toDeviceCalendar(dv, chosen, v);
       var far = dv < iso(DAY_DATE[R.days[0]]) || dv > iso(DAY_DATE[R.days[4]]);
       if(far) setWeek(weekOffset);      /* موعد خارج الأسبوع المعروض: نبقي العرض كما هو */
@@ -615,7 +620,7 @@
 
     var add = document.createElement('button');
     add.className = 'cta'; add.textContent = 'أضف موعدا';
-    add.addEventListener('click', function(){ addSheet(iso(now), function(){ calendarSheet(); }); });
+    add.addEventListener('click', function(){ addSheet(iso(now), true); });
     n.appendChild(add);
 
     /* من اليوم فصاعدا — الماضي مضى، وقد ظهر في أسبوعه */
@@ -649,7 +654,7 @@
         + (wd ? wd + ' · ' : '') + Shouba.dm(p.join('-')) + '</span>';
       var x = document.createElement('button');
       x.className = 'del'; x.setAttribute('aria-label','حذف'); x.textContent = '×';
-      x.addEventListener('click', function(){ Shouba.removeEvent(ev.id); paintWeek(); paintCard(); calendarSheet(); });
+      x.addEventListener('click', function(){ Shouba.removeEvent(ev.id); paintWeek(); paintCard(); calendarSheet(); undoEvent(ev); });
       r.appendChild(x);
       n.appendChild(r);
     });

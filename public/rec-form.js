@@ -159,6 +159,13 @@
     return fld;
   };
 
+  /* حذف بتراجع (قاعدة الادخال 2026-09-13: «لا حذف بلا تراجع»): يحذف فورا، وسطر عابر فيه «تراجع» يعيده مكانه */
+  function undoable(arr, i, what, changed, paint) {
+    var x = arr.splice(i, 1)[0];
+    changed(); paint();
+    if (window.Shouba && Shouba.toast) Shouba.toast('حذف ' + what, function () { arr.splice(Math.min(i, arr.length), 0, x); changed(); paint(); });
+  }
+
   /* قائمة مرقمة: لكل بند عنوان (مطلوب) وتفاصيل (اختيارية)، باضافة وحذف واعادة ترتيب */
   SECTION.list = function (s, v, ctx, changed) {
     var arr = v[s.id] = Array.isArray(v[s.id]) ? v[s.id] : [];
@@ -172,7 +179,7 @@
         card.appendChild(input(it.details, function (x) { it.details = x; changed(); }, { long: true, rows: 2, ph: 'تفاصيل — اختياري' }).box);
         card.appendChild(tools(i > 0 ? function () { move(i, -1); } : null,
                                i < arr.length - 1 ? function () { move(i, 1); } : null,
-                               function () { arr.splice(i, 1); changed(); paint(); }));
+                               function () { undoable(arr, i, 'البند ' + (i + 1), changed, paint); }));
         box.appendChild(card);
       });
     }
@@ -234,7 +241,7 @@
         card.appendChild(row);
         card.appendChild(tools(i > 0 ? function () { move(i, -1); } : null,
                                i < arr.length - 1 ? function () { move(i, 1); } : null,
-                               function () { arr.splice(i, 1); changed(); paint(); }));
+                               function () { undoable(arr, i, 'القرار ' + (i + 1), changed, paint); }));
         box.appendChild(card);
       });
     }
@@ -273,7 +280,7 @@
         var c = el('button', 'att-c guest', 'أ. ' + g), x = el('span', 'x');
         c.type = 'button'; c.setAttribute('aria-label', 'احذف ' + g);
         x.innerHTML = ICON.del; c.appendChild(x);
-        c.addEventListener('click', function () { v.guests.splice(i, 1); changed(); paint(); });
+        c.addEventListener('click', function () { undoable(v.guests, i, 'أ. ' + g + ' من الحضور', changed, paint); });
         chips.appendChild(c);
       });
       var all = v.roster.length + v.guests.length, present = all - v.absent.length;
@@ -512,7 +519,7 @@
         }
         card.appendChild(tools(i > 0 ? function () { move(i, -1); } : null,
                                i < rows.length - 1 ? function () { move(i, 1); } : null,
-                               function () { rows.splice(i, 1); changed(); paint(); }));
+                               function () { undoable(rows, i, noun + ' ' + (i + 1), changed, paint); }));
         box.appendChild(card);
       });
       if (!rows.length) box.appendChild(el('div', 'hint', 'لا ' + (b.rowsLabel || 'صفوف') + ' بعد — أضف أولها'));

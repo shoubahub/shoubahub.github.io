@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=61" />
-<link rel="stylesheet" href="shell.css?v=61" />
-<link rel="stylesheet" href="components.css?v=61" />
-<link rel="stylesheet" href="frame.css?v=61" />
-<link rel="stylesheet" href="rec-print.css?v=61" />
+<link rel="stylesheet" href="identity/tokens.css?v=62" />
+<link rel="stylesheet" href="shell.css?v=62" />
+<link rel="stylesheet" href="components.css?v=62" />
+<link rel="stylesheet" href="frame.css?v=62" />
+<link rel="stylesheet" href="rec-print.css?v=62" />
 <style>
   /* شاشة السجل (2026-09-12) — شاشة واحدة لكل القوالب، تولدها اللبنات من التعريف:
      ?tpl=<قالب> سجل جديد (لا يحفظ حتى يكتب فيه) · ?id=<سجل> سجل محفوظ باصداره هو.
@@ -77,17 +77,17 @@
   </div>
  </div></div>
 
-<script src="build.js?v=61"></script>
-<script src="refdata.js?v=61"></script>
-<script src="rec-templates.js?v=61"></script>
-<script src="rec-engine.js?v=61"></script>
-<script src="derive.js?v=61"></script>
-<script src="plan-data.js?v=61"></script>
-<script src="icons.js?v=61"></script>
-<script src="components.js?v=61"></script>
-<script src="rec-print.js?v=61"></script>
-<script src="rec-files.js?v=61"></script>
-<script src="rec-form.js?v=61"></script>
+<script src="build.js?v=62"></script>
+<script src="refdata.js?v=62"></script>
+<script src="rec-templates.js?v=62"></script>
+<script src="rec-engine.js?v=62"></script>
+<script src="derive.js?v=62"></script>
+<script src="plan-data.js?v=62"></script>
+<script src="icons.js?v=62"></script>
+<script src="components.js?v=62"></script>
+<script src="rec-print.js?v=62"></script>
+<script src="rec-files.js?v=62"></script>
+<script src="rec-form.js?v=62"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -289,7 +289,7 @@
     b.addEventListener('click', pdfSheet);
     box.appendChild(b);
   }
-  function pdfSheet(){ S.pdfGuide(fileName(), startPrint, function(){ return paint(); }); }   /* اللوحة المشتركة (components.js) */
+  function pdfSheet(){ S.pdfGuide(fileName(), startPrint); }   /* اللوحة المشتركة (components.js) — نافذة الطباعة نفسها */
   /* اسم الملف في نافذة الطباعة وعند الحفظ PDF (المتصفح يأخذه من عنوان الصفحة): «سجل الاجتماعات - محضر رقم ١ - ٢٠٢٦-٠٩-٠١» */
   function fileName(){
     var s = ShoubaRec.summary(rec), n = (tpl.noun && tpl.noun.one) || '', p = curPrint();
@@ -369,9 +369,6 @@
   /* الطباعة تجعل المسودة «مطبوعا» (حالة الارشيف) — والموقع يبقى موقعا */
   function go(){
     ShoubaRec.markPrinted(rec); persist();
-    /* الآيفون: الملف الجاهز من قائمة المشاركة (فيها «طباعة») — طباعة سفاري المباشرة تكتب العنوان والتاريخ في ذيل
-       الورقة وتصغرها (2026-09-13) */
-    if (ShoubaPrint.isIOS() && ShoubaPrint.canShareFiles()) { S.pdfFile(fileName(), function(){ return paint(); }); return; }
     /* عنوان الصفحة اسم الملف مدة الطباعة (fileName) — ويعود بعدها (afterprint، وبديله دقيقة لمن لا يطلقه) */
     var t0 = document.title, back = function(){ document.title = t0; };
     document.title = fileName();

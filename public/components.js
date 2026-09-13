@@ -933,32 +933,7 @@ Shouba.returnTo = function () {
   };
   /* ── «احفظه ملف PDF» (2026-09-13): لوحة بخطوات جهاز صاحبه ثم نافذة الطباعة (go) — مصدر واحد لشاشة السجل وملف الفصل.
      name: اسم الملف كما يقترحه المتصفح (عنوان الصفحة مدة الطباعة) */
-  /* ── ملف PDF جاهز ثم قائمة المشاركة (الجوال — 2026-09-13): تصنعه المنصة (ShoubaPrint.pdf)، ومن قائمة المشاركة
-     «طباعة» او «حفظ في الملفات» او واتساب — بلا عنوان الصفحة والتاريخ في ذيلها. ⚠ المشاركة تشترط لمسة حاضرة،
-     والتجهيز يستغرق ثواني، فيجهز اولا ثم زر «افتح قائمة المشاركة» يلمس. sheetsFn: تعيد اوراق المعاينة */
-  Shouba.pdfFile = function (name, sheetsFn) {
-    var n = document.createElement('div'), msg = document.createElement('div');
-    n.className = 'guide'; msg.className = 'hint';
-    msg.textContent = 'يجهز ملف PDF…';
-    n.appendChild(msg);
-    Shouba.sheet.open('ملف PDF', n);
-    window.ShoubaPrint.pdf(sheetsFn(), function (i, t) { msg.textContent = 'يجهز ملف PDF — صفحة ' + i + ' من ' + t; })
-      .then(function (blob) {
-        var file = new File([blob], name + '.pdf', { type: 'application/pdf' }), b = document.createElement('button'), g = document.createElement('div');
-        msg.textContent = 'الملف جاهز — ' + Math.max(1, Math.round(blob.size / 1024)) + ' ك.ب';
-        g.className = 'hint';
-        g.textContent = 'من قائمة المشاركة: «طباعة» أو «حفظ في الملفات» أو أرسله في واتساب.';
-        b.type = 'button'; b.className = 'cta'; b.textContent = 'افتح قائمة المشاركة';
-        b.addEventListener('click', function () {
-          navigator.share({ files: [file], title: name }).then(function () { Shouba.sheet.close(); }).catch(function () {});
-        });
-        n.appendChild(g); n.appendChild(b);
-      })
-      .catch(function () { msg.textContent = 'تعذر تجهيز الملف — تأكد من اتصالك بالإنترنت ثم أعد المحاولة.'; });
-  };
-  /* sheetsFn اختياري: ان وجد وكان الجهاز يشارك الملفات صنع الملف الجاهز، والا خطوات نافذة الطباعة (الكمبيوتر) */
-  Shouba.pdfGuide = function (name, go, sheetsFn) {
-    if (sheetsFn && window.ShoubaPrint && ShoubaPrint.canShareFiles && ShoubaPrint.canShareFiles()) return Shouba.pdfFile(name, sheetsFn);
+  Shouba.pdfGuide = function (name, go) {
     var ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1), android = /Android/.test(ua);
     var steps = ios ? ['في نافذة الطباعة المس زر المشاركة أعلاها — أو باعد بإصبعين على صورة الصفحة لتكبرها ثم المس زر المشاركة.',
                        'اختر «حفظ في الملفات»، أو أرسله مباشرة في واتساب أو البريد.']

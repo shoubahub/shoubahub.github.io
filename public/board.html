@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=69" />
-<link rel="stylesheet" href="shell.css?v=69" />
-<link rel="stylesheet" href="components.css?v=69" />
-<link rel="stylesheet" href="frame.css?v=69" />
+<link rel="stylesheet" href="identity/tokens.css?v=70" />
+<link rel="stylesheet" href="shell.css?v=70" />
+<link rel="stylesheet" href="components.css?v=70" />
+<link rel="stylesheet" href="frame.css?v=70" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -36,6 +36,16 @@
   .ptr .pp{flex:none;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
   .ptr .chev{flex:none;color:var(--shouba-hint);font-size:14px;font-weight:700}
   .ptr .chip{flex:none;font-size:10px;padding:2px 8px}
+  /* خطة الاسبوع تنبثق تحت سطر المادة ويغلقها السهم نفسه (قرار المستخدم 2026-09-13: «يجب الا يفتح كامل الخطة وانما خطة
+     الاسبوع الجاري فقط وتكون بشكل منبثق من البطاقة تغلق بنفس السهم») — والخطة كلها من «الخطة كاملة ›» في رأس القسم */
+  .ptr .chev{transition:transform .2s}
+  .ptr.open .chev{transform:rotate(-90deg)}
+  .pwk{display:flex;flex-direction:column;gap:6px;padding:2px 14px 12px}
+  .pwk .l{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;font-weight:600;color:var(--shouba-ink);line-height:1.6}
+  .pwk .l span{flex:1;min-width:0}
+  .pwk .l em{flex:none;font-style:normal;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+  .pwk .none{font-size:12px;color:var(--shouba-hint)}
+  @media (prefers-reduced-motion: reduce){ .ptr .chev{transition:none} }
   .todo{padding:0 var(--gap-side);display:flex;flex-direction:column;gap:7px}
   .calopt{display:flex;align-items:flex-start;gap:10px;padding:10px 2px 14px;cursor:pointer}
   .calopt input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:var(--shouba-navy)}
@@ -160,14 +170,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=69"></script>
-<script src="refdata.js?v=69"></script>
-<script src="rec-templates.js?v=69"></script>
-<script src="rec-engine.js?v=69"></script>
-<script src="derive.js?v=69"></script>
-<script src="plan-data.js?v=69"></script>
-<script src="icons.js?v=69"></script>
-<script src="components.js?v=69"></script>
+<script src="build.js?v=70"></script>
+<script src="refdata.js?v=70"></script>
+<script src="rec-templates.js?v=70"></script>
+<script src="rec-engine.js?v=70"></script>
+<script src="derive.js?v=70"></script>
+<script src="plan-data.js?v=70"></script>
+<script src="icons.js?v=70"></script>
+<script src="components.js?v=70"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -736,6 +746,7 @@
      • «يجب رفع الخطة» للمادة التي لم تعتمد خطتها — ولا تقال قبل ان تجلب الخطط (ready)، ولا باب رفع الان
        (مؤجل للتطوير القادم بقرار المستخدم).
      • بلا جداول لا ازواج: الدعوة باب الى الجداول لا سطر فارغ. */
+  var planOpen = {};   /* المواد المفتوحة — تبقى مفتوحة اذا اعيد الرسم (وصول الخطط) */
   function paintPlan(){
     var L = Shouba.planLinks(), pct = document.getElementById('planPct'), line = document.getElementById('planLine');
     var sl = document.getElementById('slices'), tb = document.getElementById('ptbl');
@@ -772,8 +783,19 @@
       r.appendChild(ls);
       var pp = document.createElement('div'); pp.className = 'pp'; pp.textContent = per ? per + ' ح' : ''; r.appendChild(pp);
       var chev = document.createElement('span'); chev.className = 'chev'; chev.textContent = '‹'; r.appendChild(chev);
-      r.addEventListener('click', function(){ location.href = 'plan.html?key=' + encodeURIComponent(p.plan.key) + '&w=' + show; });
-      tb.appendChild(r);
+      /* خطة الاسبوع تحت السطر: دروسه كاملة بحصصها، والسهم يفتحها ويغلقها — لا انتقال الى شاشة الخطة */
+      var key = p.plan.key, wk = document.createElement('div');
+      wk.className = 'pwk';
+      if (lessons.length) lessons.forEach(function(l){
+        var x = document.createElement('div'), sp = document.createElement('span'), em = document.createElement('em');
+        x.className = 'l'; sp.textContent = l.t; em.textContent = l.p ? l.p + ' ح' : '';
+        x.appendChild(sp); x.appendChild(em); wk.appendChild(x);
+      });
+      else { var nn = document.createElement('div'); nn.className = 'none'; nn.textContent = 'لا دروس في الخطة لهذا الأسبوع'; wk.appendChild(nn); }
+      function sync(){ var on = !!planOpen[key]; r.classList.toggle('open', on); wk.hidden = !on; r.setAttribute('aria-expanded', on ? 'true' : 'false'); }
+      r.setAttribute('role', 'button');
+      r.addEventListener('click', function(){ planOpen[key] = !planOpen[key]; sync(); });
+      tb.appendChild(r); tb.appendChild(wk); sync();
     });
   }
   paintPlan();

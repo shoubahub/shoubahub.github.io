@@ -677,6 +677,29 @@ Shouba.nextLabel = function (def) {
     });
   }
 
+  /* ── زر الرجوع في الشاشات الفرعية (قاعدة المنصة 2026-09-13، رصد المستخدم: «حينما افتح دروس الخطة من اللوحة لا يمكنني
+     الرجوع للوحة لا يوجد زر يعيدني اسفل الدروس») — الشاشة التي تفتح من غيرها في شريطها السفلي زر ثابت يسمي وجهته
+     («عودة إلى اللوحة»)، فلا يغيب بتمرير الصفحة كما يغيب المنزل في الرأس. الوجهة: الصفحة التي جاء منها ان كانت من
+     المنصة (رجوع في التاريخ، فتعود كما تركها)، والا data-back الافتراضي.
+     الاستعمال: <div class="foot"><div data-back="records.html"></div> …زر العمل ان وجد…</div> — والرسم والتسمية من هنا */
+  var PAGE_NAME = { 'board.html': 'اللوحة', 'records.html': 'سجلاتك', 'schedule.html': 'الجدول', 'teachers.html': 'المعلمين',
+    'teacher.html': 'ملف المعلم', 'record.html': 'السجل', 'archive.html': 'الأرشيف', 'bundle.html': 'ملف الفصل', 'plan.html': 'خطة المنهج' };
+  function pageOf(url) { var m = String(url || '').match(/\/([a-z0-9\-]+\.html)(?:[?#]|$)/i); return m ? m[1] : ''; }
+  function bindBack() {
+    [].forEach.call(document.querySelectorAll('[data-back]'), function (box) {
+      if (box.querySelector('button')) return;
+      var here = pageOf(location.href), from = '';
+      try { if (document.referrer && new URL(document.referrer).origin === location.origin) from = pageOf(document.referrer); } catch (e) {}
+      var viaHistory = !!(from && from !== here && PAGE_NAME[from] && history.length > 1);
+      var dest = viaHistory ? from : (box.getAttribute('data-back') || 'board.html');
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'fback';
+      b.textContent = 'عودة إلى ' + (PAGE_NAME[dest] || 'اللوحة');
+      b.addEventListener('click', function () { if (viaHistory) history.back(); else location.href = dest; });
+      box.appendChild(b);
+    });
+  }
+
   /* ═══ تنبيه النسخة الأحدث (قرار المستخدم 2026-09-08) ═══════════════
      version.json كان يجلب من الشبكة في عامل الخدمة **ولا يقرؤه أحد** —
      فلا مقارنة ولا تنبيه. ومن أبقى المنصة مفتوحة أو ثبتها أيقونة قد
@@ -1106,6 +1129,6 @@ Shouba.nextLabel = function (def) {
     });
   }
 
-  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); }
-  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); });
+  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); });
 })();

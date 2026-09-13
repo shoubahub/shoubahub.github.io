@@ -773,6 +773,12 @@ body.solo .tsel{display:none}
 .att-c.guest{color:var(--shouba-amber-deep);background:rgba(169,112,27,.1)}
 .att-c .x{display:grid;place-items:center}
 /* شريط اجراءين (معاينة السجل): ثانوي بجانب الفعل العنبري — والعنبري اعرض */
+/* زر الرجوع في الشاشات الفرعية (bindBack، قاعدة المنصة 2026-09-13): سطر هادئ فوق زر العمل — وزر كامل حين يكون وحده
+   في الشريط (خطة المنهج). لا ينافس العنبري: الفعل الواحد في الشاشة يبقى هو الابرز */
+.foot [data-back]{display:flex}
+.fback{flex:1;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13.5px;font-weight:700;color:var(--shouba-navy);
+  background:transparent;border-radius:var(--r-input);padding:6px 12px}
+.foot > [data-back]:only-child .fback{background:rgba(22,69,110,.09);padding:15px 12px}
 .foot .duo{display:flex;gap:12px}
 .foot .duo > .btn-ghost{flex:1}
 .foot .duo > .cta{flex:2}

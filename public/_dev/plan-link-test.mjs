@@ -88,5 +88,27 @@ ok(fp.ready && fp.week.n === 5 && fp.pairs.map(p => p.grade).join(',') === 'ال
 ok(S.planPairsOf('ناصر العجمي', data).pairs.every(p => !p.plan) && S.planPairsOf('غير موجود', data).pairs.length === 0,
    'مادة بلا خطة تبقى بلا خطة، ومن لا جدول له لا مواد له');
 
+/* كل مواد المنصة تجد خطتها في ملف المختبر باسمها او باسمها في المكتبة (plan في المرجعية) — 2026-09-13، رصد المستخدم:
+   خطة «دولة الكويت» سليمة وظهر مكانها «يجب رفع الخطة». فالمادة التي لا تجد خطة يجب ان تكون في قائمة ما ليس في المكتبة
+   اصلا؛ واي خلاف اسم جديد (مادة تضاف او تسمية تتغير في المكتبة) يظهر هنا قبل ان يصل الزملاء. (الحال لا يعني: السليم
+   والذي يراجع سواء — هذا فحص اسماء) */
+const NO_PLAN = ['ثانوي|العاشر|الكيمياء', 'ثانوي|العاشر|التربية البدنية',
+  'ثانوي|العاشر|فنون البلاغة', 'ثانوي|الحادي عشر|فنون البلاغة',
+  'ثانوي|العاشر|قواعد النحو والصرف', 'ثانوي|الحادي عشر|قواعد النحو والصرف', 'ثانوي|الثاني عشر|قواعد النحو والصرف',
+  'ثانوي|الحادي عشر|الصحافة والإعلام', 'ثانوي|الثاني عشر|الصحافة والإعلام'];
+const SID = { 'ابتدائي': '24', 'متوسط': '15', 'ثانوي': '17' }, noPlan = [];
+Object.keys(SID).forEach(st => {
+  const Wa = world({ stage: st, schedules: {} }), all = PLANS.plans.filter(p => p.stageId === SID[st]), ds = Wa.SHOUBA_REF.departmentSubjects[st];
+  Object.keys(ds).forEach(dep => ds[dep].forEach(s => {
+    const k = st + '|' + s.grade + '|' + s.name;
+    if (!s.elective && !Wa.Shouba.planFor({ subject: s.name, grade: s.grade }, all) && noPlan.indexOf(k) < 0) noPlan.push(k);
+  }));
+});
+ok(noPlan.slice().sort().join() === NO_PLAN.slice().sort().join(), 'كل مادة تجد خطتها الا ما ليس في المكتبة اصلا',
+   { زائد: noPlan.filter(k => NO_PLAN.indexOf(k) < 0), ناقص: NO_PLAN.filter(k => noPlan.indexOf(k) < 0) });
+const Wk = world({ stage: 'ثانوي', schedules: {} }).Shouba, kw = Wk.planFor({ subject: 'دولة الكويت المسيرة والكيان', grade: 'العاشر' }, PLANS.plans.filter(p => p.stageId === '17'));
+ok(Wk.planName('دولة الكويت المسيرة والكيان') === 'دولة الكويت' && kw && kw.subject === 'دولة الكويت' && Wk.planName('الرياضيات') === 'الرياضيات',
+   'دولة الكويت المسيرة والكيان تجد خطة «دولة الكويت»، والمادة بلا اسم مكتبة باسمها', kw && kw.subject);
+
 console.log('\n' + (fail ? '✗' : '✓') + ' ' + pass + ' سليم · ' + fail + ' معيب');
 process.exit(fail ? 1 : 0);

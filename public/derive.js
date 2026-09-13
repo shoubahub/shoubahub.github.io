@@ -627,8 +627,17 @@
   };
   /* خطة الزوج من المعتمد: الصف بالاسم، والمادة تامة قبل البادئة («التربية البدنية» ⟵ «التربية البدنية- بنين»)،
      وبين خطتين للزوج الواحد (بنين · بنات) نوع المدرسة من الاعداد */
+  /* اسم المادة في مكتبة الوزارة ان خالف اسمها في المنصة (الحقل plan في المرجعية: «دولة الكويت المسيرة والكيان» ⟵
+     «دولة الكويت»). من المرجعية لا من d.subjects: نسخة الشعبة المحفوظة قد تسبق الحقل */
+  S.planName = function (subject) {
+    var st = (SHOUBA_REF.departmentSubjects || {})[S.data().stage] || {}, hit = '';
+    Object.keys(st).some(function (k) {
+      return (st[k] || []).some(function (s) { if (s.name === subject && s.plan) { hit = s.plan; return true; } return false; });
+    });
+    return hit || subject;
+  };
   S.planFor = function (pair, plans) {
-    var g = nameKey(pair.grade), s = nameKey(pair.subject);
+    var g = nameKey(pair.grade), s = nameKey(S.planName(pair.subject));
     var hits = (plans || []).filter(function (p) { return nameKey(p.grade) === g && nameKey(p.subject).indexOf(s) === 0; });
     var exact = hits.filter(function (p) { return nameKey(p.subject) === s; }), pool = exact.length ? exact : hits;
     if (pool.length > 1) {

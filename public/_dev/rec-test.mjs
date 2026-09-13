@@ -304,6 +304,13 @@ ok(clT.map(c => c.n).join() === '1,3,4' && clT[0].teachers.join() === 'أحمد 
   'لا تعارض بين علمي وادبي بالرقم نفسه؛ والتعارض حق بين المسار نفسه، ومع مسار لا يعرف، وفي الموحد', clT.map(c => [c.n, c.cls, c.teachers]));
 ok(Str.classesOf('أحمد علي').join('|') === '10/1|11/1 ع|11/2 ع|11/3', 'فصول المعلم مرتبة بالصف ثم الشعبة مع الرمز', Str.classesOf('أحمد علي'));
 
+// ١٤) رئيس الشعبة معلم في السجلات (2026-09-13): اولهم، ولا يدخلها اسم بقي في جدول قديم، وله سجله كزملائه
+const Wst = world({ 'shouba.setup': JSON.stringify({ stage: 'ثانوي', refDataVersion: 4, year: '2026 / 2027', term: 'الفصل الأول', teachers: ['خالد سعد', 'فهد ناصر'],
+  schedules: { 'قديم': { 'الأحد': ['10/1 · الرياضيات'] } } }), 'shouba.user': JSON.stringify({ name: 'محمد البراك' }) }).Shouba;
+ok(Wst.staff().join('|') === 'محمد البراك|خالد سعد|فهد ناصر' && Wst.roster().indexOf('قديم') > -1, 'رئيس الشعبة اول المعلمين في السجلات، والجدول القديم لا يدخلها', Wst.staff());
+const hr = Wst.newRec('covered', 'محمد البراك');
+ok(hr && JSON.stringify(hr).indexOf('محمد البراك') > -1, 'سجل ما قطع من المنهج ينشأ باسم رئيس الشعبة', hr && hr.values);
+
 // ٩) بلا تشكيل في القوالب والمحرك
 const H = new RegExp('[' + String.fromCharCode(0x064B) + '-' + String.fromCharCode(0x0652) + String.fromCharCode(0x0670) + ']');
 ok(!H.test(read('rec-templates.js')) && !H.test(read('rec-engine.js')), 'القوالب والمحرك بلا تشكيل');

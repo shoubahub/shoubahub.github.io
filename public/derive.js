@@ -381,6 +381,15 @@
     S.scheduled().forEach(add);
     return all;
   };
+  /* من تسند اليه الاعمال في السجلات: رئيس الشعبة اولا ثم معلموه — فهو معلم ايضا (2026-09-13، بطلب المستخدم:
+     «اضف اسم رئيس الشعبة كمعلم في السجلات… فهو بالنهاية معلم»). لا «كل من له جدول» كما في roster: السجلات
+     للمعلمين القائمين لا لاسم بقي في جدول قديم */
+  S.staff = function () {
+    var all = [], add = function (n) { if (n && all.indexOf(n) === -1) all.push(n); };
+    add(S.self());
+    S.teachers().forEach(add);
+    return all;
+  };
 
   /* ===== ③ الخانة: القراءة والكتابة والتفكيك ===== */
   /* «١٢/٢ · الفلسفة» ← { cls:'12/2', subject:'الفلسفة' } */
@@ -732,7 +741,7 @@
   /* سياق انشاء السجل من الاعداد — مصدر واحد للجديد والمنسوخ */
   function recCtx(who, tplId) {
     var d = S.data();
-    return { today: S.today(), year: d.year || '', term: d.term || '', teachers: S.teachers(),
+    return { today: S.today(), year: d.year || '', term: d.term || '', teachers: S.staff(),
       records: S.recs(), school: d.schoolName || '', directorate: S.directorate(), who: who || '',
       pick: (d.recPick || {})[tplId] || null };   /* عناصر النموذج المختارة — لقطتها في السجل الجديد */
   }

@@ -218,7 +218,9 @@
      كل قرار جديد مفتوح حتى يؤشر عليه «نفذ» في اجتماع لاحق */
   SECTION['smart:decisions'] = function (s, v, ctx, changed) {
     var arr = v[s.id] = Array.isArray(v[s.id]) ? v[s.id] : [];
-    var owners = [{ v: HEAD, t: HEAD }, { v: ALL, t: ALL }].concat((ctx.teachers || []).map(function (n) { return { v: n, t: 'أ. ' + n }; }));
+    /* رئيس الشعبة له خياره «رئيس الشعبة» فلا يكرر باسمه بين المعلمين */
+    var me = (window.Shouba && Shouba.self) ? Shouba.self() : '';
+    var owners = [{ v: HEAD, t: HEAD }, { v: ALL, t: ALL }].concat((ctx.teachers || []).filter(function (n) { return n !== me; }).map(function (n) { return { v: n, t: 'أ. ' + n }; }));
     var sec = section(s.title), box = el('div', 'stack');
     function move(i, d) { var x = arr.splice(i, 1)[0]; arr.splice(i + d, 0, x); changed(); paint(); }
     function paint() {

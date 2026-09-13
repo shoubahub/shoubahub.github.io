@@ -19,8 +19,8 @@
       node public/_dev/stamp.mjs            ⟵ يرفع البناء وحده
       node public/_dev/stamp.mjs 9 0.2      ⟵ يرفع الاثنين
    =================================================================== */
-window.SHOUBA_VERSION = '0.19.1';
-window.SHOUBA_BUILD   = 65;
+window.SHOUBA_VERSION = '0.20.0';
+window.SHOUBA_BUILD   = 66;
 
 /* ③ SHOUBA_HOME — **العنوان الدائم للمنصة** (2026-09-10).
    منه يعرف أن نسخة ما «قديمة»، فتدل صاحبها على المنصة وتنقل شعبته إليها.

@@ -119,7 +119,10 @@ async function capture(only, { show, live, force }) {
           + (demo ? ' — راية المعاينة لم تقبل' : ' — شغل node capture.mjs --login أولا'));
         continue;
       }
-      if (s.click && !(await pg.click(s.click))) console.log(`تنبيه · ${s.file}: لم يوجد ${s.click} للضغط`);
+      for (const c of [].concat(s.click || [])) {           /* عنصر، او قائمة تضغط بالترتيب */
+        if (!(await pg.click(c))) console.log(`تنبيه · ${s.file}: لم يوجد ${c} للضغط`);
+        await sleep(300);
+      }
       if (s.wait_for && !(await pg.waitFor(s.wait_for))) console.log(`تنبيه · ${s.file}: لم يظهر ${s.wait_for}`);
       await sleep(s.wait_ms ?? D.wait_ms ?? 900);
       const hide = s.hide || D.hide || [];

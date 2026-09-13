@@ -1,6 +1,6 @@
 {
   "base": "https://shoubahubgithubio-production.up.railway.app",
-  "_تعليق": "base عنوان المنصّة المنشورة: منه يُقرأ رقم البناء للمقارنة، وعليه يعمل الوضع الحي (--live). كلّ لقطة: path مسار الصفحة، و file الاسم المذكور في posts.json. الحقول الاختيارية: wait_for انتظار ظهور عنصر، wait_ms انتظار زمني إضافي، hide عناصر تُخفى قبل الالتقاط، click عنصر يُضغط قبل الالتقاط، clock ساعة الصفحة لهذه اللقطة.",
+  "_تعليق": "base عنوان المنصّة المنشورة: منه يُقرأ رقم البناء للمقارنة، وعليه يعمل الوضع الحي (--live). كلّ لقطة: path مسار الصفحة، و file الاسم المذكور في posts.json. الحقول الاختيارية: wait_for انتظار ظهور عنصر، wait_ms انتظار زمني إضافي، hide عناصر تُخفى قبل الالتقاط، click عنصر يُضغط قبل الالتقاط — أو قائمة عناصر تُضغط بالترتيب، clock ساعة الصفحة لهذه اللقطة.",
   "demo": {
     "base": "http://localhost:4100",
     "data": "demo.json",
@@ -18,20 +18,22 @@
   "shots": [
     {
       "file": "jadwal-main.png",
-      "path": "/schedule.html"
+      "path": "/schedule.html",
+      "click": "#tsel .tch:nth-child(2)",
+      "_ملاحظة": "الشاشة تفتح على «الجدول الكامل» (بناء ٦٧) — المربع الثاني جدول رئيس الشعبة، والشريط بأسماء المعلمين."
     },
     {
       "file": "jadwal-days.png",
       "path": "/schedule.html",
-      "click": "#tsel .tch:nth-child(2)",
+      "click": "#tsel .tch:nth-child(3)",
       "wait_ms": 1200,
-      "_ملاحظة": "الاسم الثاني في الشريط (فهد) — جدوله أكثف، ولا تتطابق اللقطة مع jadwal-main."
+      "_ملاحظة": "المربع الثالث (فهد) — جدوله أكثف."
     },
     {
       "file": "jadwal-entry.png",
       "path": "/schedule.html",
-      "click": ".cell",
-      "_ملاحظة": "الضغط على أول خانة يفتح لوحة الإسناد."
+      "click": ["#tsel .tch:nth-child(2)", ".cell"],
+      "_ملاحظة": "جدول رئيس الشعبة ثم أول خانة ⟵ لوحة الإسناد. خانات «الجدول الكامل» للعرض لا تفتح."
     },
     {
       "file": "sijil-preview.png",
@@ -41,6 +43,39 @@
     {
       "file": "board-main.png",
       "path": "/board.html"
+    },
+    {
+      "file": "signup.png",
+      "path": "/login.html",
+      "click": "[data-m=\"up\"]",
+      "_ملاحظة": "نموذج «حساب جديد»."
+    },
+    {
+      "file": "setup-school.png",
+      "path": "/setup-wizard.html"
+    },
+    {
+      "file": "setup-dept.png",
+      "path": "/setup-wizard-2.html"
+    },
+    {
+      "file": "setup-records.png",
+      "path": "/setup-wizard-6.html"
+    },
+    {
+      "file": "setup-review.png",
+      "path": "/setup-wizard-7.html"
+    },
+    {
+      "file": "sched-full.png",
+      "path": "/schedule.html",
+      "_ملاحظة": "الافتراضي: «الجدول الكامل» — حصص كل المعلمين."
+    },
+    {
+      "file": "board-day.png",
+      "path": "/board.html",
+      "click": "#tblMore",
+      "_ملاحظة": "«افرد الجدول كاملا» — حصص اليوم كلها بأوقاتها."
     }
   ]
 }

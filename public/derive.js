@@ -390,6 +390,30 @@
   };
   S.joinSlot = function (cls, subject) { return cls + ' · ' + subject; };
 
+  /* مسار الفصل (2026-09-13، رصد المستخدم: «الجدول يخلط بين صفوف العلمي والادبي كأنها واحد»):
+     العلمي والادبي فصلان وان تشابه رقمهما — «11/2 ع» غير «11/2 د». فالمسار جزء من اسم الفصل، ياتي من المادة
+     المختارة ويرمز ع للعلمي ود للادبي؛ والموحد والاختيار الحر بلا رمز. */
+  var TRACK_MARK = { 'علمي': 'ع', 'أدبي': 'د' }, MARK_TRACK = { 'ع': 'علمي', 'د': 'أدبي' }, CLS_MARK = /\s+([عد])$/;
+  S.trackMark = function (track) { return TRACK_MARK[track] || ''; };
+  S.makeClass = function (gradeNo, n, track) { var m = S.trackMark(track); return gradeNo + '/' + n + (m ? ' ' + m : ''); };
+  /* «11/2 ع» ⟵ { base:'11/2', track:'علمي', mark:'ع' } */
+  S.splitClass = function (cls) {
+    var c = String(cls || '').trim(), m = c.match(CLS_MARK);
+    return m ? { base: c.slice(0, m.index).trim(), track: MARK_TRACK[m[1]], mark: m[1] } : { base: c, track: '', mark: '' };
+  };
+  /* مسار الخانة: رمزها ان وجد، والا ما تدل عليه المادة حين لا تدرس في صفها الا بمسار واحد
+     (الرياضيات للحادي عشر علمي وحده). والمادة المشتركة بين المسارين بلا رمز لا يعرف مسارها ⟵ '' */
+  S.trackOf = function (cls, subject) {
+    var c = S.splitClass(cls);
+    if (c.track) return c.track;
+    var g = S.gradeOfClass(c.base), seen = [];
+    if (!g || !subject) return '';
+    S.subjects().forEach(function (s) {
+      if (s.name === subject && s.grade === g && TRACK_MARK[s.track] && seen.indexOf(s.track) < 0) seen.push(s.track);
+    });
+    return seen.length === 1 ? seen[0] : '';
+  };
+
   S.slot = function (teacher, day, pIdx) {
     var sc = S.data().schedules || {}, t = sc[teacher];
     return (t && t[day] && t[day][pIdx]) || '';
@@ -449,7 +473,7 @@
       return String(c).replace(/[٠-٩]/g, function (d) { return d.charCodeAt(0) - 0x660; })
         .split('/').map(function (n) { return parseInt(n, 10) || 0; });
     }
-    return out.sort(function (a, b) { var x = key(a), y = key(b); return (x[0] - y[0]) || ((x[1] || 0) - (y[1] || 0)); });
+    return out.sort(function (a, b) { var x = key(a), y = key(b); return (x[0] - y[0]) || ((x[1] || 0) - (y[1] || 0)) || (a < b ? -1 : a > b ? 1 : 0); });
   };
 
   /* نصاب المعلم: مجموع حصصه في الأسبوع (الفراغ تفرغ لا نقص) */
@@ -460,19 +484,25 @@
     });
     return n;
   };
-  /* تعارض الإسناد: الصف نفسه في اليوم والحصة نفسيهما لمعلمين.
+  /* تعارض الإسناد: الفصل نفسه في اليوم والحصة نفسيهما لمعلمين.
+     الفصل = رقمه ومساره: «11/2 ع» و«11/2 د» فصلان لا تعارض بينهما. ومسار لا يعرف (مادة مشتركة بلا رمز)
+     يحسب على الاحتياط تعارضا مع اي مسار، فلا يخفى تعارض حق — ويزول باعادة اختيار المادة بمسارها.
      scope اختياري: اقصر النتيجة على تعارضات معلم بعينه. */
   S.clashes = function (scope) {
     var out = [], list = S.roster();
     S.days().forEach(function (day) {
       S.periods().forEach(function (t) {
         if (t.brk) return;
-        var pIdx = t.n - 1, seen = {};
+        var pIdx = t.n - 1, here = [];
         list.forEach(function (who) {
-          var cls = S.splitSlot(S.slot(who, day, pIdx)).cls;
-          if (!cls) return;
-          if (seen[cls]) out.push({ day: day, n: t.n, pIdx: pIdx, cls: cls, teachers: [seen[cls], who] });
-          else seen[cls] = who;
+          var s = S.splitSlot(S.slot(who, day, pIdx));
+          if (!s.cls) return;
+          var base = S.splitClass(s.cls).base, tr = S.trackOf(s.cls, s.subject);
+          here.forEach(function (h) {
+            if (h.base === base && (!h.track || !tr || h.track === tr))
+              out.push({ day: day, n: t.n, pIdx: pIdx, cls: s.cls, teachers: [h.who, who] });
+          });
+          here.push({ who: who, base: base, track: tr });
         });
       });
     });
@@ -502,6 +532,20 @@
     now.setDate(now.getDate() - now.getDay());              // أحد الأسبوع الجاري
     var weeks = Math.round((now - start) / 604800000);
     return weeks < 0 ? 0 : weeks + 1;
+  };
+  /* يوم الدوام (2026-09-13، رصد المستخدم: «ادخلت ان اول يوم دراسي غدا ثم ادخلت الجدول فبدأ بحساب الحصص»):
+     { off, reason: 'before'|'weekend'|'', next: Date } — off: لا دوام اليوم (قبل اول يوم دراسي ادخله رئيس الشعبة، او
+     الجمعة والسبت)، وnext اول يوم دوام قادم (اليوم نفسه ان كان يوم دوام). مصدر واحد لسؤال «هل اليوم يوم دراسة؟» —
+     فلا تعد اللوحة الحصص ولا تقول «الآن» في غيره. بلا تاريخ بداية: العطلة وحدها */
+  S.schoolDay = function (today) {
+    var now = today ? new Date(today) : new Date(), start = null, iso = S.termStart(), p;
+    now.setHours(0, 0, 0, 0);
+    if (iso && (p = iso.split('-')).length === 3) { start = new Date(+p[0], +p[1] - 1, +p[2]); if (isNaN(start.getTime())) start = null; }
+    function work(dt) { return dt.getDay() <= 4; }                 /* الاحد — الخميس */
+    var next = new Date(start && now < start ? start : now);
+    while (!work(next)) next.setDate(next.getDate() + 1);
+    var before = !!(start && now < start);
+    return { off: before || !work(now), reason: before ? 'before' : !work(now) ? 'weekend' : '', next: next };
   };
   /* نص الأسبوع للعرض — مصدر واحد فلا تختلف الشاشات في صياغته */
   S.weekLabel = function () {
@@ -752,4 +796,29 @@
     return p[p.length - 1] || n;
   };
   S.firstNameOf = function (n) { return String(n || '').trim().split(' ')[0] || n; };
+
+  /* ── رمز المسار في الجداول القائمة (2026-09-13) — شفاء ذاتي كالحركات: خانة ادخلت قبل الرمز («11/1 · الرياضيات»)
+     يضاف رمزها متى دلت عليه مادتها وحدها، فتظهر «11/1 ع» في الجدول واللوحة والسجلات. والمادة المشتركة بين
+     المسارين تبقى بلا رمز حتى يعاد اختيارها. ⚠ في آخر الملف: يحتاج المواد والصف (معرفة اعلاه) */
+  (function markTracks () {
+    var d = S.data(), sch = d.schedules, changed = false;
+    if (!d.stage || !sch) return;
+    var clean = !isDirty();
+    Object.keys(sch).forEach(function (t) {
+      Object.keys(sch[t] || {}).forEach(function (day) {
+        var a = sch[t][day];
+        if (!Array.isArray(a)) return;
+        a.forEach(function (v, i) {
+          if (!v) return;
+          var s = S.splitSlot(v), c = S.splitClass(s.cls), m;
+          if (!s.cls || c.mark) return;
+          if ((m = S.trackMark(S.trackOf(s.cls, s.subject)))) { a[i] = S.joinSlot(c.base + ' ' + m, s.subject); changed = true; }
+        });
+      });
+    });
+    if (!changed) return;
+    localStorage.setItem(KEY, JSON.stringify(d));
+    cache = d;
+    if (clean) mark(d);
+  })();
 })();

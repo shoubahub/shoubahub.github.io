@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=63" />
-<link rel="stylesheet" href="shell.css?v=63" />
-<link rel="stylesheet" href="components.css?v=63" />
-<link rel="stylesheet" href="frame.css?v=63" />
+<link rel="stylesheet" href="identity/tokens.css?v=64" />
+<link rel="stylesheet" href="shell.css?v=64" />
+<link rel="stylesheet" href="components.css?v=64" />
+<link rel="stylesheet" href="frame.css?v=64" />
 <style>
   /* خاص بشاشة الجداول — الرأس والشريط السفلي واللوحة السفلية من components.css.
      الهامش الجانبي هنا أضيق من الموحد عمدا: المصفوفة تحتاج كل بكسل (الوظيفة قبل الشكل). */
@@ -52,6 +52,7 @@
     background:rgba(120,98,66,.025);border-radius:11px;padding:7px 3px;min-height:46px;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
   .cell .cls{font-size:12.5px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num)}
+  .cell .cls i{font-style:normal;font-family:var(--font-ar)}   /* رمز المسار: ع علمي · د ادبي */
   .cell .sub{font-size:9px;font-weight:600;color:var(--shouba-text-muted);
     max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cell.free{color:var(--shouba-hint);font-size:15px;font-weight:700}
@@ -133,11 +134,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=63"></script>
-<script src="refdata.js?v=63"></script>
-<script src="derive.js?v=63"></script>
-<script src="icons.js?v=63"></script>
-<script src="components.js?v=63"></script>
+<script src="build.js?v=64"></script>
+<script src="refdata.js?v=64"></script>
+<script src="derive.js?v=64"></script>
+<script src="icons.js?v=64"></script>
+<script src="components.js?v=64"></script>
 <script>
   var R=window.SHOUBA_REF;
   var d = Shouba.data();          /* المصدر الواحد — القراءة والكتابة من طبقة الاشتقاق */
@@ -240,12 +241,12 @@
         row.className='grow';
         row.innerHTML = '<div class="pl"><b>'+t.n+'</b><small>الحصة</small></div>';
         days.forEach(function(day, di){
-          var val = slotsOf(cur, day)[pIdx], s = splitSlot(val);
+          var val = slotsOf(cur, day)[pIdx], s = splitSlot(val), cl = Shouba.splitClass(s.cls);
           var c = document.createElement('button');
           var who = clashAt(day, pIdx, s.cls);
           c.className = 'cell' + (di%2===0 ? ' alt' : '') + (val ? '' : ' free') + (who ? ' clash' : '');
           c.innerHTML = val
-            ? '<span class="cls">'+s.cls+'</span><span class="sub">'+s.subject+'</span>'
+            ? '<span class="cls">'+cl.base+(cl.mark ? ' <i>'+cl.mark+'</i>' : '')+'</span><span class="sub">'+s.subject+'</span>'
             : '·';
           if(who) clashes.push({ day:day, n:t.n, cls:s.cls, who:who });
           c.addEventListener('click', function(){ openCell(day, pIdx, t.n); });
@@ -299,7 +300,7 @@
         var b = document.createElement('button');
         b.className='sheet-opt';
         b.innerHTML='<span>'+s.name+' — '+s.grade+(s.track?' '+s.track:'')+'</span>';
-        b.addEventListener('click', function(){ pickSection(day, pIdx, pNo, s.name, g, wasFilled); });
+        b.addEventListener('click', function(){ pickSection(day, pIdx, pNo, s.name, g, s.track, wasFilled); });
         node.appendChild(b);
       });
 
@@ -313,12 +314,13 @@
       Shouba.sheet.open(day + ' · الحصة ' + ORD[pNo-1] + ' — أ. ' + lastName(cur), node);
     }
 
-    /* الخطوة الثانية داخل اللوحة نفسها: رقم الشعبة */
-    function pickSection(day, pIdx, pNo, subject, grade, wasFilled){
+    /* الخطوة الثانية داخل اللوحة نفسها: رقم الشعبة — والفصل يحمل مسار المادة («11/2 ع»)،
+       فلا يلتبس علمي بادبي في التعارض ولا في العرض */
+    function pickSection(day, pIdx, pNo, subject, grade, track, wasFilled){
       var node = document.createElement('div');
       var note = document.createElement('div');
       note.className='sheet-note';
-      note.textContent = subject + ' · الصف ' + grade + ' — اختر الشعبة';
+      note.textContent = subject + ' · الصف ' + grade + (Shouba.trackMark(track) ? ' ' + track : '') + ' — اختر الشعبة';
       node.appendChild(note);
       var secs = document.createElement('div');
       secs.className='secs';
@@ -327,7 +329,7 @@
           var b=document.createElement('button');
           b.className='secbtn'; b.textContent=n;
           b.addEventListener('click', function(){
-            setSlot(day, pIdx, grade + '/' + n + ' · ' + subject);
+            setSlot(day, pIdx, Shouba.joinSlot(Shouba.makeClass(grade, n, track), subject));
             advance(day, pIdx, wasFilled);
           });
           secs.appendChild(b);

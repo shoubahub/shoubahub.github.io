@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=63" />
-<link rel="stylesheet" href="shell.css?v=63" />
-<link rel="stylesheet" href="components.css?v=63" />
-<link rel="stylesheet" href="frame.css?v=63" />
-<link rel="stylesheet" href="rec-print.css?v=63" />
+<link rel="stylesheet" href="identity/tokens.css?v=64" />
+<link rel="stylesheet" href="shell.css?v=64" />
+<link rel="stylesheet" href="components.css?v=64" />
+<link rel="stylesheet" href="frame.css?v=64" />
+<link rel="stylesheet" href="rec-print.css?v=64" />
 <style>
   /* شاشة السجل (2026-09-12) — شاشة واحدة لكل القوالب، تولدها اللبنات من التعريف:
      ?tpl=<قالب> سجل جديد (لا يحفظ حتى يكتب فيه) · ?id=<سجل> سجل محفوظ باصداره هو.
@@ -77,17 +77,17 @@
   </div>
  </div></div>
 
-<script src="build.js?v=63"></script>
-<script src="refdata.js?v=63"></script>
-<script src="rec-templates.js?v=63"></script>
-<script src="rec-engine.js?v=63"></script>
-<script src="derive.js?v=63"></script>
-<script src="plan-data.js?v=63"></script>
-<script src="icons.js?v=63"></script>
-<script src="components.js?v=63"></script>
-<script src="rec-print.js?v=63"></script>
-<script src="rec-files.js?v=63"></script>
-<script src="rec-form.js?v=63"></script>
+<script src="build.js?v=64"></script>
+<script src="refdata.js?v=64"></script>
+<script src="rec-templates.js?v=64"></script>
+<script src="rec-engine.js?v=64"></script>
+<script src="derive.js?v=64"></script>
+<script src="plan-data.js?v=64"></script>
+<script src="icons.js?v=64"></script>
+<script src="components.js?v=64"></script>
+<script src="rec-print.js?v=64"></script>
+<script src="rec-files.js?v=64"></script>
+<script src="rec-form.js?v=64"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -104,7 +104,7 @@
   var formEl = document.getElementById('form'), pv = document.getElementById('pv'), pvw = document.getElementById('pvw');
   var toPv = document.getElementById('toPv'), pvAct = document.getElementById('pvAct');
 
-  function dm(iso){ var p = String(iso || '').split('-'); return p.length === 3 ? (+p[2]) + '/' + (+p[1]) : ''; }
+  function dm(iso){ return Shouba.dm(iso); }   /* «١٣ / ٩» — المصدر الواحد في components.js */
 
   /* الرأس: «محضر رقم ٣ · الجمعة ١١/٩» — من ملخص التعريف (ShoubaRec.summary) لا من حقول بعينها */
   function sub(){
@@ -288,6 +288,14 @@
     b.type = 'button'; b.className = 'btn-ghost'; b.textContent = 'احفظه ملف PDF';
     b.addEventListener('click', pdfSheet);
     box.appendChild(b);
+    /* الآيفون وحده: «اطبع بلا ذيل» (قرار المستخدم 2026-09-13) — بلا الموقع والساعة في ذيل الورقة (Shouba.pdfFile).
+       و«اطبع» في الاسفل يبقى فوريا */
+    if (ShoubaPrint.isIOS() && ShoubaPrint.canShareFiles()) {
+      var nf = document.createElement('button');
+      nf.type = 'button'; nf.className = 'btn-ghost'; nf.textContent = 'اطبع بلا ذيل (دون الموقع والساعة)';
+      nf.addEventListener('click', function(){ ShoubaRec.markPrinted(rec); persist(); S.pdfFile(fileName(), function(){ return paint(); }); });
+      box.appendChild(nf);
+    }
   }
   function pdfSheet(){ S.pdfGuide(fileName(), startPrint); }   /* اللوحة المشتركة (components.js) — نافذة الطباعة نفسها */
   /* اسم الملف في نافذة الطباعة وعند الحفظ PDF (المتصفح يأخذه من عنوان الصفحة): «سجل الاجتماعات - محضر رقم ١ - ٢٠٢٦-٠٩-٠١» */

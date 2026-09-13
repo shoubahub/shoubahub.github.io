@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=63" />
-<link rel="stylesheet" href="shell.css?v=63" />
-<link rel="stylesheet" href="components.css?v=63" />
-<link rel="stylesheet" href="frame.css?v=63" />
+<link rel="stylesheet" href="identity/tokens.css?v=64" />
+<link rel="stylesheet" href="shell.css?v=64" />
+<link rel="stylesheet" href="components.css?v=64" />
+<link rel="stylesheet" href="frame.css?v=64" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -160,14 +160,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=63"></script>
-<script src="refdata.js?v=63"></script>
-<script src="rec-templates.js?v=63"></script>
-<script src="rec-engine.js?v=63"></script>
-<script src="derive.js?v=63"></script>
-<script src="plan-data.js?v=63"></script>
-<script src="icons.js?v=63"></script>
-<script src="components.js?v=63"></script>
+<script src="build.js?v=64"></script>
+<script src="refdata.js?v=64"></script>
+<script src="rec-templates.js?v=64"></script>
+<script src="rec-engine.js?v=64"></script>
+<script src="derive.js?v=64"></script>
+<script src="plan-data.js?v=64"></script>
+<script src="icons.js?v=64"></script>
+<script src="components.js?v=64"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -178,7 +178,10 @@
 
   /* ===== الرأس المضغوط ===== */
   var now=new Date(), dayIdx=now.getDay(), isWeekend=dayIdx>4;
-  var todayName = isWeekend ? null : R.days[dayIdx];
+  /* يوم بلا دوام (2026-09-13، رصد المستخدم: ادخل اول يوم دراسي غدا فبدأت اللوحة تعد الحصص): العطلة او ما قبل اول
+     يوم دراسي — لا حصة جارية ولا «الآن» ولا «باقي»، ويعرض جدول اول يوم دوام قادم بتاريخه (Shouba.schoolDay) */
+  var SD = Shouba.schoolDay(now), off = SD.off, nextDayName = R.days[SD.next.getDay()] || R.days[0];
+  var todayName = off ? null : R.days[dayIdx];
   var weekNo = Shouba.weekNo();     /* null = لا تاريخ · 0 = تمهيدي */
   document.getElementById('deptName').textContent = d.department || 'شعبتك';
 
@@ -246,11 +249,11 @@
     if(m >= toMin(t.from) && m < toMin(t.to)) currentIdx=i;
     if(nextIdx===-1 && m < toMin(t.from)) nextIdx=i;
   });
-  if(isWeekend){ currentIdx=-1; nextIdx=-1; }
+  if(off){ currentIdx=-1; nextIdx=-1; }
 
   /* الحقائق من طبقة الاشتقاق (derive.js) — اللوحة تسأل ولا تحسب */
   var teachers=Shouba.scheduled(), hasSchedules=teachers.length>0;
-  var viewDay = isWeekend ? R.days[0] : todayName;              // في العطلة نعرض جدول الأحد
+  var viewDay = off ? nextDayName : todayName;              // بلا دوام: جدول اول يوم دوام قادم
   function slotOf(t,p){ return Shouba.slot(t, viewDay, p); }
   function busyAt(p){ return Shouba.busyAt(viewDay, p); }
   var firstName = Shouba.firstNameOf;
@@ -260,12 +263,11 @@
      يقبل صفوف الفرص: أي عنصر في periodTimes يحمل break:true يعرض صف فرصة. */
   /* عنوان الجدول: «جدول حصص اليوم الأحد · ٦/٩» — اليوم وتاريخه بلا سنة (قرار المستخدم) */
   /* التاريخ يرافق العنوان دائما — وفي العطلة تاريخ الأحد القادم لا تاريخ اليوم */
-  var viewDate = new Date(now);
-  if(isWeekend) viewDate.setDate(now.getDate() + (7 - dayIdx));
-  var dateTxt = viewDate.getDate() + '/' + (viewDate.getMonth()+1);
-  document.getElementById('todayTtl').textContent = isWeekend
-    ? 'جدول حصص الأحد · ' + dateTxt
-    : 'جدول حصص اليوم ' + todayName + ' · ' + dateTxt;
+  var viewDate = off ? SD.next : new Date(now);
+  var dateTxt = Shouba.dm(viewDate);   /* «١٣ / ٩» يقرأ اليوم اولا — «13/9» كان يقرأ التاسع (2026-09-13) */
+  document.getElementById('todayTtl').textContent = !off ? 'جدول حصص اليوم ' + todayName + ' · ' + dateTxt
+    : SD.reason === 'before' ? 'جدول أول يوم دراسي ' + nextDayName + ' · ' + dateTxt
+    : 'جدول حصص ' + nextDayName + ' · ' + dateTxt;
   var tbl = document.getElementById('periods');
 
   var ORD = ['الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة'];
@@ -295,20 +297,20 @@
        اللوحة، فتظهر بقية أقسامها.) أثناء الدوام: الجارية مفتوحة والتالية مطوية
        بتوقيتها وحده · قبل الدوام: التاليتان مطويتان · بعده: سطر واحد.
        وما عداها لا يرسم إطلاقا حتى يضغط «افرد الجدول كاملا». */
-    var dayRunning = !isWeekend && currentIdx > -1;
-    var dayEnded   = !isWeekend && currentIdx === -1 && nextIdx === -1;
-    var upcoming   = isWeekend ? 0 : nextIdx;          // في العطلة نعرض بداية جدول الأحد
+    var dayRunning = !off && currentIdx > -1;
+    var dayEnded   = !off && currentIdx === -1 && nextIdx === -1;
+    var upcoming   = off ? 0 : nextIdx;          // بلا دوام نعرض بداية جدول اول يوم قادم
     var shown      = {};
     if(dayRunning){ shown[currentIdx] = 1; if(nextIdx > -1) shown[nextIdx] = 1; }
     else if(!dayEnded){ shown[upcoming] = 1; if(times[upcoming + 1]) shown[upcoming + 1] = 1; }
     times.forEach(function(t, i){
       var isBreak = !!t.brk;
-      var isNow = (i === currentIdx) && !isWeekend;
+      var isNow = (i === currentIdx) && !off;
       if(!isBreak) pIdx++;
 
       var title = isBreak ? (t.label || 'فرصة') : ('الحصة ' + (ORD[pIdx] || (pIdx+1)));
       /* «انتهت» بانقضاء وقتها فعلا — لا بوجود حصة جارية (فبعد نهاية الدوام كلها منتهية) */
-      var isPastRow = !isWeekend && m >= toMin(t.to);
+      var isPastRow = !off && m >= toMin(t.to);
       /* مطويا: لا يفتح إلا الجاري. ومفرودا: تفتح التالية بتفاصيلها كاملة
          (طلب المستخدم 2026-09-05)، وتبقى الماضية سطرا واحدا تفتح بالضغط. */
       var isOpen    = isNow || (expandAll && !isPastRow);
@@ -340,10 +342,10 @@
             + head + '<span class="cnt">' + busy.length + ' يدرسون</span></div>'
             + '<div class="pairs">';
       busy.forEach(function(name){
-        var s = splitSlot(slotOf(name, slotIdx));
+        var s = splitSlot(slotOf(name, slotIdx)), cl = Shouba.splitClass(s.cls);
         html += '<span class="ch' + toneOf(name) + '"><span class="nm">' + lastName(name) + '</span>'
               + '<span class="l2"><span class="sub">' + s.subject + '</span>'
-              + '<span class="cl">' + s.cls + '</span></span></span>';
+              + '<span class="cl">' + cl.base + (cl.mark ? ' <i>' + cl.mark + '</i>' : '') + '</span></span></span>';
       });
       if(free) html += '<span class="freechip">' + Shouba.count(free,{one:'متفرغ',two:'متفرغان',few:'متفرغون',many:'متفرغا'}) + '</span>';
       html += '</div></div>';
@@ -365,7 +367,7 @@
     if(row) row.classList.toggle('open');
   });
   /* العداد يتجدد كل ثانية ما دامت هناك حصة جارية */
-  if(currentIdx > -1 && !isWeekend && hasSchedules){
+  if(currentIdx > -1 && !off && hasSchedules){
     setInterval(function(){
       var el = tbl.querySelector('.per.now .state');
       if(el) el.textContent = leftIn(times[currentIdx]);
@@ -383,8 +385,8 @@
   function paintCard(){
     var kicker, left='', ttl, sub;
     /* ⚠ البطاقة عن اليوم الحقيقي — لا تتأثر بتقليب الرزنامة */
-    var todayEvents = todayName
-      ? Shouba.eventsOnDate(iso(now)).concat(Shouba.legacyEventsOfDay(todayName)) : [];
+    /* مواعيد اليوم بتاريخه ولو بلا دوام (اجتماع قبل بدء الدراسة يعرض)، والقديمة بلا تاريخ باسم يوم الدوام وحده */
+    var todayEvents = Shouba.eventsOnDate(iso(now)).concat(todayName ? Shouba.legacyEventsOfDay(todayName) : []);
     if(currentIdx>-1 && hasSchedules){
       /* ⚠ الفهرس بحسب **رقم الحصة** لا ترتيب الصف — الفرص تزيح الترتيب،
          فكانت البطاقة تقول «الحصة ٦» والجدول «الرابعة»، وتقرأ خانات حصة أخرى
@@ -403,8 +405,11 @@
       kicker='اليوم'; ttl=todayEvents[0].title; sub=todayEvents[0].type + ' · ' + todayName;
     } else if(!hasSchedules){
       kicker='ابدأ من هنا'; ttl='أدخل جداول معلميك'; sub='ابدأ بيوم واحد لكل معلميك — تضيء لوحتك في دقائق، وأكمل بقية الأيام على مهلك.';
-    } else if(isWeekend){
-      kicker='التالي'; ttl='عطلة نهاية الأسبوع'; sub='يبدأ الدوام الأحد · أول حصة ' + times[0].from;
+    } else if(off){
+      kicker='التالي';
+      ttl = SD.reason === 'before' ? 'تبدأ الدراسة ' + nextDayName + ' ' + Shouba.dm(SD.next) : 'عطلة نهاية الأسبوع';
+      sub = (SD.reason === 'before' ? 'جدول أول يوم جاهز أعلاه' : 'يبدأ الدوام ' + nextDayName + ' ' + Shouba.dm(SD.next))
+          + ' · أول حصة ' + times[0].from;
     } else if(nextIdx>-1){
       var nx = times[nextIdx];
       kicker='التالي';
@@ -414,7 +419,7 @@
       kicker='انتهى اليوم'; ttl='انتهى دوام اليوم';
       var up = Shouba.eventsAfter(iso(now))[0];
       sub = up ? 'التالي: ' + up.title + ' · ' + (function(){ var p=up.date.split('-');
-             return (R.days[new Date(+p[0],+p[1]-1,+p[2]).getDay()] || '') + ' ' + (+p[2]) + '/' + (+p[1]); })()
+             return (R.days[new Date(+p[0],+p[1]-1,+p[2]).getDay()] || '') + ' ' + Shouba.dm(p.join('-')); })()
                : 'لا مواعيد قادمة في تقويمك.';
     }
     card.innerHTML = '<div class="top"><div class="kicker"><span class="pulse"></span>' + kicker + '</div>'
@@ -441,7 +446,7 @@
     var lbl = Shouba.weekNo(sunday);
     if(lbl !== null && lbl > 0) return 'الأسبوع ' + lbl;
     var a = DAY_DATE[R.days[0]], b = DAY_DATE[R.days[4]];
-    return a.getDate() + '/' + (a.getMonth()+1) + ' – ' + b.getDate() + '/' + (b.getMonth()+1);
+    return Shouba.dm(a) + ' – ' + Shouba.dm(b);
   }
 
   function paintWeek(){
@@ -470,7 +475,7 @@
 
   function dayLabel(day){
     var dt = DAY_DATE[day];
-    return day + (dt ? ' · ' + dt.getDate() + '/' + (dt.getMonth()+1) : '');
+    return day + (dt ? ' · ' + Shouba.dm(dt) : '');
   }
 
   function daySheet(day){
@@ -641,7 +646,7 @@
       var r = document.createElement('div');
       r.className = 'evrow ' + (TYPE_CLASS[ev.type] || '');
       r.innerHTML = '<b>' + ev.title + '</b><span class="ty">'
-        + (wd ? wd + ' · ' : '') + (+p[2]) + '/' + (+p[1]) + '</span>';
+        + (wd ? wd + ' · ' : '') + Shouba.dm(p.join('-')) + '</span>';
       var x = document.createElement('button');
       x.className = 'del'; x.setAttribute('aria-label','حذف'); x.textContent = '×';
       x.addEventListener('click', function(){ Shouba.removeEvent(ev.id); paintWeek(); paintCard(); calendarSheet(); });

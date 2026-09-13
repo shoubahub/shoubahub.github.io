@@ -276,6 +276,34 @@ ok(dy.year === '٢٠٢٦ / ٢٠٢٧' && dy.recs[0].year === '٢٠٢٥ / ٢٠٢٦
    && dy.recs[0].values.meta.date === '2026-05-10' && dy.refDataVersion === 4, 'العام الدراسي يرحل بمسافة حول الشرطة، والتاريخ لا يمس', dy);
 ok(W.SHOUBA_REF.years.every(y => / \/ /.test(y)) && Wy.Shouba.yearText('2027/2028') === '2027 / 2028', 'اعوام المرجعية بالصيغة الجديدة');
 
+// ١٢) يوم الدوام (2026-09-13): قبل اول يوم دراسي والعطلة بلا دوام، ومعهما اول يوم دوام قادم
+const Wsd = world({ 'shouba.setup': JSON.stringify({ stage: 'ثانوي', term: 'الفصل الأول', termStart: { 'الفصل الأول': '2026-09-14' }, refDataVersion: 4 }) }).Shouba;
+const isoD = x => x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
+const sd1 = Wsd.schoolDay(new Date(2026, 8, 13, 9)), sd2 = Wsd.schoolDay(new Date(2026, 8, 15, 9)), sd3 = Wsd.schoolDay(new Date(2026, 8, 18, 9));
+ok(sd1.off && sd1.reason === 'before' && isoD(sd1.next) === '2026-09-14', 'قبل اول يوم دراسي: لا دوام، واول يوم الاثنين ١٤', sd1);
+ok(!sd2.off && sd2.reason === '' && isoD(sd2.next) === '2026-09-15', 'يوم دراسة عادي بعد البدء: دوام', sd2);
+ok(sd3.off && sd3.reason === 'weekend' && isoD(sd3.next) === '2026-09-20', 'الجمعة عطلة، واول يوم بعدها الاحد ٢٠', sd3);
+
+// ١٣) مسار الفصل (2026-09-13): «11/2 ع» و«11/2 د» فصلان، والرمز من المادة، والقديم يرمز متى دلت عليه مادته وحدها
+const trDoc = { stage: 'ثانوي', department: 'الرياضيات', refDataVersion: 4, teachers: ['أحمد علي', 'خالد سعد', 'فهد ناصر'],
+  subjects: [{ name: 'الرياضيات', grade: 'الحادي عشر', track: 'علمي' }, { name: 'الإحصاء', grade: 'الحادي عشر', track: 'أدبي' },
+             { name: 'العربي', grade: 'الحادي عشر', track: 'علمي' }, { name: 'العربي', grade: 'الحادي عشر', track: 'أدبي' },
+             { name: 'الرياضيات', grade: 'العاشر', track: 'موحد' }],
+  schedules: {
+    'أحمد علي': { 'الأحد': ['11/2 ع · الرياضيات', '11/1 · الرياضيات', '11/3 · العربي', '10/1 · الرياضيات'] },
+    'خالد سعد': { 'الأحد': ['11/2 د · الإحصاء', '11/1 · الإحصاء', '11/3 د · الإحصاء', '10/1 · الرياضيات'] },
+    'فهد ناصر': { 'الأحد': ['11/2 ع · العربي', '', '', ''] } } };
+const Str = world({ 'shouba.setup': JSON.stringify(trDoc) }).Shouba, schT = Str.data().schedules;
+ok(Str.makeClass(11, 2, 'علمي') === '11/2 ع' && Str.makeClass(11, 2, 'أدبي') === '11/2 د' && Str.makeClass(10, 1, 'موحد') === '10/1', 'الفصل يبنى برمز مساره، والموحد بلا رمز');
+const sc1 = Str.splitClass('11/2 د');
+ok(sc1.base === '11/2' && sc1.track === 'أدبي' && Str.gradeOfClass('11/2 ع') === 'الحادي عشر', 'الفصل يفكك الى رقمه ومساره، وصفه يقرأ مع الرمز', sc1);
+ok(schT['أحمد علي']['الأحد'][1] === '11/1 ع · الرياضيات' && schT['خالد سعد']['الأحد'][1] === '11/1 د · الإحصاء' && schT['أحمد علي']['الأحد'][2] === '11/3 · العربي',
+  'القديم يرمز متى دلت عليه مادته، والمشتركة تبقى بلا رمز', schT);
+const clT = Str.clashes();
+ok(clT.map(c => c.n).join() === '1,3,4' && clT[0].teachers.join() === 'أحمد علي,فهد ناصر',
+  'لا تعارض بين علمي وادبي بالرقم نفسه؛ والتعارض حق بين المسار نفسه، ومع مسار لا يعرف، وفي الموحد', clT.map(c => [c.n, c.cls, c.teachers]));
+ok(Str.classesOf('أحمد علي').join('|') === '10/1|11/1 ع|11/2 ع|11/3', 'فصول المعلم مرتبة بالصف ثم الشعبة مع الرمز', Str.classesOf('أحمد علي'));
+
 // ٩) بلا تشكيل في القوالب والمحرك
 const H = new RegExp('[' + String.fromCharCode(0x064B) + '-' + String.fromCharCode(0x0652) + String.fromCharCode(0x0670) + ']');
 ok(!H.test(read('rec-templates.js')) && !H.test(read('rec-engine.js')), 'القوالب والمحرك بلا تشكيل');

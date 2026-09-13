@@ -33,6 +33,15 @@ Shouba.dayMonth = function (iso) {
   var p = String(iso || '').split('-'), M = (window.SHOUBA_REF || {}).months || [];
   return p.length === 3 ? (+p[2]) + ' ' + (M[+p[1] - 1] || '') : '';
 };
+/* اليوم/الشهر للعرض «١٣ / ٩» — مصدر واحد لكل الشاشات (2026-09-13، رصد المستخدم: «جدول حصص اليوم الأحد · 13/9» قرئ
+   التاسع). «13/9» بلا مسافة يرسم في السطر العربي عددا واحدا من اليسار فيقع ٩ يمينا ويقرأ اولا — كالعام الدراسي
+   (derive.js، الخطوة ٤). وبالمسافة حول الشرطة يقرأ اليوم اولا من اليمين. يقبل Date او YYYY-MM-DD */
+Shouba.dm = function (x) {
+  /* تاريخ بشكله لا بـinstanceof (تاريخ من اطار آخر لا يكون Date هذا الاطار) */
+  if (x && typeof x.getDate === 'function') return isNaN(x.getTime()) ? '' : x.getDate() + ' / ' + (x.getMonth() + 1);
+  var p = String(x || '').slice(0, 10).split('-');
+  return p.length === 3 ? (+p[2]) + ' / ' + (+p[1]) : '';
+};
 Shouba.weekRange = function (from, to) {
   var a = String(from || '').split('-'), b = String(to || '').split('-'), M = (window.SHOUBA_REF || {}).months || [];
   if (a.length !== 3) return '';
@@ -933,6 +942,29 @@ Shouba.returnTo = function () {
   };
   /* ── «احفظه ملف PDF» (2026-09-13): لوحة بخطوات جهاز صاحبه ثم نافذة الطباعة (go) — مصدر واحد لشاشة السجل وملف الفصل.
      name: اسم الملف كما يقترحه المتصفح (عنوان الصفحة مدة الطباعة) */
+  /* ── «اطبع بلا ذيل» (الآيفون — قرار المستخدم 2026-09-13): سفاري يكتب الموقع والساعة في ذيل الطباعة الفورية ولا يزال
+     ذلك من داخل الصفحة. فهذا زر اختياري بجانب «اطبع» (الذي يبقى فوريا): تصنع المنصة ملف PDF (ShoubaPrint.pdf) ثم
+     «طباعة» من قائمة المشاركة — بلا ذيل. ⚠ المشاركة تشترط لمسة حاضرة، والتجهيز ثوان، فيجهز ثم يلمس زر القائمة */
+  Shouba.pdfFile = function (name, sheetsFn) {
+    var n = document.createElement('div'), msg = document.createElement('div');
+    n.className = 'guide'; msg.className = 'hint';
+    msg.textContent = 'يجهز الورق بلا ذيل…';
+    n.appendChild(msg);
+    Shouba.sheet.open('اطبع بلا ذيل', n);
+    window.ShoubaPrint.pdf(sheetsFn(), function (i, t) { msg.textContent = 'يجهز الورق — صفحة ' + i + ' من ' + t; })
+      .then(function (blob) {
+        var file = new File([blob], name + '.pdf', { type: 'application/pdf' }), b = document.createElement('button'), g = document.createElement('div');
+        msg.textContent = 'الورق جاهز.';
+        g.className = 'hint';
+        g.textContent = 'المس الزر ثم اختر «طباعة» من القائمة — أو «حفظ في الملفات».';
+        b.type = 'button'; b.className = 'cta'; b.textContent = 'اطبع';
+        b.addEventListener('click', function () {
+          navigator.share({ files: [file], title: name }).then(function () { Shouba.sheet.close(); }).catch(function () {});
+        });
+        n.appendChild(g); n.appendChild(b);
+      })
+      .catch(function () { msg.textContent = 'تعذر تجهيز الورق — تأكد من اتصالك بالإنترنت ثم أعد المحاولة، أو اطبع طباعة فورية.'; });
+  };
   Shouba.pdfGuide = function (name, go) {
     var ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1), android = /Android/.test(ua);
     var steps = ios ? ['في نافذة الطباعة المس زر المشاركة أعلاها — أو باعد بإصبعين على صورة الصفحة لتكبرها ثم المس زر المشاركة.',

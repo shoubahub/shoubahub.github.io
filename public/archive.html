@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=63" />
-<link rel="stylesheet" href="shell.css?v=63" />
-<link rel="stylesheet" href="components.css?v=63" />
-<link rel="stylesheet" href="frame.css?v=63" />
+<link rel="stylesheet" href="identity/tokens.css?v=64" />
+<link rel="stylesheet" href="shell.css?v=64" />
+<link rel="stylesheet" href="components.css?v=64" />
+<link rel="stylesheet" href="frame.css?v=64" />
 <style>
   /* ارشيف السجل (2026-09-12) — شاشة واحدة لكل القوالب: ?tpl=<قالب>.
      مجموعات (الفصل · العام) الاحدث اولا، وبحث في المحتوى وتصفية بالحالة، وبطاقة لكل سجل تفتح لوحة اجراءاته
@@ -57,14 +57,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=63"></script>
-<script src="refdata.js?v=63"></script>
-<script src="rec-templates.js?v=63"></script>
-<script src="rec-engine.js?v=63"></script>
-<script src="derive.js?v=63"></script>
-<script src="icons.js?v=63"></script>
-<script src="components.js?v=63"></script>
-<script src="rec-files.js?v=63"></script>
+<script src="build.js?v=64"></script>
+<script src="refdata.js?v=64"></script>
+<script src="rec-templates.js?v=64"></script>
+<script src="rec-engine.js?v=64"></script>
+<script src="derive.js?v=64"></script>
+<script src="icons.js?v=64"></script>
+<script src="components.js?v=64"></script>
+<script src="rec-files.js?v=64"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -83,7 +83,7 @@
   var ST = { draft: { t: 'مسودة', c: 'chip muted' }, printed: { t: 'مطبوع', c: 'chip' }, signed: { t: 'موقع', c: 'chip navy' } };
   var DEC = { one: 'قرار', two: 'قراران', few: 'قرارات', many: 'قرارا' };
 
-  function dm(iso){ var p = String(iso || '').slice(0, 10).split('-'); return p.length === 3 ? (+p[2]) + '/' + (+p[1]) : ''; }
+  function dm(iso){ return Shouba.dm(iso); }   /* «١٣ / ٩» — المصدر الواحد في components.js */
   function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
   function past(r){ return !!(r.year && d.year && r.year !== d.year); }
 

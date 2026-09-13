@@ -381,6 +381,7 @@
 .per .ch .l2{display:flex;gap:6px;align-items:center;font-size:10px}
 .per .ch .l2 .sub{color:var(--shouba-text-muted);font-weight:600}
 .per .ch .l2 .cl{color:var(--shouba-amber-deep);font-family:var(--font-num);font-weight:700}
+.per .ch .l2 .cl i{font-style:normal;font-family:var(--font-ar)}   /* رمز المسار «11/2 ع» */
 .per .freechip{align-self:center;font-size:10.5px;font-weight:700;color:var(--shouba-label);
   background:rgba(120,98,66,.08);border-radius:9px;padding:6px 10px}
 /* صف الفرصة — هادئ يميزه عن الحصص */

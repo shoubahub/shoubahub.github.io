@@ -22,7 +22,8 @@
     return e;
   }
   function latin(v) { return String(v == null ? '' : v).replace(/[٠-٩]/g, function (d) { return d.charCodeAt(0) - 0x660; }); }
-  function dm(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? (+p[2]) + '/' + (+p[1]) : ''; }
+  /* «١٣ / ٩» — المصدر الواحد Shouba.dm (components.js)، ونسخته هنا لمن يحمل هذا الملف دونه */
+  function dm(iso) { if (window.Shouba && Shouba.dm) return Shouba.dm(iso); var p = String(iso || '').split('-'); return p.length === 3 ? (+p[2]) + ' / ' + (+p[1]) : ''; }
   /* وسم «مطلوب» · «اختياري» بجانب عنوان كل خانة (2026-09-13، طلب المستخدم) — من التعريف (required) وبشكل المنصة
      كلها (.need في components.css). وعنوان الخانة في بطاقة الصف (labOf) موسوم كذلك */
   function need(req) { return el('span', 'need ' + (req ? 'req' : 'opt'), req ? 'مطلوب' : 'اختياري'); }

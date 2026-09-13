@@ -23,6 +23,10 @@
   }
   function latin(v) { return String(v == null ? '' : v).replace(/[٠-٩]/g, function (d) { return d.charCodeAt(0) - 0x660; }); }
   function dm(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? (+p[2]) + '/' + (+p[1]) : ''; }
+  /* وسم «مطلوب» · «اختياري» بجانب عنوان كل خانة (2026-09-13، طلب المستخدم) — من التعريف (required) وبشكل المنصة
+     كلها (.need في components.css). وعنوان الخانة في بطاقة الصف (labOf) موسوم كذلك */
+  function need(req) { return el('span', 'need ' + (req ? 'req' : 'opt'), req ? 'مطلوب' : 'اختياري'); }
+  function labOf(c) { var l = el('div', 'rb-lab', c.label); l.appendChild(need(!!c.required)); return l; }
 
   var TICK = '<span class="tick"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
   var CHEV = '<span class="chev"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M5 8 L10 13 L15 8" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
@@ -107,11 +111,12 @@
     var wrap = el('div', 'rb');
     b.fields.forEach(function (f) {
       var fld = el('div', 'field'), h = el('div', 'hint');
-      fld.appendChild(el('label', null, f.label));
-      function hint() {
+      var lb = el('label', null, f.label);
+      lb.appendChild(need(!!f.required));
+      fld.appendChild(lb);
+      function hint() {   /* «مطلوب» في وسم العنوان لا هنا */
         h.textContent = f.kind === 'date' && v[f.id] ? window.ShoubaRec.weekday(v[f.id])
-          : f.auto === 'serial:year' ? 'يرقم تلقائيا — عدله إن لزم'
-          : f.required ? 'مطلوب' : '';
+          : f.auto === 'serial:year' ? 'يرقم تلقائيا — عدله إن لزم' : '';
       }
       if (f.kind === 'choice' || f.kind === 'teacher') {
         var opts = f.kind === 'teacher'
@@ -146,7 +151,9 @@
 
   SECTION.paragraph = function (s, v, ctx, changed) {
     var fld = el('div', 'field');
-    fld.appendChild(el('label', null, s.title || ''));
+    var lb = el('label', null, s.title || '');
+    lb.appendChild(need(false));
+    fld.appendChild(lb);
     fld.appendChild(input(v[s.id], function (x) { v[s.id] = x; changed(); }, { long: true, rows: 4, label: s.title }).box);
     return fld;
   };
@@ -494,7 +501,7 @@
             cell.appendChild(toggles(grp.map(function (x) { return { v: x.id, t: x.label }; }),
               function (id) { return !!row[id]; }, function (id) { row[id] = !row[id]; changed(); }));
           } else {
-            cell.appendChild(el('div', 'rb-lab', c.label));
+            cell.appendChild(labOf(c));
             cell.appendChild(CELL[c.kind](c, row, ctx, changed));
             k++;
           }
@@ -732,7 +739,7 @@
       [dc, tc, pc, nc].forEach(function (c) {
         if (!c || !CELL[c.kind]) return;
         var cell = el('div', 'rb-cell');
-        cell.appendChild(el('div', 'rb-lab', c.label));
+        cell.appendChild(labOf(c));
         cell.appendChild(CELL[c.kind](c, row, ctx, live));
         n.appendChild(cell);
       });

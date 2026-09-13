@@ -175,8 +175,23 @@ Shouba.returnTo = function () {
   Shouba.bindDrop = bind;
   function init() {
     [].forEach.call(document.querySelectorAll('.sdrop'), bind);
+    Shouba.tagNeeds(document);
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
   }
+
+  /* ── وسم الحقول «مطلوب» · «اختياري» (2026-09-13، طلب المستخدم: «توسم الحقول لكل المنصة») ──
+     كل حقل فيه data-need="req|opt" يكتب بجانب عنوانه وسمه (.need في components.css): في الشاشة عند التحميل (init)،
+     وفي كل لوحة سفلية حين تفتح. وخانات السجلات يسمها rec-form عند رسمها بالشكل نفسه. ولا يكرر الوسم ان وجد */
+  Shouba.tagNeeds = function (root) {
+    [].forEach.call((root || document).querySelectorAll('[data-need]'), function (f) {
+      var lab = f.querySelector(':scope > label');
+      if (!lab || lab.querySelector('.need')) return;
+      var req = f.getAttribute('data-need') === 'req', t = document.createElement('span');
+      t.className = 'need ' + (req ? 'req' : 'opt');
+      t.textContent = req ? 'مطلوب' : 'اختياري';
+      lab.appendChild(t);
+    });
+  };
 
   /* لوحة سفلية عامة لأي محتوى (شبكة رموز مثلا) — تعيد استعمال نفس العنصر */
   Shouba.sheet = {
@@ -185,6 +200,7 @@ Shouba.returnTo = function () {
       titleEl.textContent = title || '';
       list.innerHTML = '';
       list.appendChild(node);
+      Shouba.tagNeeds(node);
       list.scrollTop = 0;
       document.body.style.overflow = 'hidden';
       backdrop.classList.add('open');
@@ -905,6 +921,28 @@ Shouba.returnTo = function () {
     h.textContent = 'إن فتحت الرابط من واتساب فافتحه في سفاري أو كروم أولا — ثم ثبته. وبعد التثبيت تفتح المنصة من أيقونتها كتطبيق.';
     n.appendChild(h);
     Shouba.sheet.open('ثبت شعبة على هاتفك', n);
+  };
+  /* ── «احفظه ملف PDF» (2026-09-13): لوحة بخطوات جهاز صاحبه ثم نافذة الطباعة (go) — مصدر واحد لشاشة السجل وملف الفصل.
+     name: اسم الملف كما يقترحه المتصفح (عنوان الصفحة مدة الطباعة) */
+  Shouba.pdfGuide = function (name, go) {
+    var ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1), android = /Android/.test(ua);
+    var steps = ios ? ['في نافذة الطباعة المس زر المشاركة أعلاها — أو باعد بإصبعين على صورة الصفحة لتكبرها ثم المس زر المشاركة.',
+                       'اختر «حفظ في الملفات»، أو أرسله مباشرة في واتساب أو البريد.']
+              : android ? ['في نافذة الطباعة المس قائمة الطابعة أعلاها.', 'اختر «حفظ بتنسيق PDF».', 'المس زر PDF واختر مكان الحفظ.']
+              : ['في نافذة الطباعة اختر «حفظ بتنسيق PDF» في خانة الطابعة أو الوجهة.', 'اضغط «حفظ» واختر مكانه.'];
+    var n = document.createElement('div'), g = document.createElement('div'), t = document.createElement('b'), ol = document.createElement('ol');
+    n.className = 'guide'; g.className = 'gp';
+    t.textContent = ios ? 'على الآيفون' : android ? 'على الأندرويد' : 'على الكمبيوتر';
+    steps.forEach(function (s) { var li = document.createElement('li'); li.textContent = s; ol.appendChild(li); });
+    g.appendChild(t); g.appendChild(ol); n.appendChild(g);
+    var h = document.createElement('div');
+    h.className = 'hint'; h.textContent = 'اسم الملف: ' + name + '.pdf';
+    n.appendChild(h);
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'cta'; b.textContent = 'افتح نافذة الحفظ';
+    b.addEventListener('click', function () { Shouba.sheet.close(); setTimeout(go, 350); });
+    n.appendChild(b);
+    Shouba.sheet.open('احفظه ملف PDF', n);
   };
   function bindInstall() {
     [].forEach.call(document.querySelectorAll('[data-install]'), function (b) {

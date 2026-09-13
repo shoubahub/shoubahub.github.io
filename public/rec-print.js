@@ -20,19 +20,24 @@
   ];
   P.font = function (id) { return P.FONTS.filter(function (f) { return f.id === id; })[0] || P.FONTS[0]; };
 
-  /* شعار المطبوعات: printLogoSrc = 'none' (بلا شعار، الافتراض) · 'crest' (شعار الواجهة ان كان صورة)
+  /* شعار المطبوعات: printLogoSrc = 'none' (بلا شعار) · 'crest' (شعار الواجهة ان كان صورة)
      · 'upload' (صورة رفعت للمطبوعات في printLogoImg). والمرفوع يبقى محفوظا ان اختير غيره ثم عاد اليه.
+     ولم يختر بعد ⟵ الشعار الموجود افتراضا (P.logoSrc — 2026-09-13؛ كان «بلا شعار» افتراضا).
      ورمز الواجهة المرسوم (icon) ليس شعار مدرسة فلا يستعار. */
   P.canCrest = function (d) { return !!(d.crest && d.crest.type === 'image' && d.crest.data); };
+  /* المصدر الفعلي (2026-09-13، طلب المستخدم: شعار المدرسة افتراضي): ما اختاره صاحبه في اعدادات المطبوعات، والا —
+     لم يختر بعد — المرفوع للمطبوعات ثم شعار الواجهة ان كان صورة، والا بلا شعار. و«بلا شعار» اختيار صريح يبقى */
+  P.logoSrc = function (d) { return d.printLogoSrc || (d.printLogoImg ? 'upload' : P.canCrest(d) ? 'crest' : 'none'); };
   P.logoOf = function (d) {
-    var src = d.printLogoSrc || 'none';
+    var src = P.logoSrc(d);
     if (src === 'crest') return P.canCrest(d) ? d.crest.data : '';
     if (src === 'upload') return d.printLogoImg || '';
     return '';
   };
-  P.headerData = function (title) {
+  /* noLogo: صاحب السجل اخفى الشعار لهذا النوع من شاشة المعاينة (رقاقة «شعار المدرسة» — ctx.noLogo) */
+  P.headerData = function (title, noLogo) {
     var S = window.Shouba, d = S.data();
-    return { title: title || '', ministry: 'وزارة التربية', directorate: S.directorate(), school: d.schoolName || '', logo: P.logoOf(d) };
+    return { title: title || '', ministry: 'وزارة التربية', directorate: S.directorate(), school: d.schoolName || '', logo: noLogo ? '' : P.logoOf(d) };
   };
 
   function el(tag, cls, txt) {
@@ -381,6 +386,13 @@
      رئيس الشعبة صاحب الحساب) او «أ. …» تكتب باليد. طبقة مشتركة كالترويسة لا يغيرها قالب، فتلحق كل سجل محفوظ او جديد،
      وتنزل الى اسفل الصفحة (margin-top:auto). signs: { principal, supervisor, head } — الافتراض المدير ورئيس الشعبة */
   P.SIGNS = { principal: true, supervisor: false, head: true };
+  /* تفضيلات الطباعة لكل قالب ومطبوعه (key: «قالب» او «قالب:مطبوع») — مصدر واحد لشاشة السجل وملف الفصل:
+     التوقيعات (printSigns، والافتراض P.SIGNS) · اخفاء الشعار (printLogoOff) */
+  P.signsOf = function (d, key) {
+    var o = ((d && d.printSigns) || {})[key] || P.SIGNS;
+    return { head: !!o.head, supervisor: !!o.supervisor, principal: !!o.principal };
+  };
+  P.logoOffOf = function (d, key) { return !!((d && d.printLogoOff) || {})[key]; };
   P.approval = function (signs) {
     var S = window.Shouba, d = S && S.data ? S.data() : {}, o = signs || P.SIGNS, n = el('div', 'pp-appr');
     function nm(x) { x = String(x || '').trim().replace(/^أ\.\s*/, ''); return 'أ. ' + (x || '...........................'); }
@@ -411,7 +423,7 @@
   };
   P.render = function (tpl, rec, ctx, fontId) {
     var s = P.sheet(tpl.page && tpl.page.orient, fontId);
-    s.appendChild(P.header(P.headerData(tpl.title)));
+    s.appendChild(P.header(P.headerData(tpl.title, ctx && ctx.noLogo)));
     return P.body(s, tpl, rec, ctx);
   };
 
@@ -469,7 +481,7 @@
     function page(first) {
       cur = P.sheet(orient, fontId);
       cur.classList.add('pp-page');
-      if (first) cur.appendChild(P.header(P.headerData((ctx.print && ctx.print.title) || tpl.title)));
+      if (first) cur.appendChild(P.header(P.headerData((ctx.print && ctx.print.title) || tpl.title, ctx.noLogo)));
       host.appendChild(cur);
       pages.push(cur);
     }
@@ -531,9 +543,16 @@
         if (x.classList.contains('pp-cover')) fresh = true;
       });
     });
-    /* سطر التوقيعات في آخر النموذج (قبل ملحق الشواهد) — ينزل الى اسفل صفحته، وان لم يتسع فالى صفحة بعدها */
+    /* سطر التوقيعات في آخر النموذج (قبل ملحق الشواهد) — ينزل الى اسفل صفحته. ⚠ ولا صفحة له وحده: الصفوف الفارغة
+       (للكتابة باليد — rows.min) في الصفحة تفسح له صفا صفا من آخرها؛ فان لم يبق فارغ ولم يتسع انتقل الى صفحة بعدها.
+       (رصد 2026-09-13: شعار المدرسة في الترويسة اطالها فدفع توقيعات شبكة الاعداد الى صفحة ثانية فارغة) */
     var sg = P.approval(ctx.signs);
-    if (sg) place(sg);
+    if (sg) {
+      cur.appendChild(sg);
+      var blanks = [].slice.call(cur.querySelectorAll('tr.blank'));
+      while (over() && blanks.length) { var bl = blanks.pop(); bl.parentNode.removeChild(bl); }
+      if (over()) { cur.removeChild(sg); place(sg); }
+    }
     /* ملحق الشواهد (print.appendix): بعد التقرير، اربع صور في الصفحة وتحت كل صورة اجراؤها وتاريخها ومنفذه
        (من البيانات بلا ادخال). وملفات PDF لا تدمج — تذكر اسماؤها. والصور المستبعدة في print.off */
     if (ctx.print && ctx.print.appendix && window.ShoubaRec) {
@@ -559,6 +578,71 @@
     }
     pages.forEach(function (p, i) { p.appendChild(el('div', 'pp-pageno', 'صفحة ' + P.ar(i + 1) + ' من ' + P.ar(pages.length))); });
     return pages;
+  };
+
+  /* ── ملف الفصل (2026-09-13، طلب المستخدم): سجلات مختارة في ملف واحد — غلاف وفهرس وترقيم متصل (R.paginate) ──
+     entries: [{ tpl, rec, ctx, label }] بترتيبها · opt: { cover (ومعه الفهرس), title, lines: [اسطر الغلاف] }
+     · host: عنصر في الصفحة (القياس بالمقاس الحقيقي) تلحق به الاوراق.
+     ⚠ الورق عمودي كله: العرضي يدار داخل ورقة عمودية (.pp-rot) — طباعة الآيفون لا تجمع الاتجاهين في ملف (مبدأ R.paginate).
+     ⚠ ترقيم كل سجل الذاتي («صفحة ١ من ٢») يزال، وفي ذيل كل ورقة «صفحة n من N» للملف كله — والغلاف بلا رقم.
+     يعيد الاوراق بترتيب الملف */
+  P.bundle = function (entries, opt, host, fontId) {
+    opt = opt || {};
+    var docs = [], sets = [];
+    (entries || []).forEach(function (e, i) {
+      var t = e.tpl, list;
+      if (t.page && t.page.fit === 'flow') {
+        list = P.pages(t, e.rec, e.ctx, host, fontId);
+        list.forEach(function (p) { var no = p.querySelector('.pp-pageno'); if (no) no.parentNode.removeChild(no); });
+      } else {
+        var s = P.render(t, e.rec, e.ctx, fontId);
+        host.appendChild(s);
+        if (!P.fit(s, t.page).over) s.classList.add('pp-page');   /* صفحة ثابتة؛ والاطول منها يمتد (نادر) */
+        list = [s];
+      }
+      list = list.map(function (p) {
+        if (!p.classList.contains('landscape')) return p;
+        var w = P.sheet('portrait', fontId);
+        w.classList.add('pp-page', 'pp-rot');
+        host.insertBefore(w, p); w.appendChild(p);
+        return w;
+      });
+      sets.push(list);
+      docs.push({ key: 'd' + i, title: e.label, orient: 'portrait', pages: list.length });
+    });
+    var TOC_PER = 22, pg = window.ShoubaRec.paginate(docs, { cover: !!opt.cover, toc: !!opt.cover, tocPer: TOC_PER, bundle: true }), out = [];
+    if (opt.cover) {
+      /* الغلاف: الترويسة باسم الملف، ووسطه الشعبة والمدرسة والفصل ورئيس الشعبة */
+      var cv = P.sheet('portrait', fontId), c = el('div', 'pp-cover');
+      cv.classList.add('pp-page');
+      cv.appendChild(P.header(P.headerData(opt.title || 'ملف سجلات الشعبة')));
+      (opt.lines || []).forEach(function (l, k) { if (l) c.appendChild(el('div', k ? 'pp-cover-s' : 'pp-cover-t', P.ar(l))); });
+      cv.appendChild(c); host.appendChild(cv); out.push(cv);
+      /* الفهرس: م · السجل · الصفحة — صفحته او صفحاته (TOC_PER سطرا في كل صفحة) */
+      for (var k = 0; k < pg.toc.length || k === 0; k += TOC_PER) {
+        var ts = P.sheet('portrait', fontId), tb = el('table', 'pp-tbl pp-toc'), hr = el('tr'), th = el('thead'), bd = el('tbody');
+        ts.classList.add('pp-page');
+        ts.appendChild(el('div', 'pp-toc-t', 'الفهرس'));
+        [['m', 'م'], [null, 'السجل'], ['m', 'الصفحة']].forEach(function (h) { hr.appendChild(el('th', h[0], h[1])); });
+        th.appendChild(hr); tb.appendChild(th);
+        pg.toc.slice(k, k + TOC_PER).forEach(function (x, j) {
+          var tr = el('tr');
+          tr.appendChild(el('td', 'm', P.ar(k + j + 1)));
+          tr.appendChild(el('td', null, P.ar(x.title)));
+          tr.appendChild(el('td', 'm', P.ar(x.page)));
+          bd.appendChild(tr);
+        });
+        tb.appendChild(bd); ts.appendChild(tb); host.appendChild(ts); out.push(ts);
+      }
+    }
+    sets.forEach(function (l) { l.forEach(function (p) { out.push(p); }); });
+    out.forEach(function (s, i) {
+      if (opt.cover && i === 0) return;
+      var at = s.classList.contains('pp-rot') ? s.firstChild : s;   /* المدار: الرقم في ورقته فيقرأ معها */
+      at.classList.add('pp-page');
+      at.appendChild(el('div', 'pp-pageno', 'صفحة ' + P.ar(i + 1) + ' من ' + P.ar(out.length)));
+    });
+    return out;
   };
 
   /* الطباعة: نسخة من الورقة — او صفحات الامتداد — بمقاسها في .pp-print (ابن body)، وrec-print.css يخفي سواها.

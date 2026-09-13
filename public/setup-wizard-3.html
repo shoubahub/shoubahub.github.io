@@ -12,10 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=57" />
-<link rel="stylesheet" href="shell.css?v=57" />
-<link rel="stylesheet" href="components.css?v=57" />
-<link rel="stylesheet" href="frame.css?v=57" />
+<link rel="stylesheet" href="identity/tokens.css?v=58" />
+<link rel="stylesheet" href="shell.css?v=58" />
+<link rel="stylesheet" href="components.css?v=58" />
+<link rel="stylesheet" href="frame.css?v=58" />
 <!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصة لهذه الشاشة -->
 </head>
 <body class="framed">
@@ -44,7 +44,7 @@
     <div class="content center">
     <form class="fields" autocomplete="off" onsubmit="return false">
       <!-- العام الدراسي -->
-      <div class="field">
+      <div class="field" data-need="req">
         <label>العام الدراسي</label>
         <div class="sdrop" data-label="العام الدراسي">
           <button type="button" class="trigger">
@@ -56,7 +56,7 @@
       </div>
 
       <!-- الفصل الدراسي -->
-      <div class="field">
+      <div class="field" data-need="req">
         <label>الفصل الدراسي</label>
         <div class="segs" id="segs"></div>
       </div>
@@ -64,7 +64,7 @@
       <!-- أول يوم دراسي للطلاب — منه تحسب الأسابيع.
            التنبيه جزء من الحقل: دوام المعلمين يسبق دوام الطلاب بأسبوع،
            فمن أدخل يوم مباشرته اختل عد أسابيعه كله بلا أن يشعر. -->
-      <div class="field">
+      <div class="field" data-need="req">
         <label>أول يوم دراسي للطلاب</label>
         <div class="paper"><input id="tstart" type="date" /></div>
         <div class="hint">منه تحسب الأسابيع الدراسية — <b>لا</b> يوم مباشرة المعلمين.</div>
@@ -78,9 +78,9 @@
   </div>
  </div></div>
 
-<script src="refdata.js?v=57"></script>
-<script src="build.js?v=57"></script>
-<script src="components.js?v=57"></script>
+<script src="refdata.js?v=58"></script>
+<script src="build.js?v=58"></script>
+<script src="components.js?v=58"></script>
 <script>
   var KEY = 'shouba.setup', R = window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }

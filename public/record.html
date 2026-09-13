@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=57" />
-<link rel="stylesheet" href="shell.css?v=57" />
-<link rel="stylesheet" href="components.css?v=57" />
-<link rel="stylesheet" href="frame.css?v=57" />
-<link rel="stylesheet" href="rec-print.css?v=57" />
+<link rel="stylesheet" href="identity/tokens.css?v=58" />
+<link rel="stylesheet" href="shell.css?v=58" />
+<link rel="stylesheet" href="components.css?v=58" />
+<link rel="stylesheet" href="frame.css?v=58" />
+<link rel="stylesheet" href="rec-print.css?v=58" />
 <style>
   /* شاشة السجل (2026-09-12) — شاشة واحدة لكل القوالب، تولدها اللبنات من التعريف:
      ?tpl=<قالب> سجل جديد (لا يحفظ حتى يكتب فيه) · ?id=<سجل> سجل محفوظ باصداره هو.
@@ -77,17 +77,17 @@
   </div>
  </div></div>
 
-<script src="build.js?v=57"></script>
-<script src="refdata.js?v=57"></script>
-<script src="rec-templates.js?v=57"></script>
-<script src="rec-engine.js?v=57"></script>
-<script src="derive.js?v=57"></script>
-<script src="plan-data.js?v=57"></script>
-<script src="icons.js?v=57"></script>
-<script src="components.js?v=57"></script>
-<script src="rec-print.js?v=57"></script>
-<script src="rec-files.js?v=57"></script>
-<script src="rec-form.js?v=57"></script>
+<script src="build.js?v=58"></script>
+<script src="refdata.js?v=58"></script>
+<script src="rec-templates.js?v=58"></script>
+<script src="rec-engine.js?v=58"></script>
+<script src="derive.js?v=58"></script>
+<script src="plan-data.js?v=58"></script>
+<script src="icons.js?v=58"></script>
+<script src="components.js?v=58"></script>
+<script src="rec-print.js?v=58"></script>
+<script src="rec-files.js?v=58"></script>
+<script src="rec-form.js?v=58"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -238,9 +238,7 @@
   function signs(){
     /* الافتراض رئيس الشعبة والمدير في كل مطبوع (قرار المستخدم 2026-09-13) — كانت الخطة التشغيلية بغلافها تبدأ بلا
        توقيعات، فخالفت قراره. وما اختاره صاحبه لقالب يبقى له */
-    var m = (S.data().printSigns || {})[signKey()], d0 = ShoubaPrint.SIGNS;
-    if (m) return { head: !!m.head, supervisor: !!m.supervisor, principal: !!m.principal };
-    return { head: !!d0.head, supervisor: !!d0.supervisor, principal: !!d0.principal };
+    return ShoubaPrint.signsOf(S.data(), signKey());
   }
   /* رقاقات تحت الورقة (#psigns — 2026-09-13): جربت اسطرا كبيرة بدائرة تأشير فوق الورقة فدفعتها الى الاسفل،
      وقال المستخدم ان الرقاقات «كانت تظهر النتيجة بشكل اوضح» لو كانت تحت المعاينة — فعادت رقاقات، تحت الورقة
@@ -256,6 +254,47 @@
       S.save({ printSigns: m });
       paint();
     }));
+    logoOpts(box);
+    pdfOpt(box);
+  }
+
+  /* ── شعار المدرسة في الترويسة (2026-09-13، طلب المستخدم): يظهر افتراضا ان رفعت صورته (ShoubaPrint.logoSrc)، ورقاقته
+     تحت الورقة تخفيه لهذا النوع من السجلات (printLogoOff[قالب او قالب:مطبوع] — كالتوقيعات). وبلا صورة: باب رفعها */
+  function logoOff(){ return ShoubaPrint.logoOffOf(S.data(), signKey()); }
+  function logoOpts(box){
+    box.appendChild(lab('الترويسة'));
+    if (!ShoubaPrint.logoOf(S.data())) {
+      var up = document.createElement('button');
+      up.type = 'button'; up.className = 'btn-ghost'; up.textContent = 'ارفع شعار مدرستك ليظهر في الترويسة';
+      up.addEventListener('click', function(){
+        flush();
+        location.href = 'print-settings.html?ret=' + encodeURIComponent('record.html?id=' + rec.id + '&pv=1');
+      });
+      box.appendChild(up);
+      return;
+    }
+    box.appendChild(ShoubaForm.toggles([{ v: 'logo', t: 'شعار المدرسة' }], function(){ return !logoOff(); }, function(){
+      var m = S.data().printLogoOff || {}, k = signKey();
+      if (m[k]) delete m[k]; else m[k] = true;
+      S.save({ printLogoOff: m });
+      paint();
+    }));
+  }
+  /* ── «احفظه PDF» (2026-09-13، طلب المستخدم): نافذة الطباعة نفسها — فيها «حفظ PDF» في كل جهاز، والنص فيه نص لا صورة
+     فيبقى الملف صغيرا واضحا. تفتح لوحة بخطوات جهاز صاحبه ثم النافذة، والملف يسمى باسم السجل (fileName).
+     ⚠ لا تنزيل بلمسة: يحتاج خادما يولد الملف او مكتبة تحوله صورا — وتطبيق الآيفون المثبت لا ينزل الملفات */
+  function pdfOpt(box){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn-ghost'; b.textContent = 'احفظه ملف PDF';
+    b.addEventListener('click', pdfSheet);
+    box.appendChild(b);
+  }
+  function pdfSheet(){ S.pdfGuide(fileName(), startPrint); }   /* اللوحة المشتركة (components.js) */
+  /* اسم الملف في نافذة الطباعة وعند الحفظ PDF (المتصفح يأخذه من عنوان الصفحة): «سجل الاجتماعات - محضر رقم ١ - ٢٠٢٦-٠٩-٠١» */
+  function fileName(){
+    var s = ShoubaRec.summary(rec), n = (tpl.noun && tpl.noun.one) || '', p = curPrint();
+    return [(p && printCfg() && printCfg().title) || tpl.title, rec.who ? 'أ. ' + rec.who : '', s.no !== '' ? n + ' رقم ' + s.no : '',
+            s.date || rec.year || ''].filter(Boolean).join(' - ').replace(/[\/\\:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
   }
 
   /* الامتداد (fit: 'flow' — الخطة التشغيلية): صفحات مرقمة ذاتيا (ShoubaPrint.pages)، كل صفحة مصغرة الى
@@ -263,7 +302,7 @@
   function paintFlow(){
     var box = document.getElementById('pgs'), host = document.createElement('div'), m = document.getElementById('meter');
     pvw.hidden = true; box.hidden = false; box.textContent = ''; box.appendChild(host);
-    var pages = ShoubaPrint.pages(tpl, rec, { open: S.openDecisions(rec), print: printCfg(), signs: signs() }, host);
+    var pages = ShoubaPrint.pages(tpl, rec, { open: S.openDecisions(rec), print: printCfg(), signs: signs(), noLogo: logoOff() }, host);
     pages.forEach(function(p){
       var w = document.createElement('div');
       w.className = 'pvw';
@@ -290,7 +329,7 @@
     pvw.hidden = false; document.getElementById('pgs').hidden = true;
     document.getElementById('meter').querySelector('.track').hidden = false;
     pvw.textContent = '';
-    var sheet = ShoubaPrint.render(tpl, rec, { open: S.openDecisions(rec), signs: signs() });
+    var sheet = ShoubaPrint.render(tpl, rec, { open: S.openDecisions(rec), signs: signs(), noLogo: logoOff() });
     pvw.appendChild(sheet);
     fit = ShoubaPrint.fit(sheet, tpl.page);
     var k = pvw.clientWidth / sheet.offsetWidth;
@@ -324,7 +363,17 @@
   }
 
   /* الطباعة تجعل المسودة «مطبوعا» (حالة الارشيف) — والموقع يبقى موقعا */
-  function go(){ ShoubaRec.markPrinted(rec); persist(); ShoubaPrint.print(paint(), fit); }
+  function go(){
+    ShoubaRec.markPrinted(rec); persist();
+    /* عنوان الصفحة اسم الملف مدة الطباعة (fileName) — ويعود بعدها (afterprint، وبديله دقيقة لمن لا يطلقه) */
+    var t0 = document.title, back = function(){ document.title = t0; };
+    document.title = fileName();
+    window.addEventListener('afterprint', back, { once: true });
+    setTimeout(back, 60000);
+    ShoubaPrint.print(paint(), fit);
+  }
+  /* مدخل الطباعة الواحد — زر «اطبع» و«احفظه ملف PDF»: ما يطبع يحفظ، واول طباعة تعرض الترويسة لتعتمد */
+  function startPrint(){ persist(); if (!S.data().printOk) confirmHeader(); else go(); }
 
   /* اول طباعة: الترويسة تطبع على كل سجلاتك — تعرض مرة لتعتمد (printOk)، او تعدل من اعدادات المطبوعات ثم يعود هنا */
   function confirmHeader(){
@@ -395,10 +444,7 @@
     document.getElementById('toEd').addEventListener('click', function(){ history.back(); });
     window.addEventListener('popstate', function(){ mode(!!(history.state && history.state.pv)); });
     /* ما يطبع يحفظ — ولو لم يعدل فيه شيء */
-    document.getElementById('print').addEventListener('click', function(){
-      persist();
-      if (!S.data().printOk) confirmHeader(); else go();
-    });
+    document.getElementById('print').addEventListener('click', startPrint);
 
     window.addEventListener('pagehide', flush);
     document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') flush(); });

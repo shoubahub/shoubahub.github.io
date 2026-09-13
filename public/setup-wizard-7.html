@@ -12,10 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=57" />
-<link rel="stylesheet" href="shell.css?v=57" />
-<link rel="stylesheet" href="components.css?v=57" />
-<link rel="stylesheet" href="frame.css?v=57" />
+<link rel="stylesheet" href="identity/tokens.css?v=58" />
+<link rel="stylesheet" href="shell.css?v=58" />
+<link rel="stylesheet" href="components.css?v=58" />
+<link rel="stylesheet" href="frame.css?v=58" />
 <style>
   /* خاص بهذه الشاشة فقط — لا هيكل ولا هوامش عامة */
   .tally{display:flex;gap:9px}
@@ -69,14 +69,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=57"></script>
+<script src="build.js?v=58"></script>
 <!-- ⚠ المرجعية ثم الاشتقاق ثم المكونات — بهذا الترتيب.
      أضيفا حين احتاجت الشاشة Shouba.termStart (2026-09-08): كانت تقرأ
      البيانات خاما وتستغني عن الطبقة، فلما استدعيت دالة منها أخفقت
      الشاشة كلها ولم يظهر سطر واحد. -->
-<script src="refdata.js?v=57"></script>
-<script src="derive.js?v=57"></script>
-<script src="components.js?v=57"></script>
+<script src="refdata.js?v=58"></script>
+<script src="derive.js?v=58"></script>
+<script src="components.js?v=58"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -108,7 +108,7 @@
   }
   function nameSheet(){
     var n = document.createElement('div');
-    n.innerHTML = '<div class="field" style="padding-bottom:6px">'
+    n.innerHTML = '<div class="field" data-need="req" style="padding-bottom:6px">'
       + '<label for="unm">الاسم الكامل</label>'
       + '<div class="paper"><input id="unm" type="text" maxlength="60" placeholder="اكتب اسمك الكامل" /></div>'
       + '<div class="hint" id="uwarn">كما يظهر في النماذج الرسمية.</div></div>';

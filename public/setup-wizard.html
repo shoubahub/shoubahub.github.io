@@ -12,10 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=57" />
-<link rel="stylesheet" href="shell.css?v=57" />
-<link rel="stylesheet" href="components.css?v=57" />
-<link rel="stylesheet" href="frame.css?v=57" />
+<link rel="stylesheet" href="identity/tokens.css?v=58" />
+<link rel="stylesheet" href="shell.css?v=58" />
+<link rel="stylesheet" href="components.css?v=58" />
+<link rel="stylesheet" href="frame.css?v=58" />
 <!-- كل التخطيط من الأساس (shell + components) — لا أنماط خاصة لهذه الشاشة -->
 </head>
 <body class="framed">
@@ -44,7 +44,7 @@
     <div class="content center">
     <form class="fields" id="f1" autocomplete="off" onsubmit="return false">
       <!-- المنطقة -->
-      <div class="field">
+      <div class="field" data-need="req">
         <label>المنطقة التعليمية</label>
         <div class="sdrop" data-label="المنطقة التعليمية">
           <button type="button" class="trigger">
@@ -61,7 +61,7 @@
       </div>
 
       <!-- نوع المدرسة -->
-      <div class="field">
+      <div class="field" data-need="req">
         <label>نوع المدرسة</label>
         <div class="segs" id="segs">
           <button type="button" class="seg" data-val="بنين">
@@ -76,7 +76,7 @@
       </div>
 
       <!-- اسم المدرسة -->
-      <div class="field">
+      <div class="field" data-need="req">
         <label for="school">اسم المدرسة</label>
         <div class="paper">
           <input id="school" type="text" placeholder="اكتب اسم المدرسة" maxlength="60" />
@@ -85,11 +85,11 @@
 
       <!-- شعار المدرسة أو رمز الشعبة — بعد اسم المدرسة · اختياري · للواجهة فقط
            (ترويسات النماذج الرسمية لها إعداداتها الخاصة لاحقا — قرار المستخدم) -->
-      <div class="field">
+      <div class="field" data-need="opt">
         <label>شعار مدرستك أو رمز شعبتك</label>
         <div class="crestpick">
           <button type="button" class="crest" id="crestBtn" aria-label="اختر شعارا"></button>
-          <div class="cap"><b>اختياري</b> · اضغط للاختيار أو لرفع شعار مدرستك</div>
+          <div class="cap">اضغط للاختيار أو لرفع شعار مدرستك</div>
         </div>
       </div>
     </form>
@@ -103,11 +103,11 @@
   </div>
  </div></div>
 
-<script src="icons.js?v=57"></script>
-<script src="build.js?v=57"></script>
-<script src="refdata.js?v=57"></script>
-<script src="derive.js?v=57"></script>
-<script src="components.js?v=57"></script>
+<script src="icons.js?v=58"></script>
+<script src="build.js?v=58"></script>
+<script src="refdata.js?v=58"></script>
+<script src="derive.js?v=58"></script>
+<script src="components.js?v=58"></script>
 <script>
   var KEY = 'shouba.setup';
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }

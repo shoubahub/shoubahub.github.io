@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · ملف الفصل</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1B5183" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=58" />
+<link rel="stylesheet" href="shell.css?v=58" />
+<link rel="stylesheet" href="components.css?v=58" />
+<link rel="stylesheet" href="frame.css?v=58" />
+<link rel="stylesheet" href="rec-print.css?v=58" />
+<style>
+  /* ملف الفصل (2026-09-13، طلب المستخدم: «هل يمكن طباعة السجلات كاملة؟») — سجلات الفصل او العام في ملف واحد:
+     غلاف وفهرس وترقيم متصل (ShoubaPrint.bundle)، يطبع او يحفظ PDF. تفتح من «سجلاتك».
+     الاختيار: المدى (الفصل · العام) ⟵ انواع السجلات (كلها افتراضا، ولمسة تخرج نوعا) ⟵ الغلاف والفهرس.
+     والمعاينة الاوراق الحقيقية مصغرة — فما يرى هو ما يطبع. لا هيكل هنا — كله موروث من shell.css */
+  .wrap{display:flex;flex-direction:column;gap:16px;padding:16px var(--gap-side) 0}
+  .pvw{position:relative;overflow:hidden;background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(40,30,15,.16)}
+  .pvw > .pp-sheet{position:absolute;top:0;right:0;transform-origin:top right}
+  .pgs{display:flex;flex-direction:column;gap:12px}
+  .note{font-size:12px;font-weight:600;color:var(--shouba-label);line-height:1.7}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="topbar">
+    <div class="tbcrest" id="tbCrest"></div>
+    <div class="tt"><b>ملف الفصل</b><span id="sub">—</span></div>
+    <div class="iconbtn" data-home title="اللوحة"></div>
+  </div>
+
+  <div class="screen has-topbar has-foot foot-2">
+    <div class="content">
+      <div class="wrap">
+        <div class="segs sm" id="scope">
+          <button type="button" class="seg on" data-s="term">الفصل الحالي</button>
+          <button type="button" class="seg" data-s="year">العام كله</button>
+        </div>
+        <div class="rb-lab">السجلات في الملف — المس نوعا لتخرجه منه</div>
+        <div class="stack" id="types"></div>
+        <div class="stack" id="opts"></div>
+        <div class="note" id="note"></div>
+        <div class="pgs" id="pgs" aria-label="معاينة صفحات الملف"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="duo">
+      <button class="btn-ghost" id="pdf" type="button">احفظه PDF</button>
+      <button class="cta" id="print" type="button">اطبع</button>
+    </div>
+  </div>
+ </div></div>
+
+<script src="build.js?v=58"></script>
+<script src="refdata.js?v=58"></script>
+<script src="rec-templates.js?v=58"></script>
+<script src="rec-engine.js?v=58"></script>
+<script src="derive.js?v=58"></script>
+<script src="icons.js?v=58"></script>
+<script src="components.js?v=58"></script>
+<script src="rec-print.js?v=58"></script>
+<script>
+  var S = Shouba, d = S.data(), scope = 'term', off = {}, withCover = true, sheets = [];
+  var CHK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var FIRST = ['meetings', 'opplan'];   /* الاجتماعات والخطة التشغيلية اولا — كترتيب «سجلاتك» */
+
+  (function paintTopCrest(){
+    var el = document.getElementById('tbCrest'), c = d.crest;
+    if (c && c.type === 'image') el.innerHTML = '<img src="' + c.data + '" alt="شعار المدرسة" />';
+    else if (c && c.type === 'icon' && window.SHOUBA_ICONS) el.innerHTML = SHOUBA_ICONS.svg(c.id, 22);
+    else el.innerHTML = '<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
+  })();
+
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function pickRow(title, sub, on, tap){
+    var r = el('div', 'pick' + (on ? ' on' : ''));
+    r.setAttribute('role', 'checkbox'); r.setAttribute('aria-checked', on ? 'true' : 'false'); r.tabIndex = 0;
+    r.innerHTML = '<span class="mark">' + CHK + '</span><div class="tx"><b></b><small></small></div>';
+    r.querySelector('b').textContent = title; r.querySelector('small').textContent = sub;
+    r.addEventListener('click', tap);
+    r.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } });
+    return r;
+  }
+
+  /* المدى: الفصل الحالي (وسجل العام — كشف ما قطع — معه) او العام كله */
+  function inScope(r, t){
+    if ((r.year || '') !== (d.year || '')) return false;
+    return scope === 'year' || t.scope === 'year' || (r.term || '') === (d.term || '');
+  }
+  /* السجلات بقوالبها في المدى: [{ t, recs }] — الاجتماعات والخطة اولا، وفي كل نوع بتاريخها الاقدم اولا */
+  function groups(){
+    var map = {}, out = [];
+    S.recs().forEach(function(r){
+      var t = ShoubaRec.of(r);
+      if (!t || !inScope(r, t)) return;
+      (map[t.id] = map[t.id] || { t: t, recs: [] }).recs.push(r);
+    });
+    Object.keys(map).map(function(k){ return map[k]; })
+      .sort(function(a, b){ var i = FIRST.indexOf(a.t.id), j = FIRST.indexOf(b.t.id); return (i < 0 ? 9 : i) - (j < 0 ? 9 : j); })
+      .forEach(function(g){
+        g.recs.sort(function(a, b){ return (ShoubaRec.dateOf(a) + a.created).localeCompare(ShoubaRec.dateOf(b) + b.created); });
+        out.push(g);
+      });
+    return out;
+  }
+  /* سطر الفهرس: «سجل الاجتماعات — محضر رقم ٣ — موضوعه» · «كشف متابعة … — أ. فلان» */
+  function labelOf(r, t){
+    var s = ShoubaRec.summary(r), n = (t.noun && t.noun.one) || '';
+    return [t.title, r.who ? 'أ. ' + r.who : '', s.no !== '' ? n + ' رقم ' + s.no : '', s.title].filter(Boolean).join(' — ');
+  }
+  /* سياق رسم كل سجل كما في شاشته: توقيعاته وشعاره المختاران لنوعه، والخطة التشغيلية بمطبوعها الاول («الخطة») */
+  function ctxOf(r, t){
+    var p = t.prints && t.prints.length > 1 ? t.prints[0] : null, key = t.id + (p ? ':' + p.id : '');
+    return { open: S.openDecisions(r), signs: ShoubaPrint.signsOf(S.data(), key), noLogo: ShoubaPrint.logoOffOf(S.data(), key),
+      print: p ? { id: p.id, title: p.title || t.title, follow: !!p.follow, summary: !!p.summary, cover: p.cover !== false, axes: null, appendix: false, off: {} } : null };
+  }
+
+  function coverLines(){
+    var head = (S.user && S.user().name) || '';
+    return [d.department ? 'شعبة ' + d.department : 'ملف سجلات الشعبة', d.schoolName || '',
+      scope === 'year' ? 'العام الدراسي ' + (d.year || '') : [d.term, d.year ? 'العام الدراسي ' + d.year : ''].filter(Boolean).join(' · '),
+      head ? 'رئيس الشعبة: أ. ' + head : ''];
+  }
+  function fileName(){
+    return ['ملف سجلات الشعبة', d.department || '', scope === 'year' ? (d.year || '') : [d.term, d.year].filter(Boolean).join(' ')]
+      .filter(Boolean).join(' - ').replace(/[\/\\:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function paint(){
+    var gs = groups(), typesEl = document.getElementById('types'), optsEl = document.getElementById('opts');
+    document.getElementById('sub').textContent = scope === 'year' ? 'العام الدراسي ' + (d.year || '') : [d.term, d.year].filter(Boolean).join(' · ');
+    typesEl.textContent = ''; optsEl.textContent = '';
+    gs.forEach(function(g){
+      typesEl.appendChild(pickRow(g.t.title, S.count(g.recs.length, g.t.noun || { one: 'سجل', two: 'سجلان', few: 'سجلات', many: 'سجلا' }), !off[g.t.id],
+        function(){ off[g.t.id] = !off[g.t.id]; paint(); }));
+    });
+    optsEl.appendChild(pickRow('غلاف وفهرس', 'غلاف باسم الشعبة والفصل، وفهرس بصفحة كل سجل', withCover, function(){ withCover = !withCover; paint(); }));
+    var entries = [];
+    gs.forEach(function(g){ if (!off[g.t.id]) g.recs.forEach(function(r){ entries.push({ tpl: g.t, rec: r, ctx: ctxOf(r, g.t), label: labelOf(r, g.t) }); }); });
+    var box = document.getElementById('pgs'), note = document.getElementById('note');
+    box.textContent = ''; sheets = [];
+    document.getElementById('print').disabled = document.getElementById('pdf').disabled = !entries.length;
+    if (!gs.length) { note.textContent = 'لا سجلات في ' + (scope === 'year' ? 'هذا العام' : 'هذا الفصل') + ' بعد — تجمع هنا حين تكتبها.'; return; }
+    if (!entries.length) { note.textContent = 'اخترت ألا يدخل الملف شيء — المس نوعا ليدخله.'; return; }
+    var host = el('div'); box.appendChild(host);
+    sheets = ShoubaPrint.bundle(entries, { cover: withCover, title: 'ملف سجلات الشعبة', lines: coverLines() }, host);
+    sheets.forEach(function(p){
+      var w = el('div', 'pvw');
+      box.insertBefore(w, host); w.appendChild(p);
+      var k = w.clientWidth / p.offsetWidth;
+      p.style.transform = 'scale(' + k + ')';
+      w.style.height = Math.ceil(p.offsetHeight * k) + 'px';
+    });
+    box.removeChild(host);
+    note.textContent = S.count(entries.length, { one: 'سجل', two: 'سجلان', few: 'سجلات', many: 'سجلا' }) + ' في ' + S.count(sheets.length, { one: 'صفحة', two: 'صفحتان', few: 'صفحات', many: 'صفحة' })
+      + ' — ورق عمودي، والنماذج العرضية مدارة داخله.';
+  }
+
+  /* الطباعة: اسم الملف عنوان الصفحة مدتها، وما طبع من السجلات يصير «مطبوعا» كطباعته من شاشته.
+     واول طباعة تعتمد الترويسة في اعدادات المطبوعات ثم تعود هنا */
+  function startPrint(){
+    if (!sheets.length) return;
+    if (!S.data().printOk) { location.href = 'print-settings.html?ret=bundle.html'; return; }
+    groups().forEach(function(g){ if (!off[g.t.id]) g.recs.forEach(function(r){ ShoubaRec.markPrinted(r); S.saveRec(r); }); });
+    var t0 = document.title, back = function(){ document.title = t0; };
+    document.title = fileName();
+    window.addEventListener('afterprint', back, { once: true });
+    setTimeout(back, 60000);
+    ShoubaPrint.print(sheets);
+  }
+
+  [].forEach.call(document.querySelectorAll('#scope .seg'), function(b){
+    b.addEventListener('click', function(){
+      scope = b.dataset.s;
+      [].forEach.call(document.querySelectorAll('#scope .seg'), function(x){ x.classList.toggle('on', x === b); });
+      paint();
+    });
+  });
+  document.getElementById('print').addEventListener('click', startPrint);
+  document.getElementById('pdf').addEventListener('click', function(){ S.pdfGuide(fileName(), startPrint); });
+  window.addEventListener('resize', paint);
+  paint();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint);
+</script>
+</body>
+</html>

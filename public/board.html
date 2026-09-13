@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=70" />
-<link rel="stylesheet" href="shell.css?v=70" />
-<link rel="stylesheet" href="components.css?v=70" />
-<link rel="stylesheet" href="frame.css?v=70" />
+<link rel="stylesheet" href="identity/tokens.css?v=71" />
+<link rel="stylesheet" href="shell.css?v=71" />
+<link rel="stylesheet" href="components.css?v=71" />
+<link rel="stylesheet" href="frame.css?v=71" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -40,7 +40,8 @@
      الاسبوع الجاري فقط وتكون بشكل منبثق من البطاقة تغلق بنفس السهم») — والخطة كلها من «الخطة كاملة ›» في رأس القسم */
   .ptr .chev{transition:transform .2s}
   .ptr.open .chev{transform:rotate(-90deg)}
-  .pwk{display:flex;flex-direction:column;gap:6px;padding:2px 14px 12px}
+  /* بخلفية باهتة تميزها عن المادة التي تحتها (طلب المستخدم 2026-09-13) */
+  .pwk{display:flex;flex-direction:column;gap:6px;margin:0 10px 10px;padding:10px 12px;border-radius:12px;background:rgba(120,98,66,.08)}
   .pwk .l{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;font-weight:600;color:var(--shouba-ink);line-height:1.6}
   .pwk .l span{flex:1;min-width:0}
   .pwk .l em{flex:none;font-style:normal;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
@@ -170,14 +171,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=70"></script>
-<script src="refdata.js?v=70"></script>
-<script src="rec-templates.js?v=70"></script>
-<script src="rec-engine.js?v=70"></script>
-<script src="derive.js?v=70"></script>
-<script src="plan-data.js?v=70"></script>
-<script src="icons.js?v=70"></script>
-<script src="components.js?v=70"></script>
+<script src="build.js?v=71"></script>
+<script src="refdata.js?v=71"></script>
+<script src="rec-templates.js?v=71"></script>
+<script src="rec-engine.js?v=71"></script>
+<script src="derive.js?v=71"></script>
+<script src="plan-data.js?v=71"></script>
+<script src="icons.js?v=71"></script>
+<script src="components.js?v=71"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }

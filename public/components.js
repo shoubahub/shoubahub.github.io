@@ -786,8 +786,17 @@ Shouba.returnTo = function () {
     /* خادم لا يجيب: لا تبقى الشاشة محجوبة — من عرف يعمل، ومن لم يعرف فإلى الدخول */
     setTimeout(function () { settle(known ? show : Shouba.signIn); }, 6000);
     fetch('api/me', { credentials: 'same-origin', cache: 'no-store' })
-      .then(function (r) { settle(r.status === 401 ? Shouba.signIn : show); },
-            function ()  { settle(known ? show : Shouba.signIn); });
+      .then(function (r) {
+        settle(r.status === 401 ? Shouba.signIn : show);
+        /* اسم صاحب الحساب من الخادم (2026-09-13، رصد المستخدم: رئيس الشعبة يطبع «أ. ……» في التوقيعات): كان يحفظ
+           في الجهاز عند الدخول وحده، فجهاز دخل قبله او تطبيق مثبت بمخزن مستقل يبقى بلا اسم. فيملأ من الحساب متى غاب
+           — ولا يمس اسما عدله صاحبه في المراجعة النهائية */
+        if (r.ok) r.json().then(function (j) {
+          var nm = j && String(j.displayName || '').trim(), u = Shouba.user();
+          if (nm && !String(u.name || '').trim()) { u.name = nm; localStorage.setItem('shouba.user', JSON.stringify(u)); }
+        }).catch(function () {});
+      },
+      function ()  { settle(known ? show : Shouba.signIn); });
   }
   sessionGuard();
 

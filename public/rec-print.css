@@ -156,4 +156,6 @@
   .pp-print .pp-sheet{ break-after:page; }
   .pp-print .pp-sheet:last-child{ break-after:auto; }
   .pp-print .pp-rot > .pp-sheet{ break-after:auto; }   /* الورقة المدارة داخل ورقتها — لا صفحة بعدها */
+  /* الآيفون: هوامش سفاري المفروضة تنقص الصفحة — الورقة ٨٥٪ (١٧٨×٢٥٢مم) فتتسع صفحتها (P.print يسم .ios) */
+  .pp-print.ios{ zoom:.85; }
 }

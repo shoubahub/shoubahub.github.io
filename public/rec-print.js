@@ -651,6 +651,10 @@
   P.print = function (sheets, fit) {
     var list = Array.isArray(sheets) ? sheets : [sheets], land = false;
     var old = document.querySelector('body > .pp-print'), box = el('div', 'pp-print');
+    /* ⚠ سفاري الآيفون (2026-09-13، رصد المستخدم: المحضر خرج صفحتين والحضور مقسوم): لا يأخذ بهامش الصفحة الصفري،
+       ويحجز هوامشه ويكتب فيها العنوان والتاريخ — فالورقة بطول A4 كاملا تفيض. فتصغر فيه وحده لتتسع صفحتها */
+    var ua = navigator.userAgent;
+    if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) box.classList.add('ios');
     if (old) old.parentNode.removeChild(old);
     list.forEach(function (s) {
       var c = s.cloneNode(true);

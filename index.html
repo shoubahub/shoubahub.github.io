@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة</title>
+<meta name="theme-color" content="#EFE6D6" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
+<style>html,body{margin:0;height:100%;background:#EFE6D6}</style>
+</head>
+<body>
+<script>
+/* ===================================================================
+   الموجه — أول ما يفتح، ويقرر الوجهة بحسب حال المستخدم:
+   ① أتم الإعداد        ⟵ لوحته مباشرة (وهو حال كل يوم بعد أول مرة)
+   ② كتب اسمه ولم يتم  ⟵ يستأنف المعالج من أوله (وبياناته محفوظة فيه)
+   ③ لم يبدأ            ⟵ شاشة البداية
+
+   ⚠ كان يحول إلى شاشة التسجيل دائما، فيمشي المستخدم في المعالج كله
+     كل مرة يفتح فيها الرابط — رصده المستخدم بعد النشر 2026-09-06.
+   =================================================================== */
+(function () {
+  function j(k){ try { return JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { return {}; } }
+
+  /* الوجهة المطلوبة: رابط مباشر فتح بلا جلسة ⟵ الدخول ⟵ هنا ⟵ وجهته (2026-09-10).
+     ⚠ الموجه وحده يتحقق منها: اسم صفحة من المنصة لا عنوان خارجي — فلا يصير
+       الرابط بابا يحول الزميل إلى موقع آخر. وتتبع لمن أتم إعداده فقط. */
+  function next() {
+    var n = '';
+    try { n = new URLSearchParams(location.search).get('next') || ''; } catch (e) {}
+    return /^(?!index\.|login\.)[a-z0-9\-]+\.html(\?[^#<>"'\s]*)?$/i.test(n) ? n : '';
+  }
+
+  function route() {
+    var setup = j('shouba.setup'), user = j('shouba.user');
+    var to = setup.setupDone ? (next() || 'board.html')
+           : user.name       ? 'setup-wizard.html'
+                             : 'login.html';
+    location.replace(to);
+  }
+
+  /* ⚠ الموجه ينزل بيانات الخادم **قبل** أن يوجه (2026-09-08):
+     على جهاز جديد كانت اللوحة ترسم فارغة ثم تصل البيانات بعدها،
+     فيرى الزميل «شعبتك» بلا اسم ويظنها لم تصل — ولا يصلحه إلا تحديث.
+     والموجه هو الموضع الطبيعي: شاشة خاطفة لا محتوى فيها ينتظر.
+     وبلا خادم أو جلسة أو إنترنت يوجه فورا كما كان — بمهلة قصيرة تحرسه. */
+  if (!window.fetch) { route(); return; }
+
+  var done = false;
+  function once() { if (!done) { done = true; route(); } }
+  setTimeout(once, 2500);                       /* لا يعلق المستخدم إن تعذرت الشبكة */
+
+  fetch('api/data', { credentials: 'same-origin' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (res) {
+      if (!res) return;
+      /* نسخة محلية لصاحب آخر تطوى — فلا يرى الداخل بيانات من قبله ولو لحظة */
+      /* ⚠ بمعرف الحساب «#رقم» لا باسمه (2026-09-11) — الاسم يعاد تسجيله بعد حذف حسابه.
+         والقيمة القديمة (اسم المستخدم) ترقى إن طابقت. (المنطق نفسه في derive.js.) */
+      var key = res.owner || res.user, owner = localStorage.getItem('shouba.owner');
+      var legacy = owner && owner.charAt(0) !== '#' && owner === res.user;
+      if (owner && key && owner !== key && !legacy) {
+        ['shouba.setup', 'shouba.rev', 'shouba.base'].forEach(function (k) { localStorage.removeItem(k); });
+      }
+      if (key) localStorage.setItem('shouba.owner', key);
+      if (res.data) {
+        var mine = j('shouba.setup');
+        var empty = !mine || Object.keys(mine).length === 0;
+        /* لا نطمس عملا محليا: ننزل حين لا يكون عندنا شيء.
+           والمقارنة برقم المراجعة تتولاها طبقة الاشتقاق بعد التوجيه،
+           وهي التي تختم البصمة (فالموجه لا يكرر حسابها). */
+        if (empty) {
+          localStorage.setItem('shouba.setup', JSON.stringify(res.data));
+          localStorage.setItem('shouba.rev', String(res.rev || 0));
+          localStorage.removeItem('shouba.base');
+        }
+      }
+    })
+    .catch(function () {})
+    .then(once);
+})();
+</script>
+<noscript><a href="login.html">افتح منصة شعبة</a></noscript>
+</body>
+</html>

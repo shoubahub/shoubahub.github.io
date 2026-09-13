@@ -94,6 +94,13 @@ Shouba.returnTo = function () {
        : r === 'board'  ? 'board.html'
        : r === 'records'? 'records.html' : '';
 };
+/* نص زر المعالج حين يعيد لا يتقدم (قاعدة الادخال 2026-09-13: «كل زر يسمي وجهته») — كان يقول «التالي» وهو يعيد
+   الى المراجعة. def: نص الشاشة في تسلسلها («التالي» · «تخطي الآن») */
+Shouba.nextLabel = function (def) {
+  var r = Shouba.returnTo();
+  return r === 'setup-review.html' || r === 'setup-wizard-7.html' ? 'عودة إلى المراجعة'
+       : r === 'board.html' ? 'عودة إلى اللوحة' : r === 'records.html' ? 'عودة إلى سجلاتك' : def;
+};
 
 (function () {
   var backdrop, sheet, list, titleEl;
@@ -127,7 +134,7 @@ Shouba.returnTo = function () {
     backBtn = sheet.querySelector('.sh-back');
     backdrop.addEventListener('click', close);
     backBtn.addEventListener('click', back);
-    sheet.querySelector('.sh-done').addEventListener('click', close);
+    sheet.querySelector('.sh-done').addEventListener('click', done);
     window.addEventListener('popstate', onPop);
   }
   function isOpen() { return !!(sheet && sheet.classList.contains('open')); }
@@ -138,10 +145,13 @@ Shouba.returnTo = function () {
     if (k) s[k] = 1;
     return s;
   }
-  function show(title, nodes, step) {
+  /* «تم»: ان كان للخطوة عمل يتمه (onDone — نموذج اضافة كتب فيه) نفذ، فلا يضيع ما كتب؛ وان رده (false: ادخال
+     ناقص، ورسالته تظهر) بقيت اللوحة مفتوحة */
+  function done() { var f = current && current.onDone; if (f && f() === false) return; close(); }
+  function show(title, nodes, step, onDone) {
     ensure();
     if (step && isOpen() && current) stack.push(current); else stack = [];
-    current = { title: title || '', nodes: nodes };
+    current = { title: title || '', nodes: nodes, onDone: onDone || null };
     paint();
     if (!hist) {
       try {
@@ -269,10 +279,11 @@ Shouba.returnTo = function () {
   };
 
   /* لوحة سفلية عامة لأي محتوى (شبكة رموز مثلا) — تعيد استعمال نفس العنصر.
-     opt.step: خطوة تالية في اللوحة نفسها، و«رجوع» في رأسها يعيد السابقة (انظر اعلاه) */
+     opt.step: خطوة تالية في اللوحة نفسها، و«رجوع» اسفلها يعيد السابقة (انظر اعلاه).
+     opt.onDone: ما يتمه «تم» (نموذج اضافة: يضيف ان كتب فيه) — يعيد false ليبقي اللوحة */
   Shouba.sheet = {
     open: function (title, node, opt) {
-      show(title, [node], !!(opt && opt.step));
+      show(title, [node], !!(opt && opt.step), opt && opt.onDone);
       Shouba.tagNeeds(node);
     },
     back: function () { back(); },

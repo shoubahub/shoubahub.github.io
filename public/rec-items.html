@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=67" />
-<link rel="stylesheet" href="shell.css?v=67" />
-<link rel="stylesheet" href="components.css?v=67" />
-<link rel="stylesheet" href="frame.css?v=67" />
+<link rel="stylesheet" href="identity/tokens.css?v=68" />
+<link rel="stylesheet" href="shell.css?v=68" />
+<link rel="stylesheet" href="components.css?v=68" />
+<link rel="stylesheet" href="frame.css?v=68" />
 <style>
   /* عناصر النموذج (2026-09-12، قرار المستخدم) — رئيس الشعبة يختار من عناصر شبكة المتابعة ما يتابعه:
      «الاغلب لا يملأ النموذج كله». ⚠ غير مؤشرة ابتداء وهو يؤشر (قراره صراحة) — خلاف قائمة السجلات
@@ -48,13 +48,13 @@
   </div>
  </div></div>
 
-<script src="build.js?v=67"></script>
-<script src="refdata.js?v=67"></script>
-<script src="rec-templates.js?v=67"></script>
-<script src="rec-engine.js?v=67"></script>
-<script src="derive.js?v=67"></script>
-<script src="icons.js?v=67"></script>
-<script src="components.js?v=67"></script>
+<script src="build.js?v=68"></script>
+<script src="refdata.js?v=68"></script>
+<script src="rec-templates.js?v=68"></script>
+<script src="rec-engine.js?v=68"></script>
+<script src="derive.js?v=68"></script>
+<script src="icons.js?v=68"></script>
+<script src="components.js?v=68"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search), t = ShoubaRec.latest(Q.get('tpl') || '');
 
@@ -97,7 +97,16 @@
       });
       document.getElementById('sub').textContent = 'اخترت ' + sel.length + ' من ' + checks.length;
       ok.disabled = !sel.length;
-      ok.textContent = sel.length ? 'اعتمد اختيارك' : 'اختر عنصرا واحدا على الأقل';
+      ok.textContent = sel.length ? 'تم' : 'اختر عنصرا واحدا على الأقل';
+    }
+    /* يحفظ الاختيار مع كل لمسة (قاعدة الادخال 2026-09-13) — كان لا يحفظ الا بالزر فيضيع بالخروج من المنزل.
+       بترتيب النموذج لا بترتيب اللمس. وإلغاء الكل يمسح الاختيار (لا يبقى آخره خلف شاشة فارغة)، فتسأله الشاشة
+       من جديد عند فتح السجل كأول مرة */
+    function persist(){
+      if (!sel.length) { S.setPick(t.id, null); return; }
+      var map = {};
+      map[tb.id] = checks.map(function(c){ return c.id; }).filter(on);
+      S.setPick(t.id, map);
     }
 
     checks.forEach(function(c){ var g = c.group || ''; if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(c); });
@@ -108,7 +117,7 @@
       function toggleGroup(){
         var every = groups[g].every(function(c){ return on(c.id); });
         groups[g].forEach(function(c){ set(c.id, !every); });
-        refresh();
+        refresh(); persist();
       }
       all.addEventListener('click', toggleGroup);
       all.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleGroup(); } });
@@ -119,7 +128,7 @@
         r.setAttribute('role', 'checkbox'); r.tabIndex = 0;
         r.innerHTML = '<span class="mark">' + CHK + '</span><div class="tx"><b></b></div>';
         r.querySelector('b').textContent = c.label;
-        function tap(){ set(c.id, !on(c.id)); refresh(); }
+        function tap(){ set(c.id, !on(c.id)); refresh(); persist(); }
         r.addEventListener('click', tap);
         r.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } });
         rows[c.id] = r;
@@ -129,12 +138,10 @@
       itemsEl.appendChild(sec);
     });
 
-    /* الاعتماد: بترتيب النموذج لا بترتيب اللمس، ثم الى ارشيف السجل */
+    /* «تم»: الاختيار محفوظ، فالى ارشيف السجل */
     ok.addEventListener('click', function(){
       if (!sel.length) return;
-      var map = {};
-      map[tb.id] = checks.map(function(c){ return c.id; }).filter(on);
-      S.setPick(t.id, map);
+      persist();
       location.href = 'archive.html?tpl=' + encodeURIComponent(t.id);
     });
     refresh();

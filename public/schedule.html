@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=67" />
-<link rel="stylesheet" href="shell.css?v=67" />
-<link rel="stylesheet" href="components.css?v=67" />
-<link rel="stylesheet" href="frame.css?v=67" />
+<link rel="stylesheet" href="identity/tokens.css?v=68" />
+<link rel="stylesheet" href="shell.css?v=68" />
+<link rel="stylesheet" href="components.css?v=68" />
+<link rel="stylesheet" href="frame.css?v=68" />
 <style>
   /* خاص بشاشة الجداول — الرأس والشريط السفلي واللوحة السفلية من components.css.
      الهامش الجانبي هنا أضيق من الموحد عمدا: المصفوفة تحتاج كل بكسل (الوظيفة قبل الشكل). */
@@ -142,11 +142,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=67"></script>
-<script src="refdata.js?v=67"></script>
-<script src="derive.js?v=67"></script>
-<script src="icons.js?v=67"></script>
-<script src="components.js?v=67"></script>
+<script src="build.js?v=68"></script>
+<script src="refdata.js?v=68"></script>
+<script src="derive.js?v=68"></script>
+<script src="icons.js?v=68"></script>
+<script src="components.js?v=68"></script>
 <script>
   var R=window.SHOUBA_REF;
   var d = Shouba.data();          /* المصدر الواحد — القراءة والكتابة من طبقة الاشتقاق */
@@ -183,7 +183,8 @@
       '<div class="empty"><div>لم تضف معلمي شعبتك بعد — والجدول يبنى على أسمائهم.</div>'
       + '<button class="cta" id="toTeachers">أضف معلميك</button></div>';
     document.getElementById('headLine').textContent = 'بانتظار أسماء معلميك';
-    document.getElementById('toTeachers').addEventListener('click', function(){ location.href='setup-wizard-5.html'; });
+    /* الى إضافة المعلم مباشرة — كان يفتح خطوة التسجيل ⑤ فيدفع «التالي» الى ⑥ و⑦ (قاعدة الادخال 2026-09-13) */
+    document.getElementById('toTeachers').addEventListener('click', function(){ location.href='teachers.html?add=1'; });
   } else {
     /* ?t=اسم ⟵ **وضع المعلم الواحد**: قادم من ملفه، فيفرد جدوله وحده
        بلا شريط المعلمين ولا تنقل بينهم (قرار المستخدم 2026-09-06). */

@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=67" />
-<link rel="stylesheet" href="shell.css?v=67" />
-<link rel="stylesheet" href="components.css?v=67" />
-<link rel="stylesheet" href="frame.css?v=67" />
+<link rel="stylesheet" href="identity/tokens.css?v=68" />
+<link rel="stylesheet" href="shell.css?v=68" />
+<link rel="stylesheet" href="components.css?v=68" />
+<link rel="stylesheet" href="frame.css?v=68" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -160,14 +160,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=67"></script>
-<script src="refdata.js?v=67"></script>
-<script src="rec-templates.js?v=67"></script>
-<script src="rec-engine.js?v=67"></script>
-<script src="derive.js?v=67"></script>
-<script src="plan-data.js?v=67"></script>
-<script src="icons.js?v=67"></script>
-<script src="components.js?v=67"></script>
+<script src="build.js?v=68"></script>
+<script src="refdata.js?v=68"></script>
+<script src="rec-templates.js?v=68"></script>
+<script src="rec-engine.js?v=68"></script>
+<script src="derive.js?v=68"></script>
+<script src="plan-data.js?v=68"></script>
+<script src="icons.js?v=68"></script>
+<script src="components.js?v=68"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -587,7 +587,8 @@
     calRow.querySelector('span').innerHTML =
       'أضفه إلى رزنامة جهازي <span class="chip muted">قيد الإعداد</span><small>تصل في تحديث قادم — والموعد يحفظ في المنصة الآن</small>';
     n.insertBefore(calRow, save);
-    Shouba.sheet.open('موعد جديد', n, { step: !!fromList });
+    /* «تم» اسفل اللوحة يضيف ما كتب — لا يضيع (قاعدة الادخال 2026-09-13) */
+    Shouba.sheet.open('موعد جديد', n, { step: !!fromList, onDone: function(){ return inp.value.trim() ? submit() : true; } });
     var inp = n.querySelector('#evt');
     setTimeout(function(){ inp.focus(); }, 80);
     /* الإغلاق فور الإضافة (قرار المستخدم 2026-09-08): كان يعيد فتح لوحة اليوم
@@ -597,8 +598,8 @@
     function submit(){
       var v = inp.value.trim(), dv = n.querySelector('#evd').value;
       /* لا اهمال صامت ولا حفظ صامت (قاعدة الادخال 2026-09-13) */
-      if(!dv){ Shouba.toast('اختر تاريخ الموعد أولا.'); return; }
-      if(v.length < 2){ Shouba.toast('اكتب عنوان الموعد — حرفان على الأقل.'); inp.focus(); return; }
+      if(!dv){ Shouba.toast('اختر تاريخ الموعد أولا.'); return false; }
+      if(v.length < 2){ Shouba.toast('اكتب عنوان الموعد — حرفان على الأقل.'); inp.focus(); return false; }
       Shouba.addEvent({ date: dv, type: chosen, title: v });
       Shouba.toast('أضيف الموعد: ' + v + ' — ' + Shouba.dm(dv));
       if(n.querySelector('#tocal').checked) toDeviceCalendar(dv, chosen, v);
@@ -606,6 +607,7 @@
       if(far) setWeek(weekOffset);      /* موعد خارج الأسبوع المعروض: نبقي العرض كما هو */
       paintWeek(); paintCard();
       Shouba.sheet.close();
+      return true;
     }
     save.addEventListener('click', submit);
     inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') submit(); });

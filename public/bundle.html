@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=67" />
-<link rel="stylesheet" href="shell.css?v=67" />
-<link rel="stylesheet" href="components.css?v=67" />
-<link rel="stylesheet" href="frame.css?v=67" />
-<link rel="stylesheet" href="rec-print.css?v=67" />
+<link rel="stylesheet" href="identity/tokens.css?v=68" />
+<link rel="stylesheet" href="shell.css?v=68" />
+<link rel="stylesheet" href="components.css?v=68" />
+<link rel="stylesheet" href="frame.css?v=68" />
+<link rel="stylesheet" href="rec-print.css?v=68" />
 <style>
   /* ملف الفصل (2026-09-13، طلب المستخدم: «هل يمكن طباعة السجلات كاملة؟») — سجلات الفصل او العام في ملف واحد:
      غلاف وفهرس وترقيم متصل (ShoubaPrint.bundle)، يطبع او يحفظ PDF. تفتح من «سجلاتك».
@@ -61,16 +61,24 @@
   </div>
  </div></div>
 
-<script src="build.js?v=67"></script>
-<script src="refdata.js?v=67"></script>
-<script src="rec-templates.js?v=67"></script>
-<script src="rec-engine.js?v=67"></script>
-<script src="derive.js?v=67"></script>
-<script src="icons.js?v=67"></script>
-<script src="components.js?v=67"></script>
-<script src="rec-print.js?v=67"></script>
+<script src="build.js?v=68"></script>
+<script src="refdata.js?v=68"></script>
+<script src="rec-templates.js?v=68"></script>
+<script src="rec-engine.js?v=68"></script>
+<script src="derive.js?v=68"></script>
+<script src="icons.js?v=68"></script>
+<script src="components.js?v=68"></script>
+<script src="rec-print.js?v=68"></script>
 <script>
   var S = Shouba, d = S.data(), scope = 'term', off = {}, withCover = true, sheets = [];
+  /* اختيارات الملف محفوظة في الشعبة (قاعدة الادخال 2026-09-13) — كانت تضيع بالخروج فيعيد اختيارها كل مرة */
+  (function restore(){
+    var bp = d.bundlePick || {};
+    if (bp.scope === 'year' || bp.scope === 'term') scope = bp.scope;
+    if (bp.off && typeof bp.off === 'object') off = bp.off;
+    if (bp.cover === false) withCover = false;
+  })();
+  function keep(){ S.save({ bundlePick: { scope: scope, off: off, cover: withCover } }); }
   var CHK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   var FIRST = ['meetings', 'opplan'];   /* الاجتماعات والخطة التشغيلية اولا — كترتيب «سجلاتك» */
 
@@ -142,9 +150,9 @@
     typesEl.textContent = ''; optsEl.textContent = '';
     gs.forEach(function(g){
       typesEl.appendChild(pickRow(g.t.title, S.count(g.recs.length, g.t.noun || { one: 'سجل', two: 'سجلان', few: 'سجلات', many: 'سجلا' }), !off[g.t.id],
-        function(){ off[g.t.id] = !off[g.t.id]; paint(); }));
+        function(){ off[g.t.id] = !off[g.t.id]; keep(); paint(); }));
     });
-    optsEl.appendChild(pickRow('غلاف وفهرس', 'غلاف باسم الشعبة والفصل، وفهرس بصفحة كل سجل', withCover, function(){ withCover = !withCover; paint(); }));
+    optsEl.appendChild(pickRow('غلاف وفهرس', 'غلاف باسم الشعبة والفصل، وفهرس بصفحة كل سجل', withCover, function(){ withCover = !withCover; keep(); paint(); }));
     var entries = [];
     gs.forEach(function(g){ if (!off[g.t.id]) g.recs.forEach(function(r){ entries.push({ tpl: g.t, rec: r, ctx: ctxOf(r, g.t), label: labelOf(r, g.t) }); }); });
     var box = document.getElementById('pgs'), note = document.getElementById('note');
@@ -180,10 +188,11 @@
   }
 
   [].forEach.call(document.querySelectorAll('#scope .seg'), function(b){
+    b.classList.toggle('on', b.dataset.s === scope);   /* المحفوظ */
     b.addEventListener('click', function(){
       scope = b.dataset.s;
       [].forEach.call(document.querySelectorAll('#scope .seg'), function(x){ x.classList.toggle('on', x === b); });
-      paint();
+      keep(); paint();
     });
   });
   document.getElementById('print').addEventListener('click', startPrint);

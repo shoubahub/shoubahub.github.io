@@ -753,29 +753,31 @@
         cell.appendChild(CELL[c.kind](c, row, ctx, live));
         n.appendChild(cell);
       });
-      var ok = el('button', 'cta', isNew ? 'أضف المتابعة' : 'تم');
-      ok.type = 'button';
-      ok.addEventListener('click', function () {
-        if (isNew) { rows.push(row); fresh = row; ch(); }
-        S.sheet.close(); paintRows();
-      });
-      n.appendChild(ok);
-      if (!isNew) {
+      /* المخرج «تم» اسفل كل لوحة (components.js، قاعدة الادخال 2026-09-13): في التعديل يغلق وقد حفظ كل تغيير،
+         وفي الجديد يضيف ما كتب فيه (الموضوع او ما قطع او الملاحظة — لا التاريخ وحده) فلا يضيع. فحذف زر «تم» الذي كان هنا */
+      function filled() { return [tc, pc, nc].some(function (c) { return c && row[c.id]; }); }
+      function add() { rows.push(row); fresh = row; ch(); S.sheet.close(); paintRows(); }
+      if (isNew) {
+        var ok = el('button', 'cta', 'أضف المتابعة');
+        ok.type = 'button';
+        ok.addEventListener('click', add);
+        n.appendChild(ok);
+      } else {
         var del = el('button', 'btn-ghost', 'احذف هذه المتابعة');
         del.type = 'button';
+        /* تاكيد خطوة في اللوحة نفسها: «تراجع» يعيد الى المتابعة لا يغلق كل شيء */
         del.addEventListener('click', function () {
-          S.sheet.close();
-          setTimeout(function () {
-            S.ask('حذف المتابعة', 'تحذف متابعة ' + (dm(row[dc.id]) || 'بلا تاريخ') + ' من الكشف.', 'احذفها', function () {
-              var i = rows.indexOf(row);
-              if (i > -1) rows.splice(i, 1);
-              ch(); paintRows();
-            });
-          }, 320);
+          S.ask('حذف المتابعة', 'تحذف متابعة ' + (dm(row[dc.id]) || 'بلا تاريخ') + ' من الكشف.', 'احذفها', function () {
+            var i = rows.indexOf(row);
+            if (i > -1) rows.splice(i, 1);
+            ch(); paintRows();
+          });
         });
         n.appendChild(del);
       }
-      S.sheet.open(isNew ? 'متابعة جديدة' : 'متابعة ' + (dm(row[dc.id]) || ''), n);
+      S.sheet.open(isNew ? 'متابعة جديدة' : 'متابعة ' + (dm(row[dc.id]) || ''), n, {
+        onDone: function () { if (isNew && filled()) { add(); return true; } paintRows(); return true; }
+      });
     }
 
     /* لوحة الحكم حيث اللمسة: وصل الى · اسبوعه والاسبوع الجاري · الحكم مقترحا · سجل او تأشير فقط */

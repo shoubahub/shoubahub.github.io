@@ -259,6 +259,99 @@ window.SHOUBA_TPL = {
           ] }
       ]
     }
+  },
+
+  /* ── ملف المعلم (المجموعة أ، 2026-09-14) — مرجعها صفحات نماذج التوجيه ٥ و٨ و١٥. سجلات معلم (owner:'teacher').
+     والغلاف «سجل متابعة معلم» (ص٤) ليس سجلا يملأ: صفحة تقديم لملف المعلم حين يطبع (P.registerCover · bundle.html?who=) ── */
+
+  /* بطاقة متابعة معلم (ص٥): بياناته — اختيارية كلها، تكتب او تترك لليد — ثم فصوله ومقرراته وحصصه، تملأ من جدول
+     حصصه بلمسة (table.fill)، وعدد الطلبة بيده، والمجموع في آخرها. لكل فصل دراسي */
+  tcard: {
+    1: {
+      id: 'tcard', v: 1, official: true, owner: 'teacher',
+      title: 'بطاقة متابعة معلم', ready: 'بطاقة متابعة معلم',
+      noun: { one: 'بطاقة', two: 'بطاقتان', few: 'بطاقات', many: 'بطاقة', zero: 'لا بطاقات بعد' },
+      page: { orient: 'portrait', fit: 'single-page', minPt: 10 },
+      blocks: [
+        { type: 'fields', id: 'meta', inline: true, fields: [
+          { id: 'term', label: 'الفصل الدراسي', kind: 'text', auto: 'term' },
+          { id: 'year', label: 'العام الدراسي', kind: 'text', auto: 'year' }
+        ] },
+        { type: 'fields', id: 'info', pairs: 2, fields: [
+          { id: 'name',  label: 'الاسم الرباعي', kind: 'text', auto: 'teacher' },   /* «اسم المعلم الرباعي» في النموذج — اختصر ليسع سطرا (البطاقة للمعلم فلا لبس) */
+          { id: 'nat',   label: 'الجنسية',          kind: 'text' },
+          { id: 'civil', label: 'الرقم المدني',      kind: 'text' },
+          { id: 'fileno', label: 'رقم الملف',        kind: 'text' },
+          { id: 'addr',  label: 'العنوان',           kind: 'text' },
+          { id: 'phone', label: 'رقم الهاتف',        kind: 'text' },
+          { id: 'hired', label: 'تاريخ التعيين',     kind: 'date' },
+          { id: 'years', label: 'سنوات الخبرة',      kind: 'number' },
+          { id: 'qual',  label: 'المؤهل وتاريخه',    kind: 'text' },
+          { id: 'spec',  label: 'التخصص',            kind: 'text' }
+        ] },
+        { type: 'table', id: 'classes', title: 'الفصول التي يدرسها المعلم', rowLabel: 'فصل', rowsLabel: 'فصول', add: 'أضف فصلا بيدك',
+          rows: { min: 6 }, total: ['periods', 'students'],
+          fill: { from: 'schedule', cls: 'cls', subject: 'course', periods: 'periods' },
+          count: { one: 'فصل', two: 'فصلان', few: 'فصول', many: 'فصلا' },
+          columns: [
+            { id: 'cls',      label: 'الفصل والشعبة',        kind: 'class',  w: 26 },
+            { id: 'course',   label: 'المقرر الدراسي',       kind: 'text' },
+            { id: 'periods',  label: 'عدد الحصص الأسبوعية',  kind: 'number', w: 26 },
+            { id: 'students', label: 'عدد الطلبة الإجمالي',  kind: 'number', w: 26 },
+            { id: 'note',     label: 'ملاحظات',             kind: 'text',   w: 40 }
+          ] }
+      ]
+    }
+  },
+
+  /* الملاحظات التربوية (ص٨): م · اليوم (من التاريخ) · التاريخ · الملاحظة · التوقيع (لليد). للعام كله كنموذجه، واسم
+     المعلم تحت الترويسة — النموذج بلا اسم لانه في ملفه، والمطبوع وحده يحتاجه */
+  tnotes: {
+    1: {
+      id: 'tnotes', v: 1, official: true, owner: 'teacher', scope: 'year',
+      title: 'الملاحظات التربوية', ready: 'الملاحظات التربوية',
+      noun: { one: 'سجل', two: 'سجلان', few: 'سجلات', many: 'سجلا', zero: 'لا سجلات بعد' },
+      page: { orient: 'portrait', fit: 'flow' },
+      blocks: [
+        { type: 'fields', id: 'meta', inline: true, fields: [
+          { id: 'who',  label: 'اسم المعلم',    kind: 'teacher', auto: 'teacher' },
+          { id: 'year', label: 'العام الدراسي', kind: 'text',    auto: 'year' }
+        ] },
+        { type: 'table', id: 'rows', rowLabel: 'ملاحظة', rowsLabel: 'ملاحظات', add: 'أضف ملاحظة', rows: { min: 13 },
+          count: { one: 'ملاحظة', two: 'ملاحظتان', few: 'ملاحظات', many: 'ملاحظة' },
+          columns: [
+            { id: 'day',  label: 'اليوم',    kind: 'auto', of: 'date', show: 'weekday', w: 22 },
+            { id: 'date', label: 'التاريخ',  kind: 'date', w: 26 },
+            { id: 'note', label: 'الملاحظة', kind: 'longtext' },
+            { id: 'sign', label: 'التوقيع',  kind: 'signature', w: 30 }
+          ] }
+      ]
+    }
+  },
+
+  /* إنجازات وأنشطة المعلم (ص١٥): اسم المعلم والعام تحت الترويسة، ثم م · اليوم والتاريخ · الأنشطة والإنجازات.
+     للعام كله، ومعه شواهد تطبع اسماؤها في آخره (شهادة · صورة نشاط · خطاب شكر) */
+  tach: {
+    1: {
+      id: 'tach', v: 1, official: true, owner: 'teacher', scope: 'year',
+      title: 'إنجازات وأنشطة المعلم', ready: 'إنجازات المعلم وأنشطته',
+      noun: { one: 'سجل', two: 'سجلان', few: 'سجلات', many: 'سجلا', zero: 'لا سجلات بعد' },
+      page: { orient: 'portrait', fit: 'flow' },
+      blocks: [
+        { type: 'fields', id: 'meta', inline: true, fields: [
+          { id: 'who',  label: 'اسم المعلم',    kind: 'teacher', auto: 'teacher' },
+          { id: 'year', label: 'العام الدراسي', kind: 'text',    auto: 'year' }
+        ] },
+        { type: 'table', id: 'rows', rowLabel: 'إنجاز', rowsLabel: 'إنجازات', add: 'أضف إنجازا أو نشاطا', rows: { min: 18 },
+          count: { one: 'إنجاز', two: 'إنجازان', few: 'إنجازات', many: 'إنجازا' },
+          columns: [
+            { id: 'date', label: 'اليوم والتاريخ',      kind: 'date', show: 'weekday+date', w: 40 },
+            { id: 'act',  label: 'الأنشطة والإنجازات', kind: 'longtext' }
+          ] },
+        { type: 'files', id: 'ev', title: 'الشواهد', accept: ['image', 'pdf'], print: 'list',
+          hint: 'شهادة · صورة نشاط · خطاب شكر — تطبع أسماؤها في آخر السجل', add: 'أرفق شاهدا' }
+      ]
+    }
   }
 
 };

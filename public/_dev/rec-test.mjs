@@ -311,6 +311,14 @@ ok(Wst.staff().join('|') === 'محمد البراك|خالد سعد|فهد نا�
 const hr = Wst.newRec('covered', 'محمد البراك');
 ok(hr && JSON.stringify(hr).indexOf('محمد البراك') > -1, 'سجل ما قطع من المنهج ينشأ باسم رئيس الشعبة', hr && hr.values);
 
+// ١٥) ملف المعلم (المجموعة أ، 2026-09-14): ثلاثة قوالب معلم باسمائها في القائمة، والدوام خارجها، والغلاف مطبوع يجمع لا قالب
+const RF = W.SHOUBA_REF;
+ok(['tcard', 'tnotes', 'tach'].every(id => { const t = R.latest(id); return t && t.owner === 'teacher' && RF.readyRecords.indexOf(t.ready) > -1; }),
+  'بطاقة المتابعة والملاحظات التربوية والانجازات قوالب معلم باسمائها في القائمة');
+ok(RF.readyRecords.indexOf('الدوام والاستئذانات الشهرية') < 0 && RF.retiredRecords.indexOf('الدوام والاستئذانات الشهرية') > -1
+   && RF.recordLinks['غلاف سجل متابعة المعلم'] === 'teacherFile' && !R.byReady('غلاف سجل متابعة المعلم'), 'الدوام خارج القائمة، والغلاف مطبوع يجمع لا قالب');
+ok(R.latest('tnotes').scope === 'year' && R.latest('tach').scope === 'year' && !R.latest('tcard').scope, 'الملاحظات والانجازات للعام، والبطاقة لكل فصل');
+
 // ٩) بلا تشكيل في القوالب والمحرك
 const H = new RegExp('[' + String.fromCharCode(0x064B) + '-' + String.fromCharCode(0x0652) + String.fromCharCode(0x0670) + ']');
 ok(!H.test(read('rec-templates.js')) && !H.test(read('rec-engine.js')), 'القوالب والمحرك بلا تشكيل');

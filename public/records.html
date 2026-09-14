@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=72" />
-<link rel="stylesheet" href="shell.css?v=72" />
-<link rel="stylesheet" href="components.css?v=72" />
-<link rel="stylesheet" href="frame.css?v=72" />
+<link rel="stylesheet" href="identity/tokens.css?v=73" />
+<link rel="stylesheet" href="shell.css?v=73" />
+<link rel="stylesheet" href="components.css?v=73" />
+<link rel="stylesheet" href="frame.css?v=73" />
 <style>
   .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
   .note{padding:0 var(--gap-side);font-size:12px;font-weight:600;color:var(--shouba-hint);line-height:1.8}
@@ -71,13 +71,13 @@
   </div>
  </div></div>
 
-<script src="build.js?v=72"></script>
-<script src="refdata.js?v=72"></script>
-<script src="rec-templates.js?v=72"></script>
-<script src="rec-engine.js?v=72"></script>
-<script src="derive.js?v=72"></script>
-<script src="icons.js?v=72"></script>
-<script src="components.js?v=72"></script>
+<script src="build.js?v=73"></script>
+<script src="refdata.js?v=73"></script>
+<script src="rec-templates.js?v=73"></script>
+<script src="rec-engine.js?v=73"></script>
+<script src="derive.js?v=73"></script>
+<script src="icons.js?v=73"></script>
+<script src="components.js?v=73"></script>
 <script>
   var d = Shouba.data();
 
@@ -92,8 +92,10 @@
      ما بني قالبه (ShoubaRec.byReady) يفتح ارشيفه (archive.html)، وفيه الجديد والمحفوظ (2026-09-12).
      وسائرها «قيد الإعداد» حتى تبنى قوالبها. */
   var listEl = document.getElementById('list');
-  var records = (d.records || []).slice();
-  var ready = records.filter(function(n){ return ShoubaRec.byReady(n); }).length;
+  /* المستبعد بقرار المستخدم يسقط (refdata.retiredRecords)، وما هو مطبوع يجمع لا قالب يملأ له بابه (recordLinks) */
+  var REFX = window.SHOUBA_REF || {}, LINKS = REFX.recordLinks || {};
+  var records = (d.records || []).filter(function(n){ return (REFX.retiredRecords || []).indexOf(n) < 0; });
+  var ready = records.filter(function(n){ return ShoubaRec.byReady(n) || LINKS[n]; }).length;
 
   if(!records.length){
     listEl.innerHTML = '<div class="invite">لم تعتمد سجلات في الإعداد بعد —'
@@ -109,7 +111,7 @@
     b.querySelector('b').textContent = name;
     return b;
   }
-  var soonNames = records.filter(function(n){ return !ShoubaRec.byReady(n); });
+  var soonNames = records.filter(function(n){ return !ShoubaRec.byReady(n) && !LINKS[n]; });
   /* قالب رسمي جاهز ليس في قائمتك (بني بعد اعدادك — كالخطة التشغيلية 2026-09-12): يعرض «جديد» ويضاف بلمسة
      ثم يفتح ارشيفه. القائمة تبقى قرارك — لا يضاف اليها شيء دون لمستك */
   var readyList = records.filter(function(n){ return ShoubaRec.byReady(n); }).map(function(n){ return { n: n, fresh: false }; })
@@ -135,6 +137,28 @@
       b.className = 'entry';
       listEl.appendChild(b);
     });
+
+  /* «غلاف سجل متابعة المعلم» (ص٤): ليس سجلا يملأ — يطبع «ملف المعلم» لمعلم تختاره: غلافه ثم سجلاته (2026-09-14) */
+  records.filter(function(n){ return LINKS[n] === 'teacherFile'; }).forEach(function(name){
+    var b = entry(name);
+    b.className = 'entry';
+    b.querySelector('.val').textContent = 'اطبعه لأي معلم';
+    b.addEventListener('click', function(){
+      var n = document.createElement('div'), staff = Shouba.staff();
+      n.className = 'setlist';
+      if (!staff.length) { var e0 = document.createElement('div'); e0.className = 'soon-note'; e0.textContent = 'أضف معلمي شعبتك أولا — من تبويب «المعلمون».'; n.appendChild(e0); }
+      staff.forEach(function(nm){
+        var it = document.createElement('button');
+        it.type = 'button'; it.className = 'setitem';
+        it.innerHTML = '<b></b><small>غلاف «سجل متابعة معلم» ثم سجلاته</small>';
+        it.querySelector('b').textContent = 'أ. ' + nm;
+        it.addEventListener('click', function(){ location.href = 'bundle.html?who=' + encodeURIComponent(nm); });
+        n.appendChild(it);
+      });
+      Shouba.sheet.open('ملف أي معلم؟', n);
+    });
+    listEl.appendChild(b);
+  });
 
   /* ما لم يبن قالبه بعد — في الآخر */
   soonNames.forEach(function(name){

@@ -101,17 +101,19 @@
       });
       return line.children.length ? line : null;
     }
-    var t = el('table', 'pp-fields');
-    b.fields.forEach(function (f) {
-      var tr = el('tr'), td = el('td'), x = v[f.id];
+    /* pairs:2 — حقلان في كل سطر كنموذجه (بطاقة متابعة معلم ص٥: عشر خانات في عمودين) فتتسع الورقة صفحة واحدة */
+    var two = b.pairs === 2, t = el('table', 'pp-fields' + (two ? ' two' : '')), tr = null;
+    b.fields.forEach(function (f, i) {
+      var td = el('td'), x = v[f.id];
+      if (!two || i % 2 === 0) { tr = el('tr'); t.appendChild(tr); }
       tr.appendChild(el('th', null, f.label));
       if (f.kind === 'date' && x) {
         if (f.show === 'weekday+date') { td.appendChild(el('span', null, window.ShoubaRec.weekday(x))); td.appendChild(el('span', 'gap')); }
         td.appendChild(el('span', null, P.date(x)));
       } else td.textContent = P.ar(x == null ? '' : x);
       tr.appendChild(td);
-      t.appendChild(tr);
     });
+    if (two && b.fields.length % 2) { tr.appendChild(el('th')); tr.appendChild(el('td')); }   /* السطر الاخير بخانتيه */
     return t;
   };
   /* ② مساحة النص: العبارة الافتتاحية ثم الاقسام. وبلا عبارة ولا قسم مكتوب لا شيء يطبع (غايات محور فارغة).
@@ -186,7 +188,11 @@
     switch (c.kind) {
       /* في خانة الجدول اليوم والشهر وحدهما (مراجعة الطباعة 2026-09-14): التاريخ الكامل انكسر سطرين في عمود «تاريخ
          المتابعة» الضيق، والعام مكتوب في رأس الكشف. وخانة البيانات (رقم الاجتماع وتاريخه) تبقى بتاريخها الكامل */
-      case 'date': return P.day(x);
+      case 'date':
+        /* «اليوم والتاريخ» في خانة واحدة (show:'weekday+date' — انجازات المعلم ص١٥) */
+        return c.show === 'weekday+date' && x && window.ShoubaRec ? window.ShoubaRec.weekday(x) + ' ' + P.day(x) : P.day(x);
+      /* عمود مشتق من عمود آخر في صفه (of) — «اليوم» من «التاريخ» في الملاحظات التربوية (ص٨) */
+      case 'auto': return c.show === 'weekday' && x && window.ShoubaRec ? window.ShoubaRec.weekday(x) : '';
       case 'number': case 'class': return P.ar(x == null ? '' : x);
       case 'check': return x ? '✓' : '';
       case 'pick': return x === c.opt ? '✓' : '';   /* خيار من اختيار مقسم (split) */
@@ -264,7 +270,8 @@
       if (lead) tr.appendChild(lead);
       if (num) tr.appendChild(el('td', 'm', P.ar(k + 1)));
       cols.forEach(function (c) {
-        tr.appendChild(el('td', c.kind === 'check' || c.kind === 'pick' ? 'ck' : c.kind === 'signature' ? 'sig' : null, row ? cellText(c, row[c.id], ctx) : ''));
+        tr.appendChild(el('td', c.kind === 'check' || c.kind === 'pick' ? 'ck' : c.kind === 'signature' ? 'sig' : null,
+          row ? cellText(c, c.kind === 'auto' && c.of ? row[c.of] : row[c.id], ctx) : ''));
       });
       tb.appendChild(tr);
     }
@@ -281,6 +288,19 @@
       });
     } else {
       for (var i2 = 0, n2 = Math.max(rows.length, (b.rows && b.rows.min) || 0); i2 < n2; i2++) line(rows[i2], i2, null);
+      /* سطر المجموع (b.total — بطاقة متابعة معلم ص٥): مجموع كل عمود مذكور، و«المجموع» في اول خانة سواه */
+      if ((b.total || []).length && rows.length) {
+        var tt = el('tr', 'tot'), labd = false;
+        if (num) tt.appendChild(el('td', 'm', ''));
+        cols.forEach(function (c) {
+          if (b.total.indexOf(c.id) > -1) {
+            var s = 0;
+            rows.forEach(function (r) { var n = parseFloat(String(r[c.id] == null ? '' : r[c.id]).replace(/[٠-٩]/g, function (d) { return d.charCodeAt(0) - 0x660; })); if (!isNaN(n)) s += n; });
+            tt.appendChild(el('td', null, P.ar(s)));
+          } else { tt.appendChild(el('td', null, labd ? '' : (b.totalLabel || 'المجموع'))); labd = true; }
+        });
+        tb.appendChild(tt);
+      }
     }
     t.appendChild(tb);
     return t;
@@ -644,7 +664,10 @@
      الشعبة · عنوان السجل · خط مزدوج · المعلم (سجل معلم واحد) · الفصل والعام · مربع (العدد · من · إلى) · سطر التوقيعات.
      العدد: محاضر السجل؛ وفي سجل المعلم متابعاته (صفوف جدوله ذات التاريخ) او عدد المعلمين ان جمع اكثر من معلم.
      tpl · recs: سجلات القالب في الملف · يعيد ورقة عمودية (pp-page) */
-  P.registerCover = function (tpl, recs, fontId) {
+  /* opt (2026-09-14، ملف المعلم): { title — عنوان غير عنوان القالب («سجل متابعة معلم» ص٤) · who — سطر المعلم ·
+     facts — [[تسمية, قيمة]] بدل الحساب } */
+  P.registerCover = function (tpl, recs, fontId, opt) {
+    opt = opt || {};
     var S = window.Shouba, R = window.ShoubaRec, d = S.data(), s = P.sheet('portrait', fontId), mid = el('div', 'pp-rcv-mid');
     s.classList.add('pp-page', 'pp-rcv');
     var h = P.header(P.headerData('')), tt = h.querySelector('.pp-title');
@@ -663,14 +686,15 @@
     }
     dates.sort();
     if (d.department) mid.appendChild(el('div', 'pp-rcv-kick', 'شعبة ' + d.department));
-    mid.appendChild(el('div', 'pp-rcv-t', tpl.title));
+    mid.appendChild(el('div', 'pp-rcv-t', opt.title || tpl.title));
     mid.appendChild(el('div', 'pp-rcv-rule'));
-    if (tpl.owner === 'teacher' && who.length === 1) mid.appendChild(el('div', 'pp-rcv-who', 'المعلم: ' + P.whoLabel(who[0])));
+    if (opt.who) mid.appendChild(el('div', 'pp-rcv-who', 'المعلم: ' + P.whoLabel(opt.who)));
+    else if (tpl.owner === 'teacher' && who.length === 1) mid.appendChild(el('div', 'pp-rcv-who', 'المعلم: ' + P.whoLabel(who[0])));
     var yr = d.year ? 'العام الدراسي ' + P.ar(d.year) : '';
     var term = tpl.scope === 'year' ? yr : [d.term, yr].filter(Boolean).join(' · ');
     if (term) mid.appendChild(el('div', 'pp-rcv-s', term));
     var f = el('div', 'pp-rcv-facts');
-    [[label, P.ar(n)], ['من', dates.length ? P.date(dates[0]) : ''], ['إلى', dates.length ? P.date(dates[dates.length - 1]) : '']].forEach(function (x) {
+    (opt.facts || [[label, P.ar(n)], ['من', dates.length ? P.date(dates[0]) : ''], ['إلى', dates.length ? P.date(dates[dates.length - 1]) : '']]).forEach(function (x) {
       if (!x[1]) return;
       var c = el('div'); c.appendChild(el('small', null, x[0])); c.appendChild(el('b', null, x[1])); f.appendChild(c);
     });
@@ -753,9 +777,12 @@
         tb.appendChild(bd); ts.appendChild(tb); host.appendChild(ts); out.push(ts);
       }
     }
+    /* صفحة امامية بلا رقم (opt.front — غلاف ملف المعلم «سجل متابعة معلم» ص٤): تبنى في host وتتقدم الملف */
+    var front = opt.front ? opt.front(host) : null;
+    if (front) out.unshift(front);
     sets.forEach(function (l) { l.forEach(function (p) { out.push(p); }); });
     out.forEach(function (s, i) {
-      if (opt.cover && i === 0) return;
+      if ((opt.cover || front) && i === 0) return;
       var at = s.classList.contains('pp-rot') ? s.firstChild : s;   /* المدار: الرقم في ورقته فيقرأ معها */
       at.classList.add('pp-page');
       at.appendChild(el('div', 'pp-pageno', 'صفحة ' + P.ar(i + 1) + ' من ' + P.ar(out.length)));

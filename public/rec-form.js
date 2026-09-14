@@ -523,8 +523,43 @@
         box.appendChild(card);
       });
       if (!rows.length) box.appendChild(el('div', 'hint', 'لا ' + (b.rowsLabel || 'صفوف') + ' بعد — أضف أولها'));
+      /* المجموع تحت الصفوف (b.total — كسطره على الورق) */
+      if ((b.total || []).length && rows.length) {
+        box.appendChild(el('div', 'hint', 'المجموع — ' + b.total.map(function (id) {
+          var c = (b.columns || []).filter(function (x) { return x.id === id; })[0], s = 0;
+          rows.forEach(function (r) { var n = parseFloat(latin(r[id])); if (!isNaN(n)) s += n; });
+          return (c ? c.label : id) + ': ' + s;
+        }).join(' · ')));
+      }
     }
     sec.appendChild(box);
+    /* يملأ من جدول حصص صاحب السجل (b.fill — بطاقة متابعة معلم 2026-09-14): لكل فصل ومادة يدرسهما صف بعدد حصصهما
+       الاسبوعية، ويضاف ما ليس في الجدول وحده فلا يمس ما كتب. ⚠ يقرأ الجداول ولا يمسها (لا daySlots: ينشئ اياما فارغة) */
+    if (b.fill && b.fill.from === 'schedule' && ctx.rec && ctx.rec.who && window.Shouba) {
+      sec.appendChild(addBtn('املأ من جدول أ. ' + ctx.rec.who, function () {
+        var S = window.Shouba, who = ctx.rec.who, f = b.fill, sc = (S.data().schedules || {})[who] || {}, map = {}, order = [], added = 0;
+        Object.keys(sc).forEach(function (day) {
+          (Array.isArray(sc[day]) ? sc[day] : []).forEach(function (v) {
+            if (!v) return;
+            var s = S.splitSlot(v), k = s.cls + '|' + s.subject;
+            if (!map[k]) { map[k] = { cls: s.cls, subject: s.subject, n: 0 }; order.push(k); }
+            map[k].n++;
+          });
+        });
+        var rank = S.classesOf ? S.classesOf(who) : [];
+        order.sort(function (a, b2) { return rank.indexOf(map[a].cls) - rank.indexOf(map[b2].cls); });
+        order.forEach(function (k) {
+          var x = map[k];
+          if (rows.some(function (r) { return r[f.cls] === x.cls && r[f.subject] === x.subject; })) return;
+          var r = window.ShoubaRec.newRow(b);
+          r[f.cls] = x.cls; r[f.subject] = x.subject; r[f.periods] = x.n;
+          rows.push(r); added++;
+        });
+        changed(); paint();
+        if (S.toast) S.toast(added ? 'أضيف من جدوله ' + S.count(added, { one: 'فصل', two: 'فصلان', few: 'فصول', many: 'فصلا' })
+          : order.length ? 'فصوله كلها في البطاقة' : 'لم يدخل جدول أ. ' + who + ' بعد');
+      }));
+    }
     sec.appendChild(addBtn(b.add || 'أضف صفا', function () {
       rows.push(window.ShoubaRec.newRow(b)); changed(); paint();
       var last = box.lastElementChild, f = last && last.querySelector('input,textarea');

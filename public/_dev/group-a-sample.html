@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-public>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>شعبة · عينات ملف المعلم (أداة تطوير)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../rec-print.css" />
+<style>
+  /* عينات المجموعة (أ) «ملف المعلم» على ورقها الحقيقي (2026-09-14) — غلاف ملف المعلم · بطاقة متابعة معلم ·
+     الملاحظات التربوية · انجازات وانشطة المعلم، بقوالبها وطبقة الطباعة نفسيهما وبيانات مثال لا تحفظ.
+     ?o=cover|card|notes|ach نموذج واحد · &full=1 بمقاسه للالتقاط. على الجهاز المحلي وحده */
+  body{margin:0;background:#E9E4DA;font-family:"IBM Plex Sans Arabic",sans-serif;padding:20px 12px 60px}
+  body.full{padding:0;background:#fff}
+  h2{font-size:15px;margin:22px 4px 8px;color:#16456E}
+  .pw{position:relative;overflow:hidden;background:#fff;box-shadow:0 1px 8px rgba(40,30,15,.2);margin:0 auto 14px;max-width:620px}
+  .pw .pp-sheet{position:absolute;top:0;right:0;transform-origin:top right}
+  #host{position:absolute;left:-6000px;top:0;width:1300px}
+</style>
+</head>
+<body>
+<div id="out"></div>
+<div id="host"></div>
+<script>
+  (function(){ var h = location.hostname;
+    if (!(h === 'localhost' || h === '127.0.0.1')) { document.body.textContent = 'أداة تطوير — تعمل على الجهاز المحلي وحده.'; throw new Error('dev only'); }
+    try { sessionStorage.setItem('shouba.sim', '1'); } catch (e) {}
+    /* متصفح بلا بيانات (الالتقاط): شعبة مثال — ولا يمس مخزنا فيه بيانات */
+    try {
+      if (!localStorage.getItem('shouba.setup')) {
+        localStorage.setItem('shouba.setup', JSON.stringify({ stage: 'ثانوي', department: 'الرياضيات', schoolName: 'ثانوية الأمل', schoolType: 'بنين',
+          year: '٢٠٢٦ / ٢٠٢٧', term: 'الفصل الأول', principal: 'عبدالعزيز الفلاح', refDataVersion: 4, teachers: ['فهد المطيري'] }));
+        localStorage.setItem('shouba.user', JSON.stringify({ name: 'محمد البراك' }));
+      }
+    } catch (e) {}
+  })();
+</script>
+<script src="../build.js"></script>
+<script src="../refdata.js"></script>
+<script src="../rec-templates.js"></script>
+<script src="../rec-engine.js"></script>
+<script src="../derive.js"></script>
+<script src="../components.js"></script>
+<script src="../rec-print.js"></script>
+<script>
+  var S = Shouba, P = ShoubaPrint, R = ShoubaRec, Q = new URLSearchParams(location.search), out = document.getElementById('out'), host = document.getElementById('host');
+  var only = Q.get('o'), full = Q.get('full'), WHO = 'فهد المطيري';
+  if (full) document.body.classList.add('full');
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  /* سجل مثال لا يحفظ: جديد من قالبه ثم قيم المثال */
+  function rec(id, fill){ var r = S.newRec(id, WHO); fill(r.values); return r; }
+  function pages(r){
+    var t = R.of(r), ctx = { open: [] };
+    if (t.page.fit === 'flow') return P.pages(t, r, ctx, host);
+    var s = P.render(t, r, ctx); host.appendChild(s);
+    if (P.fit(s, t.page).over) { host.removeChild(s); return P.pages(t, r, ctx, host); }
+    return [s];
+  }
+  var LIST = [
+    { o: 'cover', title: 'غلاف ملف المعلم — «سجل متابعة معلم» (نماذج التوجيه ص٤)', make: function(){
+      var s = P.registerCover({ title: 'سجل متابعة معلم', owner: 'teacher', blocks: [] }, [], null, { who: WHO, facts: [['عدد السجلات', P.ar(6)]] });
+      host.appendChild(s); return [s]; } },
+    { o: 'card', title: 'بطاقة متابعة معلم (ص٥)', make: function(){ return pages(rec('tcard', function(v){
+      v.info = Object.assign(v.info || {}, { name: 'فهد ناصر محمد المطيري', nat: 'كويتي', fileno: '٤٥٢١٨', hired: '2014-09-14', years: 12,
+        qual: 'بكالوريوس رياضيات ٢٠١٤', spec: 'رياضيات' });
+      v.classes = [ { cls: '10/2', course: 'الرياضيات', periods: 4, students: 28 }, { cls: '10/4', course: 'الرياضيات', periods: 4, students: 30 },
+        { cls: '11/1 ع', course: 'الرياضيات', periods: 5, students: 26 }, { cls: '12/3 ع', course: 'الرياضيات', periods: 5, students: 24 } ];
+    })); } },
+    { o: 'notes', title: 'الملاحظات التربوية (ص٨)', make: function(){ return pages(rec('tnotes', function(v){
+      v.rows = [ { date: '2026-09-15', note: 'التزام بمواعيد الحصص وتحضير متقن للدروس' },
+        { date: '2026-09-22', note: 'يحتاج الى تنويع اساليب التقويم البنائي داخل الحصة' },
+        { date: '2026-10-06', note: 'تحسن ملحوظ في ادارة الصف بعد الزيارة السابقة' } ];
+    })); } },
+    { o: 'ach', title: 'إنجازات وأنشطة المعلم (ص١٥)', make: function(){ return pages(rec('tach', function(v){
+      v.rows = [ { date: '2026-09-17', act: 'تقديم درس تطبيقي في حل المعادلات بحضور الموجه الفني' },
+        { date: '2026-09-24', act: 'تدريب فريق المدرسة لمسابقة الرياضيات' },
+        { date: '2026-10-08', act: 'اعداد ورقة عمل للطلبة المتعثرين في الوحدة الاولى' } ];
+    })); } }
+  ];
+  function size(w, s){ var k = w.clientWidth / s.offsetWidth; s.style.transform = 'scale(' + k + ')'; w.style.height = Math.ceil(s.offsetHeight * k) + 'px'; }
+  function paint(){
+    out.textContent = ''; host.textContent = '';
+    LIST.forEach(function(x){
+      if (only && x.o !== only) return;
+      var ps = x.make();
+      if (full) { out.appendChild(ps[0]); return; }
+      ps.forEach(function(p, i){
+        var h = el('h2', null, x.title + (ps.length > 1 ? ' — صفحة ' + (i + 1) + ' من ' + ps.length : '')), w = el('div', 'pw');
+        out.appendChild(h); out.appendChild(w); w.appendChild(p); size(w, p);
+      });
+    });
+  }
+  paint();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint);
+</script>
+</body>
+</html>

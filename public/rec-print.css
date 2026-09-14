@@ -41,6 +41,8 @@
 .pp-fields{ width:100%; border-collapse:collapse; margin:0 0 5mm; font-size:1em; }
 .pp-fields th,.pp-fields td{ border:1.2px solid #000; padding:2.2mm 3.5mm; text-align:right; vertical-align:middle; }
 .pp-fields th{ width:36mm; font-weight:700; }
+.pp-fields.two{ table-layout:fixed; font-size:.92em; }   /* حقلان في السطر (pairs:2) */
+.pp-fields.two th{ width:36mm; }   /* اطول تسمية سطر واحد («المؤهل وتاريخه» ٢٨٫٥ مم + حشو ٧) — قيس 2026-09-14 */
 .pp-fields td{ font-weight:500; }
 .pp-fields .gap{ display:inline-block; width:8mm; }
 /* ② مساحة النص: العبارة الافتتاحية ثم الاقسام مرقمة بالهندية، وما بقي اسطر منقطة */
@@ -97,10 +99,12 @@
 /* سطر البيانات تحت الترويسة (fields.inline) */
 .pp-inline{ display:flex; justify-content:center; gap:12mm; margin:-3mm 0 4mm; font-size:1.02em; }
 .pp-inline b{ font-weight:700; }
-.pp-tbl td.m,.pp-tbl th.m{ text-align:center; }
+/* عمود «م» لا ينكسر رقمه ولا حشو جانبيا (2026-09-14): «١٣» انكسر سطرين في عمود ٨ مم بحشو ٢ مم — عيب كل جدول يبلغ ١٣ صفا */
+.pp-tbl td.m,.pp-tbl th.m{ text-align:center; white-space:nowrap; padding-left:0; padding-right:0; }
 .pp-tbl td.ck{ text-align:center; font-weight:700; }
 .pp-tbl tr{ break-inside:avoid; }
 .pp-tbl tbody tr.blank td{ height:8.5mm; }
+.pp-tbl tbody tr.tot td{ font-weight:700; background:#f2f2f2; }   /* سطر المجموع (b.total) */
 /* مجموعات الاشهر (نموذج ما قطع من المنهج ص١٤): الشهر في خانة ممتدة وسط صفيه، والصفوف بارتفاع النموذج */
 .pp-tbl td.mo,.pp-tbl th.mo{ text-align:center; vertical-align:middle; font-weight:700; }
 .pp-tbl.rg tbody td{ height:9mm; vertical-align:middle; }

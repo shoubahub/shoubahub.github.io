@@ -133,7 +133,6 @@
           if (f.kind === 'number') { var n = latin(x).trim(); v[f.id] = n === '' ? '' : (isNaN(+n) ? n : +n); }
           else v[f.id] = x;
           hint(); changed();
-          if (f.kind === 'date' && slot) slot.refresh();   /* تاريخ الزيارة تغير ⟵ جدول يومه */
         }, { type: f.kind === 'date' ? 'date' : 'text', numeric: f.kind === 'number', long: f.kind === 'longtext', rows: 3, label: f.label, ph: f.ph }).box);
       }
       hint();
@@ -143,14 +142,16 @@
     return wrap;
   };
 
-  /* ── الحصة التي زرتها (slot — تقرير الزيارة 2026-09-14، طلب المستخدم: «يظهر جدول حصص المعلم بحيث يختار المستخدم
-     الحصة المطلوبة»): حصص صاحب السجل ليوم الزيارة (من خانة التاريخ) — لمسة تملأ المادة والصف والحصة معا، ويتبدل
-     الجدول بتبدل التاريخ. و«حصة ليست في جدوله» لما سواها: المادة ⟵ الشعبة (بعدد فصول المدرسة ومسارها) ⟵ الحصة.
-     ولا يطبع ما يميزها — الصف والحصة كما هما (قرار المستخدم) */
+  /* ── الحصة التي زرتها (slot — تقرير الزيارة 2026-09-14، طلب المستخدم) ──────────────────────────────────────
+     كانت حصص يوم الزيارة وحده (من خانة التاريخ)، فردها المستخدم بعد تجربتها: «لو اراد ان يدخل زيارة قديمة فلن يستطيع»
+     — والجدول قد تغير، والزيارة قد تكون في يوم لا حصص له فيه. الآن لا تتبع التاريخ:
+     · حصصه اليوم (يوم فتح السجل) اولا — لمسة تملأ المادة والصف والحصة، وتكفي اغلب الزيارات؛
+     · ثم اختيار يدوي من حصصه في جدوله كله: رقاقات فصوله بموادها، وارقام الحصص — يصلح لاي تاريخ.
+     و«حصة ليست في جدوله» حذفت بقراره («لا داعي له الان»). وما اختير قبلا وخرج من جدوله يبقى ظاهرا مختارا */
   var ORDS = ['الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة', 'الثامنة'];
   var CHKM = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function slotPicker(b, v, ctx, changed) {
-    var S = window.Shouba, who = ctx.rec && ctx.rec.who, df = b.fields.filter(function (f) { return f.kind === 'date'; })[0];
+    var S = window.Shouba, who = ctx.rec && ctx.rec.who;
     var fld = el('div', 'field'), lb = el('label', null, 'الحصة التي زرتها'), box = el('div', 'stack');
     lb.appendChild(need(false));
     fld.appendChild(lb); fld.appendChild(box);
@@ -167,63 +168,51 @@
       }
       return r;
     }
+    /* فصوله بموادها من جدوله كله — مرتبة بالصف ثم الشعبة (Shouba.classesOf) */
+    function pairs() {
+      var seen = {}, out = [], order = S.classesOf ? S.classesOf(who) : [];
+      S.days().forEach(function (day) {
+        S.periods().forEach(function (t) {
+          if (t.brk) return;
+          var s = S.splitSlot(S.slot(who, day, t.n - 1)), k = s.cls + '|' + s.subject;
+          if (s.cls && !seen[k]) { seen[k] = 1; out.push({ cls: s.cls, subject: s.subject }); }
+        });
+      });
+      return out.sort(function (a, b) { return (order.indexOf(a.cls) - order.indexOf(b.cls)) || (a.subject < b.subject ? -1 : a.subject > b.subject ? 1 : 0); });
+    }
     function refresh() {
       box.textContent = '';
-      var day = df && v[df.id] && window.ShoubaRec ? window.ShoubaRec.weekday(v[df.id]) : '', list = [], inDay = false;
-      if (S && who && day) S.periods().forEach(function (t) {
+      if (!S || !who) return;
+      /* ① حصصه اليوم — يوم فتح السجل لا يوم الزيارة */
+      var today = window.ShoubaRec && S.today ? window.ShoubaRec.weekday(S.today()) : '', list = [];
+      if (today && S.days().indexOf(today) > -1) S.periods().forEach(function (t) {
         if (t.brk) return;
-        var s = S.splitSlot(S.slot(who, day, t.n - 1));
+        var s = S.splitSlot(S.slot(who, today, t.n - 1));
         if (s.cls) list.push({ n: t.n, cls: s.cls, subject: s.subject, from: t.from });
       });
-      list.forEach(function (p) {
-        var on = String(v.period) === String(p.n) && v.cls === p.cls;
-        if (on) inDay = true;
-        box.appendChild(row(ord(p.n) + ' · ' + p.from, p.cls + ' · ' + p.subject, on, function () { set(p.subject, p.cls, p.n); }));
-      });
-      if (!list.length) box.appendChild(el('div', 'hint', !day ? 'اختر تاريخ الزيارة ليظهر جدوله.' : 'لا حصص لأ. ' + (who || '') + ' يوم ' + day + ' في جدوله.'));
-      if (v.cls && !inDay) box.appendChild(row(v.period ? ord(v.period) : 'حصة', v.cls + (v.subject ? ' · ' + v.subject : '') + ' — ليست في جدوله', true, null));
-      box.appendChild(addBtn('حصة ليست في جدوله', manual));
-    }
-    function manual() {
-      var n = el('div', 'stack'), subs = S.subjects();
-      if (!subs.length) n.appendChild(el('div', 'hint', 'لا مواد لشعبتك في المرجعية.'));
-      subs.forEach(function (s) {
-        var bt = el('button', 'sheet-opt');
-        bt.type = 'button';
-        bt.appendChild(el('span', null, s.name + ' — ' + s.grade + (S.trackMark(s.track) ? ' ' + s.track : '')));
-        bt.addEventListener('click', function () { pickCls(s); });
-        n.appendChild(bt);
-      });
-      S.sheet.open('حصة ليست في جدوله — المادة', n);
-    }
-    function pickCls(s) {
-      var g = S.gradeNo(s.grade), two = !S.trackMark(s.track) && S.twoTrackGrade(s.grade), tracks = two ? ['علمي', 'أدبي'] : [s.track], n = el('div');
-      n.appendChild(el('div', 'sheet-note', s.name + ' · الصف ' + g + (two ? ' — اختر المسار والشعبة' : ' — اختر الشعبة')));
-      tracks.forEach(function (tr) {
-        if (two) n.appendChild(el('div', 'trk', tr));
-        var secs = el('div', 'secs');
-        for (var i = 1; i <= S.classCount(s.grade, tr); i++) (function (k) {
-          var bt = el('button', 'secbtn', String(k));
-          bt.type = 'button';
-          bt.addEventListener('click', function () { pickPeriod(s.name, S.makeClass(g, k, tr)); });
-          secs.appendChild(bt);
-        })(i);
-        n.appendChild(secs);
-      });
-      S.sheet.open('حصة ليست في جدوله — الصف', n, { step: true });
-    }
-    function pickPeriod(subject, cls) {
-      var n = el('div'), secs = el('div', 'secs');
-      n.appendChild(el('div', 'sheet-note', subject + ' · ' + cls + ' — اختر الحصة'));
-      S.periods().forEach(function (t) {
-        if (t.brk) return;
-        var bt = el('button', 'secbtn', String(t.n));
-        bt.type = 'button';
-        bt.addEventListener('click', function () { set(subject, cls, t.n); S.sheet.close(); });
-        secs.appendChild(bt);
-      });
-      n.appendChild(secs);
-      S.sheet.open('حصة ليست في جدوله — الحصة', n, { step: true });
+      if (list.length) {
+        box.appendChild(el('div', 'rb-lab', 'حصصه اليوم (' + today + ')'));
+        list.forEach(function (p) {
+          var on = String(v.period) === String(p.n) && v.cls === p.cls && v.subject === p.subject;
+          box.appendChild(row(ord(p.n) + ' · ' + p.from, p.cls + ' · ' + p.subject, on, function () { set(p.subject, p.cls, p.n); }));
+        });
+      }
+      /* ② يدويا من حصصه: الفصل والمادة، ثم الحصة — لاي تاريخ */
+      var ps = pairs();
+      if (v.cls && !ps.some(function (p) { return p.cls === v.cls && p.subject === (v.subject || ''); })) ps.push({ cls: v.cls, subject: v.subject || '' });   /* مختار قبلا خرج من جدوله */
+      if (!ps.length) { box.appendChild(el('div', 'hint', 'لم يدخل جدول أ. ' + who + ' بعد — تظهر فصوله هنا حين يدخل.')); return; }
+      box.appendChild(el('div', 'rb-lab', list.length ? 'أو اختر من حصصه' : 'الفصل والمادة'));
+      box.appendChild(toggles(ps.map(function (p, i) { return { v: i, t: p.cls + (p.subject ? ' · ' + p.subject : '') }; }),
+        function (i) { return v.cls === ps[i].cls && (v.subject || '') === ps[i].subject; },
+        function (i) {
+          var on = v.cls === ps[i].cls && (v.subject || '') === ps[i].subject;
+          v.cls = on ? '' : ps[i].cls; v.subject = on ? '' : ps[i].subject;
+          changed(); refresh();
+        }));
+      box.appendChild(el('div', 'rb-lab', 'الحصة'));
+      box.appendChild(toggles(S.periods().filter(function (t) { return !t.brk; }).map(function (t) { return { v: t.n, t: String(t.n) }; }),
+        function (n) { return String(v.period) === String(n); },
+        function (n) { v.period = String(v.period) === String(n) ? '' : n; changed(); refresh(); }));
     }
     refresh();
     return { el: fld, refresh: refresh };

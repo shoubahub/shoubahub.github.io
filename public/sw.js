@@ -3,7 +3,7 @@
    ② الأصول مبصومة بـ?v=رقم البناء، فالمخزن آمن ما دام الرقم واحدا.
    ③ ومع كل نشر يتبدل اسم المخزن فتمسح النسخة القديمة كاملة.
    ⚠ CACHE يحدث آليا بأداة الختم — لا يدويا. */
-var BUILD = 77;
+var BUILD = 78;
 var CACHE = 'shouba-v' + BUILD;
 
 var SHELL = [
@@ -18,6 +18,7 @@ var SHELL = [
   /* محرك السجلات (2026-09-11): شاشاته وملفاته — فتفتح بلا إنترنت كسائر المنصة */
   './records.html', './record.html', './archive.html', './print-settings.html', './rec-items.html',
   './bundle.html',   /* ملف الفصل (2026-09-13) */
+  './visits.html',   /* جدول الزيارات الصفية من تقارير الزيارة (2026-09-14) */
   './rec-templates.js?v=' + BUILD, './rec-engine.js?v=' + BUILD, './rec-form.js?v=' + BUILD,
   './rec-print.js?v=' + BUILD, './rec-print.css?v=' + BUILD, './rec-files.js?v=' + BUILD,
   /* شريط الخطة (2026-09-13): شاشة الخطة المطولة وجالب الخطط المعتمدة — والخطط نفسها في مخزن الجهاز (plan-data.js) */

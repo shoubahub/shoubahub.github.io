@@ -355,7 +355,8 @@
     offRecord: function (name) { return this.retiredRecords.indexOf(name) > -1 || this.pausedRecords.indexOf(name) > -1; },
     /* سجل في القائمة ليس قالبا يملأ بل مطبوع يجمع: «غلاف سجل متابعة المعلم» (نماذج التوجيه ص٤) صفحة تقديم
        «ملف المعلم» — يطبع لمعلم يختاره، غلافه ثم سجلاته (bundle.html?who=) — 2026-09-14 */
-    recordLinks: { 'غلاف سجل متابعة المعلم': 'teacherFile' },
+    /* و«جدول الزيارات الصفية» يتكون من تقارير زيارة رئيس الشعبة (visits.html) لا يملأ وحده (2026-09-14، طلب المستخدم) */
+    recordLinks: { 'غلاف سجل متابعة المعلم': 'teacherFile', 'جدول الزيارات الصفية': 'visitsTable' },
 
     periodsOf: function (stage) {
       return (this.periodTimes[stage] || []).filter(function (t) { return !t.brk; }).length;

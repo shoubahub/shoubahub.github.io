@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · جدول زياراتك الصفية</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1B5183" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=78" />
+<link rel="stylesheet" href="shell.css?v=78" />
+<link rel="stylesheet" href="components.css?v=78" />
+<link rel="stylesheet" href="frame.css?v=78" />
+<link rel="stylesheet" href="rec-print.css?v=78" />
+<style>
+  /* جدول زياراتك الصفية (2026-09-14، طلب المستخدم: «جدول الزيارات يجب ضمه الى تقارير الزيارة لا سجل منعزل، لانه
+     يتغذى منه») — لا يملأ: يتكون من تقارير زيارة رئيس الشعبة في الفصل (Shouba.visitRows) على نموذج التوجيه ص١٢، كل
+     تقرير سطر والملاحظات موضوع الدرس، ويطبع او يحفظ PDF. يفتح من ارشيف التقارير ومن «سجلاتك».
+     لا هيكل هنا — كله موروث من shell.css */
+  .wrap{display:flex;flex-direction:column;gap:16px;padding:16px var(--gap-side) 0}
+  .pvw{position:relative;overflow:hidden;background:#fff;border-radius:6px;box-shadow:0 1px 6px rgba(40,30,15,.16)}
+  .pvw > .pp-sheet{position:absolute;top:0;right:0;transform-origin:top right}
+  .pgs{display:flex;flex-direction:column;gap:12px}
+  .note{font-size:12px;font-weight:600;color:var(--shouba-label);line-height:1.7}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="topbar">
+    <div class="tbcrest" id="tbCrest"></div>
+    <div class="tt"><b>جدول زياراتك الصفية</b><span id="sub">—</span></div>
+    <div class="iconbtn" data-home title="اللوحة"></div>
+  </div>
+
+  <div class="screen has-topbar has-foot has-tabbar">
+    <div class="content">
+      <div class="wrap">
+        <div class="note" id="note"></div>
+        <div class="stack" id="saves"><button class="btn-ghost" id="pdf" type="button">احفظه ملف PDF</button></div>
+        <div class="pgs" id="pgs" aria-label="معاينة الجدول"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- العودة بجانب «اطبع» فوق شريط التبويبات (قاعدة شاشات التصفح 2026-09-14) -->
+  <div class="foot">
+    <div class="duo">
+      <div data-back="archive.html?tpl=hvisit"></div>
+      <button class="cta" id="print" type="button">اطبع</button>
+    </div>
+  </div>
+  <div class="tabbar" data-tabs="records.html"></div>
+ </div></div>
+
+<script src="build.js?v=78"></script>
+<script src="refdata.js?v=78"></script>
+<script src="rec-templates.js?v=78"></script>
+<script src="rec-engine.js?v=78"></script>
+<script src="derive.js?v=78"></script>
+<script src="icons.js?v=78"></script>
+<script src="components.js?v=78"></script>
+<script src="rec-print.js?v=78"></script>
+<script>
+  var S = Shouba, d = S.data(), t = ShoubaRec.latest('visits'), sheets = [], KEY = 'visits';
+  var tb = t && t.blocks.filter(function(b){ return b.type === 'table'; })[0];
+  var FORMS = { one: 'زيارة', two: 'زيارتان', few: 'زيارات', many: 'زيارة' };
+
+  (function paintTopCrest(){
+    var el = document.getElementById('tbCrest'), c = d.crest;
+    if (c && c.type === 'image') el.innerHTML = '<img src="' + c.data + '" alt="شعار المدرسة" />';
+    else if (c && c.type === 'icon' && window.SHOUBA_ICONS) el.innerHTML = SHOUBA_ICONS.svg(c.id, 22);
+    else el.innerHTML = '<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
+  })();
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+
+  /* الجدول سجل في الذاكرة لا يحفظ: جديد من قالبه (رئيس الشعبة والفصل والعام من الاعداد) وصفوفه من التقارير */
+  function build(){
+    var r = S.newRec('visits', ''), rows = S.visitRows(d.year, d.term);
+    r.values.rows = rows.map(function(x){
+      var row = ShoubaRec.newRow(tb);
+      ['date', 'teacher', 'subject', 'cls', 'period', 'note'].forEach(function(k){ row[k] = x[k]; });
+      return row;
+    });
+    return { rec: r, n: rows.length };
+  }
+  function paint(){
+    var box = document.getElementById('pgs'), host = el('div'), b = build();
+    box.textContent = ''; box.appendChild(host);
+    sheets = ShoubaPrint.pages(t, b.rec, { open: [], signs: ShoubaPrint.signsOf(S.data(), KEY, t), noLogo: ShoubaPrint.logoOffOf(S.data(), KEY) }, host);
+    sheets.forEach(function(p){
+      var w = el('div', 'pvw');
+      box.insertBefore(w, host); w.appendChild(p);
+      var k = w.clientWidth / p.offsetWidth;
+      p.style.transform = 'scale(' + k + ')';
+      w.style.height = Math.ceil(p.offsetHeight * k) + 'px';
+    });
+    box.removeChild(host);
+    document.getElementById('sub').textContent = [d.term, d.year].filter(Boolean).join(' · ');
+    document.getElementById('note').textContent = b.n
+      ? S.count(b.n, FORMS) + ' — من تقارير زياراتك في هذا الفصل: كل تقرير سطر، والملاحظات موضوع الدرس.'
+      : 'لا تقارير زيارة في هذا الفصل بعد — كل تقرير تكتبه يصير سطرا هنا.';
+  }
+  function fileName(){
+    return ['جدول الزيارات الصفية', d.department || '', [d.term, d.year].filter(Boolean).join(' ')].filter(Boolean).join(' - ')
+      .replace(/[\/\\:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  /* الطباعة كملف الفصل: اسم الملف عنوان الصفحة مدتها، واول طباعة تعتمد الترويسة ثم تعود هنا */
+  function startPrint(){
+    if (!sheets.length) return;
+    if (!S.data().printOk) { location.href = 'print-settings.html?ret=visits.html'; return; }
+    var t0 = document.title, back = function(){ document.title = t0; };
+    document.title = fileName();
+    window.addEventListener('afterprint', back, { once: true });
+    setTimeout(back, 60000);
+    ShoubaPrint.print(sheets);
+  }
+  document.getElementById('print').addEventListener('click', startPrint);
+  document.getElementById('pdf').addEventListener('click', function(){ S.pdfGuide(fileName(), startPrint); });
+  /* الآيفون وحده: «اطبع بلا ذيل» — كملف الفصل */
+  if (ShoubaPrint.isIOS() && ShoubaPrint.canShareFiles()) {
+    var nb = el('button', 'btn-ghost', 'اطبع بلا ذيل (دون الموقع والساعة)');
+    nb.type = 'button';
+    nb.addEventListener('click', function(){ if (sheets.length) S.pdfFile(fileName(), function(){ return sheets; }); });
+    document.getElementById('saves').appendChild(nb);
+  }
+  if (!t || !tb) document.getElementById('note').textContent = 'جدول الزيارات غير متاح في هذه النسخة.';
+  else {
+    window.addEventListener('resize', paint);
+    paint();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint);
+  }
+</script>
+</body>
+</html>

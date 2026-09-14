@@ -381,6 +381,34 @@ window.SHOUBA_TPL = {
             { id: 'note',    label: 'الملاحظات',  kind: 'text' }
           ] }
       ]
+    },
+    /* الاصدار ٢ (2026-09-14، طلب المستخدم: «جدول الزيارات يجب ضمه الى تقارير الزيارة لا سجل منعزل، لانه يتغذى منه»):
+       لا يملأ — يتكون من تقارير زيارة رئيس الشعبة في الفصل (S.visitRows ⟵ visits.html)، كل تقرير صف، ومعه «المادة».
+       والملاحظات موضوع الدرس. بلا ready: بابه recordLinks (refdata)، وجداول الاصدار ١ المكتوبة تبقى محفوظة */
+    2: {
+      id: 'visits', v: 2, official: true, owner: 'shouba',
+      title: 'جدول الزيارات الصفية',
+      noun: { one: 'جدول', two: 'جدولان', few: 'جداول', many: 'جدولا', zero: 'لا جداول بعد' },
+      page: { orient: 'portrait', fit: 'flow' },
+      blocks: [
+        { type: 'fields', id: 'meta', inline: true, fields: [
+          { id: 'head', label: 'رئيس الشعبة',   kind: 'text', auto: 'head' },
+          { id: 'term', label: 'الفصل الدراسي', kind: 'text', auto: 'term' },
+          { id: 'year', label: 'العام الدراسي', kind: 'text', auto: 'year' }
+        ] },
+        { type: 'table', id: 'rows', rowLabel: 'زيارة', rowsLabel: 'زيارات', rows: { min: 12 },
+          count: { one: 'زيارة', two: 'زيارتان', few: 'زيارات', many: 'زيارة' },
+          groups: [{ id: 'when', label: 'اليوم والتاريخ' }],
+          columns: [
+            { id: 'day',     label: 'اليوم',      kind: 'auto', of: 'date', show: 'weekday', w: 20, group: 'when' },
+            { id: 'date',    label: 'التاريخ',    kind: 'date', w: 22, group: 'when' },
+            { id: 'teacher', label: 'اسم المعلم', kind: 'teacher', staff: true, w: 36 },
+            { id: 'subject', label: 'المادة',     kind: 'text', w: 28 },
+            { id: 'cls',     label: 'الصف',       kind: 'class', w: 18 },
+            { id: 'period',  label: 'الحصة',      kind: 'number', w: 16 },   /* ١٣ مم صغر عنوانه */
+            { id: 'note',    label: 'الملاحظات',  kind: 'text' }
+          ] }
+      ]
     }
   },
 
@@ -417,6 +445,49 @@ window.SHOUBA_TPL = {
           { id: 'assess',  label: 'أساليب التقويم', opts: ['مدى كفايتها', 'تقيس الأهداف', 'متنوعة (بنائية - ختامية)', 'مناسبة لمستوى المتعلمين'] },
           { id: 'written', label: 'الأعمال التحريرية', opts: ['متنوعة', 'متابعة', 'مصوبة', 'محققة للأهداف', 'تدوين العبارات'] }
         ] },
+        { type: 'text', id: 'recs', sections: [{ id: 'notes', kind: 'paragraph', title: 'الملاحظات والتوصيات' }] }
+      ]
+    },
+    /* الاصدار ٢ (2026-09-14، طلب المستخدم — والاول منشور فلا يمس، وتقاريره تعرض به):
+       · «الحصة التي زرتها» من جدول المعلم ليوم الزيارة — لمسة تملأ المادة والصف والحصة (slot)، و«حصة ليست في جدوله»
+         لما سواها، ولا يطبع ما يميزها · «المادة» في سطر الزيارة («لتعدد اسماء المواد في كل شعبة»)
+       · «متابعة الأعمال التحريرية»: اسماء المتعلمين الذين تابع اعمالهم في الزيارة وحدها (chips)، تغذي كشف متابعة
+         الاعمال التحريرية للمعلم (feed — derive.js)، وعلى الورق سطر تحت جدول التقويم */
+    2: {
+      id: 'hvisit', v: 2, official: true, owner: 'teacher', many: true,
+      title: 'تقرير زيارة رئيس الشعبة', ready: 'تقرير زيارة رئيس الشعبة',
+      noun: { one: 'تقرير', two: 'تقريران', few: 'تقارير', many: 'تقريرا', zero: 'لا تقارير بعد' },
+      page: { orient: 'portrait', fit: 'single-page', minPt: 9 },
+      signs: { teacher: true, head: true },
+      /* جدول الزيارات الصفية يتكون من هذه التقارير (visits.html) — سطره في الارشيف */
+      derived: { page: 'visits.html', label: 'جدول زياراتك الصفية' },
+      blocks: [
+        { type: 'fields', id: 'meta', inline: true, fields: [
+          { id: 'who',     label: 'المعلم',         kind: 'teacher', auto: 'teacher' },
+          { id: 'date',    label: 'اليوم والتاريخ', kind: 'date',    auto: 'today', show: 'weekday+date' },
+          { id: 'no',      label: 'رقم الزيارة',    kind: 'number',  auto: 'serial:who' },
+          { id: 'subject', label: 'المادة',         kind: 'text',    slot: true },
+          { id: 'cls',     label: 'الصف',           kind: 'class',   slot: true },
+          { id: 'period',  label: 'الحصة',          kind: 'number',  slot: true },
+          { id: 'topic',   label: 'الموضوع',        kind: 'text', required: true }
+        ] },
+        { type: 'rating', id: 'eval', title: 'تقويم الدرس', head: ['عناصر التقويم', 'تقويم الدرس'], note: 'ملاحظات أخرى', choose: true, items: [
+          { id: 'warm',    label: 'النشاط الاستهلالي', opts: ['مشوق وجاذب', 'مناسب للدرس', 'المدة الزمنية مناسبة', 'مبتكر', 'مبدع', 'أسئلة حول الدرس السابق'] },
+          { id: 'prep',    label: 'إعداد الدروس والالتزام بالخطة', opts: ['الإعداد الذهني مرتب', 'منظم', 'الإعداد الكتابي مطابق للبنود', 'ملتزم مع خطة توزيع المقرر'] },
+          { id: 'goals',   label: 'تحقيق الكفايات والأهداف التربوية', opts: ['اختيار الكفايات والأهداف التربوية مستوفية الشروط', 'متنوعة في مجالاتها', 'مدى تحقيقها'] },
+          { id: 'know',    label: 'التمكن من المادة العلمية', one: true, opts: ['ممتاز', 'جيد جدا', 'جيد', 'مقبول'] },
+          { id: 'strat',   label: 'استراتيجيات التدريس (طرق وأساليب)', opts: ['حديثة', 'متنوعة', 'مناسبة', 'تحقق التعلم الذاتي'] },
+          { id: 'tech',    label: 'التقنيات والوسائل التعليمية', opts: ['متنوعة', 'مناسبة', 'مبتكرة', 'تقليدية'] },
+          { id: 'acts',    label: 'الأنشطة المصاحبة للدرس', opts: ['كافية', 'متنوعة', 'تحقق الأهداف', 'مرتبطة بموضوع الدرس'] },
+          { id: 'manage',  label: 'إدارة الفصل', opts: ['ثقة بالنفس', 'وضوح الصوت', 'استخدام اللغة العربية', 'ضبط الفصل'] },
+          { id: 'assess',  label: 'أساليب التقويم', opts: ['مدى كفايتها', 'تقيس الأهداف', 'متنوعة (بنائية - ختامية)', 'مناسبة لمستوى المتعلمين'] },
+          { id: 'written', label: 'الأعمال التحريرية', opts: ['متنوعة', 'متابعة', 'مصوبة', 'محققة للأهداف', 'تدوين العبارات'] }
+        ] },
+        { type: 'table', id: 'wworks', title: 'متابعة الأعمال التحريرية', chips: true, rowLabel: 'متعلم', rowsLabel: 'متعلمين',
+          add: 'أضف المتعلم', ph: 'اسم المتعلم', lead: 'تمت متابعة الأعمال التحريرية للمتعلمين',
+          hint: 'اسم المتعلم وحده — والصف والتاريخ من الزيارة، ويضاف إلى كشف متابعة الأعمال التحريرية للمعلم',
+          feed: { tpl: 'written', block: 'rows', from: { cls: 'meta.cls', date: 'meta.date' } },
+          columns: [{ id: 'name', label: 'اسم المتعلم', kind: 'text' }] },
         { type: 'text', id: 'recs', sections: [{ id: 'notes', kind: 'paragraph', title: 'الملاحظات والتوصيات' }] }
       ]
     }

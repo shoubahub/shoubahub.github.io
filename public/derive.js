@@ -656,6 +656,12 @@
     var gs = (SHOUBA_REF.gradesByStage || {})[st] || [], g = gs[n - (STAGE_BASE[st] || 1)];
     return g ? g.grade : '';
   };
+  /* رقم الصف من اسمه: «الحادي عشر» ⟵ 11 — عكس gradeOfClass (حصة ليست في جدوله في تقرير الزيارة) */
+  S.gradeNo = function (grade) {
+    var st = S.data().stage, gs = (SHOUBA_REF.gradesByStage || {})[st] || [];
+    for (var i = 0; i < gs.length; i++) if (gs[i].grade === grade) return i + (STAGE_BASE[st] || 1);
+    return '';
+  };
   /* ما تدرسه الشعبة: [{ subject, grade, classes, teachers }] بترتيب الصفوف ثم المواد.
      ⚠ يقرأ الجداول ولا يمسها (daySlots ينشئ اياما فارغة لمن لا جدول له) */
   S.planPairs = function () {
@@ -808,7 +814,45 @@
     })[0] : null;
     return g ? g.items[0] : null;
   };
+  /* ── التغذية بين السجلات (2026-09-14، طلب المستخدم: «سجل متابعة الاعمال التحريرية يتغذى من هنا») ─────────────────
+     جدول فيه feed { tpl, block, from } («متابعة الأعمال التحريرية» في تقرير الزيارة) يكتب كل صف منه صفا في سجل
+     آخر لصاحب السجل نفسه في فصله — كشف متابعة الاعمال التحريرية — باسم المتعلم، وصفه وتاريخه من الزيارة (from «لبنة.حقل»)،
+     ومعه src «سجل:صف». والتقرير هو المصدر: حذف الاسم منه يحذف صفه، وتغييره يغيره، وحذف التقرير يحذف صفوفه. وما حذفه
+     صاحبه من الكشف بيده لا يعاد (rec.fed ما غذي من قبل)، وبنود الكشف التفصيلية لا تمس — يؤشرها ان شاء.
+     والكشف ينشأ ان لم يكن — للفصل الحالي وحده */
+  function pathVal(rec, p) { var a = String(p || '').split('.'); return ((rec.values || {})[a[0]] || {})[a[1]]; }
+  function feed(rec, gone) {
+    var t = E() && E().of(rec);
+    if (!t || !rec.who) return;
+    t.blocks.forEach(function (b) {
+      if (b.type !== 'table' || !b.feed) return;
+      var f = b.feed, prev = (rec.fed && rec.fed[b.id]) || [], d = S.data();
+      var rows = gone ? [] : (Array.isArray(rec.values[b.id]) ? rec.values[b.id] : []).filter(function (r) { return r && String(r.name || '').trim(); });
+      if (!rows.length && !prev.length) return;
+      var tgt = S.recs(f.tpl).filter(function (r) { return r.who === rec.who && (r.year || '') === (rec.year || '') && (r.term || '') === (rec.term || ''); })[0];
+      if (!tgt) {
+        if (!rows.length || (rec.year || '') !== (d.year || '') || (rec.term || '') !== (d.term || '')) return;
+        tgt = S.newRec(f.tpl, rec.who);
+        if (!tgt) return;
+      }
+      var tb = (E().of(tgt).blocks || []).filter(function (x) { return x.id === f.block; })[0];
+      if (!tb) return;
+      var list = tgt.values[f.block] = Array.isArray(tgt.values[f.block]) ? tgt.values[f.block] : [], ids = rows.map(function (r) { return r.id; });
+      function at(src) { for (var k = 0; k < list.length; k++) if (list[k] && list[k].src === src) return k; return -1; }
+      prev.forEach(function (id) { if (ids.indexOf(id) < 0) { var k = at(rec.id + ':' + id); if (k > -1) list.splice(k, 1); } });
+      rows.forEach(function (r) {
+        var src = rec.id + ':' + r.id, k = at(src), row;
+        if (k < 0) { if (prev.indexOf(r.id) > -1) return; row = E().newRow(tb); row.src = src; list.push(row); }
+        else row = list[k];
+        row.name = String(r.name).trim();
+        Object.keys(f.from || {}).forEach(function (c) { var x = pathVal(rec, f.from[c]); if (x != null && x !== '') row[c] = x; });
+      });
+      if (!gone) (rec.fed = rec.fed || {})[b.id] = ids;
+      S.saveRec(tgt);
+    });
+  }
   S.saveRec = function (rec) {
+    feed(rec);                                /* قبل الحفظ: rec.fed يحفظ معه */
     var d = S.data();
     d.recs = d.recs || [];
     rec.updated = new Date().toISOString();
@@ -826,6 +870,7 @@
   /* حذف السجل وملفاته (النسخة الموقعة والمرفقات) — مصدر واحد لكل شاشة تحذف (2026-09-11).
      الملفات يطلب حذفها من الخادم ان حملت الشاشة rec-files.js، وما فات تلتقطه المصالحة في الخادم */
   S.deleteRec = function (rec) {
+    feed(rec, true);                          /* ما غذاه في سجل آخر يحذف معه */
     var F = window.ShoubaFiles;
     if (F && E()) E().files(rec).forEach(function (f) { F.remove(f); });
     S.removeRec(rec.id);
@@ -838,6 +883,16 @@
   /* بنود جدول التقييم الظاهرة (rating.choose): لقطة السجل ⟵ اختيار الشعبة ⟵ الرسمية كلها — ShoubaRec.itemsOf */
   S.itemsOf = function (rec, b, tplId) { return E() ? E().itemsOf(rec, b, S.pickOf((rec && rec.tpl) || tplId)) : ((b && b.items) || []); };
   S.archive = function (tplId, opt) { return E().archive(S.recs(tplId), opt); };
+  /* جدول الزيارات الصفية من تقارير الزيارة (2026-09-14، طلب المستخدم: «جدول الزيارات يتغذى منه» — لا سجل منعزل):
+     تقارير زيارة رئيس الشعبة في العام والفصل، كل تقرير صف، بتاريخه ثم حصته. والملاحظات موضوع الدرس */
+  S.visitRows = function (year, term) {
+    return S.recs('hvisit').filter(function (r) { return (r.year || '') === (year || '') && (r.term || '') === (term || ''); })
+      .map(function (r) {
+        var m = (r.values || {}).meta || {};
+        return { id: r.id, date: m.date || '', teacher: r.who || m.who || '', subject: m.subject || '', cls: m.cls || '', period: m.period || '', note: m.topic || '' };
+      })
+      .sort(function (a, b) { return String(a.date).localeCompare(String(b.date)) || ((+a.period || 0) - (+b.period || 0)); });
+  };
   /* ما ينتظر اجراء في خطط الفصل الحالي (المرحلة الثانية ج) — لقسم «بحاجة الى اجراء» في اللوحة:
      سجلات العام والفصل الحاليين، والشهر الحالي، واشهر الفصل من المرجعية ⟵ ShoubaRec.due.
      عام لكل قالب فيه جدول باشهر ومتابعة (لا اسم قالب بعينه). now اختياري (للفحص) */

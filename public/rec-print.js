@@ -235,6 +235,16 @@
     });
   }
   PB.table = function (b, v, ctx) {
+    /* قائمة اسماء (chips — «متابعة الأعمال التحريرية» في تقرير الزيارة): سطر واحد «تمت متابعة …: فلان، فلان.» تحت
+       جدول التقويم — لا جدول */
+    if (b.chips) {
+      var cid = (b.columns[0] || {}).id, nm = (Array.isArray(v) ? v : []).map(function (r) { return String((r || {})[cid] || '').trim(); }).filter(Boolean);
+      if (!nm.length) return null;
+      var cl = el('div', 'pp-sec pp-chipline');
+      cl.appendChild(el('b', null, (b.lead || b.title) + ': '));
+      cl.appendChild(document.createTextNode(nm.join('، ') + '.'));
+      return cl;
+    }
     /* الشبكة: الاعمدة المختارة وحدها، والمجموعة التي لم يختر منها شيء تسقط من الرأس تلقائيا. وحين
        يقل المختار تتسع اعمدة ✓ لما بقي من العرض (بلا عرض ثابت)، ويبقى للتاريخ والتوقيع عرضهما */
     var all = b.columns || [], cols = (window.Shouba && Shouba.colsOf) ? Shouba.colsOf(ctx && ctx.rec, b, ctx && ctx.tpl && ctx.tpl.id) : all;

@@ -320,7 +320,9 @@ ok(RF.readyRecords.indexOf('الدوام والاستئذانات الشهرية
 ok(R.latest('tnotes').scope === 'year' && R.latest('tach').scope === 'year' && !R.latest('tcard').scope, 'الملاحظات والانجازات للعام، والبطاقة لكل فصل');
 
 // ١٦) الزيارات (المجموعة ب، 2026-09-14): ثلاثة قوالب باسمائها، والسردي والتقييمي نموذج واحد، ورقم الزيارة لكل معلم
-ok(['visits', 'hvisit', 'svisit'].every(id => { const t = R.latest(id); return t && RF.readyRecords.indexOf(t.ready) > -1; }), 'قوالب الزيارات الثلاثة باسمائها في القائمة');
+ok(['hvisit', 'svisit'].every(id => { const t = R.latest(id); return t && RF.readyRecords.indexOf(t.ready) > -1; })
+   && RF.recordLinks['جدول الزيارات الصفية'] === 'visitsTable' && !R.byReady('جدول الزيارات الصفية') && R.get('visits', 1).ready,
+   'تقريرا الزيارة في القائمة، وجدول الزيارات يتكون منهما (والاصدار ١ باق لجداوله)');
 ok(RF.readyRecords.indexOf('تقرير زيارة رئيس الشعبة — سردي') < 0 && RF.offRecord('تقرير زيارة رئيس الشعبة — تقييمي'), 'السردي والتقييمي خرجا الى نموذج واحد');
 const Wv = world({ 'shouba.setup': JSON.stringify({ stage: 'ثانوي', refDataVersion: 4, year: '2026 / 2027', term: 'الفصل الأول', teachers: ['خالد سعد', 'فهد ناصر'], supervisor: 'سالم العتيبي' }),
   'shouba.user': JSON.stringify({ name: 'محمد البراك' }) }).Shouba;
@@ -354,6 +356,34 @@ Scl.save({ classCounts: { 'العاشر|': 11, 'الثاني عشر|د': 4 } });
 ok(Scl.classCount('العاشر', 'موحد') === 11 && Scl.classCount('الثاني عشر', 'أدبي') === 4 && Scl.classCount('الثاني عشر', 'علمي') === 6, 'عدد الفصول لكل صف ومسار');
 ok(Scl.untracked().map(u => u.cls).join() === '12/3', 'حصة الاختيار الحر بلا مسار تعرض، والمرمزة والعاشر لا', Scl.untracked());
 ok(Scl.twoTrackGrade('الثاني عشر') && !Scl.twoTrackGrade('العاشر'), 'الصف ذو المسارين يعرف من المرجعية');
+
+// ١٨) تقرير الزيارة الاصدار ٢ (2026-09-14): «متابعة الأعمال التحريرية» تغذي كشف المعلم، وجدول الزيارات من التقارير
+ok(R.latest('hvisit').v === 2 && R.get('hvisit', 1) && R.latest('hvisit').blocks[0].fields.filter(f => f.slot).map(f => f.id).join() === 'subject,cls,period',
+  'الاصدار ٢: المادة والصف والحصة اختيار واحد، والاول باق');
+const Wf = world({ 'shouba.setup': JSON.stringify({ stage: 'ثانوي', refDataVersion: 4, year: '2026 / 2027', term: 'الفصل الأول', teachers: ['خالد سعد'] }),
+  'shouba.user': JSON.stringify({ name: 'محمد البراك' }) }).Shouba;
+const fv = Wf.newRec('hvisit', 'خالد سعد');
+Object.assign(fv.values.meta, { cls: '10/2', date: '2026-09-20', period: 3, subject: 'الرياضيات', topic: 'المعادلات' });
+fv.values.wworks = [{ id: 'w1', name: 'سالم' }, { id: 'w2', name: 'فهد' }];
+Wf.saveRec(fv);
+let wr = Wf.recs('written').filter(r => r.who === 'خالد سعد')[0];
+ok(wr && wr.values.rows.length === 2 && wr.values.rows[0].name === 'سالم' && wr.values.rows[0].cls === '10/2' && wr.values.rows[0].date === '2026-09-20'
+   && wr.values.rows[0].src === fv.id + ':w1', 'اسماء المتعلمين في الزيارة تنشئ كشف الاعمال التحريرية وتصير صفوفه', wr && wr.values.rows);
+wr.values.rows[1].cvary = true; Wf.saveRec(wr);
+fv.values.wworks = [{ id: 'w2', name: 'فهد' }]; Wf.saveRec(fv);
+wr = Wf.recs('written').filter(r => r.who === 'خالد سعد')[0];
+ok(wr.values.rows.length === 1 && wr.values.rows[0].name === 'فهد' && wr.values.rows[0].cvary === true, 'حذف الاسم من الزيارة يحذف صفه، وتأشير الكشف يبقى', wr.values.rows);
+wr.values.rows = []; Wf.saveRec(wr); Wf.saveRec(fv);
+ok(Wf.recs('written').filter(r => r.who === 'خالد سعد')[0].values.rows.length === 0, 'ما حذفه صاحبه من الكشف بيده لا يعاد');
+fv.values.wworks.push({ id: 'w3', name: 'ناصر' }); Wf.saveRec(fv); Wf.deleteRec(fv);
+ok(Wf.recs('written').filter(r => r.who === 'خالد سعد')[0].values.rows.length === 0, 'حذف التقرير يحذف صفوفه من الكشف');
+const fv2 = Wf.newRec('hvisit', 'خالد سعد');
+Object.assign(fv2.values.meta, { date: '2026-09-22', period: 2, cls: '11/1 ع', subject: 'الرياضيات', topic: 'الدوال' }); Wf.saveRec(fv2);
+const fv3 = Wf.newRec('hvisit', 'خالد سعد');
+Object.assign(fv3.values.meta, { date: '2026-09-21', period: 5, cls: '10/4', topic: 'الكسور' }); Wf.saveRec(fv3);
+ok(Wf.visitRows('2026 / 2027', 'الفصل الأول').map(r => r.note + ':' + r.cls).join('|') === 'الكسور:10/4|الدوال:11/1 ع',
+  'جدول الزيارات من التقارير: كل تقرير صف بتاريخه، وموضوعه في الملاحظات', Wf.visitRows('2026 / 2027', 'الفصل الأول'));
+ok(Wf.gradeNo('الحادي عشر') === 11 && Wf.gradeNo('العاشر') === 10, 'رقم الصف من اسمه');
 
 // ٩) بلا تشكيل في القوالب والمحرك
 const H = new RegExp('[' + String.fromCharCode(0x064B) + '-' + String.fromCharCode(0x0652) + String.fromCharCode(0x0670) + ']');

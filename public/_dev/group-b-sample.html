@@ -59,12 +59,13 @@
   }
   var LIST = [
     { o: 'visits', title: 'جدول الزيارات الصفية (ص١٢)', make: function(){ return pages(rec('visits', '', function(v){
-      v.rows = [ { date: '2026-09-16', teacher: 'فهد المطيري', cls: '10/2', period: 3, note: 'درس تطبيقي في حل المعادلات' },
-        { date: '2026-09-21', teacher: 'خالد العنزي', cls: '11/1 ع', period: 2, note: '' },
-        { date: '2026-09-28', teacher: 'فهد المطيري', cls: '12/3 ع', period: 5, note: 'متابعة توصيات الزيارة الاولى' } ];
+      v.rows = [ { date: '2026-09-16', teacher: 'فهد المطيري', subject: 'الرياضيات', cls: '10/2', period: 3, note: 'حل معادلات الدرجة الاولى' },
+        { date: '2026-09-21', teacher: 'خالد العنزي', subject: 'الإحصاء', cls: '11/1 د', period: 2, note: 'مقاييس النزعة المركزية' },
+        { date: '2026-09-28', teacher: 'فهد المطيري', subject: 'الرياضيات', cls: '12/3 ع', period: 5, note: 'الدوال الاسية' } ];
     })); } },
     { o: 'hvisit', title: 'تقرير زيارة رئيس الشعبة (ص١٣)', make: function(){ return pages(rec('hvisit', WHO, function(v){
-      v.meta.cls = '10/2'; v.meta.period = 3; v.meta.topic = 'حل معادلات الدرجة الاولى';
+      v.meta.cls = '10/2'; v.meta.period = 3; v.meta.subject = 'الرياضيات'; v.meta.topic = 'حل معادلات الدرجة الاولى';
+      v.wworks = [{ id: 'w1', name: 'سالم العتيبي' }, { id: 'w2', name: 'فهد الشمري' }, { id: 'w3', name: 'ناصر الرشيدي' }];
       v.eval = { warm: { pick: ['مشوق وجاذب', 'مناسب للدرس', 'أسئلة حول الدرس السابق'], note: '' },
         prep: { pick: ['الإعداد الذهني مرتب', 'ملتزم مع خطة توزيع المقرر'], note: '' },
         goals: { pick: ['متنوعة في مجالاتها'], note: 'يحتاج الى صياغة الاهداف صياغة سلوكية' },

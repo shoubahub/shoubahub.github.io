@@ -792,6 +792,14 @@ body.solo .tsel{display:none}
 .foot.over-tabs{padding-top:12px;padding-bottom:max(8px, calc(100px + env(safe-area-inset-bottom) - var(--kb, 0px)));
   background:linear-gradient(180deg, rgba(239,230,214,0) 0, var(--shouba-canvas) 12px)}
 .screen.has-foot.has-tabbar{padding-bottom:176px}
+/* ارقام الشعب والحصص في اللوحة السفلية — مشتركة (2026-09-14): ادخال الجدول و«حصة ليست في جدوله» في تقرير الزيارة.
+   كانت في schedule.html وحدها. واسم المسار فوق ارقامه حين يكون للصف مساران */
+.secs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:2px 0 4px}
+.secbtn{border:0;cursor:pointer;font-family:var(--font-num);font-size:16px;font-weight:700;
+  width:52px;height:48px;border-radius:14px;color:var(--shouba-navy);
+  background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+.trk{font-size:12.5px;font-weight:700;color:var(--shouba-label);padding:6px 2px 0}
 /* مقياس امتلاء الورقة: شريط وسطر — الكحلي يتسع بالخط الكامل · العنبري صغر الخط · الاحمر اطول من صفحة */
 .fillm{display:flex;flex-direction:column;gap:8px}
 .fillm .track{height:8px;border-radius:999px;background:var(--shouba-line);overflow:hidden}

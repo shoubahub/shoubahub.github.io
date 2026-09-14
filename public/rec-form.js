@@ -109,8 +109,10 @@
   /* ── ① خانات البيانات ─────────────────────────────────────────── */
   var BLOCK = {};
   BLOCK.fields = function (b, v, ctx, changed) {
-    var wrap = el('div', 'rb');
+    var wrap = el('div', 'rb'), slot = null;
     b.fields.forEach(function (f) {
+      /* المادة والصف والحصة (slot — تقرير الزيارة): اختيار واحد من جدول المعلم ليوم الزيارة، في موضع اولها */
+      if (f.slot) { if (!slot) { slot = slotPicker(b, v, ctx, changed); wrap.appendChild(slot.el); } return; }
       var fld = el('div', 'field'), h = el('div', 'hint');
       var lb = el('label', null, f.label);
       lb.appendChild(need(!!f.required));
@@ -131,6 +133,7 @@
           if (f.kind === 'number') { var n = latin(x).trim(); v[f.id] = n === '' ? '' : (isNaN(+n) ? n : +n); }
           else v[f.id] = x;
           hint(); changed();
+          if (f.kind === 'date' && slot) slot.refresh();   /* تاريخ الزيارة تغير ⟵ جدول يومه */
         }, { type: f.kind === 'date' ? 'date' : 'text', numeric: f.kind === 'number', long: f.kind === 'longtext', rows: 3, label: f.label, ph: f.ph }).box);
       }
       hint();
@@ -139,6 +142,92 @@
     });
     return wrap;
   };
+
+  /* ── الحصة التي زرتها (slot — تقرير الزيارة 2026-09-14، طلب المستخدم: «يظهر جدول حصص المعلم بحيث يختار المستخدم
+     الحصة المطلوبة»): حصص صاحب السجل ليوم الزيارة (من خانة التاريخ) — لمسة تملأ المادة والصف والحصة معا، ويتبدل
+     الجدول بتبدل التاريخ. و«حصة ليست في جدوله» لما سواها: المادة ⟵ الشعبة (بعدد فصول المدرسة ومسارها) ⟵ الحصة.
+     ولا يطبع ما يميزها — الصف والحصة كما هما (قرار المستخدم) */
+  var ORDS = ['الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة', 'الثامنة'];
+  var CHKM = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function slotPicker(b, v, ctx, changed) {
+    var S = window.Shouba, who = ctx.rec && ctx.rec.who, df = b.fields.filter(function (f) { return f.kind === 'date'; })[0];
+    var fld = el('div', 'field'), lb = el('label', null, 'الحصة التي زرتها'), box = el('div', 'stack');
+    lb.appendChild(need(false));
+    fld.appendChild(lb); fld.appendChild(box);
+    function ord(n) { return 'الحصة ' + (ORDS[n - 1] || n); }
+    function set(subject, cls, n) { v.subject = subject; v.cls = cls; v.period = n; changed(); refresh(); }
+    function row(title, sub, on, tap) {
+      var r = el('div', 'pick' + (on ? ' on' : ''));
+      r.setAttribute('role', 'radio'); r.setAttribute('aria-checked', on ? 'true' : 'false'); r.tabIndex = 0;
+      r.innerHTML = '<span class="mark">' + CHKM + '</span><div class="tx"><b></b><small></small></div>';
+      r.querySelector('b').textContent = title; r.querySelector('small').textContent = sub;
+      if (tap) {
+        r.addEventListener('click', tap);
+        r.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } });
+      }
+      return r;
+    }
+    function refresh() {
+      box.textContent = '';
+      var day = df && v[df.id] && window.ShoubaRec ? window.ShoubaRec.weekday(v[df.id]) : '', list = [], inDay = false;
+      if (S && who && day) S.periods().forEach(function (t) {
+        if (t.brk) return;
+        var s = S.splitSlot(S.slot(who, day, t.n - 1));
+        if (s.cls) list.push({ n: t.n, cls: s.cls, subject: s.subject, from: t.from });
+      });
+      list.forEach(function (p) {
+        var on = String(v.period) === String(p.n) && v.cls === p.cls;
+        if (on) inDay = true;
+        box.appendChild(row(ord(p.n) + ' · ' + p.from, p.cls + ' · ' + p.subject, on, function () { set(p.subject, p.cls, p.n); }));
+      });
+      if (!list.length) box.appendChild(el('div', 'hint', !day ? 'اختر تاريخ الزيارة ليظهر جدوله.' : 'لا حصص لأ. ' + (who || '') + ' يوم ' + day + ' في جدوله.'));
+      if (v.cls && !inDay) box.appendChild(row(v.period ? ord(v.period) : 'حصة', v.cls + (v.subject ? ' · ' + v.subject : '') + ' — ليست في جدوله', true, null));
+      box.appendChild(addBtn('حصة ليست في جدوله', manual));
+    }
+    function manual() {
+      var n = el('div', 'stack'), subs = S.subjects();
+      if (!subs.length) n.appendChild(el('div', 'hint', 'لا مواد لشعبتك في المرجعية.'));
+      subs.forEach(function (s) {
+        var bt = el('button', 'sheet-opt');
+        bt.type = 'button';
+        bt.appendChild(el('span', null, s.name + ' — ' + s.grade + (S.trackMark(s.track) ? ' ' + s.track : '')));
+        bt.addEventListener('click', function () { pickCls(s); });
+        n.appendChild(bt);
+      });
+      S.sheet.open('حصة ليست في جدوله — المادة', n);
+    }
+    function pickCls(s) {
+      var g = S.gradeNo(s.grade), two = !S.trackMark(s.track) && S.twoTrackGrade(s.grade), tracks = two ? ['علمي', 'أدبي'] : [s.track], n = el('div');
+      n.appendChild(el('div', 'sheet-note', s.name + ' · الصف ' + g + (two ? ' — اختر المسار والشعبة' : ' — اختر الشعبة')));
+      tracks.forEach(function (tr) {
+        if (two) n.appendChild(el('div', 'trk', tr));
+        var secs = el('div', 'secs');
+        for (var i = 1; i <= S.classCount(s.grade, tr); i++) (function (k) {
+          var bt = el('button', 'secbtn', String(k));
+          bt.type = 'button';
+          bt.addEventListener('click', function () { pickPeriod(s.name, S.makeClass(g, k, tr)); });
+          secs.appendChild(bt);
+        })(i);
+        n.appendChild(secs);
+      });
+      S.sheet.open('حصة ليست في جدوله — الصف', n, { step: true });
+    }
+    function pickPeriod(subject, cls) {
+      var n = el('div'), secs = el('div', 'secs');
+      n.appendChild(el('div', 'sheet-note', subject + ' · ' + cls + ' — اختر الحصة'));
+      S.periods().forEach(function (t) {
+        if (t.brk) return;
+        var bt = el('button', 'secbtn', String(t.n));
+        bt.type = 'button';
+        bt.addEventListener('click', function () { set(subject, cls, t.n); S.sheet.close(); });
+        secs.appendChild(bt);
+      });
+      n.appendChild(secs);
+      S.sheet.open('حصة ليست في جدوله — الحصة', n, { step: true });
+    }
+    refresh();
+    return { el: fld, refresh: refresh };
+  }
 
   /* ── ② مساحة النص: الاقسام بترتيبها ────────────────────────────────
      العبارة الافتتاحية (lead) صيغة ورق تطبع وحدها — لا تظهر في الادخال فلا تزاحم الحقول */
@@ -493,6 +582,37 @@
     return w;
   };
 
+  /* قائمة اسماء (table.chips — «متابعة الأعمال التحريرية» في تقرير الزيارة 2026-09-14): جدول بعمود نص واحد يدخل اسما
+     اسما كاضافة المعلمين (يفرغ الحقل ويبقى فيه، وEnter يضيف)، رقاقة لكل اسم وحذفها بتراجع — لا بطاقة لكل صف */
+  function chipsTable(b, v, ctx, changed) {
+    var rows = v, c = b.columns[0], sec = section(b.title || '', b.hint), chips = el('div', 'att');
+    function paint() {
+      chips.textContent = '';
+      rows.forEach(function (r, i) {
+        var ch = el('button', 'att-c guest', r[c.id]), x = el('span', 'x');
+        ch.type = 'button'; ch.setAttribute('aria-label', 'احذف ' + r[c.id]);
+        x.innerHTML = ICON.del; ch.appendChild(x);
+        ch.addEventListener('click', function () { undoable(rows, i, r[c.id], changed, paint); });
+        chips.appendChild(ch);
+      });
+    }
+    var line = el('div', 'rb-row'), g = input('', function () {}, { ph: b.ph || c.label, label: c.label }), add = el('button', 'rb-btn add', '+');
+    add.type = 'button'; add.setAttribute('aria-label', b.add || 'أضف');
+    function push() {
+      var nm = g.el.value.trim();
+      if (!nm) return;
+      var r = window.ShoubaRec.newRow(b);
+      r[c.id] = nm; rows.push(r);
+      g.el.value = ''; changed(); paint(); g.el.focus();
+    }
+    add.addEventListener('click', push);
+    g.el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); push(); } });
+    line.appendChild(g.box); line.appendChild(add);
+    sec.appendChild(chips); sec.appendChild(line);
+    paint();
+    return sec;
+  }
+
   /* ── ④ جدول التقييم (المجموعة ب، 2026-09-14): بنود ثابتة، لكل بند عباراته رقاقات يؤشر منها ما ينطبق (one: واحدة —
      «التمكن من المادة العلمية: ممتاز · جيد جدا …») وملاحظة تحتها. والبند بلا عبارات ملاحظة وحدها (بنود اعمال الشعبة في
      زيارة الموجه). القيمة { بند: { pick: [..], note } } — والورق يطبع العبارات كلها والمؤشر منها بارزا كالنموذج */
@@ -528,6 +648,7 @@
   function groupLabel(b, id) { var g = (b.groups || []).filter(function (x) { return x.id === id; })[0]; return g ? g.label : ''; }
   BLOCK.table = function (b, v, ctx, changed) {
     if (b.smart && SMART[b.smart]) return SMART[b.smart](b, v, ctx, changed);   /* الجدول الذكي (ادناه) */
+    if (b.chips) return chipsTable(b, v, ctx, changed);                          /* قائمة اسماء (ادناه) */
     var rows = v, noun = b.rowLabel || 'صف', sec = section(b.title || '', b.hint), box = el('div', 'stack');
     /* الشبكة: عناصر النموذج المختارة وحدها (لقطة السجل او اختيار الشعبة) — وسائر الجداول كل اعمدتها */
     var cols = (window.Shouba && Shouba.colsOf ? Shouba.colsOf(ctx.rec, b) : b.columns).filter(function (c) { return CELL[c.kind]; });
@@ -541,6 +662,8 @@
         var card = el('div', 'rb-item' + (ctx.focus && ctx.focus === row.id ? ' focus' : ''));
         card.setAttribute('data-row', row.id || '');   /* للوصول المباشر من اللوحة (?focus=) */
         card.appendChild(el('div', 'rb-q', noun + ' ' + (i + 1)));
+        /* صف غذاه سجل آخر (feed — «متابعة الأعمال التحريرية» في تقرير الزيارة) يذكر مصدره */
+        if (row.src) card.appendChild(el('div', 'hint', 'من زيارة' + (row.date ? ' ' + dm(row.date) : '')));
         /* اعمدة ✓ المتجاورة في مجموعة واحدة (شبكتا المتابعة) خانة واحدة: اسم المجموعة ورقاقة لكل عنصر —
            قائمة تحقق للصف على الجوال بدل عشرات الازرار. وسائر الاعمدة خانة لكل عمود */
         for (var k = 0; k < cols.length;) {

@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=77" />
-<link rel="stylesheet" href="shell.css?v=77" />
-<link rel="stylesheet" href="components.css?v=77" />
-<link rel="stylesheet" href="frame.css?v=77" />
+<link rel="stylesheet" href="identity/tokens.css?v=78" />
+<link rel="stylesheet" href="shell.css?v=78" />
+<link rel="stylesheet" href="components.css?v=78" />
+<link rel="stylesheet" href="frame.css?v=78" />
 <style>
   /* عناصر النموذج (2026-09-12، قرار المستخدم) — رئيس الشعبة يختار من عناصر شبكة المتابعة ما يتابعه:
      «الاغلب لا يملأ النموذج كله». ⚠ غير مؤشرة ابتداء وهو يؤشر (قراره صراحة) — خلاف قائمة السجلات
@@ -54,13 +54,13 @@
   </div>
  </div></div>
 
-<script src="build.js?v=77"></script>
-<script src="refdata.js?v=77"></script>
-<script src="rec-templates.js?v=77"></script>
-<script src="rec-engine.js?v=77"></script>
-<script src="derive.js?v=77"></script>
-<script src="icons.js?v=77"></script>
-<script src="components.js?v=77"></script>
+<script src="build.js?v=78"></script>
+<script src="refdata.js?v=78"></script>
+<script src="rec-templates.js?v=78"></script>
+<script src="rec-engine.js?v=78"></script>
+<script src="derive.js?v=78"></script>
+<script src="icons.js?v=78"></script>
+<script src="components.js?v=78"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search), t = ShoubaRec.latest(Q.get('tpl') || '');
 
@@ -150,12 +150,18 @@
         var r = pickRow(x.label, (x.opts || []).length ? x.opts.join(' · ') : 'ملاحظة بلا عبارات'), del = el('button', 'del');
         r.classList.add('on');
         del.type = 'button'; del.innerHTML = DEL; del.setAttribute('aria-label', 'احذف ' + x.label);
-        del.addEventListener('click', function(){
+        del.addEventListener('click', function(e){
+          e.stopPropagation();                        /* الحذف لا يفتح التعديل */
+          if (editing === i) resetForm(); else if (editing > i) editing--;
           var gone = extra.splice(i, 1)[0];
           paintX(); refresh(); persist();
           S.toast('حذف «' + gone.label + '»', function(){ extra.splice(Math.min(i, extra.length), 0, gone); paintX(); refresh(); persist(); });
         });
         r.appendChild(del);
+        /* لمسه يفتحه في النموذج ادناه لتعديل اسمه وعباراته (2026-09-14، طلب المستخدم) */
+        r.setAttribute('role', 'button'); r.tabIndex = 0;
+        r.addEventListener('click', function(){ edit(i); });
+        r.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); edit(i); } });
         xl.appendChild(r);
       });
     }
@@ -166,26 +172,67 @@
       p.appendChild(i); f.appendChild(lb); f.appendChild(p);
       return { box: f, input: i };
     }
-    var af = el('div', 'addf'), f1 = field('اسم العنصر', true, 'مثل: توظيف التعلم الإلكتروني'), f2 = field('عباراته', false, 'مثل: مناسب، متنوع، يحقق الأهداف');
-    var msg = el('div', 'hint', 'افصل بين العبارات بفاصلة — وبلا عبارات يكون العنصر ملاحظة وحدها.'), HINT = msg.textContent;
-    var addB = el('button', 'btn-ghost rb-add', '+ أضف العنصر');
-    f2.box.appendChild(msg);
-    addB.type = 'button';
+    /* العبارات عبارة عبارة كرقاقات (2026-09-14، رصد المستخدم: كتب عدة عبارات في الخانة الواحدة فصارت اختيارا واحدا —
+       كانت تفصل بالفاصلة وحدها). تكتب العبارة ثم «+» او Enter فتصير رقاقة ويبقى الحقل مفتوحا للتالية، وما يلصق مفصولا
+       بـ«/» او «،» او «,» او سطر جديد يتفرق. وحذف الرقاقة بلمسة. والعنصر المضاف يعدل بلمسه (editing) */
+    var editing = -1, phr = [];
+    var af = el('div', 'addf'), f1 = field('اسم العنصر', true, 'مثل: توظيف التعلم الإلكتروني'), f2 = field('عباراته', false, 'اكتب عبارة ثم «+»');
+    var msg = el('div', 'hint', 'عبارة بعد عبارة — كل واحدة اختيار في التقرير. وبلا عبارات يكون العنصر ملاحظة وحدها.'), HINT = msg.textContent;
+    var chipsEl = el('div', 'att'), pRow = el('div', 'rb-row'), pAdd = el('button', 'rb-btn add', '+');
+    var addB = el('button', 'btn-ghost rb-add', '+ أضف العنصر'), cancel = el('button', 'btn-ghost', 'إلغاء التعديل');
+    var paper = f2.box.querySelector('.paper');
+    f2.box.removeChild(paper); pRow.appendChild(paper); pRow.appendChild(pAdd);
+    f2.box.appendChild(pRow); f2.box.appendChild(chipsEl); f2.box.appendChild(msg);
+    pAdd.type = addB.type = cancel.type = 'button'; pAdd.setAttribute('aria-label', 'أضف العبارة');
+    cancel.hidden = true;
+    function splitPh(s){ return String(s || '').split(/[\/،,\n]+/).map(function(x){ return x.trim(); }).filter(Boolean); }
+    function paintPhr(){
+      chipsEl.textContent = '';
+      phr.forEach(function(x, i){
+        var c = el('button', 'att-c guest', x), s = el('span', 'x');
+        c.type = 'button'; c.setAttribute('aria-label', 'احذف ' + x);
+        s.innerHTML = DEL; c.appendChild(s);
+        c.addEventListener('click', function(){ phr.splice(i, 1); paintPhr(); });
+        chipsEl.appendChild(c);
+      });
+    }
+    function takePhr(){ splitPh(f2.input.value).forEach(function(x){ if (phr.indexOf(x) < 0) phr.push(x); }); f2.input.value = ''; paintPhr(); }
+    pAdd.addEventListener('click', function(){ takePhr(); f2.input.focus(); });
+    f2.input.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); takePhr(); } });
+    f2.input.addEventListener('paste', function(){ setTimeout(function(){ if (splitPh(f2.input.value).length > 1) takePhr(); }, 0); });
+    function resetForm(){
+      editing = -1; phr = []; f1.input.value = ''; f2.input.value = ''; paintPhr();
+      addB.textContent = '+ أضف العنصر'; cancel.hidden = true;
+      msg.classList.remove('warn'); msg.textContent = HINT;
+    }
+    function edit(i){
+      var x = extra[i];
+      editing = i; f1.input.value = x.label; phr = (x.opts || []).slice(); f2.input.value = ''; paintPhr();
+      addB.textContent = 'احفظ التعديل'; cancel.hidden = false;
+      f1.input.focus(); af.scrollIntoView({ block: 'center' });
+    }
+    cancel.addEventListener('click', resetForm);
     function add(){
       var name = f1.input.value.trim();
+      if (f2.input.value.trim()) takePhr();                /* عبارة كتبت ولم تضف بعد لا تضيع */
       msg.classList.remove('warn'); msg.textContent = HINT;
       if (!name) { msg.classList.add('warn'); msg.textContent = 'اكتب اسم العنصر أولا.'; f1.input.focus(); return; }
-      if (all.concat(extra).some(function(x){ return x.label.trim() === name; })) { msg.classList.add('warn'); msg.textContent = '«' + name + '» في القائمة من قبل.'; return; }
-      var opts = f2.input.value.split(/[،,]/).map(function(s){ return s.trim(); }).filter(function(s, k, a){ return s && a.indexOf(s) === k; });
-      extra.push({ id: ShoubaRec.newId('x'), label: name, opts: opts });
-      f1.input.value = ''; f2.input.value = ''; f1.input.focus();
+      if (all.concat(extra).some(function(x){ return x.label.trim() === name && !(editing > -1 && extra[editing] === x); })) {
+        msg.classList.add('warn'); msg.textContent = '«' + name + '» في القائمة من قبل.'; return;
+      }
+      if (editing > -1) {
+        extra[editing] = { id: extra[editing].id, label: name, opts: phr.slice() };
+        S.toast('عدل «' + name + '» — يسري على تقاريرك الجديدة');
+      } else {
+        extra.push({ id: ShoubaRec.newId('x'), label: name, opts: phr.slice() });
+        S.toast('أضيف «' + name + '» — يظهر في تقاريرك الجديدة');
+      }
+      resetForm(); f1.input.focus();
       paintX(); refresh(); persist();
-      S.toast('أضيف «' + name + '» — يظهر في تقاريرك الجديدة');
     }
     addB.addEventListener('click', add);
     f1.input.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); f2.input.focus(); } });
-    f2.input.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); add(); } });
-    af.appendChild(f1.box); af.appendChild(f2.box); af.appendChild(addB);
+    af.appendChild(f1.box); af.appendChild(f2.box); af.appendChild(addB); af.appendChild(cancel);
     xs.appendChild(xh); xs.appendChild(xl); xs.appendChild(af);
     itemsEl.appendChild(xs);
     paintX();

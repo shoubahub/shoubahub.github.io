@@ -79,13 +79,14 @@ export function renderSlide(slide, post, cfg) {
       + `<h1>${e(slide.title)}</h1><p>${e(slide.sub)}</p><div class="hd-arrow">${ARROW}</div>${foot(sign)}</div>`;
   }
 
+  /* الشعار في كل شريحة (قرار المستخدم 2026-09-14): كان قالبا الرقم والجانبي بلا علامة */
   if (tpl === 'num') {
-    return `<div class="cv amber num"><div class="echo"></div><div class="big" dir="ltr">${e(slide.number)}</div>`
+    return `<div class="cv amber num"><div class="echo"></div>${mark('amber')}<div class="big" dir="ltr">${e(slide.number)}</div>`
       + `<div class="n-sub">${e(slide.sub)}</div>${foot(sign)}</div>`;
   }
 
   if (tpl === 'b') {
-    return `<div class="cv ${surface}"><div class="echo"></div><div class="side-txt"><span class="rule"></span>`
+    return `<div class="cv ${surface}"><div class="echo"></div>${mark(surface)}<div class="side-txt"><span class="rule"></span>`
       + `<span class="step">${e(step)}</span><h1>${e(slide.title)}</h1><p>${e(slide.sub)}</p>${foot(sign)}</div>`
       + `${screen(slide, 'side')}</div>`;
   }

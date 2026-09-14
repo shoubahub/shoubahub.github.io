@@ -42,6 +42,8 @@ body{font-family:var(--font-ar);direction:rtl}
 /* ---------- النصوص ---------- */
 .cap{position:absolute;top:206px;right:76px;left:76px}
 .step{display:inline-block;font-size:27px;font-weight:500;margin-bottom:12px}
+/* لا ترقيم للشرائح (قرار المستخدم 2026-09-14): الخطوة الفارغة لا ترسم ولا تحجز مكانا */
+.step:empty{display:none}
 .navy  .step{color:var(--navy-light)}
 .cream .step{color:var(--label)}
 .amber .step{color:var(--navy);opacity:.7;font-weight:600}

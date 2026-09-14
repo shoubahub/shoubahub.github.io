@@ -43,6 +43,7 @@ function check(posts, shots, cfg) {
     for (const s of p.slides) {
       const t = s.template || 'a';
       if (!TEMPLATES.includes(t)) w.push(`${p.id}: قالب غير معروف «${t}»`);
+      if (/\d+\s*من\s*\d+/.test(String(s.step || ''))) w.push(`${p.id}: ترقيم الشريحة «${s.step}» — لا ترقيم (قرار المستخدم)`);
       if (t !== 'a' && t !== 'b') continue;
       if (!s.screen) { w.push(`${p.id}: شريحة بإطار هاتف بلا لقطة`); continue; }
       if (!declared.has(s.screen)) w.push(`${p.id}: اللقطة ${s.screen} غير مذكورة في shots.json — لن تلتقط`);

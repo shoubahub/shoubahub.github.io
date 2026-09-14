@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=76" />
-<link rel="stylesheet" href="shell.css?v=76" />
-<link rel="stylesheet" href="components.css?v=76" />
-<link rel="stylesheet" href="frame.css?v=76" />
+<link rel="stylesheet" href="identity/tokens.css?v=77" />
+<link rel="stylesheet" href="shell.css?v=77" />
+<link rel="stylesheet" href="components.css?v=77" />
+<link rel="stylesheet" href="frame.css?v=77" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -68,7 +68,7 @@
     background:rgba(120,98,66,.06);border-radius:14px;padding:12px 14px}
 </style>
 </head>
-<body class="framed">
+<body class="framed" data-live><!-- data-live: تعرض ولا تدخل — تعاد بهدوء ان حدثت البيانات من جهاز آخر عند العودة (bindResume) -->
  <div class="device"><div class="viewport">
     <div class="topbar">
       <div class="tbcrest" id="tbCrest"></div>
@@ -171,14 +171,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=76"></script>
-<script src="refdata.js?v=76"></script>
-<script src="rec-templates.js?v=76"></script>
-<script src="rec-engine.js?v=76"></script>
-<script src="derive.js?v=76"></script>
-<script src="plan-data.js?v=76"></script>
-<script src="icons.js?v=76"></script>
-<script src="components.js?v=76"></script>
+<script src="build.js?v=77"></script>
+<script src="refdata.js?v=77"></script>
+<script src="rec-templates.js?v=77"></script>
+<script src="rec-engine.js?v=77"></script>
+<script src="derive.js?v=77"></script>
+<script src="plan-data.js?v=77"></script>
+<script src="icons.js?v=77"></script>
+<script src="components.js?v=77"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -255,12 +255,19 @@
   /* ===== الحصص ===== */
   var times = R.periodTimes[d.stage] || R.periodTimes['ثانوي'];
   function toMin(t){ var p=t.split(':'); return (+p[0])*60 + (+p[1]); }
-  var m = now.getHours()*60 + now.getMinutes(), currentIdx=-1, nextIdx=-1;
-  times.forEach(function(t,i){
-    if(m >= toMin(t.from) && m < toMin(t.to)) currentIdx=i;
-    if(nextIdx===-1 && m < toMin(t.from)) nextIdx=i;
-  });
-  if(off){ currentIdx=-1; nextIdx=-1; }
+  /* الحصة الجارية والتالية من الساعة **لحظة السؤال** (periodState) — كانت تحسب مرة عند فتح اللوحة فتبقى عليها
+     (ساعة اللوحة ادناه تعيد السؤال كل ثانية) */
+  var m, currentIdx, nextIdx;
+  function periodState(){
+    var n = new Date();
+    m = n.getHours()*60 + n.getMinutes(); currentIdx = -1; nextIdx = -1;
+    times.forEach(function(t,i){
+      if(m >= toMin(t.from) && m < toMin(t.to)) currentIdx=i;
+      if(nextIdx===-1 && m < toMin(t.from)) nextIdx=i;
+    });
+    if(off){ currentIdx=-1; nextIdx=-1; }
+  }
+  periodState();
 
   /* الحقائق من طبقة الاشتقاق (derive.js) — اللوحة تسأل ولا تحسب */
   var teachers=Shouba.scheduled(), hasSchedules=teachers.length>0;
@@ -377,13 +384,7 @@
     var row = e.target.closest && e.target.closest('.per.fold');
     if(row) row.classList.toggle('open');
   });
-  /* العداد يتجدد كل ثانية ما دامت هناك حصة جارية */
-  if(currentIdx > -1 && !off && hasSchedules){
-    setInterval(function(){
-      var el = tbl.querySelector('.per.now .state');
-      if(el) el.textContent = leftIn(times[currentIdx]);
-    }, 1000);
-  }
+  /* العداد يتجدد كل ثانية — من ساعة اللوحة (clockTick بعد البطاقة)، وينتقل مع الحصص */
 
   /* ===== ② البطاقة الكحلية ===== */
   var events = d.events || [], card = document.getElementById('nowCard');
@@ -393,8 +394,20 @@
     var mm=Math.floor(sec/60), ss=sec%60;
     return 'باقي ' + mm + ':' + (ss<10?'0':'') + ss;
   }
+  /* الى بدء التالية (بين حصتين، وقبل الدوام بساعة فما دون) — فلا تبدو اللوحة بلا توقيت في الدقائق بين الحصص
+     (رصد المستخدم 2026-09-14: رآها بلا توقيت فظن الحصة انتهت) */
+  function untilNext(){
+    if(nextIdx < 0 || off) return '';
+    var n=new Date(), sec = toMin(times[nextIdx].from)*60 - (n.getHours()*3600 + n.getMinutes()*60 + n.getSeconds());
+    if(sec<0) sec=0;
+    if(sec > 3600) return '';
+    var mm=Math.floor(sec/60), ss=sec%60;
+    return 'بعد ' + mm + ':' + (ss<10?'0':'') + ss;
+  }
+  var cardMode = '';                 /* ما يعده عداد البطاقة: cur الجارية · next بدء التالية — لساعة اللوحة */
   function paintCard(){
     var kicker, left='', ttl, sub;
+    cardMode = '';
     /* ⚠ البطاقة عن اليوم الحقيقي — لا تتأثر بتقليب الرزنامة */
     /* مواعيد اليوم بتاريخه ولو بلا دوام (اجتماع قبل بدء الدراسة يعرض)، والقديمة بلا تاريخ باسم يوم الدوام وحده */
     var todayEvents = Shouba.eventsOnDate(iso(now)).concat(todayName ? Shouba.legacyEventsOfDay(todayName) : []);
@@ -406,7 +419,7 @@
       var curSlot = curNo ? curNo - 1 : currentIdx;
       var busy = curNo ? busyAt(curSlot) : [], free = teachers.length - busy.length;
       kicker = curNo ? 'الآن · الحصة ' + (ORD[curNo-1] || curNo) : 'الآن · ' + (cur.label || 'فرصة');
-      left = remain();
+      left = remain(); cardMode = 'cur';
       ttl = busy.length ? Shouba.count(busy.length,{one:'معلم',two:'معلمان',few:'معلمين',many:'معلما'}) + ' يدرسون الآن'
                         : 'لا أحد يدرس الآن';
       sub = busy.length ? busy.slice(0,2).map(function(t){ return 'أ. '+firstName(t)+' · '+slotOf(t,curSlot); }).join('   ')
@@ -425,7 +438,9 @@
       var nx = times[nextIdx];
       kicker='التالي';
       ttl = (nx.n ? 'الحصة ' + (ORD[nx.n-1] || nx.n) : (nx.label || 'فرصة')) + ' تبدأ ' + nx.from;
-      sub='لم تبدأ الحصص بعد.';
+      left = untilNext(); cardMode = 'next';
+      /* بين حصتين لا «لم تبدأ الحصص بعد» — كانت تقال في الدقائق الخمس بين الحصص منتصف الدوام */
+      sub = m >= toMin(times[0].from) ? 'بين حصتين.' : 'لم تبدأ الحصص بعد.';
     } else {
       kicker='انتهى اليوم'; ttl='انتهى دوام اليوم';
       var up = Shouba.eventsAfter(iso(now))[0];
@@ -442,7 +457,25 @@
     document.getElementById('cardGhost').addEventListener('click', function(){ location.href='teachers.html'; });
   }
   paintCard();
-  if(currentIdx>-1 && hasSchedules) setInterval(function(){ var l=card.querySelector('.left'); if(l) l.textContent=remain(); }, 1000);
+
+  /* ── ساعة اللوحة (2026-09-14، رصد المستخدم: فتح اللوحة في الفرصة، ثم عاد اليها آخر الحصة الرابعة فوجدها بلا توقيت
+     فظن الحصة انتهت — كانت تحسب الحصة الجارية مرة عند الفتح، والعداد مربوط بها فيقف عند نهايتها ولا ينتقل، والآيفون
+     يعيد الصفحة من الذاكرة كما تركت). الآن تسأل كل ثانية: ان عبرت حدا (بدأت حصة او فرصة، انتهى الدوام) اعادت رسم
+     جدول اليوم والبطاقة، والا حدثت العداد وحده. ويوم جديد (بقيت مفتوحة، او عاد اليها غدا) يعيد فتح اللوحة كلها —
+     تواريخ الاسبوع والخطة والمواعيد منه. والعودة الى التطبيق (visibilitychange · focus) تسأل في الحال */
+  var dayKey = iso(now);
+  function clockTick(){
+    if(iso(new Date()) !== dayKey){ location.reload(); return; }
+    var was = currentIdx + '|' + nextIdx;
+    periodState();
+    if(currentIdx + '|' + nextIdx !== was){ paintTable(); paintCard(); return; }
+    var st = tbl.querySelector('.per.now .state'); if(st && currentIdx > -1) st.textContent = leftIn(times[currentIdx]);
+    var l = card.querySelector('.left');
+    if(l && cardMode) l.textContent = cardMode === 'cur' ? remain() : untilNext();
+  }
+  setInterval(clockTick, 1000);
+  document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') clockTick(); });
+  window.addEventListener('focus', clockTick);
 
   /* ===== ③ مصفوفة الأسبوع: عمود لكل يوم — وهي باب إدخال المواعيد =====
      ⚠ في العطلة تتقدم المصفوفة إلى الأسبوع القادم كما يتقدم عنوان الجدول،

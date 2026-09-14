@@ -14,20 +14,28 @@
 </style>
 </head>
 <body>
-  <div class="bar">معاينة بساعة ثابتة: الأحد ١٠:٥٠ — أداة تطوير</div>
+  <div class="bar" id="bar">معاينة بساعة الدوام — أداة تطوير</div>
   <iframe id="f"></iframe>
 <script>
-  /* تحقن ساعة ثابتة في اللوحة كي تُرى حالات الدوام (الطيّ · التنبيه · العدّاد) خارج وقته.
+  /* تحقن ساعة في اللوحة كي تُرى حالات الدوام (الطيّ · التنبيه · العدّاد) خارج وقته.
+     ?at=HH:MM[:SS] وقت البدء (الافتراض ١٠:٥٠) · &day=YYYY-MM-DD (الافتراض الأحد ٦ / ٩ / ٢٠٢٦).
+     الساعة **تمشي** من وقت البدء (2026-09-14 — كانت ثابتة فلا يُرى عبور الحصص)، و window.__shift (مللي ثانية) في إطار
+     اللوحة يقفز بها — لفحص «العودة الى التطبيق بعد غياب».
      ⚠ البديل يجب أن يدعم كل صيغ النداء: new Date() و new Date(dateOrMs) و new Date(y,m,d,…)
         — نسخة سابقة عالجت الوسيط الواحد كسنة فأنتجت تاريخاً باطلاً، فظهر NaN في مصفوفة الأسبوع. */
+  var Q = new URLSearchParams(location.search), at = (Q.get('at') || '10:50:00').split(':'), day = (Q.get('day') || '2026-09-06').split('-');
+  document.getElementById('bar').textContent = 'ساعة الدوام تمشي من ' + (Q.get('at') || '10:50') + ' — أداة تطوير';
   fetch('/board.html?x=' + Date.now()).then(function(r){ return r.text(); }).then(function(html){
-    var stub = '<scr' + 'ipt>(function(){var R=Date;var F=new R(2026,8,6,10,50,0);'
-      + 'function D(){if(arguments.length===0)return new R(F.getTime());'
+    var stub = '<scr' + 'ipt>(function(){var R=Date,T0=R.now();'
+      + 'var F=new R(' + (+day[0]) + ',' + (+day[1] - 1) + ',' + (+day[2]) + ',' + (+at[0]) + ',' + (+at[1]) + ',' + (+(at[2] || 0)) + ').getTime();'
+      + 'function cur(){return F+(R.now()-T0)+(window.__shift||0);}'
+      + 'function D(){if(arguments.length===0)return new R(cur());'
       + 'return new (Function.prototype.bind.apply(R,[null].concat([].slice.call(arguments))))();}'
-      + 'D.now=function(){return F.getTime()};D.parse=R.parse;D.UTC=R.UTC;D.prototype=R.prototype;'
+      + 'D.now=cur;D.parse=R.parse;D.UTC=R.UTC;D.prototype=R.prototype;'
       + 'window.Date=D;})();</scr' + 'ipt>';
     var doc = document.getElementById('f').contentDocument;
-    doc.open(); doc.write(html.replace('<head>', '<head>' + stub)); doc.close();
+    /* <base href="/">: الاطار يرث عنوان هذه الاداة (/_dev/) فتطلب اللوحة ملفاتها من /_dev/ ولا تجدها — اصلها الجذر */
+    doc.open(); doc.write(html.replace('<head>', '<head><base href="/">' + stub)); doc.close();
   });
 </script>
 </body>

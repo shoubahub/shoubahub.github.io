@@ -771,6 +771,7 @@ Shouba.nextLabel = function (def) {
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (v) {
         if (!v || !(v.build > mine)) return;                  /* لا شيء أحدث */
+        if (document.querySelector('.newver')) return;         /* ظاهر من فحص سابق (العودة الى التطبيق تفحص من جديد) */
         /* ⚠ وزر صرف لازم: الشريط يطفو فوق المحتوى، وبلا مخرج منه
            يغطي عنوان القسم إلى الأبد عند من لا يريد التحديث الآن. */
         var b = document.createElement('div');
@@ -1175,6 +1176,29 @@ Shouba.nextLabel = function (def) {
     });
   }
 
+  /* ── العودة الى التطبيق (2026-09-14، رصد المستخدم: «لا يقوم بالتحديث الا بعد ان انتقل الى تبويب») — الآيفون يعيد
+     الصفحة من الذاكرة كما تركت بلا فتح، فلا يراجع شيء. فعند كل عودة بعد غياب (٢٠ ثانية فاكثر): تعلن للصفحة
+     «shouba:resume»، ويفحص وجود نسخة احدث، وتراجع البيانات مع الخادم (Shouba.connect). وان تغيرت من جهاز آخر:
+     الصفحة التي تعرض ولا تدخل (body[data-live] — اللوحة) تعاد بهدوء ان لم تكن لوحة مفتوحة، وسائرها تنبيه
+     «حدثت من جهاز آخر · اعرض» فلا يقطع ما يكتب. وساعة اللوحة تعيد حسابها بنفسها عند كل عودة */
+  function bindResume() {
+    var hiddenAt = 0;
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') { hiddenAt = Date.now(); return; }
+      if (!hiddenAt || Date.now() - hiddenAt < 20000) { hiddenAt = 0; return; }
+      hiddenAt = 0;
+      try { document.dispatchEvent(new Event('shouba:resume')); } catch (e) {}
+      updateBanner();
+      if (!window.Shouba || !Shouba.connect || Shouba.serverless || Shouba.authLost) return;
+      Shouba.updatedElsewhere = false;
+      Shouba.connect().then(function () {
+        if (!Shouba.updatedElsewhere) return;
+        if (document.body.hasAttribute('data-live') && !(Shouba.sheet && Shouba.sheet.isOpen())) location.reload();
+        else pill('حدثت من جهاز آخر', 'اعرض', function () { location.reload(); });
+      });
+    });
+  }
+
   function connectServer() {
     if (!window.Shouba || !Shouba.connect) return;
     Shouba.onConflict = conflictSheet;
@@ -1187,6 +1211,6 @@ Shouba.nextLabel = function (def) {
     });
   }
 
-  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); }
-  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); });
+  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); bindResume(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); bindResume(); });
 })();

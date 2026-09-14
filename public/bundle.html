@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=74" />
-<link rel="stylesheet" href="shell.css?v=74" />
-<link rel="stylesheet" href="components.css?v=74" />
-<link rel="stylesheet" href="frame.css?v=74" />
-<link rel="stylesheet" href="rec-print.css?v=74" />
+<link rel="stylesheet" href="identity/tokens.css?v=75" />
+<link rel="stylesheet" href="shell.css?v=75" />
+<link rel="stylesheet" href="components.css?v=75" />
+<link rel="stylesheet" href="frame.css?v=75" />
+<link rel="stylesheet" href="rec-print.css?v=75" />
 <style>
   /* ملف الفصل (2026-09-13، طلب المستخدم: «هل يمكن طباعة السجلات كاملة؟») — سجلات الفصل او العام في ملف واحد:
      غلاف وفهرس وترقيم متصل (ShoubaPrint.bundle)، يطبع او يحفظ PDF. تفتح من «سجلاتك».
@@ -64,14 +64,14 @@
   <div class="tabbar" data-tabs="records.html"></div>   <!-- يرسم من bindTabs (components.js)؛ وملف المعلم يضيء «المعلمون» -->
  </div></div>
 
-<script src="build.js?v=74"></script>
-<script src="refdata.js?v=74"></script>
-<script src="rec-templates.js?v=74"></script>
-<script src="rec-engine.js?v=74"></script>
-<script src="derive.js?v=74"></script>
-<script src="icons.js?v=74"></script>
-<script src="components.js?v=74"></script>
-<script src="rec-print.js?v=74"></script>
+<script src="build.js?v=75"></script>
+<script src="refdata.js?v=75"></script>
+<script src="rec-templates.js?v=75"></script>
+<script src="rec-engine.js?v=75"></script>
+<script src="derive.js?v=75"></script>
+<script src="icons.js?v=75"></script>
+<script src="components.js?v=75"></script>
+<script src="rec-print.js?v=75"></script>
 <script>
   var S = Shouba, d = S.data(), scope = 'term', off = {}, withCover = true, regCover = true, sheets = [];
   /* ?tpl=<قالب> ⟵ «اطبع السجل كاملا» من ارشيفه (2026-09-14): هذا السجل وحده وامامه صفحة تقديمه، بلا غلاف الملف
@@ -133,7 +133,7 @@
     var map = {}, out = [];
     S.recs().forEach(function(r){
       var t = ShoubaRec.of(r);
-      if (!t || !inScope(r, t) || (ONLY && t.id !== ONLY) || (WHO && r.who !== WHO)) return;
+      if (!t || SHOUBA_REF.offRecord(t.ready) || !inScope(r, t) || (ONLY && t.id !== ONLY) || (WHO && r.who !== WHO)) return;   /* والموقوف مؤقتا لا يطبع */
       (map[t.id] = map[t.id] || { t: t, recs: [] }).recs.push(r);
     });
     Object.keys(map).map(function(k){ return map[k]; })

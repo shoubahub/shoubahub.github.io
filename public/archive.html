@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=74" />
-<link rel="stylesheet" href="shell.css?v=74" />
-<link rel="stylesheet" href="components.css?v=74" />
-<link rel="stylesheet" href="frame.css?v=74" />
+<link rel="stylesheet" href="identity/tokens.css?v=75" />
+<link rel="stylesheet" href="shell.css?v=75" />
+<link rel="stylesheet" href="components.css?v=75" />
+<link rel="stylesheet" href="frame.css?v=75" />
 <style>
   /* ارشيف السجل (2026-09-12) — شاشة واحدة لكل القوالب: ?tpl=<قالب>.
      مجموعات (الفصل · العام) الاحدث اولا، وبحث في المحتوى وتصفية بالحالة، وبطاقة لكل سجل تفتح لوحة اجراءاته
@@ -63,14 +63,14 @@
 
  </div></div>
 
-<script src="build.js?v=74"></script>
-<script src="refdata.js?v=74"></script>
-<script src="rec-templates.js?v=74"></script>
-<script src="rec-engine.js?v=74"></script>
-<script src="derive.js?v=74"></script>
-<script src="icons.js?v=74"></script>
-<script src="components.js?v=74"></script>
-<script src="rec-files.js?v=74"></script>
+<script src="build.js?v=75"></script>
+<script src="refdata.js?v=75"></script>
+<script src="rec-templates.js?v=75"></script>
+<script src="rec-engine.js?v=75"></script>
+<script src="derive.js?v=75"></script>
+<script src="icons.js?v=75"></script>
+<script src="components.js?v=75"></script>
+<script src="rec-files.js?v=75"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -82,6 +82,7 @@
   })();
 
   var t = ShoubaRec.latest(Q.get('tpl') || '');
+  if (t && SHOUBA_REF.offRecord(t.ready)) t = null;   /* الموقوف مؤقتا (refdata.pausedRecords) كأنه لم يجهز */
   var listEl = document.getElementById('list'), toolsEl = document.getElementById('tools');
   var qEl = document.getElementById('q'), stEl = document.getElementById('st'), newBtn = document.getElementById('new');
   var state = { q: '', status: '' };

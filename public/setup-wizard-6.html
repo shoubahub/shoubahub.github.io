@@ -12,10 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=74" />
-<link rel="stylesheet" href="shell.css?v=74" />
-<link rel="stylesheet" href="components.css?v=74" />
-<link rel="stylesheet" href="frame.css?v=74" />
+<link rel="stylesheet" href="identity/tokens.css?v=75" />
+<link rel="stylesheet" href="shell.css?v=75" />
+<link rel="stylesheet" href="components.css?v=75" />
+<link rel="stylesheet" href="frame.css?v=75" />
 <style>
   /* خاص بهذه الشاشة فقط — لا هيكل ولا هوامش عامة */
   .rhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
@@ -93,9 +93,9 @@
   </div>
  </div></div>
 
-<script src="refdata.js?v=74"></script>
-<script src="build.js?v=74"></script>
-<script src="components.js?v=74"></script>
+<script src="refdata.js?v=75"></script>
+<script src="build.js?v=75"></script>
+<script src="components.js?v=75"></script>
 <script>
   var KEY = 'shouba.setup', R = window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -108,11 +108,12 @@
 
   /* حالة الشاشة: كل سجل {name, on, custom} — الحزمة أولا ثم ما أضافه المستخدم */
   var saved = load().records;                       // أسماء المختارة (إن سبقت زيارة)
-  var items = R.readyRecords.map(function(n){
+  /* المستبعد والموقوف مؤقتا (R.offRecord) لا يعرضان — والموقوف المختار سابقا يبقى في المحفوظ (save ادناه) ليعود معه */
+  var items = R.readyRecords.filter(function(n){ return !R.offRecord(n); }).map(function(n){
     return { name:n, custom:false, on: saved ? saved.indexOf(n) !== -1 : true };   // الافتراضي: كلها مؤشرة
   });
   if(saved){                                        // ما أضافه المستخدم سابقا وليس من الحزمة
-    saved.filter(function(n){ return R.readyRecords.indexOf(n) === -1; })
+    saved.filter(function(n){ return R.readyRecords.indexOf(n) === -1 && !R.offRecord(n); })
          .forEach(function(n){ items.push({ name:n, custom:true, on:true }); });
   }
 
@@ -145,7 +146,8 @@
   }
 
   function persist(){
-    save({ records: items.filter(function(x){ return x.on; }).map(function(x){ return x.name; }) });
+    save({ records: items.filter(function(x){ return x.on; }).map(function(x){ return x.name; })
+      .concat((saved || []).filter(function(n){ return R.pausedRecords.indexOf(n) > -1; })) });
   }
 
   function clean(v){ return String(v||'').replace(/\s+/g,' ').trim(); }

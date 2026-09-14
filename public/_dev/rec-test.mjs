@@ -319,6 +319,42 @@ ok(RF.readyRecords.indexOf('الدوام والاستئذانات الشهرية
    && RF.recordLinks['غلاف سجل متابعة المعلم'] === 'teacherFile' && !R.byReady('غلاف سجل متابعة المعلم'), 'الدوام خارج القائمة، والغلاف مطبوع يجمع لا قالب');
 ok(R.latest('tnotes').scope === 'year' && R.latest('tach').scope === 'year' && !R.latest('tcard').scope, 'الملاحظات والانجازات للعام، والبطاقة لكل فصل');
 
+// ١٦) الزيارات (المجموعة ب، 2026-09-14): ثلاثة قوالب باسمائها، والسردي والتقييمي نموذج واحد، ورقم الزيارة لكل معلم
+ok(['visits', 'hvisit', 'svisit'].every(id => { const t = R.latest(id); return t && RF.readyRecords.indexOf(t.ready) > -1; }), 'قوالب الزيارات الثلاثة باسمائها في القائمة');
+ok(RF.readyRecords.indexOf('تقرير زيارة رئيس الشعبة — سردي') < 0 && RF.offRecord('تقرير زيارة رئيس الشعبة — تقييمي'), 'السردي والتقييمي خرجا الى نموذج واحد');
+const Wv = world({ 'shouba.setup': JSON.stringify({ stage: 'ثانوي', refDataVersion: 4, year: '2026 / 2027', term: 'الفصل الأول', teachers: ['خالد سعد', 'فهد ناصر'], supervisor: 'سالم العتيبي' }),
+  'shouba.user': JSON.stringify({ name: 'محمد البراك' }) }).Shouba;
+const hv1 = Wv.newRec('hvisit', 'خالد سعد'); Wv.saveRec(hv1);
+const hv2 = Wv.newRec('hvisit', 'خالد سعد'); Wv.saveRec(hv2);
+const hv3 = Wv.newRec('hvisit', 'فهد ناصر');
+ok(hv1.values.meta.no === 1 && hv2.values.meta.no === 2 && hv3.values.meta.no === 1, 'رقم الزيارة يعد زيارات المعلم نفسه في عامه', [hv1.values.meta.no, hv2.values.meta.no, hv3.values.meta.no]);
+ok(hv1.values.eval && typeof hv1.values.eval === 'object' && !Array.isArray(hv1.values.eval) && R.summary(hv1).no === 1, 'جدول التقويم يبدأ كائنا، ورقم الزيارة رقم السجل');
+ok(Wv.newRec('svisit').values.meta.sup === 'سالم العتيبي' && Wv.newRec('visits').values.meta.head === 'محمد البراك', 'اسم الموجه ورئيس الشعبة من الاعداد');
+ok(R.latest('hvisit').many && R.archive([hv1, hv2, hv3], { who: 'خالد سعد' }).reduce((n, g) => n + g.items.length, 0) === 2, 'تقارير كثيرة لكل معلم، والارشيف يقصر على معلم');
+
+// ١٦ب) عناصر التقويم (طلب المستخدم 2026-09-14): الرسمية العشرة ابتداء، ويحذف منها ويضيف، والتقرير يحفظ عناصره يوم انشائه
+const eb = R.latest('hvisit').blocks.filter(b => b.type === 'rating')[0];
+ok(eb.choose && R.itemsOf(null, eb, null).length === 10, 'عناصر التقويم الرسمية العشرة ابتداء');
+Wv.setPick('hvisit', { eval: { on: ['warm', 'prep', 'know'], extra: [{ id: 'xel', label: 'توظيف التعلم الالكتروني', opts: ['مناسب'] }] } });
+const hv4 = Wv.newRec('hvisit', 'فهد ناصر');
+ok(R.itemsOf(hv4, eb, null).map(x => x.id).join() === 'warm,prep,know,xel', 'التقرير الجديد بما اختير من الرسمي وما اضيف', R.itemsOf(hv4, eb, null).map(x => x.id));
+Wv.setPick('hvisit', null);
+ok(R.itemsOf(hv4, eb, Wv.pickOf('hvisit')).length === 4 && R.itemsOf(hv1, eb, Wv.pickOf('hvisit')).length === 10, 'تغيير الاختيار بعد الانشاء لا يمس تقريرا مكتوبا');
+
+// ١٧) فصول المدرسة ومسار الاختيار الحر (طلب المستخدم 2026-09-14)
+const clDoc = { stage: 'ثانوي', department: 'الرياضيات', refDataVersion: 4, teachers: ['أحمد علي'],
+  subjects: [{ name: 'الرياضيات', grade: 'العاشر', track: 'موحد' }, { name: 'الرياضيات', grade: 'الحادي عشر', track: 'علمي' },
+             { name: 'الصحة النفسية', grade: 'الثاني عشر', track: '', elective: true }],
+  schedules: { 'أحمد علي': { 'الأحد': ['12/3 · الصحة النفسية', '11/2 ع · الرياضيات', '10/1 · الرياضيات', '12/4 د · الصحة النفسية'] } } };
+const Scl = world({ 'shouba.setup': JSON.stringify(clDoc) }).Shouba;
+ok(Scl.classRows().map(r => r.label).join('|') === 'العاشر|الحادي عشر علمي|الثاني عشر علمي|الثاني عشر أدبي',
+  'صفوف الشعبة بمساراتها، والاختيار الحر يستدعي المسارين', Scl.classRows().map(r => r.label));
+ok(Scl.classCount('العاشر', 'موحد') === 6 && !Scl.classCountSet('العاشر', 'موحد'), 'ما لم يحدد عدده ستة كما كان');
+Scl.save({ classCounts: { 'العاشر|': 11, 'الثاني عشر|د': 4 } });
+ok(Scl.classCount('العاشر', 'موحد') === 11 && Scl.classCount('الثاني عشر', 'أدبي') === 4 && Scl.classCount('الثاني عشر', 'علمي') === 6, 'عدد الفصول لكل صف ومسار');
+ok(Scl.untracked().map(u => u.cls).join() === '12/3', 'حصة الاختيار الحر بلا مسار تعرض، والمرمزة والعاشر لا', Scl.untracked());
+ok(Scl.twoTrackGrade('الثاني عشر') && !Scl.twoTrackGrade('العاشر'), 'الصف ذو المسارين يعرف من المرجعية');
+
 // ٩) بلا تشكيل في القوالب والمحرك
 const H = new RegExp('[' + String.fromCharCode(0x064B) + '-' + String.fromCharCode(0x0652) + String.fromCharCode(0x0670) + ']');
 ok(!H.test(read('rec-templates.js')) && !H.test(read('rec-engine.js')), 'القوالب والمحرك بلا تشكيل');

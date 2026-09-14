@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=75" />
-<link rel="stylesheet" href="shell.css?v=75" />
-<link rel="stylesheet" href="components.css?v=75" />
-<link rel="stylesheet" href="frame.css?v=75" />
+<link rel="stylesheet" href="identity/tokens.css?v=76" />
+<link rel="stylesheet" href="shell.css?v=76" />
+<link rel="stylesheet" href="components.css?v=76" />
+<link rel="stylesheet" href="frame.css?v=76" />
 <style>
   .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
   .rm{padding:0 var(--gap-side)}
@@ -67,13 +67,13 @@
   </div>
  </div></div>
 
-<script src="build.js?v=75"></script>
-<script src="refdata.js?v=75"></script>
-<script src="rec-templates.js?v=75"></script>
-<script src="rec-engine.js?v=75"></script>
-<script src="derive.js?v=75"></script>
-<script src="icons.js?v=75"></script>
-<script src="components.js?v=75"></script>
+<script src="build.js?v=76"></script>
+<script src="refdata.js?v=76"></script>
+<script src="rec-templates.js?v=76"></script>
+<script src="rec-engine.js?v=76"></script>
+<script src="derive.js?v=76"></script>
+<script src="icons.js?v=76"></script>
+<script src="components.js?v=76"></script>
 <script>
   var d = Shouba.data();
   /* الاسم من الرابط ينظف كالبيانات: رابط قديم مشكول يبقى يجد معلمه (2026-09-11) */
@@ -145,18 +145,19 @@
   recEntry('tcard', 'بطاقة متابعته');
   recEntry('tnotes', 'ملاحظاته التربوية');
   recEntry('tach', 'إنجازاته وأنشطته');
-  entry('اطبع ملفه', 'غلافه ثم سجلاته', false, function(){ location.href = 'bundle.html?who=' + encodeURIComponent(T); });
-
-  /* ④ قيد الإعداد — يظهر ليعرف شكل الملف، ويصرح بحاله (تقارير الزيارات: المجموعة ب) */
-  function soonEntry(title){
-    entry(title, 'قيد الإعداد', true, function(){
-      var n = document.createElement('div');
-      n.className = 'soon-note';
-      n.textContent = '«' + title + '» قيد الإعداد، ويصل في تحديث قادم ضمن سجلاتك.';
-      Shouba.sheet.open('قيد الإعداد', n);
+  /* ④ تقارير زياراته (المجموعة ب 2026-09-14): تقارير زيارة رئيس الشعبة له — كثيرة في الفصل (many)، فتفتح ارشيفها
+     مقصورا عليه (archive.html?tpl=hvisit&who=)، و«تقرير جديد» فيه ينشئ له مباشرة */
+  (function(){
+    var t = window.ShoubaRec && ShoubaRec.latest('hvisit');
+    if(!t || SHOUBA_REF.offRecord(t.ready)) return;
+    var n = Shouba.recs('hvisit').filter(function(r){
+      return r.who === T && (r.year || '') === (d.year || '') && (r.term || '') === (d.term || '');
+    }).length;
+    entry('تقارير زياراته', n ? Shouba.count(n, t.noun) + ' هذا الفصل' : 'لم يزر بعد', false, function(){
+      location.href = 'archive.html?tpl=hvisit&who=' + encodeURIComponent(T);
     });
-  }
-  soonEntry('تقاريره');
+  })();
+  entry('اطبع ملفه', 'غلافه ثم سجلاته', false, function(){ location.href = 'bundle.html?who=' + encodeURIComponent(T); });
 
   /* الإزالة بتأكيد صريح — تمس جدوله أيضا */
   document.getElementById('remove').addEventListener('click', function(){

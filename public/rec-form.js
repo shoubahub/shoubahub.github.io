@@ -119,7 +119,9 @@
         h.textContent = f.kind === 'date' && v[f.id] ? window.ShoubaRec.weekday(v[f.id])
           : f.auto === 'serial:year' ? 'يرقم تلقائيا — عدله إن لزم' : '';
       }
-      if (f.kind === 'choice' || f.kind === 'teacher') {
+      /* فصل (تقرير الزيارة): فصول صاحب السجل رقاقات من جدوله كعمود الجدول (CELL.class) */
+      if (f.kind === 'class') fld.appendChild(CELL['class'](f, v, ctx, function () { hint(); changed(); }));
+      else if (f.kind === 'choice' || f.kind === 'teacher') {
         var opts = f.kind === 'teacher'
           ? (ctx.teachers || []).map(function (n) { return { v: n, t: 'أ. ' + n }; })
           : (f.options || []).map(function (o) { return { v: o, t: o }; });
@@ -367,7 +369,9 @@
   /* فصل المتعلم (طلب المستخدم 2026-09-12): فصول معلم السجل وحده رقاقات، من جدول حصصه.
      المختار يبقى ظاهرا وان خرج من الجدول بعد، ولمسه يلغيه. ومن لا جدول له يكتب بيده */
   CELL['class'] = function (c, row, ctx, changed) {
-    var opts = (window.Shouba && Shouba.classesOf) ? Shouba.classesOf(ctx.rec && ctx.rec.who) : [];
+    /* of: فصول معلم الصف نفسه (جدول الزيارات الصفية — عمود «اسم المعلم»)، وتتبدل بتبدله (BLOCK.table) */
+    var owner = c.of ? row[c.of] : (ctx.rec && ctx.rec.who);
+    var opts = (window.Shouba && Shouba.classesOf && (owner || !c.of)) ? Shouba.classesOf(owner) : [];
     if (row[c.id] && opts.indexOf(row[c.id]) < 0) opts = opts.concat([row[c.id]]);
     if (!opts.length) return CELL.text(c, row, ctx, changed);
     return toggles(opts.map(function (o) { return { v: o, t: o }; }),
@@ -384,7 +388,9 @@
   /* المعلم: واحد بمنسدلة، او اكثر برقاقات. «معلمو الشعبة» يغني عن الاسماء والاسم يلغيه،
      و«الادارة المدرسية» تجتمع مع ايهما */
   CELL.teacher = function (c, row, ctx, changed) {
-    if (!c.multi) return drop(c.label, whoOpts(ctx), row[c.id], function (x) { row[c.id] = x; changed(); }, 'اختر');
+    /* staff: معلم بعينه وحده (الزيارة لمعلم) — بلا «معلمو الشعبة» و«الادارة المدرسية» */
+    var who = c.staff ? (ctx.teachers || []).map(function (n) { return { v: n, t: 'أ. ' + n }; }) : whoOpts(ctx);
+    if (!c.multi) return drop(c.label, who, row[c.id], function (x) { row[c.id] = x; changed(); }, 'اختر');
     var v = row[c.id] = Array.isArray(row[c.id]) ? row[c.id] : [];
     return toggles(whoOpts(ctx), function (x) { return v.indexOf(x) > -1; }, function (x) {
       var i = v.indexOf(x), k;
@@ -487,6 +493,38 @@
     return w;
   };
 
+  /* ── ④ جدول التقييم (المجموعة ب، 2026-09-14): بنود ثابتة، لكل بند عباراته رقاقات يؤشر منها ما ينطبق (one: واحدة —
+     «التمكن من المادة العلمية: ممتاز · جيد جدا …») وملاحظة تحتها. والبند بلا عبارات ملاحظة وحدها (بنود اعمال الشعبة في
+     زيارة الموجه). القيمة { بند: { pick: [..], note } } — والورق يطبع العبارات كلها والمؤشر منها بارزا كالنموذج */
+  BLOCK.rating = function (b, v, ctx, changed) {
+    var sec = section(b.title || '', b.hint), box = el('div', 'stack');
+    /* العناصر الظاهرة: ما اختاره رئيس الشعبة من الرسمي وما اضافه (choose — Shouba.itemsOf) */
+    var items = window.Shouba && Shouba.itemsOf ? Shouba.itemsOf(ctx.rec, b) : b.items;
+    items.forEach(function (it) {
+      var x = v[it.id] = (v[it.id] && typeof v[it.id] === 'object' && !Array.isArray(v[it.id])) ? v[it.id] : {};
+      x.pick = Array.isArray(x.pick) ? x.pick : [];
+      var opts = it.opts || [], card = el('div', 'rb-item');
+      card.appendChild(el('div', 'rb-q', it.label));
+      if (opts.length) card.appendChild(toggles(opts.map(function (o) { return { v: o, t: o }; }),
+        function (o) { return x.pick.indexOf(o) > -1; },
+        function (o) {
+          var k = x.pick.indexOf(o);
+          if (k > -1) x.pick.splice(k, 1);
+          else {
+            if (it.one) x.pick.length = 0;
+            x.pick.push(o);
+            x.pick.sort(function (a, c) { return opts.indexOf(a) - opts.indexOf(c); });
+          }
+          changed();
+        }));
+      card.appendChild(input(x.note, function (t) { x.note = t; changed(); }, { long: true, rows: opts.length ? 1 : 2, label: it.label,
+        ph: (opts.length ? (b.note || 'ملاحظات أخرى') : ((b.head && b.head[1]) || 'الملاحظات')) + ' — اختياري' }).box);
+      box.appendChild(card);
+    });
+    sec.appendChild(box);
+    return sec;
+  };
+
   function groupLabel(b, id) { var g = (b.groups || []).filter(function (x) { return x.id === id; })[0]; return g ? g.label : ''; }
   BLOCK.table = function (b, v, ctx, changed) {
     if (b.smart && SMART[b.smart]) return SMART[b.smart](b, v, ctx, changed);   /* الجدول الذكي (ادناه) */
@@ -494,6 +532,9 @@
     /* الشبكة: عناصر النموذج المختارة وحدها (لقطة السجل او اختيار الشعبة) — وسائر الجداول كل اعمدتها */
     var cols = (window.Shouba && Shouba.colsOf ? Shouba.colsOf(ctx.rec, b) : b.columns).filter(function (c) { return CELL[c.kind]; });
     function move(i, d) { var x = rows.splice(i, 1)[0]; rows.splice(i + d, 0, x); changed(); paint(); }
+    /* عمود يتبع غيره في صفه (of — «الصف» فصول «اسم المعلم»): تغيير المتبوع يعيد رسم الصفوف فيتبدل التابع */
+    var dep = {};
+    cols.forEach(function (c) { if (c.of && CELL[c.kind]) dep[c.of] = 1; });
     function paint() {
       box.textContent = '';
       rows.forEach(function (row, i) {
@@ -512,7 +553,7 @@
               function (id) { return !!row[id]; }, function (id) { row[id] = !row[id]; changed(); }));
           } else {
             cell.appendChild(labOf(c));
-            cell.appendChild(CELL[c.kind](c, row, ctx, changed));
+            cell.appendChild(CELL[c.kind](c, row, ctx, dep[c.id] ? function () { changed(); paint(); } : changed));
             k++;
           }
           card.appendChild(cell);

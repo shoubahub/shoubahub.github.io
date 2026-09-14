@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-public>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>شعبة · عينات الزيارات (أداة تطوير)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../rec-print.css" />
+<style>
+  /* عينات المجموعة (ب) «الزيارات» على ورقها الحقيقي (2026-09-14) — جدول الزيارات الصفية · تقرير زيارة رئيس الشعبة ·
+     تقرير زيارة الموجه الفني، بقوالبها وطبقة الطباعة نفسيهما وبيانات مثال لا تحفظ.
+     ?o=visits|hvisit|svisit نموذج واحد · &full=1 بمقاسه للالتقاط. على الجهاز المحلي وحده */
+  body{margin:0;background:#E9E4DA;font-family:"IBM Plex Sans Arabic",sans-serif;padding:20px 12px 60px}
+  body.full{padding:0;background:#fff}
+  h2{font-size:15px;margin:22px 4px 8px;color:#16456E}
+  .pw{position:relative;overflow:hidden;background:#fff;box-shadow:0 1px 8px rgba(40,30,15,.2);margin:0 auto 14px;max-width:620px}
+  .pw .pp-sheet{position:absolute;top:0;right:0;transform-origin:top right}
+  #host{position:absolute;left:-6000px;top:0;width:1300px}
+</style>
+</head>
+<body>
+<div id="out"></div>
+<div id="host"></div>
+<script>
+  (function(){ var h = location.hostname;
+    if (!(h === 'localhost' || h === '127.0.0.1')) { document.body.textContent = 'أداة تطوير — تعمل على الجهاز المحلي وحده.'; throw new Error('dev only'); }
+    try { sessionStorage.setItem('shouba.sim', '1'); } catch (e) {}
+    /* متصفح بلا بيانات (الالتقاط): شعبة مثال — ولا يمس مخزنا فيه بيانات */
+    try {
+      if (!localStorage.getItem('shouba.setup')) {
+        localStorage.setItem('shouba.setup', JSON.stringify({ stage: 'ثانوي', department: 'الرياضيات', schoolName: 'ثانوية الأمل', schoolType: 'بنين',
+          year: '٢٠٢٦ / ٢٠٢٧', term: 'الفصل الأول', principal: 'عبدالعزيز الفلاح', supervisor: 'سالم العتيبي', refDataVersion: 4,
+          teachers: ['فهد المطيري', 'خالد العنزي'] }));
+        localStorage.setItem('shouba.user', JSON.stringify({ name: 'محمد البراك' }));
+      }
+    } catch (e) {}
+  })();
+</script>
+<script src="../build.js"></script>
+<script src="../refdata.js"></script>
+<script src="../rec-templates.js"></script>
+<script src="../rec-engine.js"></script>
+<script src="../derive.js"></script>
+<script src="../components.js"></script>
+<script src="../rec-print.js"></script>
+<script>
+  var S = Shouba, P = ShoubaPrint, R = ShoubaRec, Q = new URLSearchParams(location.search), out = document.getElementById('out'), host = document.getElementById('host');
+  var only = Q.get('o'), full = Q.get('full'), WHO = 'فهد المطيري';
+  if (full) document.body.classList.add('full');
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  /* سجل مثال لا يحفظ: جديد من قالبه ثم قيم المثال */
+  function rec(id, who, fill){ var r = S.newRec(id, who); fill(r.values); return r; }
+  function pages(r){
+    var t = R.of(r), ctx = { open: [], signs: P.signsOf(S.data(), t.id, t) };
+    if (t.page.fit === 'flow') return P.pages(t, r, ctx, host);
+    var s = P.render(t, r, ctx); host.appendChild(s);
+    if (P.fit(s, t.page).over) { host.removeChild(s); return P.pages(t, r, ctx, host); }
+    return [s];
+  }
+  var LIST = [
+    { o: 'visits', title: 'جدول الزيارات الصفية (ص١٢)', make: function(){ return pages(rec('visits', '', function(v){
+      v.rows = [ { date: '2026-09-16', teacher: 'فهد المطيري', cls: '10/2', period: 3, note: 'درس تطبيقي في حل المعادلات' },
+        { date: '2026-09-21', teacher: 'خالد العنزي', cls: '11/1 ع', period: 2, note: '' },
+        { date: '2026-09-28', teacher: 'فهد المطيري', cls: '12/3 ع', period: 5, note: 'متابعة توصيات الزيارة الاولى' } ];
+    })); } },
+    { o: 'hvisit', title: 'تقرير زيارة رئيس الشعبة (ص١٣)', make: function(){ return pages(rec('hvisit', WHO, function(v){
+      v.meta.cls = '10/2'; v.meta.period = 3; v.meta.topic = 'حل معادلات الدرجة الاولى';
+      v.eval = { warm: { pick: ['مشوق وجاذب', 'مناسب للدرس', 'أسئلة حول الدرس السابق'], note: '' },
+        prep: { pick: ['الإعداد الذهني مرتب', 'ملتزم مع خطة توزيع المقرر'], note: '' },
+        goals: { pick: ['متنوعة في مجالاتها'], note: 'يحتاج الى صياغة الاهداف صياغة سلوكية' },
+        know: { pick: ['ممتاز'], note: '' }, strat: { pick: ['حديثة', 'متنوعة'], note: '' }, tech: { pick: ['مناسبة'], note: '' },
+        acts: { pick: ['كافية', 'مرتبطة بموضوع الدرس'], note: '' }, manage: { pick: ['ثقة بالنفس', 'وضوح الصوت', 'ضبط الفصل'], note: '' },
+        assess: { pick: ['تقيس الأهداف'], note: 'تنويع التقويم البنائي داخل الحصة' }, written: { pick: ['متابعة', 'مصوبة'], note: '' } };
+      v.recs = { notes: 'درس متميز في مجمله. يوصى بتوظيف العمل التعاوني في النشاط الختامي، وتنويع اسئلة التقويم لتشمل مستويات التفكير العليا.' };
+    })); } },
+    { o: 'svisit', title: 'تقرير زيارة الموجه الفني (ص١ وص٣ نموذجا واحدا)', make: function(){ return pages(rec('svisit', '', function(v){
+      v.body = { did: 'الاطلاع على الخطة التشغيلية للشعبة وسجل الاجتماعات، وحضور حصة للمعلم أ. فهد المطيري في الصف العاشر، ومناقشة نتائج الاختبار القصير الاول مع معلمي الشعبة.' };
+      v.works = { coop: { note: 'تعاون ملحوظ ومتابعة منتظمة للانشطة' }, meet: { note: 'الاجتماعات منتظمة ومحاضرها مكتملة' },
+        vplan: { note: 'خطة الزيارات موزعة على اسابيع الفصل' }, recs: { note: 'السجلات منظمة ومحدثة' }, exams: { note: 'يوصى بتحليل نتائج الاختبار القصير' } };
+      v.guide = { text: 'متابعة الطلبة المتعثرين بخطط علاجية، وتفعيل تبادل الزيارات بين معلمي الشعبة.' };
+    })); } }
+  ];
+  function size(w, s){ var k = w.clientWidth / s.offsetWidth; s.style.transform = 'scale(' + k + ')'; w.style.height = Math.ceil(s.offsetHeight * k) + 'px'; }
+  function paint(){
+    out.textContent = ''; host.textContent = '';
+    LIST.forEach(function(x){
+      if (only && x.o !== only) return;
+      var ps = x.make();
+      /* الالتقاط: الصفحة الاولى وحدها، وما بقي في المضيف يفرغ — صفحة خارج الشاشة يسارا تمد تمرير الصفحة العربية
+         فيلتقط الفراغ (رصد: تقرير الزيارة بصفحتين التقط ابيض) */
+      if (full) { out.appendChild(ps[0]); host.textContent = ''; return; }
+      ps.forEach(function(p, i){
+        var h = el('h2', null, x.title + (ps.length > 1 ? ' — صفحة ' + (i + 1) + ' من ' + ps.length : '')), w = el('div', 'pw');
+        out.appendChild(h); out.appendChild(w); w.appendChild(p); size(w, p);
+      });
+    });
+  }
+  paint();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint);
+</script>
+</body>
+</html>

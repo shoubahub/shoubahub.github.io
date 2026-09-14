@@ -35,9 +35,14 @@
     return '';
   };
   /* noLogo: صاحب السجل اخفى الشعار لهذا النوع من شاشة المعاينة (رقاقة «شعار المدرسة» — ctx.noLogo) */
+  /* أسطر الترويسة بما كتبه صاحبها في «ترويسة سجلاتك» (printHead — 2026-09-14، طلب المستخدم: «يقوم بادراج كل محتويات
+     الترويسة حسب رغبته»): الوزارة والمدرسة بما كتب والا الافتراض، والمنطقة التعليمية سطر اختياري لا يطبع فارغا،
+     والتوجيه مفتاح الاعداد نفسه (Shouba.directorate) */
   P.headerData = function (title, noLogo) {
-    var S = window.Shouba, d = S.data();
-    return { title: title || '', ministry: 'وزارة التربية', directorate: S.directorate(), school: d.schoolName || '', logo: noLogo ? '' : P.logoOf(d) };
+    var S = window.Shouba, d = S.data(), h = d.printHead || {};
+    function or(x, def) { x = String(x || '').trim(); return x || def; }
+    return { title: title || '', ministry: or(h.ministry, 'وزارة التربية'), region: or(h.region, ''), directorate: S.directorate(),
+      school: or(h.school, d.schoolName || ''), logo: noLogo ? '' : P.logoOf(d) };
   };
 
   function el(tag, cls, txt) {
@@ -55,7 +60,7 @@
       box.appendChild(img); id.appendChild(box);
     }
     var lines = el('div', 'pp-lines');
-    [h.ministry, h.directorate, h.school].forEach(function (t) { if (t) lines.appendChild(el('div', null, t)); });
+    [h.ministry, h.region, h.directorate, h.school].forEach(function (t) { if (t) lines.appendChild(el('div', null, t)); });
     id.appendChild(lines);
     head.appendChild(id);
     head.appendChild(el('div', 'pp-title', h.title));
@@ -96,7 +101,8 @@
         if (x === '' || x == null) return;
         var s = el('span');
         s.appendChild(el('b', null, f.label + ': '));
-        s.appendChild(document.createTextNode(f.kind === 'teacher' ? P.whoLabel(x) : f.kind === 'date' ? P.date(x) : P.ar(x)));
+        s.appendChild(document.createTextNode(f.kind === 'teacher' ? P.whoLabel(x)
+          : f.kind === 'date' ? (f.show === 'weekday+date' && window.ShoubaRec ? window.ShoubaRec.weekday(x) + ' ' : '') + P.date(x) : P.ar(x)));
         line.appendChild(s);
       });
       return line.children.length ? line : null;
@@ -119,9 +125,16 @@
   /* ② مساحة النص: العبارة الافتتاحية ثم الاقسام. وبلا عبارة ولا قسم مكتوب لا شيء يطبع (غايات محور فارغة).
      ⚠ لا اسطر منقطة (قرار المستخدم 2026-09-13: «احذف الاسطر تماما») — كانت تملأ ما بقي من الصفحة (fill:'dotted' في
      قالب الاجتماعات يبقى في تعريفه المنشور ولا يرسم) */
+  /* العبارة الافتتاحية بخانات من الاعداد كنموذجها («تمت زيارة شعبة {dept} بمدرسة {school}…» — زيارة الموجه ص٣):
+     {dept} الشعبة · {school} المدرسة · {head} رئيس الشعبة — وما لم يعرف نقاط تكتب باليد */
+  function leadText(s) {
+    var S = window.Shouba, d = S && S.data ? S.data() : {};
+    var m = { dept: d.department, school: d.schoolName, head: S && S.self ? S.self() : '' };
+    return String(s).replace(/\{(dept|school|head)\}/g, function (_, k) { return String(m[k] || '').trim() || '..............'; });
+  }
   PB.text = function (b, v, ctx) {
     var box = el('div', 'pp-text');
-    if (b.lead) box.appendChild(el('div', 'pp-lead', b.lead));
+    if (b.lead) box.appendChild(el('div', 'pp-lead', leadText(b.lead)));
     b.sections.forEach(function (s) { var n = PS[s.kind] && PS[s.kind](s, v, ctx); if (n) box.appendChild(n); });
     return box.children.length ? box : null;
   };
@@ -306,6 +319,43 @@
     return t;
   };
 
+  /* ④ جدول التقييم على الورق (المجموعة ب): م · البند · التقويم — وللبند ذي العبارات سطران كنموذج التوجيه (ص١٣):
+     عباراته كلها والمؤشر منها بارز بعلامة، ثم «ملاحظات أخرى». والبند بلا عبارات سطر واحد بملاحظته (ص٣).
+     وسطرا البند يلزمان معا في الترقيم (P.pages يجمع الصفوف بامتداد خانة «م») */
+  PB.rating = function (b, v, ctx) {
+    v = v || {};
+    /* العناصر الظاهرة: لقطة السجل من الرسمي والمضاف (choose — Shouba.itemsOf)، والترقيم لها */
+    var items = window.Shouba && Shouba.itemsOf ? Shouba.itemsOf(ctx && ctx.rec, b, ctx && ctx.tpl && ctx.tpl.id) : b.items;
+    var hd = b.head || ['البنود', 'التقويم'], anyOpts = items.some(function (it) { return (it.opts || []).length; });
+    var t = el('table', 'pp-tbl pp-rate'), cg = el('colgroup'), th = el('thead'), hr = el('tr'), tb = el('tbody');
+    /* العنوان فوق الجدول ما لم يكن هو رأس عموده («تقويم الدرس» في ص١٣ رأس عمود لا عنوان) */
+    if (b.title && hd.indexOf(b.title) < 0) t.appendChild(el('caption', null, b.title));
+    [8, anyOpts ? 50 : 74, 0].forEach(function (w) { var c = el('col'); if (w) c.style.width = w + 'mm'; cg.appendChild(c); });
+    hr.appendChild(el('th', 'm', 'م')); hr.appendChild(el('th', null, hd[0])); hr.appendChild(el('th', null, hd[1]));
+    th.appendChild(hr); t.appendChild(cg); t.appendChild(th);
+    items.forEach(function (it, i) {
+      var x = v[it.id] || {}, pick = Array.isArray(x.pick) ? x.pick : [], opts = it.opts || [], note = String(x.note || '').trim();
+      var tr = el('tr'), m = el('td', 'm', P.ar(i + 1));
+      tr.appendChild(m); tr.appendChild(el('td', 'lab', it.label));
+      if (opts.length) {
+        var td = el('td', 'opts');
+        opts.forEach(function (o, k) {
+          var on = pick.indexOf(o) > -1;
+          if (k) td.appendChild(document.createTextNode(' / '));
+          td.appendChild(el('span', on ? 'on' : null, (on ? '✓ ' : '') + o));
+        });
+        tr.appendChild(td);
+        m.rowSpan = 2;
+        var tr2 = el('tr', 'note');
+        tr2.appendChild(el('td', 'lab', b.note || 'ملاحظات أخرى'));
+        tr2.appendChild(el('td', null, note));
+        tb.appendChild(tr); tb.appendChild(tr2);
+      } else { tr.appendChild(el('td', null, note)); tb.appendChild(tr); }
+    });
+    t.appendChild(tb);
+    return t;
+  };
+
   /* ⑥ المرفقات على الورق: قائمة بأسمائها فقط (قرار المستخدم 2026-09-11، خيار أ) — وتطبع هي منفصلة */
   PB.files = function (b, v) {
     var items = (v.items || []).filter(function (it) { return it && it.file; });
@@ -413,17 +463,20 @@
   P.SIGNS = { principal: true, supervisor: false, head: true };
   /* تفضيلات الطباعة لكل قالب ومطبوعه (key: «قالب» او «قالب:مطبوع») — مصدر واحد لشاشة السجل وملف الفصل:
      التوقيعات (printSigns، والافتراض P.SIGNS) · اخفاء الشعار (printLogoOff) */
-  P.signsOf = function (d, key) {
-    var o = ((d && d.printSigns) || {})[key] || P.SIGNS;
-    return { head: !!o.head, supervisor: !!o.supervisor, principal: !!o.principal };
+  /* tpl.signs: افتراض القالب ان كان له (تقرير الزيارة: المعلم ورئيس الشعبة · زيارة الموجه: الموجه) — والا P.SIGNS.
+     وما اختاره صاحبه لقالب يبقى له. teacher: «المعلم» باسم صاحب السجل (سجل المعلم وحده) */
+  P.signsOf = function (d, key, tpl) {
+    var o = ((d && d.printSigns) || {})[key] || (tpl && tpl.signs) || P.SIGNS;
+    return { teacher: !!o.teacher, head: !!o.head, supervisor: !!o.supervisor, principal: !!o.principal };
   };
   P.logoOffOf = function (d, key) { return !!((d && d.printLogoOff) || {})[key]; };
-  P.approval = function (signs) {
+  P.approval = function (signs, rec) {
     var S = window.Shouba, d = S && S.data ? S.data() : {}, o = signs || P.SIGNS, n = el('div', 'pp-appr');
     function nm(x) { x = String(x || '').trim().replace(/^أ\.\s*/, ''); return 'أ. ' + (x || '...........................'); }
     var head = S && S.user ? S.user().name : '';
-    /* الترتيب من اليمين (قرار المستخدم 2026-09-13): رئيس الشعبة · الموجه الفني · مدير المدرسة */
-    [['head', 'رئيس الشعبة', head], ['supervisor', 'الموجه الفني', d.supervisor], ['principal', 'مدير المدرسة', d.principal]].forEach(function (r) {
+    /* الترتيب من اليمين (قرار المستخدم 2026-09-13): رئيس الشعبة · الموجه الفني · مدير المدرسة — ويسبقهم المعلم صاحب
+       السجل ان اختير («معلم الفصل» يمينا في تقرير الزيارة ص١٣) */
+    [['teacher', 'المعلم', rec && rec.who], ['head', 'رئيس الشعبة', head], ['supervisor', 'الموجه الفني', d.supervisor], ['principal', 'مدير المدرسة', d.principal]].forEach(function (r) {
       if (!o[r[0]]) return;
       var g = el('div', 'sg');
       g.appendChild(el('div', 'r', r[1]));
@@ -442,7 +495,7 @@
       if (!n) return;
       (Array.isArray(n) ? n : [n]).forEach(function (x) { sheet.appendChild(x); });
     });
-    var sg = P.approval(ctx.signs);
+    var sg = P.approval(ctx.signs, rec);
     if (sg) sheet.appendChild(sg);
     return sheet;
   };
@@ -546,15 +599,23 @@
       cur.appendChild(n);
       if (!over()) return;
       if (n.tagName === 'TABLE') {
-        var t = n, tb = t.tBodies[0], trs = [].slice.call(tb.rows);
+        var t = n, tb = t.tBodies[0], trs = [].slice.call(tb.rows), groups = [];
+        /* الصف وما تمتد عليه خانته (rowSpan — «م» البند في جدول التقييم وسطر «ملاحظات أخرى» تحته) ينتقلان معا، فلا
+           ينفصل سطرا البند بين صفحتين. والامتداد الطويل (اشهر «ما قطع») صفا صفا كما كان: لا يحبس صفحة كاملة */
+        for (var gi = 0; gi < trs.length;) {
+          var span = 1;
+          [].forEach.call(trs[gi].cells, function (c) { if (c.rowSpan > span) span = c.rowSpan; });
+          if (span > 3) span = 1;
+          groups.push(trs.slice(gi, gi + span)); gi += span;
+        }
         tb.textContent = '';
-        trs.forEach(function (tr) {
-          tb.appendChild(tr);
+        groups.forEach(function (g) {
+          g.forEach(function (tr) { tb.appendChild(tr); });
           if (!over()) return;
-          tb.removeChild(tr);
-          if (!tb.rows.length) { breakBefore(t); tb.appendChild(tr); return; }   /* رأس بلا صف لا يترك وحده، ولا رأس محوره */
+          g.forEach(function (tr) { tb.removeChild(tr); });
+          if (!tb.rows.length) { breakBefore(t); g.forEach(function (tr) { tb.appendChild(tr); }); return; }   /* رأس بلا صف لا يترك وحده، ولا رأس محوره */
           t = shell(t); tb = t.tBodies[0];
-          page(false); cur.appendChild(t); tb.appendChild(tr);
+          page(false); cur.appendChild(t); g.forEach(function (tr) { tb.appendChild(tr); });
         });
       } else if (n.classList.contains('pp-text') && n.children.length) splitText(n);
       else breakBefore(n);
@@ -625,7 +686,7 @@
     /* سطر التوقيعات في آخر النموذج (قبل ملحق الشواهد) — ينزل الى اسفل صفحته. ⚠ ولا صفحة له وحده: الصفوف الفارغة
        (للكتابة باليد — rows.min) في الصفحة تفسح له صفا صفا من آخرها؛ فان لم يبق فارغ ولم يتسع انتقل الى صفحة بعدها.
        (رصد 2026-09-13: شعار المدرسة في الترويسة اطالها فدفع توقيعات شبكة الاعداد الى صفحة ثانية فارغة) */
-    var sg = P.approval(ctx.signs);
+    var sg = P.approval(ctx.signs, rec);
     if (sg) {
       cur.appendChild(sg);
       var blanks = [].slice.call(cur.querySelectorAll('tr.blank'));

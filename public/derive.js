@@ -423,6 +423,47 @@
     return seen.length === 1 ? seen[0] : '';
   };
 
+  /* ── فصول المدرسة (2026-09-14، طلب المستخدم: «قد يصل الصف العاشر الى ١٠ او ١١ فصلا حسب المدرسة») ──────────
+     عدد فصول كل صف ومسار يحدده رئيس الشعبة اول ادخال للجدول (classCounts)، فتعرض ارقام الشعب بعدده — كانت ١–٦ ثابتة
+     فلا يدخل الفصل ٧. المفتاح «الصف|الرمز» (العاشر| · الحادي عشر|ع · الحادي عشر|د)، وما لم يحدد ٦ كما كان.
+     الصفوف: ما تدرسه الشعبة وحده، بمساره — والمادة بلا مسار في صف ذي مسارين (الاختيار الحر) تستدعي المسارين */
+  S.CLASS_DEFAULT = 6;
+  function gradeInfo(grade) { return (((SHOUBA_REF.gradesByStage || {})[S.stage()]) || []).filter(function (g) { return g.grade === grade; })[0] || null; }
+  function twoTrack(grade) { var g = gradeInfo(grade); return !!(g && (g.tracks || []).some(function (t) { return TRACK_MARK[t]; })); }
+  S.twoTrackGrade = twoTrack;
+  S.countKey = function (grade, track) { return grade + '|' + S.trackMark(track); };
+  S.classCount = function (grade, track) { var n = +((S.data().classCounts || {})[S.countKey(grade, track)]); return n >= 1 ? n : S.CLASS_DEFAULT; };
+  S.classCountSet = function (grade, track) { return +((S.data().classCounts || {})[S.countKey(grade, track)]) >= 1; };
+  S.classRows = function () {
+    var subs = S.subjects(), rows = [];
+    (((SHOUBA_REF.gradesByStage || {})[S.stage()]) || []).forEach(function (g) {
+      var here = subs.filter(function (s) { return s.grade === g.grade; });
+      if (!here.length) return;
+      if (!twoTrack(g.grade)) { rows.push({ grade: g.grade, track: '', label: g.grade }); return; }
+      var tr = [];
+      here.forEach(function (s) { (TRACK_MARK[s.track] ? [s.track] : ['علمي', 'أدبي']).forEach(function (x) { if (tr.indexOf(x) < 0) tr.push(x); }); });
+      ['علمي', 'أدبي'].forEach(function (x) { if (tr.indexOf(x) > -1) rows.push({ grade: g.grade, track: x, label: g.grade + ' ' + x }); });
+    });
+    return rows;
+  };
+  /* حصص في صف ذي مسارين لا يعرف مسارها — الاختيار الحر قبل 2026-09-14 حفظ «12/3» بلا ع ولا د، فعده التعارض على
+     المسارين ولم يعرف الجدول الكامل موضعها. تعرض ليعاد اختيار مادتها بمسارها (لا يخمن مسارها). يقرأ ولا يمس */
+  S.untracked = function () {
+    var out = [];
+    S.roster().forEach(function (who) {
+      S.days().forEach(function (day) {
+        S.periods().forEach(function (t) {
+          if (t.brk) return;
+          var s = S.splitSlot(S.slot(who, day, t.n - 1));
+          if (!s.cls) return;
+          var g = S.gradeOfClass(S.splitClass(s.cls).base);
+          if (g && twoTrack(g) && !S.trackOf(s.cls, s.subject)) out.push({ who: who, day: day, n: t.n, cls: s.cls, subject: s.subject });
+        });
+      });
+    });
+    return out;
+  };
+
   S.slot = function (teacher, day, pIdx) {
     var sc = S.data().schedules || {}, t = sc[teacher];
     return (t && t[day] && t[day][pIdx]) || '';
@@ -743,6 +784,7 @@
     var d = S.data();
     return { today: S.today(), year: d.year || '', term: d.term || '', teachers: S.staff(),
       records: S.recs(), school: d.schoolName || '', directorate: S.directorate(), who: who || '',
+      head: S.self(), supervisor: d.supervisor || '',   /* رئيس الشعبة والموجه (المجموعة ب: الزيارات) */
       pick: (d.recPick || {})[tplId] || null };   /* عناصر النموذج المختارة — لقطتها في السجل الجديد */
   }
   S.newRec = function (tplId, who) {
@@ -793,6 +835,8 @@
   S.pickOf = function (tplId) { return (S.data().recPick || {})[tplId] || null; };
   S.setPick = function (tplId, map) { var p = S.data().recPick || {}; p[tplId] = map; S.save({ recPick: p }); };
   S.colsOf = function (rec, b, tplId) { return E() ? E().colsOf(rec, b, S.pickOf((rec && rec.tpl) || tplId)) : ((b && b.columns) || []); };   /* tplId: للنموذج الفارغ بلا سجل */
+  /* بنود جدول التقييم الظاهرة (rating.choose): لقطة السجل ⟵ اختيار الشعبة ⟵ الرسمية كلها — ShoubaRec.itemsOf */
+  S.itemsOf = function (rec, b, tplId) { return E() ? E().itemsOf(rec, b, S.pickOf((rec && rec.tpl) || tplId)) : ((b && b.items) || []); };
   S.archive = function (tplId, opt) { return E().archive(S.recs(tplId), opt); };
   /* ما ينتظر اجراء في خطط الفصل الحالي (المرحلة الثانية ج) — لقسم «بحاجة الى اجراء» في اللوحة:
      سجلات العام والفصل الحاليين، والشهر الحالي، واشهر الفصل من المرجعية ⟵ ShoubaRec.due.

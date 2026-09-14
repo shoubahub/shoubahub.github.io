@@ -35,7 +35,9 @@
   R.KINDS    = ['text', 'longtext', 'date', 'number', 'choice', 'check', 'teacher', 'months', 'auto', 'signature', 'followup', 'class'];
   R.SECTIONS = ['paragraph', 'list', 'smart:followup', 'smart:decisions'];
   R.SIGN     = ['roles', 'smart:attendance', 'cover'];
-  R.AUTO     = ['serial:year', 'today', 'year', 'term', 'teacher', 'school', 'directorate'];
+  /* serial:who — رقم يبدأ من ١ لكل معلم في العام (رقم الزيارة في تقرير زيارة رئيس الشعبة) · head — رئيس الشعبة صاحب
+     الحساب · supervisor — الموجه الفني من الاعداد (ش④) — المجموعة (ب) 2026-09-14 */
+  R.AUTO     = ['serial:year', 'serial:who', 'today', 'year', 'term', 'teacher', 'school', 'directorate', 'head', 'supervisor'];
   R.OWNERS   = ['shouba', 'teacher', 'student'];
   R.ORIENTS  = ['portrait', 'landscape'];
   R.FITS     = ['single-page', 'flow'];
@@ -126,6 +128,7 @@
           arr(b.items).forEach(function (it) {
             if (!it || !isId(it.id) || !it.label) return bad(ba, 'بند ناقص');
             if (seen[it.id]) bad(ba, 'بند مكرر: ' + it.id); seen[it.id] = 1;
+            if (it.opts !== undefined && !arr(it.opts).length) bad(ba, 'بند بعبارات فارغة: ' + it.id);
           });
           break;
         case 'files':
@@ -229,7 +232,7 @@
       b.fields.forEach(function (f) {
         var x = v[f.id];
         if (x === '' || x == null) return;
-        if (f.auto === 'serial:year') { if (s.no === '') s.no = x; }
+        if (f.auto === 'serial:year' || f.auto === 'serial:who') { if (s.no === '') s.no = x; }
         else if (f.kind === 'date') { if (!s.date) s.date = x; }
         else if (f.kind === 'text' && f.required && !s.title) s.title = String(x);
       });
@@ -311,6 +314,7 @@
     arr(records).forEach(function (r) {
       if (opt.status && (r.status || 'draft') !== opt.status) return;
       if (opt.q && !R.match(r, opt.q)) return;
+      if (opt.who && r.who !== opt.who) return;   /* سجلات معلم واحد (تقارير زياراته من ملفه) */
       var k = (r.year || '') + '|' + (r.term || '');
       if (!groups[k]) { groups[k] = { year: r.year || '', term: r.term || '', items: [] }; order.push(k); }
       groups[k].items.push(r);
@@ -338,6 +342,9 @@
       case 'school':      return ctx.school;
       case 'directorate': return ctx.directorate;
       case 'teacher':     return ctx.who;
+      case 'serial:who':  return ctx.serialWho;
+      case 'head':        return ctx.head;
+      case 'supervisor':  return ctx.supervisor;
     }
   }
   function blank(b, ctx) {
@@ -373,6 +380,7 @@
     var cx = {};
     Object.keys(ctx).forEach(function (k) { cx[k] = ctx[k]; });
     cx.serial = R.nextSerial(ctx.records, t.id, ctx.year);
+    cx.serialWho = R.nextSerial(ctx.records, t.id, ctx.year, ctx.who || '');
     var now = new Date().toISOString();
     var rec = { id: R.newId('r'), tpl: t.id, v: t.v, year: ctx.year || '', term: t.scope === 'year' ? '' : (ctx.term || ''),
       status: 'draft', created: now, updated: now, values: {} };
@@ -381,6 +389,8 @@
     /* لقطة عناصر النموذج المختارة يوم الانشاء (table.choose) — فلا يتغير سجل ان تغير الاختيار بعده */
     arr(t.blocks).forEach(function (b) {
       if (b.type === 'table' && b.choose && ctx.pick && arr(ctx.pick[b.id]).length) (rec.cols = rec.cols || {})[b.id] = ctx.pick[b.id].slice();
+      /* وعناصر جدول التقييم (rating.choose): المختار من الرسمي والمضاف — لقطة كاملة، فالمضاف يبقى في تقريره وان حذف بعده */
+      if (b.type === 'rating' && b.choose && ctx.pick && ctx.pick[b.id] && typeof ctx.pick[b.id] === 'object') (rec.items = rec.items || {})[b.id] = JSON.parse(JSON.stringify(ctx.pick[b.id]));
     });
     return rec;
   };
@@ -551,15 +561,28 @@
     var pick = (rec && rec.cols && rec.cols[b.id]) || (now && now[b.id]) || null;
     return pick ? arr(b.columns).filter(function (c) { return c.kind !== 'check' || pick.indexOf(c.id) > -1; }) : arr(b.columns);
   };
+  /* بنود جدول التقييم الظاهرة (rating.choose — تقرير زيارة رئيس الشعبة، 2026-09-14، طلب المستخدم: «تمكين المستخدم من
+     التحكم بعناصر التقييم كالاضافة او الحذف»). الاختيار { on: [معرفات الرسمي], extra: [{ id, label, opts }] }:
+     لقطة السجل (rec.items يوم انشائه) ⟵ اختيار الشعبة (now) ⟵ البنود الرسمية كلها. الرسمي بترتيب النموذج ثم المضاف */
+  R.itemsOf = function (rec, b, now) {
+    var all = arr(b && b.items);
+    if (!b || !b.choose) return all;
+    var p = (rec && rec.items && rec.items[b.id]) || (now && now[b.id]) || null;
+    if (!p || typeof p !== 'object' || Array.isArray(p)) return all;
+    var on = arr(p.on);
+    return all.filter(function (it) { return on.indexOf(it.id) > -1; })
+      .concat(arr(p.extra).filter(function (x) { return x && isId(x.id) && x.label; }));
+  };
 
   /* الرقم التسلسلي: يبدأ من ١ كل عام دراسي، ويليه اكبر رقم مسجل (لا عدد السجلات:
-     حذف سجل لا يعيد رقمه لغيره) */
-  R.nextSerial = function (records, tplId, year) {
-    var max = 0;
+     حذف سجل لا يعيد رقمه لغيره). who (serial:who): زيارات المعلم نفسه وحده في عامه */
+  R.nextSerial = function (records, tplId, year, who) {
+    var max = 0, key = who === undefined ? 'serial:year' : 'serial:who';
     arr(records).forEach(function (r) {
       if (r.tpl !== tplId || (r.year || '') !== (year || '')) return;
+      if (who !== undefined && (r.who || '') !== who) return;
       var t = R.of(r) || R.latest(tplId);
-      var n = parseInt(latin(valueAt(r, findField(t, function (f) { return f.auto === 'serial:year'; }))), 10);
+      var n = parseInt(latin(valueAt(r, findField(t, function (f) { return f.auto === key; }))), 10);
       if (n > max) max = n;
     });
     return max + 1;

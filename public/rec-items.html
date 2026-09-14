@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=75" />
-<link rel="stylesheet" href="shell.css?v=75" />
-<link rel="stylesheet" href="components.css?v=75" />
-<link rel="stylesheet" href="frame.css?v=75" />
+<link rel="stylesheet" href="identity/tokens.css?v=76" />
+<link rel="stylesheet" href="shell.css?v=76" />
+<link rel="stylesheet" href="components.css?v=76" />
+<link rel="stylesheet" href="frame.css?v=76" />
 <style>
   /* عناصر النموذج (2026-09-12، قرار المستخدم) — رئيس الشعبة يختار من عناصر شبكة المتابعة ما يتابعه:
      «الاغلب لا يملأ النموذج كله». ⚠ غير مؤشرة ابتداء وهو يؤشر (قراره صراحة) — خلاف قائمة السجلات
@@ -24,6 +24,12 @@
   .lead{padding:0 var(--gap-side);font-size:13px;font-weight:600;color:var(--shouba-label);line-height:1.8}
   .grp{display:flex;flex-direction:column;gap:9px}
   .grp .stack{padding:0 var(--gap-side)}
+  /* عناصر جدول التقييم (تقرير الزيارة 2026-09-14): المضاف بزر حذف، ونموذج الاضافة تحته */
+  .del{width:32px;height:32px;border-radius:11px;flex:none;border:0;cursor:pointer;display:grid;place-items:center;
+    background:linear-gradient(180deg,#FBF7EE 0%,#F3ECDE 100%);box-shadow:0 2px 0 rgba(190,172,140,.5)}
+  .del:active{transform:translateY(1px)}
+  .addf{display:flex;flex-direction:column;gap:12px;padding:0 var(--gap-side)}
+  .hint.warn{color:var(--shouba-error)}
 </style>
 </head>
 <body class="framed">
@@ -48,13 +54,13 @@
   </div>
  </div></div>
 
-<script src="build.js?v=75"></script>
-<script src="refdata.js?v=75"></script>
-<script src="rec-templates.js?v=75"></script>
-<script src="rec-engine.js?v=75"></script>
-<script src="derive.js?v=75"></script>
-<script src="icons.js?v=75"></script>
-<script src="components.js?v=75"></script>
+<script src="build.js?v=76"></script>
+<script src="refdata.js?v=76"></script>
+<script src="rec-templates.js?v=76"></script>
+<script src="rec-engine.js?v=76"></script>
+<script src="derive.js?v=76"></script>
+<script src="icons.js?v=76"></script>
+<script src="components.js?v=76"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search), t = ShoubaRec.latest(Q.get('tpl') || '');
 
@@ -67,12 +73,126 @@
 
   var CHK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   var tb = t && t.blocks.filter(function(b){ return b.type === 'table' && b.choose; })[0];
+  var rb = t && t.blocks.filter(function(b){ return b.type === 'rating' && b.choose; })[0];
+  var DEL = '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round"/></svg>';
 
   function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
   function groupLabel(id){ var g = (tb.groups || []).filter(function(x){ return x.id === id; })[0]; return g ? g.label : ''; }
 
-  if (!tb) location.replace('records.html');
+  /* «تم»: الاختيار محفوظ مع كل لمسة، فالى الارشيف — رجوعا في التاريخ ان جاء منه (فلا يتكرر فيه)، وبدل هذه الصفحة في
+     اول فتح (حوله الارشيف اليها &first=1)، ومعه معلمه ان جاء من ارشيف معلم (?who=) — قاعدة العودة 2026-09-14 */
+  var WHO = Q.get('who') || '', ARC = 'archive.html?tpl=' + encodeURIComponent(t ? t.id : '') + (WHO ? '&who=' + encodeURIComponent(WHO) : '');
+  function done(){
+    if (Q.get('first')) location.replace(ARC);
+    else if (/\/archive\.html/.test(document.referrer) && history.length > 1) history.back();
+    else location.href = ARC;
+  }
+
+  if (rb) startRating();
+  else if (!tb) location.replace('records.html');
   else start();
+
+  /* ── عناصر جدول التقييم (rating.choose — تقرير زيارة رئيس الشعبة، 2026-09-14، طلب المستخدم: «تمكين المستخدم من
+     التحكم بعناصر التقييم كالاضافة او الحذف»): الرسمية مؤشرة كلها ابتداء (نموذج التوجيه — خلاف الشبكتين) ولمسة تخرج
+     عنصرا؛ ويضيف عناصر له باسمها وعباراتها (وبلا عبارات ملاحظة وحدها)، وحذف المضاف بتراجع. العبارات الرسمية لا تعدل
+     (صياغة التوجيه). يحفظ مع كل لمسة { on, extra } لشعبته كلها ويسري على التقارير الجديدة — وكل تقرير يحفظ عناصره */
+  function startRating(){
+    var all = rb.items, cur = (S.pickOf(t.id) || {})[rb.id];
+    var on = cur && Array.isArray(cur.on) ? cur.on.slice() : all.map(function(it){ return it.id; });
+    var extra = cur && Array.isArray(cur.extra) ? cur.extra.slice() : [];
+    var itemsEl = document.getElementById('items'), ok = document.getElementById('ok'), rows = {};
+    document.getElementById('ttl').textContent = 'عناصر ' + (t.ready || t.title);
+    document.title = 'شعبة · عناصر ' + (t.ready || t.title);
+    itemsEl.appendChild(el('div', 'lead', 'عناصر التقويم في تقاريرك — المس عنصرا لتخرجه منها، وأضف ما تتابعه غيرها. يسري على تقاريرك الجديدة، وما كتب منها يبقى كما كتب.'));
+    function isOn(id){ return on.indexOf(id) > -1; }
+    /* الرسمية كلها ولا مضاف = الافتراض، فلا يحفظ شيء */
+    function persist(){
+      var map = {};
+      map[rb.id] = { on: all.map(function(it){ return it.id; }).filter(isOn), extra: extra };
+      S.setPick(t.id, on.length === all.length && !extra.length ? null : map);
+    }
+    function refresh(){
+      Object.keys(rows).forEach(function(id){ rows[id].classList.toggle('on', isOn(id)); rows[id].setAttribute('aria-checked', isOn(id) ? 'true' : 'false'); });
+      var n = on.length + extra.length;
+      document.getElementById('sub').textContent = 'اخترت ' + on.length + ' من ' + all.length + (extra.length ? ' · أضفت ' + extra.length : '');
+      ok.disabled = !n;
+      ok.textContent = n ? 'تم' : 'اختر عنصرا واحدا على الأقل';
+    }
+    function pickRow(label, sub){
+      var r = el('div', 'pick');
+      r.innerHTML = '<span class="mark">' + CHK + '</span><div class="tx"><b></b><small></small></div>';
+      r.querySelector('b').textContent = label; r.querySelector('small').textContent = sub;
+      return r;
+    }
+
+    /* الرسمية: لمسة تخرج العنصر او تعيده */
+    var sec = el('section', 'grp'), head = el('div', 'sect'), list = el('div', 'stack');
+    head.appendChild(el('div', 'h', 'عناصر النموذج الرسمية'));
+    all.forEach(function(it){
+      var r = pickRow(it.label, (it.opts || []).join(' · '));
+      r.setAttribute('role', 'checkbox'); r.tabIndex = 0;
+      function tap(){ var i = on.indexOf(it.id); if (i > -1) on.splice(i, 1); else on.push(it.id); refresh(); persist(); }
+      r.addEventListener('click', tap);
+      r.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } });
+      rows[it.id] = r;
+      list.appendChild(r);
+    });
+    sec.appendChild(head); sec.appendChild(list);
+    itemsEl.appendChild(sec);
+
+    /* المضافة: بزر حذف (بتراجع)، ونموذج الاضافة تحتها */
+    var xs = el('section', 'grp'), xh = el('div', 'sect'), xl = el('div', 'stack');
+    xh.appendChild(el('div', 'h', 'عناصر أضفتها'));
+    function paintX(){
+      xl.textContent = '';
+      if (!extra.length) xl.appendChild(el('div', 'hint', 'لا عناصر مضافة بعد — أضف أولها أدناه.'));
+      extra.forEach(function(x, i){
+        var r = pickRow(x.label, (x.opts || []).length ? x.opts.join(' · ') : 'ملاحظة بلا عبارات'), del = el('button', 'del');
+        r.classList.add('on');
+        del.type = 'button'; del.innerHTML = DEL; del.setAttribute('aria-label', 'احذف ' + x.label);
+        del.addEventListener('click', function(){
+          var gone = extra.splice(i, 1)[0];
+          paintX(); refresh(); persist();
+          S.toast('حذف «' + gone.label + '»', function(){ extra.splice(Math.min(i, extra.length), 0, gone); paintX(); refresh(); persist(); });
+        });
+        r.appendChild(del);
+        xl.appendChild(r);
+      });
+    }
+    function field(label, req, ph){
+      var f = el('div', 'field'), lb = el('label', null, label), p = el('div', 'paper'), i = el('input');
+      lb.appendChild(el('span', 'need ' + (req ? 'req' : 'opt'), req ? 'مطلوب' : 'اختياري'));
+      i.type = 'text'; i.placeholder = ph; i.maxLength = 160; i.setAttribute('aria-label', label);
+      p.appendChild(i); f.appendChild(lb); f.appendChild(p);
+      return { box: f, input: i };
+    }
+    var af = el('div', 'addf'), f1 = field('اسم العنصر', true, 'مثل: توظيف التعلم الإلكتروني'), f2 = field('عباراته', false, 'مثل: مناسب، متنوع، يحقق الأهداف');
+    var msg = el('div', 'hint', 'افصل بين العبارات بفاصلة — وبلا عبارات يكون العنصر ملاحظة وحدها.'), HINT = msg.textContent;
+    var addB = el('button', 'btn-ghost rb-add', '+ أضف العنصر');
+    f2.box.appendChild(msg);
+    addB.type = 'button';
+    function add(){
+      var name = f1.input.value.trim();
+      msg.classList.remove('warn'); msg.textContent = HINT;
+      if (!name) { msg.classList.add('warn'); msg.textContent = 'اكتب اسم العنصر أولا.'; f1.input.focus(); return; }
+      if (all.concat(extra).some(function(x){ return x.label.trim() === name; })) { msg.classList.add('warn'); msg.textContent = '«' + name + '» في القائمة من قبل.'; return; }
+      var opts = f2.input.value.split(/[،,]/).map(function(s){ return s.trim(); }).filter(function(s, k, a){ return s && a.indexOf(s) === k; });
+      extra.push({ id: ShoubaRec.newId('x'), label: name, opts: opts });
+      f1.input.value = ''; f2.input.value = ''; f1.input.focus();
+      paintX(); refresh(); persist();
+      S.toast('أضيف «' + name + '» — يظهر في تقاريرك الجديدة');
+    }
+    addB.addEventListener('click', add);
+    f1.input.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); f2.input.focus(); } });
+    f2.input.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); add(); } });
+    af.appendChild(f1.box); af.appendChild(f2.box); af.appendChild(addB);
+    xs.appendChild(xh); xs.appendChild(xl); xs.appendChild(af);
+    itemsEl.appendChild(xs);
+    paintX();
+
+    ok.addEventListener('click', function(){ if (ok.disabled) return; persist(); done(); });
+    refresh();
+  }
 
   function start(){
     var checks = tb.columns.filter(function(c){ return c.kind === 'check'; });
@@ -138,11 +258,11 @@
       itemsEl.appendChild(sec);
     });
 
-    /* «تم»: الاختيار محفوظ، فالى ارشيف السجل */
+    /* «تم»: الاختيار محفوظ، فالى ارشيف السجل (done اعلاه) */
     ok.addEventListener('click', function(){
       if (!sel.length) return;
       persist();
-      location.href = 'archive.html?tpl=' + encodeURIComponent(t.id);
+      done();
     });
     refresh();
   }

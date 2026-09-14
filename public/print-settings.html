@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>شعبة · إعدادات المطبوعات</title>
+<title>شعبة · ترويسة سجلاتك</title>
 <link rel="manifest" href="manifest.webmanifest" />
 <meta name="theme-color" content="#1B5183" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -11,18 +11,24 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=75" />
-<link rel="stylesheet" href="shell.css?v=75" />
-<link rel="stylesheet" href="components.css?v=75" />
-<link rel="stylesheet" href="frame.css?v=75" />
-<link rel="stylesheet" href="rec-print.css?v=75" />
+<link rel="stylesheet" href="identity/tokens.css?v=76" />
+<link rel="stylesheet" href="shell.css?v=76" />
+<link rel="stylesheet" href="components.css?v=76" />
+<link rel="stylesheet" href="frame.css?v=76" />
+<link rel="stylesheet" href="rec-print.css?v=76" />
 <style>
-  /* شاشة اعدادات (2026-09-12): رأس كحلي بمنزل، ومعاينة الورق الحقيقي مصغرة الى عرض الشاشة.
-     لا هيكل هنا — كله موروث من shell.css */
+  /* ترويسة سجلاتك (2026-09-12، ثم 2026-09-14 بطلب المستخدم): كل ما في ترويسة الورق في شاشة واحدة من «الإعدادات» —
+     اسطرها الاربعة يكتبها صاحبها كما يشاء، وشعار المدرسة بمعاينة قبل الاعتماد واستبدال وحذف ظاهرين، والسجلات التي يظهر
+     فيها. والمعاينة فوقها الورق الحقيقي مصغرا يتبع كل حرف. لا هيكل هنا — كله موروث من shell.css */
   .wrap{display:flex;flex-direction:column;gap:22px;padding:16px var(--gap-side) 0}
   .pvw{position:relative;overflow:hidden;background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(40,30,15,.14)}
   .pvw .pp-sheet{position:absolute;top:0;right:0;transform-origin:top right;min-height:0}
   .pvcap{margin-top:8px;font-size:12px;font-weight:500;color:var(--shouba-hint);line-height:1.7}
+  .part{font-size:14px;font-weight:700;color:var(--shouba-navy);margin-bottom:-8px}
+  .acts{display:flex;gap:12px}
+  .acts > .btn-ghost{flex:1}
+  .lconf{display:flex;flex-direction:column;gap:16px}
+  .lconf p{margin:0;font-size:13px;font-weight:600;color:var(--shouba-label);line-height:1.8}
 </style>
 </head>
 <body class="framed">
@@ -30,8 +36,8 @@
   <div class="topbar">
     <div class="tbcrest" id="tbCrest"></div>
     <div class="tt">
-      <b>إعدادات المطبوعات</b>
-      <span>ترويسة سجلاتك على الورق</span>
+      <b>ترويسة سجلاتك</b>
+      <span>أسطرها وشعار المدرسة على الورق</span>
     </div>
     <div class="iconbtn" data-home title="اللوحة"></div>
   </div>
@@ -44,16 +50,39 @@
           <div class="pvcap">ترويسة كل سجل تطبعه — ورق رسمي، بلا شعار شعبة ولا شعار الوزارة.</div>
         </div>
 
+        <div class="part">أسطر الترويسة</div>
         <div class="field" data-need="opt">
-          <label>شعار المدرسة على الورق</label>
-          <div class="stack" id="logos" role="radiogroup"></div>
-          <div class="hint">بلا شعار تبقى الأسطر الثلاثة في موضعها.</div>
+          <label for="ministry">الوزارة</label>
+          <div class="paper"><input id="ministry" type="text" maxlength="80" /></div>
+          <div class="hint">فارغا يطبع «وزارة التربية».</div>
         </div>
-
+        <div class="field" data-need="opt">
+          <label for="region">المنطقة التعليمية</label>
+          <div class="paper"><input id="region" type="text" maxlength="80" /></div>
+          <div class="hint">سطر اختياري — لا يطبع ما دام فارغا.</div>
+        </div>
         <div class="field" data-need="opt">
           <label for="dir">التوجيه</label>
           <div class="paper"><input id="dir" type="text" maxlength="80" /></div>
-          <div class="hint">يطبع في ترويسة كل سجلاتك كما تكتبه هنا — وهو نفسه في إعداد شعبتك.</div>
+          <div class="hint">فارغا يطبع توجيه شعبتك — وهو نفسه في إعداد شعبتك.</div>
+        </div>
+        <div class="field" data-need="opt">
+          <label for="school">المدرسة</label>
+          <div class="paper"><input id="school" type="text" maxlength="80" /></div>
+          <div class="hint">فارغا يطبع اسم مدرستك كما في إعدادك.</div>
+        </div>
+
+        <div class="part">شعار المدرسة</div>
+        <div class="field" data-need="opt">
+          <div class="stack" id="logos" role="radiogroup" aria-label="شعار المدرسة على الورق"></div>
+          <div class="acts" id="lacts" hidden></div>
+          <div class="hint" id="lhint"></div>
+        </div>
+
+        <div class="field" id="perBox" data-need="opt" hidden>
+          <label>يظهر الشعار في</label>
+          <div class="stack" id="per"></div>
+          <div class="hint">المس سجلا ليطبع بلا شعار — والأسطر تبقى في موضعها.</div>
         </div>
       </div>
     </div>
@@ -65,14 +94,16 @@
   </div>
  </div></div>
 
-<script src="build.js?v=75"></script>
-<script src="refdata.js?v=75"></script>
-<script src="derive.js?v=75"></script>
-<script src="icons.js?v=75"></script>
-<script src="components.js?v=75"></script>
-<script src="rec-print.js?v=75"></script>
+<script src="build.js?v=76"></script>
+<script src="refdata.js?v=76"></script>
+<script src="rec-templates.js?v=76"></script>
+<script src="rec-engine.js?v=76"></script>
+<script src="derive.js?v=76"></script>
+<script src="icons.js?v=76"></script>
+<script src="components.js?v=76"></script>
+<script src="rec-print.js?v=76"></script>
 <script>
-  var d = Shouba.data();
+  var S = Shouba, P = ShoubaPrint, d = S.data();
 
   (function paintTopCrest(){
     var el = document.getElementById('tbCrest'), c = d.crest;
@@ -82,81 +113,173 @@
   })();
 
   var CHK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  var logosEl = document.getElementById('logos'), dirIn = document.getElementById('dir'), pvw = document.getElementById('pvw');
+  var pvw = document.getElementById('pvw');
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
 
-  /* المعاينة: الورقة بمقاسها الحقيقي (210mm) مصغرة الى عرض الشاشة — فما يرى هنا هو ما يطبع،
-     بالمكون نفسه (ShoubaPrint.header) لا بنسخة للشاشة */
-  function paint(){
-    pvw.textContent = '';
-    var sheet = ShoubaPrint.sheet('portrait');
-    sheet.appendChild(ShoubaPrint.header(ShoubaPrint.headerData('سجل الاجتماعات')));
-    pvw.appendChild(sheet);
-    var k = pvw.clientWidth / sheet.offsetWidth, head = sheet.querySelector('.pp-head');
+  /* المعاينة: الورقة بمقاسها الحقيقي (210mm) مصغرة الى عرض الشاشة — فما يرى هنا هو ما يطبع، بالمكون نفسه
+     (ShoubaPrint.header). box/hd: معاينة في غير موضعها (الشعار المرشح في لوحة الاعتماد) */
+  function sizeSheet(box, sheet){
+    var w = box.clientWidth, sw = sheet.offsetWidth, head = sheet.querySelector('.pp-head');
+    if (!w || !sw) return;
+    var k = w / sw;
     sheet.style.transform = 'scale(' + k + ')';
-    pvw.style.height = Math.ceil((head.offsetTop + head.offsetHeight + 20) * k) + 'px';
+    box.style.height = Math.ceil((head.offsetTop + head.offsetHeight + 20) * k) + 'px';
   }
-  function refresh(){ d = Shouba.data(); renderLogos(); paint(); }
+  function drawHead(box, hd){
+    box.textContent = '';
+    var sheet = P.sheet('portrait');
+    sheet.appendChild(P.header(hd || P.headerData('سجل الاجتماعات')));
+    box.appendChild(sheet);
+    sizeSheet(box, sheet);
+    return sheet;
+  }
+  function paint(){ drawHead(pvw); }
+  function refresh(){ d = S.data(); renderLogos(); renderPer(); paint(); }
 
-  /* الرفع: يصغر الى ٢٥٦ قبل الحفظ — يطبع بعرض ٢٢مم فيبقى نحو ٣٠٠ نقطة في البوصة */
+  /* ── الاسطر: الوزارة والمنطقة والمدرسة في printHead (فارغها يعود الى الافتراض، والمنطقة لا تطبع)، والتوجيه مفتاح
+     الاعداد نفسه (directorate) — تحفظ مع كل حرف ─────────────────────────────────── */
+  function line(id, key, ph){
+    var i = document.getElementById(id);
+    i.placeholder = ph;
+    i.value = (d.printHead || {})[key] || '';
+    i.addEventListener('input', function(){
+      var h = {}, cur = S.data().printHead || {};
+      Object.keys(cur).forEach(function(k){ h[k] = cur[k]; });
+      if (i.value.trim()) h[key] = i.value.trim(); else delete h[key];
+      S.save({ printHead: h });
+      d = S.data(); paint();
+    });
+  }
+  var MAIN_REGIONS = ['العاصمة', 'حولي', 'الفروانية', 'الأحمدي', 'الجهراء', 'مبارك الكبير'];
+  line('ministry', 'ministry', 'وزارة التربية');
+  line('region', 'region', MAIN_REGIONS.indexOf(d.region) > -1 ? 'مثل: منطقة ' + d.region + ' التعليمية' : 'مثل: منطقة الأحمدي التعليمية');
+  line('school', 'school', d.schoolName || 'اسم مدرستك');
+  var dirIn = document.getElementById('dir');
+  dirIn.placeholder = SHOUBA_REF.directorateOf(d.stage || '', d.department || '');
+  dirIn.value = d.directorate || '';
+  dirIn.addEventListener('input', function(){ S.save({ directorate: dirIn.value.trim() }); d = S.data(); paint(); });
+
+  /* ── الشعار (2026-09-14، رصد المستخدم: زميل رفع صورة شعارا في تجربة ولم يستطع تغييرها) ──────────────────
+     اختيار واحد: بلا شعار · شعار الواجهة (ان كان صورة) · صورة من جهازك. والصورة لا تحفظ حتى تعاين في الترويسة
+     وتعتمد، وينبه ان كانت عريضة او طويلة (صورة لا شعار — يطبع في مربع ٢٢ مم). والاستبدال والحذف زران ظاهران
+     (كان التغيير بلمس المختار مرة ثانية فلا يعرف). والحذف بتراجع */
   function pickFile(){
     var f = document.createElement('input');
     f.type = 'file'; f.accept = 'image/*';
     f.addEventListener('change', function(){
-      if (!f.files || !f.files[0]) return;
-      Shouba.shrinkImage(f.files[0], 256, function(url){
-        Shouba.save({ printLogoSrc: 'upload', printLogoImg: url });
-        refresh();
-      });
+      var file = f.files && f.files[0];
+      if (!file) return;
+      var u = URL.createObjectURL(file), im = new Image();
+      im.onload = function(){
+        var ratio = im.naturalWidth / im.naturalHeight;
+        URL.revokeObjectURL(u);
+        S.shrinkImage(file, 256, function(url){ confirmLogo(url, ratio); });
+      };
+      im.onerror = function(){ URL.revokeObjectURL(u); S.toast('تعذر فتح الصورة — اختر صورة أخرى'); };
+      im.src = u;
     });
     f.click();
   }
-
-  /* الشعار: اختيار واحد من ثلاثة. «شعار الواجهة» لا يعرض الا ان كان صورة (الرمز المرسوم ليس شعار مدرسة).
-     والمرفوع يبقى محفوظا ان اختير غيره — والضغط عليه وهو مختار يغيره */
+  function confirmLogo(url, ratio){
+    var n = el('div', 'lconf'), box = el('div', 'pvw'), yes = el('button', 'cta', 'اعتمد الشعار'), other = el('button', 'btn-ghost', 'اختر صورة غيرها');
+    var odd = ratio > 1.35 || ratio < 0.74;
+    if (odd) n.appendChild(el('div', 'warnbox', 'تبدو صورة لا شعارا: الشعار يطبع في مربع صغير (٢٢ مم)، فتصغر الصورة ' + (ratio > 1 ? 'العريضة' : 'الطويلة') + ' ويبقى حولها فراغ. الأنسب صورة الشعار وحده.'));
+    n.appendChild(el('p', null, 'هكذا يطبع في ترويسة سجلاتك:'));
+    n.appendChild(box);
+    yes.type = other.type = 'button';
+    function approve(){
+      S.save({ printLogoSrc: 'upload', printLogoImg: url });
+      refresh();
+      S.toast('اعتمد الشعار — يطبع على ورق سجلاتك');
+    }
+    yes.addEventListener('click', function(){ approve(); S.sheet.close(); });
+    other.addEventListener('click', function(){ S.sheet.close(); setTimeout(pickFile, 320); });
+    n.appendChild(yes); n.appendChild(other);
+    S.sheet.open('معاينة الشعار', n, { onDone: function(){ approve(); return true; } });
+    var hd = P.headerData('سجل الاجتماعات'); hd.logo = url;
+    var sheet = drawHead(box, hd);
+    /* اللوحة تظهر بعد لحظة فعرضها صفر عند الرسم — تحجم حين يصير لها عرض */
+    if (window.ResizeObserver) new ResizeObserver(function(){ sizeSheet(box, sheet); }).observe(box);
+    else setTimeout(function(){ sizeSheet(box, sheet); }, 400);
+  }
   function renderLogos(){
-    var cur = ShoubaPrint.logoSrc(d);   /* لم يختر بعد: الشعار الموجود افتراضا (2026-09-13) */
-    var opts = [{ id: 'none', t: 'بلا شعار', s: 'الأسطر الثلاثة وحدها' }];
-    if (ShoubaPrint.canCrest(d)) opts.push({ id: 'crest', t: 'شعار الواجهة', s: 'الشعار الذي اخترته لمدرستك في الإعداد' });
-    opts.push(d.printLogoImg
-      ? { id: 'upload', t: 'الشعار المرفوع', s: cur === 'upload' ? 'اضغط مرة أخرى لتغييره' : 'رفعته من جهازك' }
-      : { id: 'upload', t: 'ارفع شعارا من جهازك', s: 'صورة تصغر قبل الحفظ' });
+    var cur = P.logoSrc(d), logosEl = document.getElementById('logos'), acts = document.getElementById('lacts');
+    var opts = [{ id: 'none', t: 'بلا شعار', s: 'الأسطر وحدها' }];
+    if (P.canCrest(d)) opts.push({ id: 'crest', t: 'شعار الواجهة', s: 'الصورة التي اخترتها لمدرستك عند التسجيل' });
+    opts.push(d.printLogoImg ? { id: 'upload', t: 'الصورة المرفوعة', s: 'رفعتها للورق وحده' } : { id: 'upload', t: 'ارفع صورة من جهازك', s: 'تعاينها في الترويسة قبل أن تعتمدها' });
     logosEl.textContent = '';
     opts.forEach(function(o){
-      var on = cur === o.id, row = document.createElement('div');
-      row.className = 'pick' + (on ? ' on' : '');
+      var on = cur === o.id, row = el('div', 'pick' + (on ? ' on' : ''));
       row.setAttribute('role', 'radio'); row.setAttribute('aria-checked', on ? 'true' : 'false'); row.tabIndex = 0;
       row.innerHTML = '<span class="mark">' + CHK + '</span><div class="tx"><b></b><small></small></div>';
       row.querySelector('b').textContent = o.t;
       row.querySelector('small').textContent = o.s;
       function choose(){
-        if (o.id === 'upload' && (!d.printLogoImg || on)) return pickFile();
-        Shouba.save({ printLogoSrc: o.id });
+        if (o.id === 'upload' && !d.printLogoImg) return pickFile();
+        if (on) return;
+        S.save({ printLogoSrc: o.id });
         refresh();
       }
       row.addEventListener('click', choose);
       row.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } });
       logosEl.appendChild(row);
     });
+    /* الاستبدال والحذف للصورة المرفوعة */
+    acts.textContent = '';
+    acts.hidden = !d.printLogoImg;
+    if (d.printLogoImg) {
+      var rep = el('button', 'btn-ghost', 'استبدل الصورة'), del = el('button', 'btn-ghost', 'احذف الصورة');
+      rep.type = del.type = 'button';
+      rep.addEventListener('click', pickFile);
+      del.addEventListener('click', function(){
+        var was = { printLogoSrc: d.printLogoSrc, printLogoImg: d.printLogoImg };
+        S.save({ printLogoImg: '', printLogoSrc: cur === 'upload' ? (P.canCrest(d) ? 'crest' : 'none') : (d.printLogoSrc || '') });
+        refresh();
+        S.toast('حذفت الصورة المرفوعة', function(){ S.save(was); refresh(); });
+      });
+      acts.appendChild(rep); acts.appendChild(del);
+    }
+    /* الصلة تقال صراحة: شعار الواجهة يطبع على الورق ما لم يختر غيره */
+    document.getElementById('lhint').textContent = cur === 'crest' ? 'هذا شعار الواجهة الذي اخترته عند التسجيل، ويطبع على ورق سجلاتك ما لم تختر غيره.'
+      : cur === 'upload' ? 'صورة للورق وحده — لا تغير شعار الواجهة.' : 'بلا شعار تبقى الأسطر في موضعها.';
   }
 
-  /* التوجيه: المفتاح نفسه في ش② (directorate) — فالفارغ يعود الى مرجع القسم، والنائب يظهره */
-  dirIn.placeholder = SHOUBA_REF.directorateOf(d.stage || '', d.department || '');
-  dirIn.value = Shouba.directorate();
-  dirIn.addEventListener('input', function(){
-    Shouba.save({ directorate: dirIn.value.trim() });
-    d = Shouba.data(); paint();
-  });
+  /* ── السجلات التي يظهر فيها الشعار (printLogoOff — كرقاقة «شعار المدرسة» في معاينة كل سجل، هنا مجموعة):
+     ما له مطبوعان (الخطة التشغيلية) يتبعان معا ─────────────────────────────────────────── */
+  function renderPer(){
+    var box = document.getElementById('perBox'), list = document.getElementById('per');
+    box.hidden = !P.logoOf(d);
+    list.textContent = '';
+    if (box.hidden) return;
+    ShoubaRec.list().filter(function(t){ return t.ready && !SHOUBA_REF.offRecord(t.ready); }).forEach(function(t){
+      var keys = t.prints && t.prints.length > 1 ? t.prints.map(function(p){ return t.id + ':' + p.id; }) : [t.id];
+      var on = keys.every(function(k){ return !P.logoOffOf(d, k); }), row = el('div', 'pick' + (on ? ' on' : ''));
+      row.setAttribute('role', 'checkbox'); row.setAttribute('aria-checked', on ? 'true' : 'false'); row.tabIndex = 0;
+      row.innerHTML = '<span class="mark">' + CHK + '</span><div class="tx"><b></b></div>';
+      row.querySelector('b').textContent = t.ready;
+      function tap(){
+        var m = {}, cur = S.data().printLogoOff || {};
+        Object.keys(cur).forEach(function(k){ m[k] = cur[k]; });
+        keys.forEach(function(k){ if (on) m[k] = true; else delete m[k]; });
+        S.save({ printLogoOff: m });
+        refresh();
+      }
+      row.addEventListener('click', tap);
+      row.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } });
+      list.appendChild(row);
+    });
+  }
 
-  /* «اعتمد الترويسة»: يؤكدها مرة (printOk) فلا تسأل عنها اول طباعة، ثم يعود من حيث جاء
+  /* «تم»: يؤكد الترويسة مرة (printOk) فلا تسأل عنها اول طباعة، ثم يعود من حيث جاء
      (?ret= صفحة من المنصة وحدها) والا الى اللوحة */
   document.getElementById('ok').addEventListener('click', function(){
-    Shouba.save({ printOk: true });
+    S.save({ printOk: true });
     var ret = new URLSearchParams(location.search).get('ret') || '';
     location.href = /^(?!index\.|login\.)[a-z0-9\-]+\.html(\?[^#<>"'\s]*)?$/i.test(ret) ? ret : 'board.html';
   });
 
   window.addEventListener('resize', paint);
-  renderLogos(); paint();
+  renderLogos(); renderPer(); paint();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint);
 </script>
 </body>

@@ -97,7 +97,7 @@
    كانت الصفوف المملوءة قصيرة فبقي نصف الصفحة فارغا (رصد في المعاينة 2026-09-12) */
 .pp-tbl.dense tbody td{ height:10.5mm; vertical-align:middle; }
 /* سطر البيانات تحت الترويسة (fields.inline) */
-.pp-inline{ display:flex; justify-content:center; gap:12mm; margin:-3mm 0 4mm; font-size:1.02em; }
+.pp-inline{ display:flex; flex-wrap:wrap; justify-content:center; column-gap:12mm; row-gap:1.5mm; margin:-3mm 0 4mm; font-size:1.02em; }   /* يلتف ان كثرت خاناته (سطر الزيارة: ست خانات) */
 .pp-inline b{ font-weight:700; }
 /* عمود «م» لا ينكسر رقمه ولا حشو جانبيا (2026-09-14): «١٣» انكسر سطرين في عمود ٨ مم بحشو ٢ مم — عيب كل جدول يبلغ ١٣ صفا */
 .pp-tbl td.m,.pp-tbl th.m{ text-align:center; white-space:nowrap; padding-left:0; padding-right:0; }
@@ -108,6 +108,17 @@
 /* مجموعات الاشهر (نموذج ما قطع من المنهج ص١٤): الشهر في خانة ممتدة وسط صفيه، والصفوف بارتفاع النموذج */
 .pp-tbl td.mo,.pp-tbl th.mo{ text-align:center; vertical-align:middle; font-weight:700; }
 .pp-tbl.rg tbody td{ height:9mm; vertical-align:middle; }
+/* جدول التقييم (rating — تقرير الزيارة ص١٣ وبنود اعمال الشعبة ص٣): البند غامق، والعبارات متصلة والمؤشر منها بارز
+   بعلامة وخط تحته — يقرأ بالابيض والاسود كما يدور رئيس القسم على العبارة في الورق */
+/* ومضغوط كالشبكات (dense) ليتسع النموذج صفحته الواحدة كورقته — عشرة عناصر بسطرين لكل عنصر تجاوزت الصفحة بخط الورق
+   الكامل، والخط لا يصغر (P.fit) */
+.pp-rate{ font-size:.76em; line-height:1.35; }
+.pp-rate th,.pp-rate td{ padding:.7mm 1.6mm; }
+.pp-rate td.m{ vertical-align:middle; }
+.pp-rate td.lab{ font-weight:700; }
+.pp-rate tr.note td.lab{ font-weight:600; }
+.pp-rate td.opts .on{ font-weight:700; text-decoration:underline; text-underline-offset:1mm; }
+.pp-rate tr.note td{ height:5mm; }
 /* الغلاف (mode:'cover' — المرحلة الثانية ب): اسم السجل كبيرا وسط صفحته، وخانتا التوقيع تحته */
 .pp-cover{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5mm; text-align:center; padding:8mm 0; }
 .pp-cover-t{ font-size:26pt; font-weight:700; line-height:1.4; }

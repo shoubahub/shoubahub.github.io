@@ -685,18 +685,74 @@ Shouba.nextLabel = function (def) {
   var PAGE_NAME = { 'board.html': 'اللوحة', 'records.html': 'سجلاتك', 'schedule.html': 'الجدول', 'teachers.html': 'المعلمين',
     'teacher.html': 'ملف المعلم', 'record.html': 'السجل', 'archive.html': 'الأرشيف', 'bundle.html': 'ملف الفصل', 'plan.html': 'خطة المنهج' };
   function pageOf(url) { var m = String(url || '').match(/\/([a-z0-9\-]+\.html)(?:[?#]|$)/i); return m ? m[1] : ''; }
+
+  /* ── العودة الى من فتح الشاشة (قاعدة المنصة 2026-09-14، رصد المستخدم في «الملاحظات التربوية»): كان «تم» في السجل
+     يذهب الى الارشيف ايا كان مصدرك، وزر العودة في الارشيف يعيد الى السجل الذي فتحه الارشيف نفسه — فيدور بينهما ولا
+     يصل الى ملف المعلم. القاعدة: العودة تصعد الى من فتح الشاشة، ولا تنزل ابدا الى شاشة تفتحها هي.
+     المراتب (LEVEL): اللوحة ٠ · التبويبات ١ · ملف المعلم والارشيف والخطة ٢ · ملف الفصل ٣ · السجل ٤ — ومن فتح الشاشة
+     (مرتبته ادنى منها) يحفظ للجلسة، فالعائد اليها من شاشة جانبية (اعدادات المطبوعات) او فرعية يجد وجهته كما كانت.
+     go(): رجوع في التاريخ ان جاء منها مباشرة (فتعود كما تركتها)، والا انتقال اليها. replace: بلا اثر في التاريخ (بعد الحذف) */
+  var LEVEL = { 'board.html': 0, 'records.html': 1, 'teachers.html': 1, 'schedule.html': 1,
+    'teacher.html': 2, 'archive.html': 2, 'plan.html': 2, 'bundle.html': 3, 'record.html': 4 };
+  Shouba.opener = function (def) {
+    var here = pageOf(location.href), key = 'shouba.from.' + here, ref = '', url = '', direct = false;
+    try { if (document.referrer && new URL(document.referrer).origin === location.origin) ref = document.referrer; } catch (e) {}
+    var rp = pageOf(ref);
+    if (rp && (rp in LEVEL) && (here in LEVEL) && LEVEL[rp] < LEVEL[here]) {
+      url = ref; direct = history.length > 1;
+      try { sessionStorage.setItem(key, ref); } catch (e) {}
+    } else {
+      try { url = sessionStorage.getItem(key) || ''; } catch (e) {}
+    }
+    if (!url) url = def || 'board.html';
+    return { url: url, name: PAGE_NAME[pageOf(url) || url.split('?')[0]] || 'اللوحة',
+      go: function (replace) { if (direct) history.back(); else if (replace) location.replace(url); else location.href = url; } };
+  };
   function bindBack() {
     [].forEach.call(document.querySelectorAll('[data-back]'), function (box) {
       if (box.querySelector('button')) return;
-      var here = pageOf(location.href), from = '';
-      try { if (document.referrer && new URL(document.referrer).origin === location.origin) from = pageOf(document.referrer); } catch (e) {}
-      var viaHistory = !!(from && from !== here && PAGE_NAME[from] && history.length > 1);
-      var dest = viaHistory ? from : (box.getAttribute('data-back') || 'board.html');
+      var op = Shouba.opener(box.getAttribute('data-back') || 'board.html');
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'fback';
-      b.textContent = 'عودة إلى ' + (PAGE_NAME[dest] || 'اللوحة');
-      b.addEventListener('click', function () { if (viaHistory) history.back(); else location.href = dest; });
+      b.textContent = 'عودة إلى ' + op.name;
+      b.addEventListener('click', function () { op.go(); });
       box.appendChild(b);
+    });
+  }
+  /* الرجوع في التاريخ قد يعيد الصفحة من ذاكرة المتصفح (bfcache) كما تركتها — فيبقى ملف المعلم يقول «لم يبدأ» بعد ان
+     كتبت سجله، ولمسته تنشئ سجلا ثانيا. فالصفحة المستعادة تقرأ من بياناتك من جديد (مع قاعدة العودة 2026-09-14) */
+  window.addEventListener('pageshow', function (e) { if (e.persisted) location.reload(); });
+
+  /* ── شريط التبويبات في شاشات التصفح (قرار المستخدم 2026-09-14: «تثبيت شريط التبويبات») — الارشيف وخطة المنهج وملف
+     الفصل: <div class="tabbar" data-tabs="records.html"></div> فارغا، والتبويب المضاء قسمها؛ يرسم ويربط من هنا.
+     وشاشات العمل (تحرير السجل · الاعدادات · المعالج) بلا شريط: فيها ازرار الاجراء ولوحة المفاتيح، ويكفيها «تم».
+     وشريط الاجراء (.foot) يرتفع فوقه (over-tabs) */
+  var TABS = [
+    ['board.html', 'اللوحة', '<path d="M3 8.4 10 3l7 5.4V16a1 1 0 0 1-1 1h-3.5v-4.5h-5V17H4a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>'],
+    ['teachers.html', 'المعلمون', '<circle cx="10" cy="7" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 17c0-3 2.7-4.6 6-4.6S16 14 16 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'],
+    null,
+    ['records.html', 'سجلاتك', '<path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 9h6M7 12.5h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'],
+    ['schedule.html', 'الجدول', '<rect x="3.5" y="4.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 8.5h13M7 3v3M13 3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>']
+  ];
+  function bindTabs() {
+    [].forEach.call(document.querySelectorAll('.tabbar[data-tabs]'), function (bar) {
+      if (bar.children.length) return;
+      var on = bar.getAttribute('data-tabs');
+      TABS.forEach(function (t) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        if (!t) {
+          b.className = 'tab-add'; b.setAttribute('aria-label', 'إضافة');
+          b.innerHTML = '<svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 4 V16 M4 10 H16" stroke="#241D06" stroke-width="2.6" stroke-linecap="round"/></svg>';
+          b.addEventListener('click', function () { Shouba.quickAdd(); });
+        } else {
+          b.className = 'tab' + (t[0] === on ? ' on' : '');
+          b.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none">' + t[2] + '</svg>' + t[1];
+          b.addEventListener('click', function () { location.href = t[0]; });
+        }
+        bar.appendChild(b);
+      });
+      [].forEach.call(document.querySelectorAll('.foot'), function (f) { f.classList.add('over-tabs'); });
     });
   }
 
@@ -1129,6 +1185,6 @@ Shouba.nextLabel = function (def) {
     });
   }
 
-  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); }
-  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); });
+  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); });
 })();

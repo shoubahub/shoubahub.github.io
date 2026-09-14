@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=73" />
-<link rel="stylesheet" href="shell.css?v=73" />
-<link rel="stylesheet" href="components.css?v=73" />
-<link rel="stylesheet" href="frame.css?v=73" />
-<link rel="stylesheet" href="rec-print.css?v=73" />
+<link rel="stylesheet" href="identity/tokens.css?v=74" />
+<link rel="stylesheet" href="shell.css?v=74" />
+<link rel="stylesheet" href="components.css?v=74" />
+<link rel="stylesheet" href="frame.css?v=74" />
+<link rel="stylesheet" href="rec-print.css?v=74" />
 <style>
   /* ملف الفصل (2026-09-13، طلب المستخدم: «هل يمكن طباعة السجلات كاملة؟») — سجلات الفصل او العام في ملف واحد:
      غلاف وفهرس وترقيم متصل (ShoubaPrint.bundle)، يطبع او يحفظ PDF. تفتح من «سجلاتك».
@@ -36,7 +36,7 @@
     <div class="iconbtn" data-home title="اللوحة"></div>
   </div>
 
-  <div class="screen has-topbar has-foot foot-2">
+  <div class="screen has-topbar has-foot has-tabbar">
     <div class="content">
       <div class="wrap">
         <div class="segs sm" id="scope">
@@ -47,29 +47,31 @@
         <div class="stack" id="types"></div>
         <div class="stack" id="opts"></div>
         <div class="note" id="note"></div>
-        <div class="stack" id="nofoot" hidden></div>
+        <div class="stack" id="saves"><button class="btn-ghost" id="pdf" type="button">احفظه ملف PDF</button></div>
         <div class="pgs" id="pgs" aria-label="معاينة صفحات الملف"></div>
       </div>
     </div>
   </div>
 
+  <!-- العودة بجانب «اطبع» في سطر واحد فوق شريط التبويبات (قرار المستخدم 2026-09-14: «تثبيت شريط التبويبات»)،
+       و«احفظه ملف PDF» نزل الى الصفحة فوق المعاينة — كموضعه في شاشة السجل -->
   <div class="foot">
-    <div data-back="records.html"></div>   <!-- زر الرجوع (قاعدة الشاشات الفرعية) — من bindBack -->
     <div class="duo">
-      <button class="btn-ghost" id="pdf" type="button">احفظه PDF</button>
+      <div data-back="records.html"></div>   <!-- زر الرجوع (قاعدة الشاشات الفرعية) — من bindBack -->
       <button class="cta" id="print" type="button">اطبع</button>
     </div>
   </div>
+  <div class="tabbar" data-tabs="records.html"></div>   <!-- يرسم من bindTabs (components.js)؛ وملف المعلم يضيء «المعلمون» -->
  </div></div>
 
-<script src="build.js?v=73"></script>
-<script src="refdata.js?v=73"></script>
-<script src="rec-templates.js?v=73"></script>
-<script src="rec-engine.js?v=73"></script>
-<script src="derive.js?v=73"></script>
-<script src="icons.js?v=73"></script>
-<script src="components.js?v=73"></script>
-<script src="rec-print.js?v=73"></script>
+<script src="build.js?v=74"></script>
+<script src="refdata.js?v=74"></script>
+<script src="rec-templates.js?v=74"></script>
+<script src="rec-engine.js?v=74"></script>
+<script src="derive.js?v=74"></script>
+<script src="icons.js?v=74"></script>
+<script src="components.js?v=74"></script>
+<script src="rec-print.js?v=74"></script>
 <script>
   var S = Shouba, d = S.data(), scope = 'term', off = {}, withCover = true, regCover = true, sheets = [];
   /* ?tpl=<قالب> ⟵ «اطبع السجل كاملا» من ارشيفه (2026-09-14): هذا السجل وحده وامامه صفحة تقديمه، بلا غلاف الملف
@@ -96,6 +98,7 @@
     document.title = 'شعبة · ' + ONLY_T.title + ' كاملا';
   }
   if (WHO) {
+    document.querySelector('.tabbar').setAttribute('data-tabs', 'teachers.html');   /* قسمه «المعلمون» — منه جاء */
     document.querySelector('.topbar .tt b').textContent = 'ملف أ. ' + S.shortName(WHO);
     document.title = 'شعبة · ملف أ. ' + WHO;
   }
@@ -227,10 +230,10 @@
   document.getElementById('pdf').addEventListener('click', function(){ S.pdfGuide(fileName(), startPrint); });
   /* الآيفون وحده: «اطبع بلا ذيل» — الملف بلا الموقع والساعة (Shouba.pdfFile)، و«اطبع» يبقى فوريا (2026-09-13) */
   if (ShoubaPrint.isIOS() && ShoubaPrint.canShareFiles()) {
-    var nf = document.getElementById('nofoot'), nb = el('button', 'btn-ghost', 'اطبع بلا ذيل (دون الموقع والساعة)');
+    var nb = el('button', 'btn-ghost', 'اطبع بلا ذيل (دون الموقع والساعة)');
     nb.type = 'button';
     nb.addEventListener('click', function(){ if (sheets.length) S.pdfFile(fileName(), function(){ return sheets; }); });
-    nf.appendChild(nb); nf.hidden = false;
+    document.getElementById('saves').appendChild(nb);
   }
   window.addEventListener('resize', paint);
   paint();

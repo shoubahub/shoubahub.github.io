@@ -782,6 +782,16 @@ body.solo .tsel{display:none}
 .foot .duo{display:flex;gap:12px}
 .foot .duo > .btn-ghost{flex:1}
 .foot .duo > .cta{flex:2}
+/* شاشة تصفح بشريط التبويبات (الارشيف — قرار المستخدم 2026-09-14): شريط الاجراء سطر واحد فوق الشريط العائم — العودة
+   بجانب الفعل بعرضين متساويين (فلا تنكسر العبارة)، والشاشة تحجز لهما معا. ولوحة المفاتيح ترفعه فوقها (--kb) */
+.foot .duo > [data-back]{flex:1}
+.foot .duo > [data-back] .fback{background:rgba(22,69,110,.09);padding:15px 10px;white-space:nowrap}
+.foot .duo > [data-back] + .cta{flex:1}
+/* الشريط يمتد من اسفل الشاشة خلف شريط التبويبات (لا يرفع بـbottom): فخلفيته صلبة من اعلى الازرار الى الحافة — كان
+   المحتوى يظهر من خلال زر العودة الشفيف ومن شق بينه وبين التبويبات. ولوحة المفاتيح تغطي التبويبات فتنكمش الحشوة (--kb) */
+.foot.over-tabs{padding-top:12px;padding-bottom:max(8px, calc(100px + env(safe-area-inset-bottom) - var(--kb, 0px)));
+  background:linear-gradient(180deg, rgba(239,230,214,0) 0, var(--shouba-canvas) 12px)}
+.screen.has-foot.has-tabbar{padding-bottom:176px}
 /* مقياس امتلاء الورقة: شريط وسطر — الكحلي يتسع بالخط الكامل · العنبري صغر الخط · الاحمر اطول من صفحة */
 .fillm{display:flex;flex-direction:column;gap:8px}
 .fillm .track{height:8px;border-radius:999px;background:var(--shouba-line);overflow:hidden}

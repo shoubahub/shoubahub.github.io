@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=73" />
-<link rel="stylesheet" href="shell.css?v=73" />
-<link rel="stylesheet" href="components.css?v=73" />
-<link rel="stylesheet" href="frame.css?v=73" />
-<link rel="stylesheet" href="rec-print.css?v=73" />
+<link rel="stylesheet" href="identity/tokens.css?v=74" />
+<link rel="stylesheet" href="shell.css?v=74" />
+<link rel="stylesheet" href="components.css?v=74" />
+<link rel="stylesheet" href="frame.css?v=74" />
+<link rel="stylesheet" href="rec-print.css?v=74" />
 <style>
   /* شاشة السجل (2026-09-12) — شاشة واحدة لكل القوالب، تولدها اللبنات من التعريف:
      ?tpl=<قالب> سجل جديد (لا يحفظ حتى يكتب فيه) · ?id=<سجل> سجل محفوظ باصداره هو.
@@ -77,17 +77,17 @@
   </div>
  </div></div>
 
-<script src="build.js?v=73"></script>
-<script src="refdata.js?v=73"></script>
-<script src="rec-templates.js?v=73"></script>
-<script src="rec-engine.js?v=73"></script>
-<script src="derive.js?v=73"></script>
-<script src="plan-data.js?v=73"></script>
-<script src="icons.js?v=73"></script>
-<script src="components.js?v=73"></script>
-<script src="rec-print.js?v=73"></script>
-<script src="rec-files.js?v=73"></script>
-<script src="rec-form.js?v=73"></script>
+<script src="build.js?v=74"></script>
+<script src="refdata.js?v=74"></script>
+<script src="rec-templates.js?v=74"></script>
+<script src="rec-engine.js?v=74"></script>
+<script src="derive.js?v=74"></script>
+<script src="plan-data.js?v=74"></script>
+<script src="icons.js?v=74"></script>
+<script src="components.js?v=74"></script>
+<script src="rec-print.js?v=74"></script>
+<script src="rec-files.js?v=74"></script>
+<script src="rec-form.js?v=74"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -437,10 +437,13 @@
     /* الموقع: تعديله ينبه ولا يمنع — النسخة المرفقة هي المرجع الرسمي ولن تطابق التعديل */
     document.getElementById('sgn').hidden = rec.status !== 'signed';
 
-    /* «تم» (طلب المستخدم 2026-09-11): يثبت ما كتب في الحال بدل انتظار الحفظ التلقائي، ثم يعود
-       الى الارشيف. وسجل جديد لم يكتب فيه شيء لا يحفظ — فلا يترك مسودة فارغة */
-    var back = 'archive.html?tpl=' + encodeURIComponent(tpl.id), noun1 = (tpl.noun && tpl.noun.one) || 'السجل';
-    document.getElementById('done').addEventListener('click', function(){ flush(); location.href = back; });
+    /* «تم» (طلب المستخدم 2026-09-11): يثبت ما كتب في الحال بدل انتظار الحفظ التلقائي، ثم يعود الى من فتح السجل —
+       ملف المعلم او اللوحة او الارشيف (Shouba.opener، قاعدة العودة 2026-09-14: كان يعود الى الارشيف دائما، فيدور
+       المستخدم بين الارشيف والسجل ولا يصل الى ملف المعلم). والزر يسمي وجهته. وسجل جديد لم يكتب فيه شيء لا يحفظ */
+    var op = S.opener('archive.html?tpl=' + encodeURIComponent(tpl.id)), noun1 = (tpl.noun && tpl.noun.one) || 'السجل';
+    var doneBtn = document.getElementById('done');
+    doneBtn.textContent = 'تم — عودة إلى ' + op.name;
+    doneBtn.addEventListener('click', function(){ flush(); op.go(); });
 
     /* الحذف من شاشته (وفي الارشيف كذلك) — بتأكيد يصرح باثره، ومصدره واحد: Shouba.askDeleteRec.
        يظهر بعد اول حفظ فقط: الجديد الذي لم يكتب فيه شيء لا شيء فيه يحذف */
@@ -449,7 +452,7 @@
     document.getElementById('rdel').hidden = !saved;
     delBtn.addEventListener('click', function(){
       var s = ShoubaRec.summary(rec), title = s.no !== '' ? noun1 + ' رقم ' + s.no : noun1;
-      S.askDeleteRec(rec, title, function(){ deleted = true; clearTimeout(timer); timer = 0; location.replace(back); });
+      S.askDeleteRec(rec, title, function(){ deleted = true; clearTimeout(timer); timer = 0; op.go(true); });
     });
 
     toPv.addEventListener('click', function(){ flush(); history.pushState({ pv: 1 }, ''); mode(true); });

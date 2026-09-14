@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=71" />
-<link rel="stylesheet" href="shell.css?v=71" />
-<link rel="stylesheet" href="components.css?v=71" />
-<link rel="stylesheet" href="frame.css?v=71" />
+<link rel="stylesheet" href="identity/tokens.css?v=72" />
+<link rel="stylesheet" href="shell.css?v=72" />
+<link rel="stylesheet" href="components.css?v=72" />
+<link rel="stylesheet" href="frame.css?v=72" />
 <style>
   /* ارشيف السجل (2026-09-12) — شاشة واحدة لكل القوالب: ?tpl=<قالب>.
      مجموعات (الفصل · العام) الاحدث اولا، وبحث في المحتوى وتصفية بالحالة، وبطاقة لكل سجل تفتح لوحة اجراءاته
@@ -58,14 +58,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=71"></script>
-<script src="refdata.js?v=71"></script>
-<script src="rec-templates.js?v=71"></script>
-<script src="rec-engine.js?v=71"></script>
-<script src="derive.js?v=71"></script>
-<script src="icons.js?v=71"></script>
-<script src="components.js?v=71"></script>
-<script src="rec-files.js?v=71"></script>
+<script src="build.js?v=72"></script>
+<script src="refdata.js?v=72"></script>
+<script src="rec-templates.js?v=72"></script>
+<script src="rec-engine.js?v=72"></script>
+<script src="derive.js?v=72"></script>
+<script src="icons.js?v=72"></script>
+<script src="components.js?v=72"></script>
+<script src="rec-files.js?v=72"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -113,6 +113,19 @@
       pl.addEventListener('click', function(){ location.href = 'rec-items.html?tpl=' + encodeURIComponent(t.id); });
       pw.appendChild(pl);
       toolsEl.parentNode.insertBefore(pw, toolsEl);
+    }
+    /* «اطبع السجل كاملا» (2026-09-14، طلب المستخدم): سجلات الفصل كلها في ملف واحد وامامها صفحة تقديمها —
+       «ملف الفصل» مقصورا على هذا السجل (bundle.html?tpl=). يظهر متى كان في الفصل سجل */
+    var nowN = S.recs(t.id).filter(isNow).length;
+    if (nowN) {
+      var bw = el('div', 'vlist'), bb = el('button', 'entry');
+      bb.type = 'button';
+      bb.appendChild(el('b', null, 'اطبع السجل كاملا'));
+      bb.appendChild(el('span', 'val', S.count(nowN, noun) + (t.scope === 'year' ? ' هذا العام' : ' هذا الفصل')));
+      bb.appendChild(el('span', 'chev', '‹'));
+      bb.addEventListener('click', function(){ location.href = 'bundle.html?tpl=' + encodeURIComponent(t.id); });
+      bw.appendChild(bb);
+      toolsEl.parentNode.insertBefore(bw, toolsEl);
     }
     document.getElementById('ttl').textContent = t.title;
     document.title = 'شعبة · ' + t.title;

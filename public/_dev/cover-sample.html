@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-public>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>شعبة · نماذج صفحة تقديم السجل (أداة تطوير)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../rec-print.css" />
+<style>
+  /* نماذج صفحة تقديم السجل (2026-09-14، طلب المستخدم قبل نومه: «صفحة تقديم لكل سجل في حال طباعته كاملا بتنسيق بحيث
+     يكون عنوان السجل بالمنتصف مع الترويسات») — ثلاثة تصاميم تعرض عليه، بطبقة الطباعة الحقيقية (الترويسة · خط الورق ·
+     سطر التوقيعات). ?o=a|b|c|d نموذج واحد · &full=1 بمقاسه للالتقاط. على الجهاز المحلي وحده، ولا تمس المنصة */
+  body{margin:0;background:#E9E4DA;font-family:"IBM Plex Sans Arabic",sans-serif;padding:20px 12px 60px}
+  body.full{padding:0;background:#fff}
+  h2{font-size:15px;margin:22px 4px 8px;color:#16456E}
+  .pw{position:relative;overflow:hidden;background:#fff;box-shadow:0 1px 8px rgba(40,30,15,.2);margin:0 auto 14px;max-width:620px}
+  .pw .pp-sheet{position:absolute;top:0;right:0;transform-origin:top right}
+  [hidden]{display:none !important}
+
+  /* ── المشترك: الورقة عمود مرن، والوسط يأخذ ما بقي فيقع العنوان في منتصف الصفحة حقا ── */
+  .cv{height:297mm;overflow:hidden}
+  .cv .pp-head{margin-bottom:0}
+  .cv-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:4.5mm}
+  .cv-kick{font-size:14pt;font-weight:600}
+  .cv-t{font-size:32pt;font-weight:700;line-height:1.35}
+  .cv-s{font-size:14pt;font-weight:600;line-height:1.6}
+  .cv-who{font-size:16pt;font-weight:700}
+  .cv .pp-appr{margin-top:0;padding-top:6mm}
+
+  /* ── أ · الإطار الرسمي: إطار مزدوج حول الصفحة كشهادات الوزارة، والعنوان بين خطين، وصف حقائق ── */
+  .cv-a{position:relative;padding:14mm 16mm}
+  .cv-a::before{content:"";position:absolute;inset:7mm;border:3px double #000;pointer-events:none}
+  .cv-a .cv-rule{width:78mm;border-top:3px double #000}
+  .cv-facts{display:flex;justify-content:center;border:1.2px solid #000;margin:6mm auto 0}
+  .cv-facts > div{display:flex;flex-direction:column;align-items:center;gap:.8mm;padding:2.8mm 7mm}
+  .cv-facts > div + div{border-right:1.2px solid #000}
+  .cv-facts small{font-size:10.5pt;font-weight:600}
+  .cv-facts b{font-size:13pt;font-weight:700}
+
+  /* ── ب · العنوان المؤطر: عنوان النماذج نفسه (اطار مزدوج بظل رمادي) مكبرا، وتحته جدول بيانات السجل ── */
+  .cv-b .cv-box{border:3px double #000;padding:9mm 18mm;font-size:30pt;font-weight:700;line-height:1.35;
+    box-shadow:-3mm -3mm 0 0 #bdbdbd;background:#fff;margin-bottom:6mm}
+  .cv-tbl{border-collapse:collapse;width:132mm;margin-top:6mm;font-size:12.5pt}
+  .cv-tbl th,.cv-tbl td{border:1.2px solid #000;padding:2.4mm 4mm;text-align:right}
+  .cv-tbl th{width:42mm;font-weight:700;background:#ececec}
+  .cv-tbl td{font-weight:500}
+
+  /* ── ج · مع فهرس السجل: العنوان في اعلى الثلث تحت خط سميك، ثم فهرس ما في السجل لمن يجلده ── */
+  .cv-c .cv-mid{flex:none;justify-content:flex-start;padding-top:16mm;gap:3.5mm}
+  .cv-c .cv-t{font-size:30pt}
+  .cv-c .cv-bar{width:100%;border-top:2.4px solid #000;border-bottom:.8px solid #000;height:1.6mm;margin:1mm 0 2mm}
+  .cv-idx{margin-top:10mm}
+  .cv-idx .t{font-weight:700;font-size:13pt;margin-bottom:2mm}
+  .cv-idx table{width:100%;border-collapse:collapse;font-size:12pt}
+  .cv-idx th,.cv-idx td{border:1px solid #000;padding:2mm 3mm;text-align:right}
+  .cv-idx thead th{background:#ececec;text-align:center}
+  .cv-idx .m{width:12mm;text-align:center}
+  .cv-idx .d{width:40mm;text-align:center}
+  .cv-c .pp-appr{margin-top:auto}
+</style>
+</head>
+<body>
+<div id="out"></div>
+<script>
+  (function(){ var h = location.hostname;
+    if (!(h === 'localhost' || h === '127.0.0.1')) { document.body.textContent = 'أداة تطوير — تعمل على الجهاز المحلي وحده.'; throw new Error('dev only'); }
+    try { sessionStorage.setItem('shouba.sim', '1'); } catch (e) {}
+    /* متصفح بلا بيانات (الالتقاط): شعبة مثال — ولا يمس مخزنا فيه بيانات */
+    try {
+      if (!localStorage.getItem('shouba.setup')) {
+        localStorage.setItem('shouba.setup', JSON.stringify({ stage: 'ثانوي', department: 'الرياضيات', schoolName: 'ثانوية الأمل', schoolType: 'بنين',
+          year: '٢٠٢٦ / ٢٠٢٧', term: 'الفصل الأول', principal: 'عبدالعزيز الفلاح', supervisor: '', refDataVersion: 4, teachers: ['فهد المطيري'] }));
+        localStorage.setItem('shouba.user', JSON.stringify({ name: 'محمد البراك' }));
+      }
+    } catch (e) {}
+  })();
+</script>
+<script src="../build.js"></script>
+<script src="../refdata.js"></script>
+<script src="../rec-templates.js"></script>
+<script src="../rec-engine.js"></script>
+<script src="../derive.js"></script>
+<script src="../components.js"></script>
+<script src="../rec-print.js"></script>
+<script>
+  var S = Shouba, P = ShoubaPrint, R = ShoubaRec, Q = new URLSearchParams(location.search), out = document.getElementById('out');
+  var only = Q.get('o'), full = Q.get('full');
+  if (full) document.body.classList.add('full');
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+
+  /* بيانات السجل للغلاف: القالب، ومحتواه (رقم · عنوان · تاريخ لكل محضر او متابعة)، وصاحبه ان كان سجل معلم */
+  function regOf(tplId, who){
+    var t = R.latest(tplId), d = S.data();
+    var recs = S.recs(tplId).filter(function(r){ return !who || r.who === who; });
+    var rows = recs.map(function(r){ var s = R.summary(r); return { no: s.no, title: s.title, date: s.date || R.dateOf(r) }; })
+      .sort(function(a, b){ return String(a.date).localeCompare(String(b.date)); });
+    /* بلا سجلات في المخزن (الالتقاط): محتوى مثال */
+    if (!rows.length && tplId === 'meetings') rows = [
+      { no: 1, title: 'الاستعداد لانطلاق العام', date: '2026-09-01' },
+      { no: 2, title: 'توزيع المناهج وخطط التوزيع', date: '2026-09-08' },
+      { no: 3, title: 'متابعة الاختبارات القصيرة', date: '2026-09-15' } ];
+    var noun = t.noun || { one: 'سجل', two: 'سجلان', few: 'سجلات', many: 'سجلا' };
+    /* سجل المعلم (owner:'teacher') كشف واحد في الفصل، ومحتواه متابعاته: صفوف جدوله ذات التاريخ — لا عدد الكشوف */
+    if (t.owner === 'teacher') {
+      var tb = t.blocks.filter(function(b){ return b.type === 'table'; })[0];
+      var dc = tb && tb.columns.filter(function(c){ return c.kind === 'date'; })[0];
+      rows = [];
+      recs.forEach(function(r){ ((r.values || {})[tb.id] || []).forEach(function(x){ if (dc && x[dc.id]) rows.push({ no: '', title: '', date: x[dc.id] }); }); });
+      rows.sort(function(a, b){ return String(a.date).localeCompare(String(b.date)); });
+      if (!rows.length) rows = [{ no: '', title: '', date: '2026-09-10' }, { no: '', title: '', date: '2026-09-17' }, { no: '', title: '', date: '2026-09-24' }];
+      noun = { one: 'متابعة', two: 'متابعتان', few: 'متابعات', many: 'متابعة' };
+    }
+    return { t: t, who: who || '', rows: rows, count: P.ar(S.count(rows.length, noun)),
+      n: P.ar(rows.length), countLabel: 'عدد ال' + noun.few,
+      from: rows[0] && rows[0].date ? P.date(rows[0].date) : '', to: rows.length && rows[rows.length - 1].date ? P.date(rows[rows.length - 1].date) : '',
+      dept: d.department ? 'شعبة ' + d.department : '', term: [d.term, d.year ? 'العام الدراسي ' + P.ar(d.year) : ''].filter(Boolean).join(' · '),
+      school: d.schoolName || '', head: (S.user && S.user().name) || '' };
+  }
+  /* الترويسة بلا اطار العنوان الصغير — العنوان هنا وسط الصفحة */
+  function head(){
+    var h = P.header(P.headerData(''));
+    var tt = h.querySelector('.pp-title'); if (tt) { var sp = el('div'); h.replaceChild(sp, tt); }
+    return h;
+  }
+  function sheet(v){ var s = P.sheet('portrait'); s.classList.add('cv', 'cv-' + v); return s; }
+
+  var MAKE = {
+    /* أ · الإطار الرسمي */
+    a: function(g){
+      var s = sheet('a'), mid = el('div', 'cv-mid');
+      s.appendChild(head());
+      if (g.dept) mid.appendChild(el('div', 'cv-kick', g.dept));
+      mid.appendChild(el('div', 'cv-t', g.t.title));
+      mid.appendChild(el('div', 'cv-rule'));
+      if (g.who) mid.appendChild(el('div', 'cv-who', 'المعلم: أ. ' + g.who));
+      if (g.term) mid.appendChild(el('div', 'cv-s', g.term));
+      var f = el('div', 'cv-facts');
+      [[g.countLabel, g.n], ['من', g.from], ['إلى', g.to]].forEach(function(x){
+        if (!x[1]) return; var c = el('div'); c.appendChild(el('small', null, x[0])); c.appendChild(el('b', null, x[1])); f.appendChild(c);
+      });
+      mid.appendChild(f);
+      s.appendChild(mid);
+      var ap = P.approval(); if (ap) s.appendChild(ap);
+      return s;
+    },
+    /* ب · العنوان المؤطر */
+    b: function(g){
+      var s = sheet('b'), mid = el('div', 'cv-mid');
+      s.appendChild(head());
+      mid.appendChild(el('div', 'cv-box', g.t.title));
+      if (g.who) mid.appendChild(el('div', 'cv-who', 'المعلم: أ. ' + g.who));
+      var tb = el('table', 'cv-tbl'), bd = el('tbody');
+      [['الشعبة', g.dept.replace(/^شعبة /, '')], ['المدرسة', g.school], ['الفصل والعام', g.term], ['رئيس الشعبة', g.head ? 'أ. ' + g.head : ''],
+       ['محتوى السجل', g.count + (g.from ? ' — من ' + g.from + ' إلى ' + g.to : '')]].forEach(function(x){
+        if (!x[1]) return; var tr = el('tr'); tr.appendChild(el('th', null, x[0])); tr.appendChild(el('td', null, x[1])); bd.appendChild(tr);
+      });
+      tb.appendChild(bd); mid.appendChild(tb);
+      s.appendChild(mid);
+      var ap = P.approval(); if (ap) s.appendChild(ap);
+      return s;
+    },
+    /* ج · مع فهرس السجل */
+    c: function(g){
+      var s = sheet('c'), mid = el('div', 'cv-mid');
+      s.appendChild(head());
+      if (g.dept) mid.appendChild(el('div', 'cv-kick', g.dept));
+      mid.appendChild(el('div', 'cv-t', g.t.title));
+      mid.appendChild(el('div', 'cv-bar'));
+      mid.appendChild(el('div', 'cv-s', [g.who ? 'المعلم: أ. ' + g.who : '', g.term].filter(Boolean).join(' · ')));
+      s.appendChild(mid);
+      var ix = el('div', 'cv-idx'), tb = el('table'), th = el('thead'), hr = el('tr'), bd = el('tbody');
+      ix.appendChild(el('div', 't', 'فهرس السجل — ' + g.count));
+      [['m', 'م'], [null, g.who ? 'المتابعة' : 'الموضوع'], ['d', 'التاريخ']].forEach(function(h){ hr.appendChild(el('th', h[0], h[1])); });
+      th.appendChild(hr); tb.appendChild(th);
+      g.rows.forEach(function(r, i){
+        var tr = el('tr');
+        tr.appendChild(el('td', 'm', P.ar(r.no !== '' ? r.no : i + 1)));
+        tr.appendChild(el('td', null, r.title || (g.who ? 'متابعة ' + P.ar(i + 1) : '')));
+        tr.appendChild(el('td', 'd', r.date ? P.date(r.date) : ''));
+        bd.appendChild(tr);
+      });
+      tb.appendChild(bd); ix.appendChild(tb); s.appendChild(ix);
+      var ap = P.approval(); if (ap) s.appendChild(ap);
+      return s;
+    }
+  };
+
+  var LIST = [
+    { o: 'a', v: 'a', title: 'النموذج أ · الإطار الرسمي — سجل الاجتماعات', reg: function(){ return regOf('meetings'); } },
+    { o: 'b', v: 'b', title: 'النموذج ب · العنوان المؤطر — سجل الاجتماعات', reg: function(){ return regOf('meetings'); } },
+    { o: 'c', v: 'c', title: 'النموذج ج · مع فهرس السجل — سجل الاجتماعات', reg: function(){ return regOf('meetings'); } },
+    { o: 'd', v: 'a', title: 'النموذج أ على سجل معلم — كشف متابعة الأعمال التحريرية', reg: function(){ return regOf('written', (S.data().teachers || [])[0] || 'فهد المطيري'); } }
+  ];
+  function size(w, s){ var k = w.clientWidth / s.offsetWidth; s.style.transform = 'scale(' + k + ')'; w.style.height = Math.ceil(s.offsetHeight * k) + 'px'; }
+  function paint(){
+    out.textContent = '';
+    LIST.forEach(function(x){
+      if (only && x.o !== only) return;
+      var s = MAKE[x.v](x.reg());
+      if (full) { out.appendChild(s); return; }
+      var h = el('h2', null, x.title), w = el('div', 'pw');
+      out.appendChild(h); out.appendChild(w); w.appendChild(s); size(w, s);
+    });
+  }
+  paint();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint);
+</script>
+</body>
+</html>

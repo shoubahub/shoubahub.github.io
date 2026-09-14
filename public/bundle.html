@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=71" />
-<link rel="stylesheet" href="shell.css?v=71" />
-<link rel="stylesheet" href="components.css?v=71" />
-<link rel="stylesheet" href="frame.css?v=71" />
-<link rel="stylesheet" href="rec-print.css?v=71" />
+<link rel="stylesheet" href="identity/tokens.css?v=72" />
+<link rel="stylesheet" href="shell.css?v=72" />
+<link rel="stylesheet" href="components.css?v=72" />
+<link rel="stylesheet" href="frame.css?v=72" />
+<link rel="stylesheet" href="rec-print.css?v=72" />
 <style>
   /* ملف الفصل (2026-09-13، طلب المستخدم: «هل يمكن طباعة السجلات كاملة؟») — سجلات الفصل او العام في ملف واحد:
      غلاف وفهرس وترقيم متصل (ShoubaPrint.bundle)، يطبع او يحفظ PDF. تفتح من «سجلاتك».
@@ -62,24 +62,34 @@
   </div>
  </div></div>
 
-<script src="build.js?v=71"></script>
-<script src="refdata.js?v=71"></script>
-<script src="rec-templates.js?v=71"></script>
-<script src="rec-engine.js?v=71"></script>
-<script src="derive.js?v=71"></script>
-<script src="icons.js?v=71"></script>
-<script src="components.js?v=71"></script>
-<script src="rec-print.js?v=71"></script>
+<script src="build.js?v=72"></script>
+<script src="refdata.js?v=72"></script>
+<script src="rec-templates.js?v=72"></script>
+<script src="rec-engine.js?v=72"></script>
+<script src="derive.js?v=72"></script>
+<script src="icons.js?v=72"></script>
+<script src="components.js?v=72"></script>
+<script src="rec-print.js?v=72"></script>
 <script>
-  var S = Shouba, d = S.data(), scope = 'term', off = {}, withCover = true, sheets = [];
+  var S = Shouba, d = S.data(), scope = 'term', off = {}, withCover = true, regCover = true, sheets = [];
+  /* ?tpl=<قالب> ⟵ «اطبع السجل كاملا» من ارشيفه (2026-09-14): هذا السجل وحده وامامه صفحة تقديمه، بلا غلاف الملف
+     وفهرسه ابتداء — واختيارات هذا الوضع لا تحفظ فوق اختيارات ملف الفصل */
+  var ONLY = new URLSearchParams(location.search).get('tpl') || '', ONLY_T = ONLY ? ShoubaRec.latest(ONLY) : null;
+  if (!ONLY_T) ONLY = '';
   /* اختيارات الملف محفوظة في الشعبة (قاعدة الادخال 2026-09-13) — كانت تضيع بالخروج فيعيد اختيارها كل مرة */
   (function restore(){
     var bp = d.bundlePick || {};
     if (bp.scope === 'year' || bp.scope === 'term') scope = bp.scope;
     if (bp.off && typeof bp.off === 'object') off = bp.off;
     if (bp.cover === false) withCover = false;
+    if (bp.regCover === false) regCover = false;
+    if (ONLY) { off = {}; withCover = false; regCover = true; }
   })();
-  function keep(){ S.save({ bundlePick: { scope: scope, off: off, cover: withCover } }); }
+  function keep(){ if (!ONLY) S.save({ bundlePick: { scope: scope, off: off, cover: withCover, regCover: regCover } }); }
+  if (ONLY) {
+    document.querySelector('.topbar .tt b').textContent = ONLY_T.title + ' كاملا';
+    document.title = 'شعبة · ' + ONLY_T.title + ' كاملا';
+  }
   var CHK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   var FIRST = ['meetings', 'opplan'];   /* الاجتماعات والخطة التشغيلية اولا — كترتيب «سجلاتك» */
 
@@ -111,7 +121,7 @@
     var map = {}, out = [];
     S.recs().forEach(function(r){
       var t = ShoubaRec.of(r);
-      if (!t || !inScope(r, t)) return;
+      if (!t || !inScope(r, t) || (ONLY && t.id !== ONLY)) return;
       (map[t.id] = map[t.id] || { t: t, recs: [] }).recs.push(r);
     });
     Object.keys(map).map(function(k){ return map[k]; })
@@ -141,7 +151,7 @@
       head ? 'رئيس الشعبة: أ. ' + head : ''];
   }
   function fileName(){
-    return ['ملف سجلات الشعبة', d.department || '', scope === 'year' ? (d.year || '') : [d.term, d.year].filter(Boolean).join(' ')]
+    return [ONLY ? ONLY_T.title : 'ملف سجلات الشعبة', d.department || '', scope === 'year' ? (d.year || '') : [d.term, d.year].filter(Boolean).join(' ')]
       .filter(Boolean).join(' - ').replace(/[\/\\:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
   }
 
@@ -149,11 +159,13 @@
     var gs = groups(), typesEl = document.getElementById('types'), optsEl = document.getElementById('opts');
     document.getElementById('sub').textContent = scope === 'year' ? 'العام الدراسي ' + (d.year || '') : [d.term, d.year].filter(Boolean).join(' · ');
     typesEl.textContent = ''; optsEl.textContent = '';
+    typesEl.hidden = typesEl.previousElementSibling.hidden = !!ONLY;   /* سجل واحد: لا اختيار انواع */
     gs.forEach(function(g){
       typesEl.appendChild(pickRow(g.t.title, S.count(g.recs.length, g.t.noun || { one: 'سجل', two: 'سجلان', few: 'سجلات', many: 'سجلا' }), !off[g.t.id],
         function(){ off[g.t.id] = !off[g.t.id]; keep(); paint(); }));
     });
     optsEl.appendChild(pickRow('غلاف وفهرس', 'غلاف باسم الشعبة والفصل، وفهرس بصفحة كل سجل', withCover, function(){ withCover = !withCover; keep(); paint(); }));
+    optsEl.appendChild(pickRow('صفحة تقديم لكل سجل', 'عنوان السجل وسط صفحة بإطار رسمي، قبل محاضره', regCover, function(){ regCover = !regCover; keep(); paint(); }));
     var entries = [];
     gs.forEach(function(g){ if (!off[g.t.id]) g.recs.forEach(function(r){ entries.push({ tpl: g.t, rec: r, ctx: ctxOf(r, g.t), label: labelOf(r, g.t) }); }); });
     var box = document.getElementById('pgs'), note = document.getElementById('note');
@@ -162,7 +174,7 @@
     if (!gs.length) { note.textContent = 'لا سجلات في ' + (scope === 'year' ? 'هذا العام' : 'هذا الفصل') + ' بعد — تجمع هنا حين تكتبها.'; return; }
     if (!entries.length) { note.textContent = 'اخترت ألا يدخل الملف شيء — المس نوعا ليدخله.'; return; }
     var host = el('div'); box.appendChild(host);
-    sheets = ShoubaPrint.bundle(entries, { cover: withCover, title: 'ملف سجلات الشعبة', lines: coverLines() }, host);
+    sheets = ShoubaPrint.bundle(entries, { cover: withCover, title: 'ملف سجلات الشعبة', lines: coverLines(), regCovers: regCover }, host);
     sheets.forEach(function(p){
       var w = el('div', 'pvw');
       box.insertBefore(w, host); w.appendChild(p);

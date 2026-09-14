@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=71" />
-<link rel="stylesheet" href="shell.css?v=71" />
-<link rel="stylesheet" href="components.css?v=71" />
-<link rel="stylesheet" href="frame.css?v=71" />
-<link rel="stylesheet" href="rec-print.css?v=71" />
+<link rel="stylesheet" href="identity/tokens.css?v=72" />
+<link rel="stylesheet" href="shell.css?v=72" />
+<link rel="stylesheet" href="components.css?v=72" />
+<link rel="stylesheet" href="frame.css?v=72" />
+<link rel="stylesheet" href="rec-print.css?v=72" />
 <style>
   /* خاص بشاشة الجداول — الرأس والشريط السفلي واللوحة السفلية من components.css.
      الهامش الجانبي هنا أضيق من الموحد عمدا: المصفوفة تحتاج كل بكسل (الوظيفة قبل الشكل). */
@@ -107,7 +107,10 @@
   .pp-gt thead .n{font-size:10pt;font-weight:700}
   .pp-gt .nm{width:30mm;font-size:10pt;font-weight:700;padding:1mm 1.5mm;text-align:right}
   .pp-gt .brk{width:3.2mm;background:#e6e6e6}
-  .pp-gt tbody td{height:11mm;font-weight:700}
+  .pp-gt tbody td{height:var(--rh,11mm);font-weight:700}
+  /* شعبة كبيرة: الصف اقصر (printGT يحسب --rh) والخط اصغر قليلا فيتسع الاسم والفصل */
+  .pp-gt.compact .nm{font-size:9pt;padding:.4mm 1.5mm}
+  .pp-gt.compact tbody td{font-size:8.5pt;padding:.3mm 0}
   .pp-gt td b{display:block}
   .pp-gt .ds{border-right-width:2.2px}
   .pp-gsub{text-align:center;font-weight:700;font-size:12pt;margin:-3mm 0 4mm}
@@ -184,12 +187,12 @@
   </div>
  </div></div>
 
-<script src="build.js?v=71"></script>
-<script src="refdata.js?v=71"></script>
-<script src="derive.js?v=71"></script>
-<script src="icons.js?v=71"></script>
-<script src="components.js?v=71"></script>
-<script src="rec-print.js?v=71"></script>
+<script src="build.js?v=72"></script>
+<script src="refdata.js?v=72"></script>
+<script src="derive.js?v=72"></script>
+<script src="icons.js?v=72"></script>
+<script src="components.js?v=72"></script>
+<script src="rec-print.js?v=72"></script>
 <script>
   var R=window.SHOUBA_REF;
   var d = Shouba.data();          /* المصدر الواحد — القراءة والكتابة من طبقة الاشتقاق */
@@ -411,6 +414,19 @@
       var tb = document.createElement('table');
       tb.innerHTML = h + '</tbody>';
       s.appendChild(tb);
+      /* الشعبة في صفحة واحدة (مراجعة الطباعة 2026-09-14: كانت تتسع لـ١٢ معلما، والثالث عشر ينزلق الى صفحة ثانية):
+         الصف يقصر بقدر ما زاد عن الورقة، ولا ينزل عن ٧ مم (اسم وفصل مقروءان) — فتتسع نحو ١٩ معلما. وما زاد بعدها
+         يكمل في صفحة ثانية برأس الجدول. القياس والورقة في الصفحة خارج النظر */
+      var MM = 96 / 25.4, probe = document.createElement('div');
+      probe.style.cssText = 'position:absolute;left:-10000px;top:0';
+      document.body.appendChild(probe); probe.appendChild(s);
+      var extra = s.offsetHeight / MM - 210;
+      if(extra > 0.5 && teachers.length){
+        var rh = Math.max(7, 11 - extra / teachers.length - 0.3);
+        s.style.setProperty('--rh', rh.toFixed(2) + 'mm');
+        if(rh < 9.5) s.classList.add('compact');
+      }
+      probe.removeChild(s); document.body.removeChild(probe);
       var t0 = document.title, back = function(){ document.title = t0; };
       document.title = ['الجدول العام للمعلمين', d.department || '', d.year || ''].filter(Boolean).join(' - ').replace(/[\/\\:*?"<>|]+/g, ' ');
       window.addEventListener('afterprint', back, { once: true });

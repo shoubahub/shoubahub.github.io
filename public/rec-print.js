@@ -184,7 +184,9 @@
   };
   function cellText(c, x, ctx) {
     switch (c.kind) {
-      case 'date': return P.date(x);
+      /* في خانة الجدول اليوم والشهر وحدهما (مراجعة الطباعة 2026-09-14): التاريخ الكامل انكسر سطرين في عمود «تاريخ
+         المتابعة» الضيق، والعام مكتوب في رأس الكشف. وخانة البيانات (رقم الاجتماع وتاريخه) تبقى بتاريخها الكامل */
+      case 'date': return P.day(x);
       case 'number': case 'class': return P.ar(x == null ? '' : x);
       case 'check': return x ? '✓' : '';
       case 'pick': return x === c.opt ? '✓' : '';   /* خيار من اختيار مقسم (split) */
@@ -440,8 +442,19 @@
      ليتسع في صفحة — والطويل الآن يقسم بحسب محتواه (P.pages) فلا حاجة الى تصغير خطه */
   P.BASE_PT = 14;
   P.pageH = function (orient) { return (orient === 'landscape' ? 210 : 297) * PX_MM; };
+  /* عنوان عمود لا يقص (مراجعة الطباعة 2026-09-14: «التنويع والشمولية» طبع «التنويع والشمول» — الكلمة اعرض من عمودها
+     في الشبكة الكثيفة): العنوان الذي تفيض كلمته يصغر خطه خطوة بعد خطوة حتى يتسع، الى ٧٠٪ — ولا تكسر الكلمة (قرار سابق:
+     حرف وحده في سطر اسوأ). ⚠ والورقة في الصفحة (القياس بالمقاس الحقيقي) — ينادى من P.fit ومن P.pages لكل صفحة */
+  P.fitHeads = function (root) {
+    [].forEach.call(root.querySelectorAll('.pp-tbl thead th:not(.v)'), function (th) {
+      if (th.scrollWidth <= th.clientWidth + 0.5) return;
+      var base = parseFloat(getComputedStyle(th).fontSize), k = 1;
+      while (th.scrollWidth > th.clientWidth + 0.5 && k > 0.71) { k -= 0.05; th.style.fontSize = (base * k).toFixed(2) + 'px'; }
+    });
+  };
   P.fit = function (sheet, page) {
     page = page || {};
+    P.fitHeads(sheet);
     var base = P.BASE_PT, min = base, H = P.pageH(page.orient), pt = base, h;   /* لا تصغير: page.minPt في القوالب المنشورة لا يعمل به */
     function measure() { sheet.classList.add('pp-measure'); var x = sheet.offsetHeight; sheet.classList.remove('pp-measure'); return x; }
     for (;;) {
@@ -622,8 +635,50 @@
         place(pl);
       }
     }
-    pages.forEach(function (p, i) { p.appendChild(el('div', 'pp-pageno', 'صفحة ' + P.ar(i + 1) + ' من ' + P.ar(pages.length))); });
+    pages.forEach(function (p, i) { P.fitHeads(p); p.appendChild(el('div', 'pp-pageno', 'صفحة ' + P.ar(i + 1) + ' من ' + P.ar(pages.length))); });
     return pages;
+  };
+
+  /* ── صفحة تقديم السجل (2026-09-14، النموذج أ الذي اعتمده المستخدم: «صفحة تقديم لكل سجل في حال طباعته كاملا… عنوان
+     السجل بالمنتصف مع الترويسات») — اطار مزدوج حول الصفحة كشهادات الوزارة، والترويسة بلا اطار عنوانها الصغير، والوسط:
+     الشعبة · عنوان السجل · خط مزدوج · المعلم (سجل معلم واحد) · الفصل والعام · مربع (العدد · من · إلى) · سطر التوقيعات.
+     العدد: محاضر السجل؛ وفي سجل المعلم متابعاته (صفوف جدوله ذات التاريخ) او عدد المعلمين ان جمع اكثر من معلم.
+     tpl · recs: سجلات القالب في الملف · يعيد ورقة عمودية (pp-page) */
+  P.registerCover = function (tpl, recs, fontId) {
+    var S = window.Shouba, R = window.ShoubaRec, d = S.data(), s = P.sheet('portrait', fontId), mid = el('div', 'pp-rcv-mid');
+    s.classList.add('pp-page', 'pp-rcv');
+    var h = P.header(P.headerData('')), tt = h.querySelector('.pp-title');
+    if (tt) h.replaceChild(el('div'), tt);
+    s.appendChild(h);
+    var who = [], dates = [], n, label;
+    (recs || []).forEach(function (r) { if (r.who && who.indexOf(r.who) < 0) who.push(r.who); });
+    if (tpl.owner === 'teacher') {
+      var tb = tpl.blocks.filter(function (b) { return b.type === 'table'; })[0];
+      var dc = tb && tb.columns.filter(function (c) { return c.kind === 'date'; })[0];
+      (recs || []).forEach(function (r) { ((r.values || {})[tb && tb.id] || []).forEach(function (x) { if (dc && x[dc.id]) dates.push(String(x[dc.id]).slice(0, 10)); }); });
+      if (who.length > 1) { n = who.length; label = 'عدد المعلمين'; } else { n = dates.length; label = 'عدد المتابعات'; }
+    } else {
+      (recs || []).forEach(function (r) { var x = R && R.dateOf(r); if (x) dates.push(String(x).slice(0, 10)); });
+      n = (recs || []).length; label = 'عدد ال' + ((tpl.noun && tpl.noun.few) || 'سجلات');
+    }
+    dates.sort();
+    if (d.department) mid.appendChild(el('div', 'pp-rcv-kick', 'شعبة ' + d.department));
+    mid.appendChild(el('div', 'pp-rcv-t', tpl.title));
+    mid.appendChild(el('div', 'pp-rcv-rule'));
+    if (tpl.owner === 'teacher' && who.length === 1) mid.appendChild(el('div', 'pp-rcv-who', 'المعلم: ' + P.whoLabel(who[0])));
+    var yr = d.year ? 'العام الدراسي ' + P.ar(d.year) : '';
+    var term = tpl.scope === 'year' ? yr : [d.term, yr].filter(Boolean).join(' · ');
+    if (term) mid.appendChild(el('div', 'pp-rcv-s', term));
+    var f = el('div', 'pp-rcv-facts');
+    [[label, P.ar(n)], ['من', dates.length ? P.date(dates[0]) : ''], ['إلى', dates.length ? P.date(dates[dates.length - 1]) : '']].forEach(function (x) {
+      if (!x[1]) return;
+      var c = el('div'); c.appendChild(el('small', null, x[0])); c.appendChild(el('b', null, x[1])); f.appendChild(c);
+    });
+    mid.appendChild(f);
+    s.appendChild(mid);
+    var ap = P.approval();
+    if (ap) s.appendChild(ap);
+    return s;
   };
 
   /* ── ملف الفصل (2026-09-13، طلب المستخدم): سجلات مختارة في ملف واحد — غلاف وفهرس وترقيم متصل (R.paginate) ──
@@ -635,8 +690,19 @@
   P.bundle = function (entries, opt, host, fontId) {
     opt = opt || {};
     var docs = [], sets = [];
+    /* صفحة تقديم لكل سجل (opt.regCovers — 2026-09-14): قبل اول سجل من قالبه، بسجلات قالبه كلها في الملف،
+       ولها سطرها في الفهرس ورقمها في الترقيم المتصل */
+    var byTpl = {}, lastTpl = null;
+    (entries || []).forEach(function (e) { (byTpl[e.tpl.id] = byTpl[e.tpl.id] || []).push(e.rec); });
     (entries || []).forEach(function (e, i) {
       var t = e.tpl, list;
+      if (opt.regCovers && t.id !== lastTpl) {
+        var rc = P.registerCover(t, byTpl[t.id], fontId);
+        host.appendChild(rc);
+        sets.push([rc]);
+        docs.push({ key: 'c' + i, title: t.title, orient: 'portrait', pages: 1 });
+      }
+      lastTpl = t.id;
       var s = null;
       if (!(t.page && t.page.fit === 'flow')) {
         s = P.render(t, e.rec, e.ctx, fontId);
@@ -668,15 +734,18 @@
       (opt.lines || []).forEach(function (l, k) { if (l) c.appendChild(el('div', k ? 'pp-cover-s' : 'pp-cover-t', P.ar(l))); });
       cv.appendChild(c); host.appendChild(cv); out.push(cv);
       /* الفهرس: م · السجل · الصفحة — صفحته او صفحاته (TOC_PER سطرا في كل صفحة) */
+      var tocNo = 0;
       for (var k = 0; k < pg.toc.length || k === 0; k += TOC_PER) {
         var ts = P.sheet('portrait', fontId), tb = el('table', 'pp-tbl pp-toc'), hr = el('tr'), th = el('thead'), bd = el('tbody');
         ts.classList.add('pp-page');
         ts.appendChild(el('div', 'pp-toc-t', 'الفهرس'));
         [['m', 'م'], [null, 'السجل'], ['m', 'الصفحة']].forEach(function (h) { hr.appendChild(el('th', h[0], h[1])); });
         th.appendChild(hr); tb.appendChild(th);
-        pg.toc.slice(k, k + TOC_PER).forEach(function (x, j) {
-          var tr = el('tr');
-          tr.appendChild(el('td', 'm', P.ar(k + j + 1)));
+        pg.toc.slice(k, k + TOC_PER).forEach(function (x) {
+          /* صفحة تقديم السجل عنوان قسم في الفهرس (عريض بلا رقم)، والسجلات مرقمة تحته */
+          var tr = el('tr'), cov = /^c/.test(x.key);
+          if (cov) tr.className = 'sec'; else tocNo++;
+          tr.appendChild(el('td', 'm', cov ? '' : P.ar(tocNo)));
           tr.appendChild(el('td', null, P.ar(x.title)));
           tr.appendChild(el('td', 'm', P.ar(x.page)));
           bd.appendChild(tr);

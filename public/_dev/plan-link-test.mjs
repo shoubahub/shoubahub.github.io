@@ -110,5 +110,38 @@ const Wk = world({ stage: 'ثانوي', schedules: {} }).Shouba, kw = Wk.planFor
 ok(Wk.planName('دولة الكويت المسيرة والكيان') === 'دولة الكويت' && kw && kw.subject === 'دولة الكويت' && Wk.planName('الرياضيات') === 'الرياضيات',
    'دولة الكويت المسيرة والكيان تجد خطة «دولة الكويت»، والمادة بلا اسم مكتبة باسمها', kw && kw.subject);
 
+/* الاختيار الحر (2026-09-15): خطط المكتبة للمواد الحرة صفها «اختياري حر» ومادتها «المواد الحره» والتخصص في عنوانها —
+   فرئيس شعبة التربية الفنية يختار لكل صف تخصصه، والاختيار باسم التخصص لا بمفتاح الخطة */
+const ART = { stage: 'ثانوي', department: 'التربية الفنية', schoolType: 'بنين', year: '٢٠٢٦/٢٠٢٧', term: 'الفصل الأول', teachers: ['سالم الرشيدي'],
+  schedules: { 'سالم الرشيدي': { 'الأحد': ['11/2 ع · التربية الفنية', '12/1 د · التربية الفنية'], 'الاثنين': ['12/3 · الصحة النفسية'] } } };
+const A = world(ART).Shouba, a11 = { subject: 'التربية الفنية', grade: 'الحادي عشر' }, a12 = { subject: 'التربية الفنية', grade: 'الثاني عشر' };
+ok(A.isElective('التربية الفنية') && A.isElective('الصحة النفسية') && !A.isElective('الرياضيات'), 'المادة الحرة من المرجعية');
+ok(A.planSpec({ source: { desc: 'خطة توزيع المنهج التصميم الزخرفي 2026-2027' } }) === 'التصميم الزخرفي'
+   && A.planSpec({ source: { desc: 'خطة توزيع المنهج - 2026 - 2027 ( إدارة الموارد )' } }) === 'إدارة الموارد'
+   && A.planSpec({ source: { desc: 'خطة توزيع المنهج -(الثقافة المرورية) - 2026 -2027' } }) === 'الثقافة المرورية'
+   && A.planSpec({ source: { desc: 'خطة توزيع المنهج - التربية الموسيقية (بيانو) - 2026 -2027' } }) === 'التربية الموسيقية (بيانو)',
+   'اسم التخصص من عنوان الوثيقة بصيغها الاربع');
+const opts = A.electiveOptions('التربية الفنية', data.plans).map(p => A.planSpec(p));
+ok(opts.join('|') === 'التصميم الزخرفي|الرسم والتصوير|فن الصباغة والطباعة', 'تخصصات الفنية المعتمدة وحدها بترتيب اسمائها — لا موسيقى ولا فرنسية', opts);
+ok(A.electiveOptions('الصحة النفسية', data.plans).length === 0, 'المادة الحرة التي لا تخصصات لها في المرجعية: لا اختيار');
+let AL = A.planLinks(data, new Date(2026, 9, 14));
+const art = AL.pairs.filter(p => p.subject === 'التربية الفنية');
+const psy = AL.pairs.find(p => p.subject === 'الصحة النفسية');
+ok(art.length === 2 && art.every(p => !p.plan && p.choose && !p.spec) && AL.unpicked.length === 2 && AL.missing.length === 0,
+   'قبل الاختيار: الفنية «اختر خطته» لا «يجب رفع الخطة»', { unpicked: AL.unpicked.length, missing: AL.missing.map(p => p.subject) });
+ok(psy && psy.plan && psy.plan.subject === 'الصحة النفسية' && !psy.choose && !psy.spec, 'المادة الحرة التي لها خطة باسمها في المكتبة تربط بها كغيرها');
+A.setPlanPick(a11, 'الرسم والتصوير');
+AL = A.planLinks(data, new Date(2026, 9, 14));
+const p11 = AL.pairs.find(p => p.grade === 'الحادي عشر' && p.subject === 'التربية الفنية');
+ok(p11.plan && /الرسم والتصوير/.test(p11.plan.source.desc) && p11.spec === 'الرسم والتصوير' && AL.unpicked.length === 1 && AL.unpicked[0].grade === 'الثاني عشر',
+   'بعد الاختيار: الحادي عشر بخطة الرسم والتصوير، والثاني عشر ينتظر اختياره', p11.spec);
+ok(A.data().planPick['التربية الفنية|الحادي عشر'] === 'الرسم والتصوير', 'الاختيار محفوظ باسم التخصص في وثيقة الشعبة');
+const next = data.plans.map(p => (p.grade === 'اختياري حر' ? { ...p, key: '17|64|421|9' + p.source.id, source: { ...p.source, id: 9e4 + p.source.id } } : p));
+ok(/الرسم والتصوير/.test((A.planFor(a11, next) || { source: {} }).source.desc || ''), 'الاختيار يبقى والمفتاح يتبدل (فصل جديد برقم وثيقة آخر)');
+A.setPlanPick(a12, 'فن تشكيل الخزف');
+ok(A.planFor(a12, data.plans) === null && A.planLinks(data).unpicked.some(p => p.grade === 'الثاني عشر'), 'تخصص مختار لم تعتمد خطته: لا خطة، ويبقى الاختيار مفتوحا');
+A.setPlanPick(a12, '');
+ok(!('التربية الفنية|الثاني عشر' in A.data().planPick) && A.planPickOf(a11) === 'الرسم والتصوير', 'افراغ الاختيار يمحوه وحده');
+
 console.log('\n' + (fail ? '✗' : '✓') + ' ' + pass + ' سليم · ' + fail + ' معيب');
 process.exit(fail ? 1 : 0);

@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=80" />
-<link rel="stylesheet" href="shell.css?v=80" />
-<link rel="stylesheet" href="components.css?v=80" />
-<link rel="stylesheet" href="frame.css?v=80" />
+<link rel="stylesheet" href="identity/tokens.css?v=81" />
+<link rel="stylesheet" href="shell.css?v=81" />
+<link rel="stylesheet" href="components.css?v=81" />
+<link rel="stylesheet" href="frame.css?v=81" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -27,6 +27,13 @@
   .ptr:active{background:rgba(22,69,110,.05)}
   .ptr.miss{cursor:default}
   .ptr.miss:active{background:none}
+  /* المادة الحرة بلا تخصص مختار: السطر كله يفتح الاختيار (2026-09-15) */
+  .ptr.miss.pick{cursor:pointer}
+  .ptr.miss.pick:active{background:rgba(22,69,110,.05)}
+  .pwk .spec{align-self:flex-start;border:0;background:none;padding:0 0 2px;font-family:var(--font-ar);font-size:11px;font-weight:700;
+    color:var(--shouba-label);text-align:right;cursor:pointer}
+  .pwk .spec b{color:var(--shouba-navy)}
+  .pwk .spec span{color:var(--shouba-link)}
   /* عمود المادة ثابت العرض فتصطف الدروس عمودا واحدا في الصفوف كلها (⑪: العنصر المرن ينكمش فيختل العمود) */
   .ptr .who{flex:none;width:104px;display:flex;gap:4px;align-items:baseline;white-space:nowrap}
   .ptr .who b{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;font-weight:700;color:var(--shouba-navy)}
@@ -171,14 +178,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=80"></script>
-<script src="refdata.js?v=80"></script>
-<script src="rec-templates.js?v=80"></script>
-<script src="rec-engine.js?v=80"></script>
-<script src="derive.js?v=80"></script>
-<script src="plan-data.js?v=80"></script>
-<script src="icons.js?v=80"></script>
-<script src="components.js?v=80"></script>
+<script src="build.js?v=81"></script>
+<script src="refdata.js?v=81"></script>
+<script src="rec-templates.js?v=81"></script>
+<script src="rec-engine.js?v=81"></script>
+<script src="derive.js?v=81"></script>
+<script src="plan-data.js?v=81"></script>
+<script src="icons.js?v=81"></script>
+<script src="components.js?v=81"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -806,9 +813,12 @@
       var r = document.createElement('div'), who = document.createElement('div'), b = document.createElement('b'), s = document.createElement('small'), ls = document.createElement('div');
       r.className = 'tr ptr' + (p.plan ? '' : ' miss'); who.className = 'who';
       b.textContent = p.subject; s.textContent = p.grade; who.appendChild(b); who.appendChild(s); r.appendChild(who);
+      /* المادة الحرة (2026-09-15): خطط تخصصاتها معتمدة ولم يختر رئيس الشعبة ايها يدرس لهذا الصف — «اختر خطته» يفتح
+         الاختيار (Shouba.pickPlan) لا «يجب رفع الخطة» */
       if (!p.plan) {
-        ls.className = 'ls none'; ls.textContent = 'لم تعتمد خطته بعد'; r.appendChild(ls);
-        var ch = document.createElement('span'); ch.className = 'chip'; ch.textContent = 'يجب رفع الخطة'; r.appendChild(ch);
+        ls.className = 'ls none'; ls.textContent = p.choose ? 'أي تخصص يدرس؟' : 'لم تعتمد خطته بعد'; r.appendChild(ls);
+        var ch = document.createElement('span'); ch.className = 'chip'; ch.textContent = p.choose ? 'اختر خطته' : 'يجب رفع الخطة'; r.appendChild(ch);
+        if (p.choose) { r.classList.add('pick'); r.setAttribute('role', 'button'); r.addEventListener('click', function(){ Shouba.pickPlan(p, paintPlan); }); }
         tb.appendChild(r); return;
       }
       var lessons = Shouba.planLessons(p.plan, show), per = lessons.reduce(function(a, l){ return a + l.p; }, 0);
@@ -820,6 +830,14 @@
       /* خطة الاسبوع تحت السطر: دروسه كاملة بحصصها، والسهم يفتحها ويغلقها — لا انتقال الى شاشة الخطة */
       var key = p.plan.key, wk = document.createElement('div');
       wk.className = 'pwk';
+      /* تخصص المادة الحرة اعلى خطة اسبوعها، ويغير من هنا */
+      if (p.spec) {
+        var sb = document.createElement('button'), sbb = document.createElement('b'), sbs = document.createElement('span');
+        sb.type = 'button'; sb.className = 'spec'; sbb.textContent = p.spec; sbs.textContent = 'غير التخصص ›';
+        sb.appendChild(document.createTextNode('تخصص ')); sb.appendChild(sbb); sb.appendChild(document.createTextNode(' · ')); sb.appendChild(sbs);
+        sb.addEventListener('click', function(){ Shouba.pickPlan(p, paintPlan); });
+        wk.appendChild(sb);
+      }
       if (lessons.length) lessons.forEach(function(l){
         var x = document.createElement('div'), sp = document.createElement('span'), em = document.createElement('em');
         x.className = 'l'; sp.textContent = l.t; em.textContent = l.p ? l.p + ' ح' : '';

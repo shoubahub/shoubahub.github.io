@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=80" />
-<link rel="stylesheet" href="shell.css?v=80" />
-<link rel="stylesheet" href="components.css?v=80" />
-<link rel="stylesheet" href="frame.css?v=80" />
+<link rel="stylesheet" href="identity/tokens.css?v=81" />
+<link rel="stylesheet" href="shell.css?v=81" />
+<link rel="stylesheet" href="components.css?v=81" />
+<link rel="stylesheet" href="frame.css?v=81" />
 <style>
   /* خطة المنهج — الصورة المطولة لشريط الخطة (2026-09-13، الخطوة د؛ العينة اعتمدها المستخدم: «نموذج مطول للسجل
      ونموذج للوحة مختصر»). تفتح من شريط اللوحة. مادة واحدة في الشاشة: رقاقات المواد (.tgs) · سطر الحصيلة ·
@@ -39,6 +39,9 @@
   .miss{margin:0 var(--gap-side);font-size:12px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8;
     background:rgba(120,98,66,.06);border-radius:14px;padding:12px 14px}
   .miss b{color:var(--shouba-amber-deep)}
+  .miss > div + div{margin-top:6px}
+  /* تخصص المادة الحرة: يختار ويغير من هنا ومن اللوحة (Shouba.pickPlan) */
+  .lnk{border:0;background:none;padding:0;font:inherit;color:var(--shouba-link);cursor:pointer}
 </style>
 </head>
 <body class="framed">
@@ -66,12 +69,12 @@
   <div class="tabbar" data-tabs="board.html"></div>
  </div></div>
 
-<script src="build.js?v=80"></script>
-<script src="refdata.js?v=80"></script>
-<script src="derive.js?v=80"></script>
-<script src="plan-data.js?v=80"></script>
-<script src="icons.js?v=80"></script>
-<script src="components.js?v=80"></script>
+<script src="build.js?v=81"></script>
+<script src="refdata.js?v=81"></script>
+<script src="derive.js?v=81"></script>
+<script src="plan-data.js?v=81"></script>
+<script src="icons.js?v=81"></script>
+<script src="components.js?v=81"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search), curKey = Q.get('key') || '', W0 = +Q.get('w') || 0, scrolled = false;
 
@@ -89,10 +92,33 @@
     var data = window.ShoubaPlans ? ShoubaPlans.get(d.stage) : null, cal = data ? data.calendar || [] : [];
     var subs = document.getElementById('subs'), sum = document.getElementById('sum'), wk = document.getElementById('weeks'), miss = document.getElementById('miss');
     subs.innerHTML = ''; wk.innerHTML = '';
-    /* المواد بلا خطة معتمدة — ذكرها هنا ايضا فلا تغيب عن الخطة الكاملة */
-    miss.hidden = !L.missing.length;
-    miss.innerHTML = L.missing.length ? '<b>يجب رفع الخطة</b> — لم تعتمد بعد خطة: ' : '';
-    if (L.missing.length) miss.appendChild(document.createTextNode(L.missing.map(function(p){ return p.subject + ' · ' + p.grade; }).join('، ')));
+    /* المواد بلا خطة معتمدة — ذكرها هنا ايضا فلا تغيب عن الخطة الكاملة. والمادة الحرة التي لم يختر تخصصها بعد
+       (2026-09-15) باب الى اختياره لا «يجب رفع الخطة» */
+    /* بعد الاختيار تفتح الشاشة على خطة المادة التي اختير تخصصها */
+    function afterPick(p){
+      return function(){
+        var np = S.planLinks().pairs.filter(function(x){ return x.subject === p.subject && x.grade === p.grade; })[0];
+        if (np && np.plan) curKey = np.plan.key;
+        scrolled = false; paint();
+      };
+    }
+    var pk = L.unpicked || [];
+    miss.hidden = !L.missing.length && !pk.length; miss.innerHTML = '';
+    if (pk.length) {
+      var q = el('div'); q.appendChild(el('b', null, 'اختر خطة التخصص')); q.appendChild(document.createTextNode(' — '));
+      pk.forEach(function(p, i){
+        var a = el('button', 'lnk', p.subject + ' · ' + p.grade + ' ›'); a.type = 'button';
+        a.addEventListener('click', function(){ S.pickPlan(p, afterPick(p)); });
+        if (i) q.appendChild(document.createTextNode('، '));
+        q.appendChild(a);
+      });
+      miss.appendChild(q);
+    }
+    if (L.missing.length) {
+      var u = el('div'); u.appendChild(el('b', null, 'يجب رفع الخطة'));
+      u.appendChild(document.createTextNode(' — لم تعتمد بعد خطة: ' + L.missing.map(function(p){ return p.subject + ' · ' + p.grade; }).join('، ')));
+      miss.appendChild(u);
+    }
     if (!matched.length) {
       document.getElementById('sub').textContent = '—';
       wk.style.display = 'none';
@@ -114,6 +140,15 @@
     var per = 0; for (var k = 1; k <= total; k++) per += S.planLessons(cur.plan, k).reduce(function(a, l){ return a + l.p; }, 0);
     sum.innerHTML = total + ' أسبوعا · <b>' + per + '</b> حصة حسب خطة التوجيه'
       + (n ? ' · الجاري الأسبوع <b>' + n + '</b>' : L.week ? ' · الفصل يبدأ الأحد <b>' + S.dayMonth(L.week.from) + '</b>' : '');
+    /* تخصص المادة الحرة اول السطر، ويغير من هنا (2026-09-15) */
+    if (cur.spec) {
+      var sw = el('button', 'lnk', 'غير التخصص ›'); sw.type = 'button';
+      sw.addEventListener('click', function(){ S.pickPlan(cur, afterPick(cur)); });
+      sum.insertBefore(document.createTextNode(' · '), sum.firstChild);
+      sum.insertBefore(el('b', null, cur.spec), sum.firstChild);
+      sum.insertBefore(document.createTextNode('تخصص '), sum.firstChild);
+      sum.appendChild(document.createTextNode(' · ')); sum.appendChild(sw);
+    }
     for (var i = 1; i <= total; i++) {
       var c = cal.filter(function(x){ return x.n === i; })[0], r = el('div', 'tr wkr' + (i === n ? ' now' : i < n ? ' past' : ''));
       r.id = 'w' + i;

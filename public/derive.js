@@ -701,7 +701,45 @@
       var byType = ty ? pool.filter(function (p) { return nameKey(p.subject + ' ' + ((p.source || {}).desc || '')).indexOf(ty) > -1; }) : [];
       if (byType.length) pool = byType;
     }
-    return pool[0] || null;
+    if (pool[0] || !S.isElective(pair.subject)) return pool[0] || null;
+    /* المادة الحرة بلا خطة باسمها: التخصص الذي اختاره رئيس الشعبة لصفها (ادناه) */
+    var pick = nameKey(S.planPickOf(pair));
+    return pick ? S.electiveOptions(pair.subject, plans).filter(function (p) { return nameKey(S.planSpec(p)) === pick; })[0] || null : null;
+  };
+  /* ── الاختيار الحر (2026-09-15، «نعم، ابدأ بالربط»): خطط مكتبة الوزارة للمواد الحرة صفها «اختياري حر» ومادتها
+     «المواد الحره»، والتخصص في عنوانها («خطة توزيع المنهج الرسم والتصوير 2026-2027») — فلا تطابق «التربية الفنية ·
+     الحادي عشر» بالاسم. فيختار رئيس الشعبة مرة لكل صف اي تخصص يدرس في مدرسته: d.planPick «المادة|الصف» ⟵ اسم
+     التخصص لا مفتاح الخطة (المفتاح يتبدل كل فصل برقم الوثيقة، والاسم باق). وما يعرض لكل مادة من المرجعية
+     (electivePlans) — فلا يرى رئيس شعبة الفنية خطط الموسيقى والفرنسية */
+  var FREE = nameKey('اختياري حر');
+  S.isElective = function (subject) {
+    var st = (SHOUBA_REF.departmentSubjects || {})[S.data().stage] || {};
+    return Object.keys(st).some(function (k) { return (st[k] || []).some(function (s) { return s.name === subject && s.elective; }); });
+  };
+  /* اسم التخصص من عنوان الوثيقة: «خطة توزيع المنهج - 2026 - 2027 ( إدارة الموارد )» ⟵ إدارة الموارد */
+  S.planSpec = function (plan) {
+    var s = String(((plan || {}).source || {}).desc || '').replace(/خطة توزيع المنهج/g, '')
+      .replace(/[0-9٠-٩]{4}\s*[-–]\s*[0-9٠-٩]{4}/g, '').replace(/[-–—]/g, ' ').replace(/\s+/g, ' ').trim();
+    var m = s.match(/^\(\s*([^()]*?)\s*\)$/);
+    return (m ? m[1] : s) || (plan || {}).subject || '';
+  };
+  /* تخصصات المادة الحرة المعتمدة لمرحلتها، بترتيب اسمائها — وبلا تكرار للتخصص الواحد */
+  S.electiveOptions = function (subject, plans) {
+    var keys = ((SHOUBA_REF.electivePlans || {})[subject] || []).map(nameKey), seen = {};
+    if (!keys.length) return [];
+    return (plans || []).filter(function (p) {
+      if (!(p.elective || nameKey(p.grade) === FREE)) return false;
+      var sp = nameKey(S.planSpec(p));
+      if (seen[sp] || !keys.some(function (k) { return sp.indexOf(k) > -1; })) return false;
+      return (seen[sp] = true);
+    }).sort(function (a, b) { var x = S.planSpec(a), y = S.planSpec(b); return x < y ? -1 : x > y ? 1 : 0; });
+  };
+  function pickKey(pair) { return pair.subject + '|' + pair.grade; }
+  S.planPickOf = function (pair) { return (S.data().planPick || {})[pickKey(pair)] || ''; };
+  S.setPlanPick = function (pair, spec) {
+    var d = S.data(), m = d.planPick || (d.planPick = {});
+    if (spec) m[pickKey(pair)] = spec; else delete m[pickKey(pair)];
+    S.save();
   };
   /* الاسبوع من تقويم الخطط: { n, from, to } — n=0 قبل بدء الفصل، وبعد آخره آخره. والجمعة والسبت للاسبوع الذي مضى */
   S.planWeek = function (calendar, today) {
@@ -713,16 +751,21 @@
     for (var i = cal.length - 1; i >= 0; i--) if (iso >= cal[i].from) return { n: cal[i].n, from: cal[i].from, to: cal[i].to };
     return null;
   };
-  /* الربط كله في جواب واحد تسأله اللوحة وشاشة الخطة: { ready, week, pairs:[{…زوج, plan}], missing }.
-     data من ShoubaPlans.get() ان لم تمرر؛ وready=false: لم تجلب الخطط بعد (فلا يقال «يجب رفع الخطة» ظلما) */
+  /* الربط كله في جواب واحد تسأله اللوحة وشاشة الخطة: { ready, week, pairs:[{…زوج, plan, choose, spec}], missing, unpicked }.
+     data من ShoubaPlans.get() ان لم تمرر؛ وready=false: لم تجلب الخطط بعد (فلا يقال «يجب رفع الخطة» ظلما).
+     choose: مادة حرة لها تخصصات معتمدة يختار منها (spec اسم المختار) — فما لم يختر بعد في unpicked لا في missing:
+     خطته موجودة تنتظر اختياره، لا «يجب رفع الخطة» */
   S.planLinks = function (data, today) {
     if (data === undefined) data = (window.ShoubaPlans && ShoubaPlans.get(S.data().stage)) || null;
     var plans = data ? data.plans || [] : [];
     var pairs = S.planPairs().map(function (p) {
-      return { subject: p.subject, grade: p.grade, classes: p.classes, teachers: p.teachers, plan: data ? S.planFor(p, plans) : null };
+      var plan = data ? S.planFor(p, plans) : null, opts = data && S.isElective(p.subject) ? S.electiveOptions(p.subject, plans) : [];
+      return { subject: p.subject, grade: p.grade, classes: p.classes, teachers: p.teachers, plan: plan,
+               choose: opts.length > 0, spec: plan && opts.indexOf(plan) > -1 ? S.planSpec(plan) : '' };
     });
     return { ready: !!data, week: data ? S.planWeek(data.calendar, today) : null, pairs: pairs,
-             missing: data ? pairs.filter(function (p) { return !p.plan; }) : [] };
+             missing: data ? pairs.filter(function (p) { return !p.plan && !p.choose; }) : [],
+             unpicked: data ? pairs.filter(function (p) { return !p.plan && p.choose; }) : [] };
   };
   /* دروس الخطة في اسبوع: الصف الممتد اسابيع (الخطط الموزعة بالوحدة — span) يشمل اسابيعه كلها، والدرس المتكرر في
      حصص متتالية مرة بمجموع حصصه (خطط «لكل حصة درس»: الفهم والثروة اللغوية ثلاث حصص صفوفا ثلاثة) */

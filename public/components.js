@@ -291,6 +291,30 @@ Shouba.nextLabel = function (def) {
     close: function () { close(); }
   };
 
+  /* خطة المادة الحرة (2026-09-15): اي تخصص يدرس لهذا الصف — مرة لكل صف، ويغير متى شاء. لوحة واحدة تفتح من اللوحة
+     وشاشة الخطة؛ والتخصصات والحفظ في derive.js (S.electiveOptions · S.setPlanPick) */
+  Shouba.pickPlan = function (pair, done) {
+    var data = window.ShoubaPlans && ShoubaPlans.get(Shouba.data().stage);
+    var opts = Shouba.electiveOptions(pair.subject, data ? data.plans : []), cur = Shouba.planPickOf(pair);
+    var box = document.createElement('div'), note = document.createElement('div');
+    box.className = 'stack'; note.className = 'soon-note';
+    note.textContent = 'أي تخصص يدرسه طلبة ' + pair.grade + ' في مدرستك؟ تظهر دروس خطته كل أسبوع.';
+    box.appendChild(note);
+    opts.forEach(function (p) {
+      var sp = Shouba.planSpec(p), on = sp === cur, b = document.createElement('button'), t = document.createElement('span'), mk = document.createElement('span');
+      b.type = 'button'; b.className = 'sheet-opt' + (on ? ' on' : '');
+      t.textContent = sp; mk.className = 'mk'; mk.innerHTML = on ? check() : '';
+      b.appendChild(t); b.appendChild(mk);
+      b.addEventListener('click', function () {
+        Shouba.setPlanPick(pair, sp); close();
+        Shouba.toast('خطة ' + pair.subject + ' · ' + pair.grade + ': ' + sp);
+        if (done) done();
+      });
+      box.appendChild(b);
+    });
+    Shouba.sheet.open('خطة ' + pair.subject + ' · ' + pair.grade, box);
+  };
+
   /* سطر تاكيد عابر (قاعدة الادخال 2026-09-13: «لا حفظ صامت · لا حذف بلا تراجع») — اعلى الشاشة تحت رأسها،
      فيرى فوق اللوحة السفلية ولوحة المفاتيح. undo اختياري: زر «تراجع» يعيد ما حذف او افرغ */
   var toastEl, toastTm;

@@ -119,6 +119,13 @@
 .pp-rate tr.note td.lab{ font-weight:600; }
 .pp-rate td.opts .on{ font-weight:700; text-decoration:underline; text-underline-offset:1mm; }
 .pp-rate tr.note td{ height:5mm; }
+/* الشبكة الثابتة (grid — خطتا المتعلم ص٦ وص٩): عمودان متساويان، وخانة النص الطويل بارتفاع يتسع للكتابة باليد،
+   وصف العنوان (الست اسابيع — الدرجة) مظلل؛ و flat صف درجات واحد بخانات وسطها */
+.pp-grid{ table-layout:fixed; }
+.pp-grid tbody tr.gh td{ background:#f2f2f2; }
+.pp-grid tbody tr.gt td{ height:20mm; white-space:pre-wrap; }
+.pp-grid.flat td.c{ text-align:center; height:10mm; vertical-align:middle; }
+.pp-grid.flat thead th{ font-size:.92em; }
 /* الغلاف (mode:'cover' — المرحلة الثانية ب): اسم السجل كبيرا وسط صفحته، وخانتا التوقيع تحته */
 .pp-cover{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5mm; text-align:center; padding:8mm 0; }
 .pp-cover-t{ font-size:26pt; font-weight:700; line-height:1.4; }

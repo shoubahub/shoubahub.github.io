@@ -329,6 +329,40 @@
     return t;
   };
 
+  /* الشبكة الثابتة على الورق (grid — خطتا المتعلم، 2026-09-15): رأسها الاعمدة (الفصلان)، ولكل صف سطر في خاناته
+     «عنوانه: قيمته» كنموذج التوجيه ص٩ (العنوان في كل خانة لا عمود عناوين)، وصف العنوان (head — «الست اسابيع الاولى —
+     الدرجة») مظلل. و flat: صف واحد تحت رأسين — الفصل ثم صفوفه (درجات الست اسابيع ص٦) */
+  PB.grid = function (b, v) {
+    v = v || {};
+    function val(r, c) { var x = (v[r.id] || {})[c.id]; return x == null ? '' : String(x).trim(); }
+    var t = el('table', 'pp-tbl pp-grid' + (b.flat ? ' flat' : '')), th = el('thead'), tb = el('tbody');
+    if (b.title) t.appendChild(el('caption', null, b.title));
+    if (b.flat) {
+      var r1 = el('tr'), r2 = el('tr'), tr = el('tr');
+      b.cols.forEach(function (c) {
+        var h = el('th', 'g', c.label); h.colSpan = b.rows.length; r1.appendChild(h);
+        b.rows.forEach(function (r) { r2.appendChild(el('th', null, r.label)); tr.appendChild(el('td', 'c', P.ar(val(r, c)))); });
+      });
+      th.appendChild(r1); th.appendChild(r2); tb.appendChild(tr);
+    } else {
+      var hr = el('tr');
+      b.cols.forEach(function (c) { hr.appendChild(el('th', null, c.label)); });
+      th.appendChild(hr);
+      b.rows.forEach(function (r) {
+        var row = el('tr', r.head ? 'gh' : (r.kind === 'longtext' ? 'gt' : null));
+        b.cols.forEach(function (c) {
+          var td = el('td'), x = val(r, c);
+          td.appendChild(el('b', null, r.label + ': '));
+          if (x) td.appendChild(document.createTextNode(r.kind === 'number' ? P.ar(x) : x));
+          row.appendChild(td);
+        });
+        tb.appendChild(row);
+      });
+    }
+    t.appendChild(th); t.appendChild(tb);
+    return t;
+  };
+
   /* ④ جدول التقييم على الورق (المجموعة ب): م · البند · التقويم — وللبند ذي العبارات سطران كنموذج التوجيه (ص١٣):
      عباراته كلها والمؤشر منها بارز بعلامة، ثم «ملاحظات أخرى». والبند بلا عبارات سطر واحد بملاحظته (ص٣).
      وسطرا البند يلزمان معا في الترقيم (P.pages يجمع الصفوف بامتداد خانة «م») */

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-public>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>شعبة · عينات المتعلمين (أداة تطوير)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../rec-print.css" />
+<style>
+  /* عينات المجموعة (ج) «المتعلمون» على ورقها الحقيقي (2026-09-15) — خطة متابعة متعلم فائق · خطة متابعة متعلم متعثر،
+     بقوالبها وطبقة الطباعة نفسيهما وبيانات مثال لا تحفظ. ?o=superior|struggling · &full=1 للالتقاط. على الجهاز المحلي وحده */
+  body{margin:0;background:#E9E4DA;font-family:"IBM Plex Sans Arabic",sans-serif;padding:20px 12px 60px}
+  body.full{padding:0;background:#fff}
+  h2{font-size:15px;margin:22px 4px 8px;color:#16456E}
+  .pw{position:relative;overflow:hidden;background:#fff;box-shadow:0 1px 8px rgba(40,30,15,.2);margin:0 auto 14px;max-width:620px}
+  .pw .pp-sheet{position:absolute;top:0;right:0;transform-origin:top right}
+  #host{position:absolute;left:-6000px;top:0;width:1300px}
+</style>
+</head>
+<body>
+<div id="out"></div>
+<div id="host"></div>
+<script>
+  (function(){ var h = location.hostname;
+    if (!(h === 'localhost' || h === '127.0.0.1')) { document.body.textContent = 'أداة تطوير — تعمل على الجهاز المحلي وحده.'; throw new Error('dev only'); }
+    try { sessionStorage.setItem('shouba.sim', '1'); } catch (e) {}
+    try {
+      if (!localStorage.getItem('shouba.setup')) {
+        localStorage.setItem('shouba.setup', JSON.stringify({ stage: 'ثانوي', department: 'الرياضيات', schoolName: 'ثانوية الأمل', schoolType: 'بنين',
+          year: '٢٠٢٦ / ٢٠٢٧', term: 'الفصل الأول', principal: 'عبدالعزيز الفلاح', supervisor: 'سالم العتيبي', refDataVersion: 4,
+          teachers: ['فهد المطيري', 'خالد العنزي'] }));
+        localStorage.setItem('shouba.user', JSON.stringify({ name: 'محمد البراك' }));
+      }
+    } catch (e) {}
+  })();
+</script>
+<script src="../build.js"></script>
+<script src="../refdata.js"></script>
+<script src="../rec-templates.js"></script>
+<script src="../rec-engine.js"></script>
+<script src="../derive.js"></script>
+<script src="../components.js"></script>
+<script src="../rec-print.js"></script>
+<script>
+  var S = Shouba, P = ShoubaPrint, R = ShoubaRec, Q = new URLSearchParams(location.search), out = document.getElementById('out'), host = document.getElementById('host');
+  var only = Q.get('o'), full = Q.get('full'), WHO = 'فهد المطيري';
+  if (full) document.body.classList.add('full');
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function rec(id, who, fill){ var r = S.newRec(id, who); fill(r.values); return r; }
+  function pages(r){
+    var t = R.of(r), ctx = { open: [], signs: P.signsOf(S.data(), t.id, t) };
+    if (t.page.fit === 'flow') return P.pages(t, r, ctx, host);
+    var s = P.render(t, r, ctx); host.appendChild(s);
+    if (P.fit(s, t.page).over) { host.removeChild(s); return P.pages(t, r, ctx, host); }
+    return [s];
+  }
+  var LIST = [
+    { o: 'superior', title: 'خطة متابعة متعلم فائق (ص٦)', make: function(){ return pages(rec('superior', WHO, function(v){
+      Object.assign(v.meta, { student: 'سالم عبدالله العتيبي', cls: '10/2', subject: 'الرياضيات' });
+      v.marks = { w1: { t1: 19 }, w2: { t1: 20 } };
+      v.body = { strengths: 'سرعة في حل المسائل الرياضية وقدرة على التعليل والبرهان، ومشاركة متميزة في الصف.',
+        plan: 'تكليفه بمسائل اثرائية اسبوعية من مستوى المسابقات، واشراكه في فريق المدرسة لاولمبياد الرياضيات.',
+        done: 'حل ثلاث اوراق اثرائية، وشارك في التصفية الاولى للمسابقة.', results: '' };
+    })); } },
+    { o: 'struggling', title: 'خطة متابعة متعلم متعثر (ص٩)', make: function(){ return pages(rec('struggling', WHO, function(v){
+      Object.assign(v.meta, { student: 'ناصر فهد الرشيدي', cls: '10/4', subject: 'الرياضيات' });
+      v.follow = { w1: { t1: 9 }, c1: { t1: 'ضعف في العمليات على الكسور، وقلة المتابعة المنزلية.' },
+        r1: { t1: 'دروس تقوية في حصة النشاط، واوراق عمل متدرجة، والتواصل مع ولي الامر.' },
+        w2: { t1: 13 }, c2: { t1: 'بطء في حل المعادلات ذات الخطوتين.' }, r2: { t1: 'تعلم بالاقران مع زميل متميز، وتدريبات قصيرة يومية.' },
+        res: { t1: 'تحسن ملحوظ — انتقل من ٩ الى ١٣، ويستمر في الخطة.' } };
+    })); } }
+  ];
+  function size(w, s){ var k = w.clientWidth / s.offsetWidth; s.style.transform = 'scale(' + k + ')'; w.style.height = Math.ceil(s.offsetHeight * k) + 'px'; }
+  function paint(){
+    out.textContent = ''; host.textContent = '';
+    LIST.forEach(function(x){
+      if (only && x.o !== only) return;
+      var ps = x.make();
+      window.__pages = (window.__pages || {}); window.__pages[x.o] = ps.length;
+      if (full) { out.appendChild(ps[0]); return; }
+      ps.forEach(function(p, i){
+        var h = el('h2', null, x.title + (ps.length > 1 ? ' — صفحة ' + (i + 1) + ' من ' + ps.length : '')), w = el('div', 'pw');
+        out.appendChild(h); out.appendChild(w); w.appendChild(p); size(w, p);
+      });
+    });
+  }
+  paint();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint);
+</script>
+</body>
+</html>

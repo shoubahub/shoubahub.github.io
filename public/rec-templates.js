@@ -526,6 +526,72 @@ window.SHOUBA_TPL = {
         { type: 'text', id: 'guide', sections: [{ id: 'text', kind: 'paragraph', title: 'توجيهات فنية' }] }
       ]
     }
+  },
+
+  /* ── المجموعة (ج) المتعلمون (2026-09-15) — خطتا متابعة المتعلم (نماذج التوجيه ص٦ وص٩) ──
+     لكل متعلم خطة في عامه (scope year — النموذج للفصلين)، والمعلم صاحبها وخططه كثيرة (owner teacher، many).
+     سطرها: المعلم · اسم الطالب · الصف والمادة (رقاقات فصول المعلم من جدوله — pair) · العام الدراسي.
+     وتوقيعا المعلم ورئيس الشعبة افتراضا */
+  /* خطة متابعة متعلم فائق (ص٦): درجات الست اسابيع (الاولى · الثانية) في الفصلين صفا واحدا كالنموذج (grid flat)، ثم
+     جوانب التفوق · خطة تنمية قدرات المتعلم · ما تم تنفيذه من الخطة · نتائج المتابعة */
+  superior: {
+    1: {
+      id: 'superior', v: 1, official: true, owner: 'teacher', many: true, scope: 'year',
+      title: 'خطة متابعة متعلم فائق', ready: 'خطة متعلم فائق',
+      noun: { one: 'خطة', two: 'خطتان', few: 'خطط', many: 'خطة', zero: 'لا خطط بعد' },
+      page: { orient: 'portrait', fit: 'single-page', minPt: 10 },
+      signs: { teacher: true, head: true },
+      blocks: [
+        { type: 'fields', id: 'meta', inline: true, fields: [
+          { id: 'who',     label: 'المعلم',        kind: 'teacher', auto: 'teacher' },
+          { id: 'student', label: 'اسم الطالب',    kind: 'text', required: true },
+          { id: 'cls',     label: 'الصف',          kind: 'class', pair: true },
+          { id: 'subject', label: 'المادة',        kind: 'text',  pair: true },
+          { id: 'year',    label: 'العام الدراسي', kind: 'text',  auto: 'year' }
+        ] },
+        { type: 'grid', id: 'marks', title: 'درجات الطالب في الست أسابيع', flat: true,
+          cols: [{ id: 't1', label: 'الفصل الدراسي الأول' }, { id: 't2', label: 'الفصل الدراسي الثاني' }],
+          rows: [{ id: 'w1', label: 'الأولى', kind: 'number' }, { id: 'w2', label: 'الثانية', kind: 'number' }] },
+        { type: 'text', id: 'body', sections: [
+          { id: 'strengths', kind: 'paragraph', title: 'جوانب التفوق' },
+          { id: 'plan',      kind: 'paragraph', title: 'خطة تنمية قدرات المتعلم' },
+          { id: 'done',      kind: 'paragraph', title: 'ما تم تنفيذه من الخطة' },
+          { id: 'results',   kind: 'paragraph', title: 'نتائج المتابعة' }
+        ] }
+      ]
+    }
+  },
+
+  /* خطة متابعة متعلم متعثر (ص٩): الفصلان عمودان، ولكل فصل الست اسابيع الاولى ثم الثانية — الدرجة واسباب الضعف وطرق
+     العلاج — ثم نتيجة الفصل (grid) */
+  struggling: {
+    1: {
+      id: 'struggling', v: 1, official: true, owner: 'teacher', many: true, scope: 'year',
+      title: 'خطة متابعة متعلم متعثر', ready: 'خطة متعلم متعثر',
+      noun: { one: 'خطة', two: 'خطتان', few: 'خطط', many: 'خطة', zero: 'لا خطط بعد' },
+      page: { orient: 'portrait', fit: 'single-page', minPt: 10 },
+      signs: { teacher: true, head: true },
+      blocks: [
+        { type: 'fields', id: 'meta', inline: true, fields: [
+          { id: 'who',     label: 'المعلم',        kind: 'teacher', auto: 'teacher' },
+          { id: 'student', label: 'اسم الطالب',    kind: 'text', required: true },
+          { id: 'cls',     label: 'الصف',          kind: 'class', pair: true },
+          { id: 'subject', label: 'المادة',        kind: 'text',  pair: true },
+          { id: 'year',    label: 'العام الدراسي', kind: 'text',  auto: 'year' }
+        ] },
+        { type: 'grid', id: 'follow',
+          cols: [{ id: 't1', label: 'الفصل الدراسي الأول' }, { id: 't2', label: 'الفصل الدراسي الثاني' }],
+          rows: [
+            { id: 'w1',  label: 'الست أسابيع الأولى — الدرجة',  kind: 'number', head: true },
+            { id: 'c1',  label: 'أسباب الضعف',                  kind: 'longtext' },
+            { id: 'r1',  label: 'طرق العلاج',                   kind: 'longtext' },
+            { id: 'w2',  label: 'الست أسابيع الثانية — الدرجة', kind: 'number', head: true },
+            { id: 'c2',  label: 'أسباب الضعف',                  kind: 'longtext' },
+            { id: 'r2',  label: 'طرق العلاج',                   kind: 'longtext' },
+            { id: 'res', label: 'نتيجة الفصل الدراسي',          kind: 'longtext' }
+          ] }
+      ]
+    }
   }
 
 };

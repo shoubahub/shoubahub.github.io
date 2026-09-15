@@ -27,7 +27,9 @@
      (الخطة التشغيلية: «محور») — في الصيغة من الان ولو لم يستعملها قالب بعد.
      ⚠ «شبكة المتابعة» (سجلات الاعداد · الاعمال التحريرية) ليست لبنة: جدول متكرر باعمدة ✓
        مجمعة وعناوين رأسية وصفحة عرضية — وتحرر على الهاتف قائمة تحقق لكل صف. */
-  R.BLOCKS   = ['fields', 'text', 'table', 'rating', 'checklist', 'files', 'signatures', 'repeat'];
+  /* grid (المجموعة ج 2026-09-15): شبكة ثابتة — صفوف بانواعها امام اعمدة (الفصلان في خطتي المتعلم ص٦ وص٩)،
+     القيمة { صف: { عمود: قيمة } }. flat: صف واحد على الورق (درجات الست اسابيع ص٦) */
+  R.BLOCKS   = ['fields', 'text', 'table', 'rating', 'checklist', 'files', 'signatures', 'repeat', 'grid'];
   /* انواع الحقول والاعمدة: نص قصير · نص طويل · تاريخ · رقم · اختيار · علامة ✓ · معلم ·
      اشهر (اختيار شهر او اكثر) · قيمة تلقائية · توقيع (خانة فارغة على الورق) ·
      متابعة (حالة + ملاحظة + شاهد — عمود الخطة التشغيلية الذكي) */
@@ -133,6 +135,15 @@
           break;
         case 'files':
           arr(b.accept).forEach(function (a) { if (R.FILES.indexOf(a) < 0) bad(ba, 'نوع ملف خارج القائمة: ' + a); });
+          break;
+        case 'grid':
+          if (!arr(b.cols).length || !arr(b.rows).length) bad(ba, 'شبكة بلا اعمدة او صفوف');
+          arr(b.cols).forEach(function (c) { if (!c || !isId(c.id) || !c.label) bad(ba, 'عمود شبكة ناقص'); });
+          arr(b.rows).forEach(function (r) {
+            if (!r || !isId(r.id) || !r.label) return bad(ba, 'صف شبكة ناقص');
+            if (seen[r.id]) bad(ba, 'صف شبكة مكرر: ' + r.id); seen[r.id] = 1;
+            kind(r.kind, ba + '.' + r.id);
+          });
           break;
         case 'signatures':
           if (R.SIGN.indexOf(b.mode) < 0) bad(ba, 'نمط توقيع خارج القائمة: ' + b.mode);
@@ -363,7 +374,7 @@
         return s;
       case 'signatures':
         return b.mode === 'smart:attendance' ? { roster: arr(ctx.teachers).slice(), absent: [], guests: [] } : {};
-      case 'rating': case 'checklist': return {};
+      case 'rating': case 'checklist': case 'grid': return {};
       /* ⚠ كائن لا مصفوفة: items على مصفوفة يسقطه JSON عند الحفظ (2026-09-11) */
       case 'files': return { items: [] };
       /* القسم المتكرر يبدأ بـ start نسخة (الخطة: محور واحد فارغ — فلا تفتح خالية) */

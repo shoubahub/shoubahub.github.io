@@ -109,10 +109,12 @@
   /* ── ① خانات البيانات ─────────────────────────────────────────── */
   var BLOCK = {};
   BLOCK.fields = function (b, v, ctx, changed) {
-    var wrap = el('div', 'rb'), slot = null;
+    var wrap = el('div', 'rb'), slot = null, pairUI = null;
     b.fields.forEach(function (f) {
       /* المادة والصف والحصة (slot — تقرير الزيارة): اختيار واحد من جدول المعلم ليوم الزيارة، في موضع اولها */
       if (f.slot) { if (!slot) { slot = slotPicker(b, v, ctx, changed); wrap.appendChild(slot.el); } return; }
+      /* الصف والمادة (pair — خطتا المتعلم): رقاقات فصول المعلم بموادها من جدوله، في موضع اولهما */
+      if (f.pair) { if (!pairUI) { pairUI = pairPicker(b, v, ctx, changed); wrap.appendChild(pairUI.el); } return; }
       var fld = el('div', 'field'), h = el('div', 'hint');
       var lb = el('label', null, f.label);
       lb.appendChild(need(!!f.required));
@@ -168,18 +170,7 @@
       }
       return r;
     }
-    /* فصوله بموادها من جدوله كله — مرتبة بالصف ثم الشعبة (Shouba.classesOf) */
-    function pairs() {
-      var seen = {}, out = [], order = S.classesOf ? S.classesOf(who) : [];
-      S.days().forEach(function (day) {
-        S.periods().forEach(function (t) {
-          if (t.brk) return;
-          var s = S.splitSlot(S.slot(who, day, t.n - 1)), k = s.cls + '|' + s.subject;
-          if (s.cls && !seen[k]) { seen[k] = 1; out.push({ cls: s.cls, subject: s.subject }); }
-        });
-      });
-      return out.sort(function (a, b) { return (order.indexOf(a.cls) - order.indexOf(b.cls)) || (a.subject < b.subject ? -1 : a.subject > b.subject ? 1 : 0); });
-    }
+    function pairs() { return teacherPairs(who); }
     function refresh() {
       box.textContent = '';
       if (!S || !who) return;
@@ -213,6 +204,49 @@
       box.appendChild(toggles(S.periods().filter(function (t) { return !t.brk; }).map(function (t) { return { v: t.n, t: String(t.n) }; }),
         function (n) { return String(v.period) === String(n); },
         function (n) { v.period = String(v.period) === String(n) ? '' : n; changed(); refresh(); }));
+    }
+    refresh();
+    return { el: fld, refresh: refresh };
+  }
+
+  /* فصول المعلم بموادها من جدوله كله — مرتبة بالصف ثم الشعبة (Shouba.classesOf). مصدر واحد لـ«الحصة التي زرتها»
+     و«الصف والمادة». يقرأ الجدول ولا يمسه */
+  function teacherPairs(who) {
+    var S = window.Shouba, seen = {}, out = [];
+    if (!S || !who) return out;
+    var order = S.classesOf ? S.classesOf(who) : [];
+    S.days().forEach(function (day) {
+      S.periods().forEach(function (t) {
+        if (t.brk) return;
+        var s = S.splitSlot(S.slot(who, day, t.n - 1)), k = s.cls + '|' + s.subject;
+        if (s.cls && !seen[k]) { seen[k] = 1; out.push({ cls: s.cls, subject: s.subject }); }
+      });
+    });
+    return out.sort(function (a, b) { return (order.indexOf(a.cls) - order.indexOf(b.cls)) || (a.subject < b.subject ? -1 : a.subject > b.subject ? 1 : 0); });
+  }
+  /* ── الصف والمادة (pair — خطتا المتعلم الفائق والمتعثر، 2026-09-15): رقاقات فصول صاحب السجل بموادها من جدوله —
+     لمسة تملأ الصف والمادة معا، ولمس المختار يلغيه. ومختار خرج من جدوله يبقى ظاهرا. ومن لا جدول له يكتبهما بيده */
+  function pairPicker(b, v, ctx, changed) {
+    var who = ctx.rec && ctx.rec.who, fld = el('div', 'field'), lb = el('label', null, 'الصف والمادة'), box = el('div', 'stack');
+    lb.appendChild(need(false));
+    fld.appendChild(lb); fld.appendChild(box);
+    function refresh() {
+      box.textContent = '';
+      var ps = teacherPairs(who);
+      if (v.cls && !ps.some(function (p) { return p.cls === v.cls && p.subject === (v.subject || ''); })) ps.push({ cls: v.cls, subject: v.subject || '' });
+      if (!ps.length) {
+        box.appendChild(el('div', 'hint', 'لم يدخل جدول أ. ' + (who || '') + ' بعد — اكتب الصف والمادة.'));
+        box.appendChild(input(v.cls, function (x) { v.cls = x; changed(); }, { ph: 'الصف — مثل ١٠/٢', label: 'الصف' }).box);
+        box.appendChild(input(v.subject, function (x) { v.subject = x; changed(); }, { ph: 'المادة', label: 'المادة' }).box);
+        return;
+      }
+      box.appendChild(toggles(ps.map(function (p, i) { return { v: i, t: p.cls + (p.subject ? ' · ' + p.subject : '') }; }),
+        function (i) { return v.cls === ps[i].cls && (v.subject || '') === ps[i].subject; },
+        function (i) {
+          var on = v.cls === ps[i].cls && (v.subject || '') === ps[i].subject;
+          v.cls = on ? '' : ps[i].cls; v.subject = on ? '' : ps[i].subject;
+          changed(); refresh();
+        }));
     }
     refresh();
     return { el: fld, refresh: refresh };
@@ -569,6 +603,30 @@
     w.appendChild(more);
     showMore();
     return w;
+  };
+
+  /* ── الشبكة الثابتة (grid — خطتا المتعلم، 2026-09-15): على الجوال لوح لكل عمود (الفصل الدراسي الاول · الثاني)
+     فيه صفوفه بانواعها — درجة رقم، واسباب الضعف وطرق العلاج نص طويل. القيمة { صف: { عمود: قيمة } } */
+  BLOCK.grid = function (b, v, ctx, changed) {
+    var sec = section(b.title || '', b.hint), box = el('div', 'stack');
+    b.cols.forEach(function (c) {
+      var card = el('div', 'rb-item');
+      card.appendChild(el('div', 'rb-q', c.label));
+      b.rows.forEach(function (r) {
+        var x = v[r.id] = (v[r.id] && typeof v[r.id] === 'object' && !Array.isArray(v[r.id])) ? v[r.id] : {};
+        var cell = el('div', 'rb-cell');
+        cell.appendChild(labOf(r));
+        cell.appendChild(input(x[c.id], function (t) {
+          if (r.kind === 'number') { var n = latin(t).trim(); x[c.id] = n === '' ? '' : (isNaN(+n) ? n : +n); }
+          else x[c.id] = t;
+          changed();
+        }, { long: r.kind === 'longtext', rows: 2, numeric: r.kind === 'number', label: c.label + ' — ' + r.label, ph: r.ph }).box);
+        card.appendChild(cell);
+      });
+      box.appendChild(card);
+    });
+    sec.appendChild(box);
+    return sec;
   };
 
   /* قائمة اسماء (table.chips — «متابعة الأعمال التحريرية» في تقرير الزيارة 2026-09-14): جدول بعمود نص واحد يدخل اسما

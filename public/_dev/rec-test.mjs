@@ -385,6 +385,18 @@ ok(Wf.visitRows('2026 / 2027', 'الفصل الأول').map(r => r.note + ':' + 
   'جدول الزيارات من التقارير: كل تقرير صف بتاريخه، وموضوعه في الملاحظات', Wf.visitRows('2026 / 2027', 'الفصل الأول'));
 ok(Wf.gradeNo('الحادي عشر') === 11 && Wf.gradeNo('العاشر') === 10, 'رقم الصف من اسمه');
 
+// ١٩) المجموعة (ج) المتعلمون (2026-09-15): خطتا المتعلم الفائق والمتعثر — قالبا معلم للعام، كثيران، بشبكة الفصلين
+ok(['superior', 'struggling'].every(id => { const t = R.latest(id); return t && t.owner === 'teacher' && t.many && t.scope === 'year' && RF.readyRecords.indexOf(t.ready) > -1; }),
+  'خطتا المتعلم قالبا معلم للعام، كثيران، باسميهما في القائمة');
+const Wc = world({ 'shouba.setup': JSON.stringify({ stage: 'ثانوي', refDataVersion: 4, year: '2026 / 2027', term: 'الفصل الأول', teachers: ['خالد سعد'] }) }).Shouba;
+const sp = Wc.newRec('struggling', 'خالد سعد');
+ok(sp.term === '' && sp.values.follow && !Array.isArray(sp.values.follow) && Object.keys(sp.values.follow).length === 0 && sp.values.meta.year === '2026 / 2027',
+  'خطة المتعثر للعام بلا فصل، وشبكتها تبدأ كائنا فارغا', sp);
+sp.values.meta.student = 'ناصر'; sp.values.follow = { w1: { t1: 9 } }; Wc.saveRec(sp);
+ok(R.summary(sp).title === 'ناصر' && R.text(sp).indexOf('ناصر') > -1, 'اسم الطالب عنوان الخطة ويبحث به');
+ok(R.validate({ id: 'g', v: 1, title: 'ش', owner: 'teacher', page: { orient: 'portrait', fit: 'flow' }, blocks: [{ type: 'grid', id: 'x', cols: [{ id: 'a', label: 'أ' }], rows: [{ id: 'r', label: 'ر', kind: 'color' }] }] })
+  .some(e => e.includes('نوع خارج القائمة')), 'الشبكة ترفض نوع صف خارج القائمة');
+
 // ٩) بلا تشكيل في القوالب والمحرك
 const H = new RegExp('[' + String.fromCharCode(0x064B) + '-' + String.fromCharCode(0x0652) + String.fromCharCode(0x0670) + ']');
 ok(!H.test(read('rec-templates.js')) && !H.test(read('rec-engine.js')), 'القوالب والمحرك بلا تشكيل');

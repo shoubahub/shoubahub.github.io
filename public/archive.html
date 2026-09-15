@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=79" />
-<link rel="stylesheet" href="shell.css?v=79" />
-<link rel="stylesheet" href="components.css?v=79" />
-<link rel="stylesheet" href="frame.css?v=79" />
+<link rel="stylesheet" href="identity/tokens.css?v=80" />
+<link rel="stylesheet" href="shell.css?v=80" />
+<link rel="stylesheet" href="components.css?v=80" />
+<link rel="stylesheet" href="frame.css?v=80" />
 <style>
   /* ارشيف السجل (2026-09-12) — شاشة واحدة لكل القوالب: ?tpl=<قالب>.
      مجموعات (الفصل · العام) الاحدث اولا، وبحث في المحتوى وتصفية بالحالة، وبطاقة لكل سجل تفتح لوحة اجراءاته
@@ -63,14 +63,14 @@
 
  </div></div>
 
-<script src="build.js?v=79"></script>
-<script src="refdata.js?v=79"></script>
-<script src="rec-templates.js?v=79"></script>
-<script src="rec-engine.js?v=79"></script>
-<script src="derive.js?v=79"></script>
-<script src="icons.js?v=79"></script>
-<script src="components.js?v=79"></script>
-<script src="rec-files.js?v=79"></script>
+<script src="build.js?v=80"></script>
+<script src="refdata.js?v=80"></script>
+<script src="rec-templates.js?v=80"></script>
+<script src="rec-engine.js?v=80"></script>
+<script src="derive.js?v=80"></script>
+<script src="icons.js?v=80"></script>
+<script src="components.js?v=80"></script>
+<script src="rec-files.js?v=80"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search);
 
@@ -106,6 +106,9 @@
 
   function start(){
     var noun = t.noun || { one: 'سجل', two: 'سجلان', few: 'سجلات', many: 'سجلا', zero: 'لا سجلات بعد' };
+    /* المؤنث بتائه (خطة · بطاقة): «خطة جديدة» و«خطته» لا «خطة جديد» و«خطةه» (2026-09-15، رصد في خطتي المتعلم) */
+    var FEM = /ة$/.test(noun.one), NEW = noun.one + (FEM ? ' جديدة' : ' جديد');
+    function his(w){ return FEM ? w.slice(0, -1) + 'ته' : w + 'ه'; }
     /* عدد القرارات المفتوحة على البطاقة — لمن في قالبه قسم قرارات فقط */
     var hasDec = t.blocks.some(function(b){ return (b.sections || []).some(function(s){ return s.kind === 'smart:decisions'; }); });
     /* شبكة يختار رئيس الشعبة عناصرها (table.choose — قرار المستخدم 2026-09-12): اول فتح يسأله الاختيار
@@ -157,7 +160,7 @@
     document.title = 'شعبة · ' + t.title;
     qEl.placeholder = 'ابحث في ' + noun.few + 'ك';
     qEl.setAttribute('aria-label', qEl.placeholder);
-    newBtn.textContent = noun.one + ' جديد';
+    newBtn.textContent = NEW;
     /* سجل المعلم (owner:'teacher' — شبكتا المتابعة): الجديد يسأل لمن، ومن له سجل في هذا الفصل يفتح سجله
        فتضاف اليه المتابعات (سجل واحد لكل معلم في الفصل) */
     /* سجل المعلم: يفتح سجله في الفصل ان كان، والا جديدا باسمه — وقالب «كثير» (many — تقارير الزيارات) جديد دائما */
@@ -175,7 +178,7 @@
         b.type = 'button';
         b.appendChild(el('b', null, 'أ. ' + nm));
         var span = t.scope === 'year' ? 'لهذا العام' : 'لهذا الفصل';   /* سجل العام (scope:'year') واحد في العام */
-        b.appendChild(el('small', null, mine ? noun.one + 'ه ' + span + ' — افتحه' : noun.one + ' جديد ' + span));
+        b.appendChild(el('small', null, mine ? his(noun.one) + ' ' + span + ' — افتحه' : NEW + ' ' + span));
         b.addEventListener('click', function(){ openFor(nm); });
         n.appendChild(b);
       });
@@ -327,7 +330,7 @@
       }
       if (!all.length || !groups.length) {
         listEl.appendChild(el('div', 'vlist')).appendChild(el('div', 'invite', !all.length
-          ? 'لم تكتب ' + noun.few + ' بعد — ابدأ أولها من «' + noun.one + ' جديد» أدناه.'
+          ? 'لم تكتب ' + noun.few + ' بعد — ابدأ أولها من «' + NEW + '» أدناه.'
           : 'لا نتائج — جرب كلمة أخرى، أو اختر «الكل».'));
         return;
       }

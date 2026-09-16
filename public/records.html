@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=81" />
-<link rel="stylesheet" href="shell.css?v=81" />
-<link rel="stylesheet" href="components.css?v=81" />
-<link rel="stylesheet" href="frame.css?v=81" />
+<link rel="stylesheet" href="identity/tokens.css?v=82" />
+<link rel="stylesheet" href="shell.css?v=82" />
+<link rel="stylesheet" href="components.css?v=82" />
+<link rel="stylesheet" href="frame.css?v=82" />
 <style>
   .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
   .note{padding:0 var(--gap-side);font-size:12px;font-weight:600;color:var(--shouba-hint);line-height:1.8}
@@ -71,13 +71,13 @@
   </div>
  </div></div>
 
-<script src="build.js?v=81"></script>
-<script src="refdata.js?v=81"></script>
-<script src="rec-templates.js?v=81"></script>
-<script src="rec-engine.js?v=81"></script>
-<script src="derive.js?v=81"></script>
-<script src="icons.js?v=81"></script>
-<script src="components.js?v=81"></script>
+<script src="build.js?v=82"></script>
+<script src="refdata.js?v=82"></script>
+<script src="rec-templates.js?v=82"></script>
+<script src="rec-engine.js?v=82"></script>
+<script src="derive.js?v=82"></script>
+<script src="icons.js?v=82"></script>
+<script src="components.js?v=82"></script>
 <script>
   var d = Shouba.data();
 
@@ -102,10 +102,9 @@
     listEl.innerHTML = '<div class="invite">لم تعتمد سجلات في الإعداد بعد —'
       + ' وهي قوالب رسمية جاهزة تختار منها ما يخص شعبتك.</div>';
   }
-  /* الترتيب (طلب المستخدم 2026-09-13): الجاهز اولا وفي رأسه الاجتماعات والخطة التشغيلية — في قائمتك كانا او
-     «جديد — أضفه» — ثم سائر الجاهز في قائمتك، ثم الجاهز الذي ليس فيها، ثم ما هو قيد الإعداد.
-     وبين المتساويين ترتيبك في الإعداد */
-  var FIRST = ['سجل اجتماعات الشعبة', 'الخطة التشغيلية للشعبة'];
+  /* الترتيب بالاهمية (قرار المستخدم 2026-09-16، كان منذ 2026-09-13 ترتيب الاختيار في الاعداد): ترتيب
+     refdata.readyRecords مصدر واحد (recordRank) — و«جديد — أضفه» والمطبوع الجامع (recordLinks) في مواضعهما منه،
+     وما هو قيد الإعداد في الآخر */
   function entry(name){
     var b = document.createElement('button');
     b.innerHTML = '<b></b><span class="val"></span><span class="chev">‹</span>';
@@ -115,12 +114,12 @@
   var soonNames = records.filter(function(n){ return !ShoubaRec.byReady(n) && !LINKS[n]; });
   /* قالب رسمي جاهز ليس في قائمتك (بني بعد اعدادك — كالخطة التشغيلية 2026-09-12): يعرض «جديد» ويضاف بلمسة
      ثم يفتح ارشيفه. القائمة تبقى قرارك — لا يضاف اليها شيء دون لمستك */
-  var readyList = records.filter(function(n){ return ShoubaRec.byReady(n); }).map(function(n){ return { n: n, fresh: false }; })
+  var readyList = records.filter(function(n){ return ShoubaRec.byReady(n) || LINKS[n]; }).map(function(n){ return { n: n, fresh: false }; })
     .concat(ShoubaRec.list().filter(function(t){ return t.ready && records.indexOf(t.ready) < 0 && !REFX.offRecord(t.ready); }).map(function(t){ return { n: t.ready, fresh: true }; }));
-  function rank(x){ var i = FIRST.indexOf(x.n); return i > -1 ? i : x.fresh ? 11 : 10; }
   readyList.map(function(x, i){ x.i = i; return x; })
-    .sort(function(a, b){ return rank(a) - rank(b) || a.i - b.i; })
+    .sort(function(a, b){ return REFX.recordRank(a.n) - REFX.recordRank(b.n) || a.i - b.i; })
     .forEach(function(x){
+      if (!x.fresh && LINKS[x.n]) { listEl.appendChild(LINKS[x.n] === 'teacherFile' ? teacherFileEntry(x.n) : visitsEntry(x.n)); return; }
       var t = ShoubaRec.byReady(x.n), b;
       if (x.fresh) {
         b = document.createElement('button');
@@ -140,7 +139,7 @@
     });
 
   /* «غلاف سجل متابعة المعلم» (ص٤): ليس سجلا يملأ — يطبع «ملف المعلم» لمعلم تختاره: غلافه ثم سجلاته (2026-09-14) */
-  records.filter(function(n){ return LINKS[n] === 'teacherFile'; }).forEach(function(name){
+  function teacherFileEntry(name){
     var b = entry(name);
     b.className = 'entry';
     b.querySelector('.val').textContent = 'اطبعه لأي معلم';
@@ -158,17 +157,17 @@
       });
       Shouba.sheet.open('ملف أي معلم؟', n);
     });
-    listEl.appendChild(b);
-  });
+    return b;
+  }
 
   /* «جدول الزيارات الصفية»: ليس سجلا يملأ — يتكون من تقارير زيارة رئيس الشعبة في الفصل (visits.html — 2026-09-14) */
-  records.filter(function(n){ return LINKS[n] === 'visitsTable'; }).forEach(function(name){
+  function visitsEntry(name){
     var b = entry(name);
     b.className = 'entry';
     b.querySelector('.val').textContent = 'من تقارير زياراتك';
     b.addEventListener('click', function(){ location.href = 'visits.html'; });
-    listEl.appendChild(b);
-  });
+    return b;
+  }
 
   /* ما لم يبن قالبه بعد — في الآخر */
   soonNames.forEach(function(name){

@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=82" />
-<link rel="stylesheet" href="shell.css?v=82" />
-<link rel="stylesheet" href="components.css?v=82" />
-<link rel="stylesheet" href="frame.css?v=82" />
+<link rel="stylesheet" href="identity/tokens.css?v=83" />
+<link rel="stylesheet" href="shell.css?v=83" />
+<link rel="stylesheet" href="components.css?v=83" />
+<link rel="stylesheet" href="frame.css?v=83" />
 <style>
   /* خطة المنهج — الصورة المطولة لشريط الخطة (2026-09-13، الخطوة د؛ العينة اعتمدها المستخدم: «نموذج مطول للسجل
      ونموذج للوحة مختصر»). تفتح من شريط اللوحة. مادة واحدة في الشاشة: رقاقات المواد (.tgs) · سطر الحصيلة ·
@@ -69,14 +69,15 @@
   <div class="tabbar" data-tabs="board.html"></div>
  </div></div>
 
-<script src="build.js?v=82"></script>
-<script src="refdata.js?v=82"></script>
-<script src="derive.js?v=82"></script>
-<script src="plan-data.js?v=82"></script>
-<script src="icons.js?v=82"></script>
-<script src="components.js?v=82"></script>
+<script src="build.js?v=83"></script>
+<script src="refdata.js?v=83"></script>
+<script src="derive.js?v=83"></script>
+<script src="plan-data.js?v=83"></script>
+<script src="icons.js?v=83"></script>
+<script src="components.js?v=83"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search), curKey = Q.get('key') || '', W0 = +Q.get('w') || 0, scrolled = false;
+  var curWho = Q.get('who') || '';   /* المادة الحرة: سطر لكل معلم، فالرقاقة تعرف بالمعلم مع مفتاح الخطة (2026-09-19) */
 
   (function paintTopCrest(){
     var el = document.getElementById('tbCrest'), c = d.crest;
@@ -97,8 +98,8 @@
     /* بعد الاختيار تفتح الشاشة على خطة المادة التي اختير تخصصها */
     function afterPick(p){
       return function(){
-        var np = S.planLinks().pairs.filter(function(x){ return x.subject === p.subject && x.grade === p.grade; })[0];
-        if (np && np.plan) curKey = np.plan.key;
+        var np = S.planLinks().pairs.filter(function(x){ return x.subject === p.subject && x.grade === p.grade && x.who === p.who; })[0];
+        if (np && np.plan) { curKey = np.plan.key; curWho = np.who || ''; }
         scrolled = false; paint();
       };
     }
@@ -107,7 +108,7 @@
     if (pk.length) {
       var q = el('div'); q.appendChild(el('b', null, 'اختر خطة التخصص')); q.appendChild(document.createTextNode(' — '));
       pk.forEach(function(p, i){
-        var a = el('button', 'lnk', p.subject + ' · ' + p.grade + ' ›'); a.type = 'button';
+        var a = el('button', 'lnk', p.subject + ' · ' + p.grade + (p.who ? ' — أ. ' + S.shortName(p.who) : '') + ' ›'); a.type = 'button';
         a.addEventListener('click', function(){ S.pickPlan(p, afterPick(p)); });
         if (i) q.appendChild(document.createTextNode('، '));
         q.appendChild(a);
@@ -127,16 +128,18 @@
       return;
     }
     wk.style.display = '';
-    var cur = matched.filter(function(p){ return p.plan.key === curKey; })[0] || matched[0];
-    curKey = cur.plan.key;
+    /* معلمان قد يختاران التخصص نفسه، فمفتاح الخطة وحده لا يميز رقاقتيهما — ومعه المعلم (2026-09-19) */
+    var cur = matched.filter(function(p){ return p.plan.key === curKey && (!curWho || p.who === curWho); })[0] || matched[0];
+    curKey = cur.plan.key; curWho = cur.who || '';
     var n = L.week ? L.week.n : 0, total = S.planWeeksOf(cur.plan), W = W0 || Math.max(1, n);
     matched.forEach(function(p){
-      var b = el('button', 'tg' + (p === cur ? ' on' : ''), p.subject + ' · ' + p.grade);
+      /* المادة الحرة: التخصص عنوان رقاقتها، فسطرا معلمين في الصف الواحد يفترقان (2026-09-19) */
+      var b = el('button', 'tg' + (p === cur ? ' on' : ''), (p.spec || p.subject) + ' · ' + p.grade);
       b.type = 'button'; b.setAttribute('aria-pressed', p === cur ? 'true' : 'false');
-      b.addEventListener('click', function(){ curKey = p.plan.key; scrolled = false; paint(); });
+      b.addEventListener('click', function(){ curKey = p.plan.key; curWho = p.who || ''; scrolled = false; paint(); });
       subs.appendChild(b);
     });
-    document.getElementById('sub').textContent = cur.subject + ' · ' + cur.grade;
+    document.getElementById('sub').textContent = cur.subject + ' · ' + cur.grade + (cur.who ? ' — أ. ' + S.shortName(cur.who) : '');
     var per = 0; for (var k = 1; k <= total; k++) per += S.planLessons(cur.plan, k).reduce(function(a, l){ return a + l.p; }, 0);
     sum.innerHTML = total + ' أسبوعا · <b>' + per + '</b> حصة حسب خطة التوجيه'
       + (n ? ' · الجاري الأسبوع <b>' + n + '</b>' : L.week ? ' · الفصل يبدأ الأحد <b>' + S.dayMonth(L.week.from) + '</b>' : '');
@@ -144,9 +147,11 @@
     if (cur.spec) {
       var sw = el('button', 'lnk', 'غير التخصص ›'); sw.type = 'button';
       sw.addEventListener('click', function(){ S.pickPlan(cur, afterPick(cur)); });
-      sum.insertBefore(document.createTextNode(' · '), sum.firstChild);
-      sum.insertBefore(el('b', null, cur.spec), sum.firstChild);
-      sum.insertBefore(document.createTextNode('تخصص '), sum.firstChild);
+      var head = document.createDocumentFragment();
+      head.appendChild(document.createTextNode('تخصص ')); head.appendChild(el('b', null, cur.spec));
+      if (cur.who) head.appendChild(document.createTextNode(' · أ. ' + S.shortName(cur.who)));
+      head.appendChild(document.createTextNode(' · '));
+      sum.insertBefore(head, sum.firstChild);
       sum.appendChild(document.createTextNode(' · ')); sum.appendChild(sw);
     }
     for (var i = 1; i <= total; i++) {

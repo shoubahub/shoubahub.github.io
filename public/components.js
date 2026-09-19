@@ -298,7 +298,10 @@ Shouba.nextLabel = function (def) {
     var opts = Shouba.electiveOptions(pair.subject, data ? data.plans : []), cur = Shouba.planPickOf(pair);
     var box = document.createElement('div'), note = document.createElement('div');
     box.className = 'stack'; note.className = 'soon-note';
-    note.textContent = 'أي تخصص يدرسه طلبة ' + pair.grade + ' في مدرستك؟ تظهر دروس خطته كل أسبوع.';
+    /* الاختيار لكل معلم في صفه (2026-09-19): معلمان في الصف الواحد بتخصصين، فلكل خطته */
+    var him = pair.who ? 'أ. ' + Shouba.shortName(pair.who) : '';
+    note.textContent = him ? 'أي تخصص يدرسه ' + him + ' لطلبة ' + pair.grade + '؟ تظهر دروس خطته كل أسبوع.'
+                           : 'أي تخصص يدرسه طلبة ' + pair.grade + ' في مدرستك؟ تظهر دروس خطته كل أسبوع.';
     box.appendChild(note);
     opts.forEach(function (p) {
       var sp = Shouba.planSpec(p), on = sp === cur, b = document.createElement('button'), t = document.createElement('span'), mk = document.createElement('span');
@@ -312,7 +315,7 @@ Shouba.nextLabel = function (def) {
       });
       box.appendChild(b);
     });
-    Shouba.sheet.open('خطة ' + pair.subject + ' · ' + pair.grade, box);
+    Shouba.sheet.open('خطة ' + pair.subject + ' · ' + pair.grade + (him ? ' — ' + him : ''), box);
   };
 
   /* سطر تاكيد عابر (قاعدة الادخال 2026-09-13: «لا حفظ صامت · لا حذف بلا تراجع») — اعلى الشاشة تحت رأسها،

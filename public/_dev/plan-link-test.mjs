@@ -143,5 +143,31 @@ ok(A.planFor(a12, data.plans) === null && A.planLinks(data).unpicked.some(p => p
 A.setPlanPick(a12, '');
 ok(!('التربية الفنية|الثاني عشر' in A.data().planPick) && A.planPickOf(a11) === 'الرسم والتصوير', 'افراغ الاختيار يمحوه وحده');
 
+/* معلمان في الصف الواحد بتخصصين (2026-09-19، رصد زميل المستخدم: «الصف نفسه لمعلمين وبتخصصين مختلفين») */
+const ART2 = Object.assign({}, ART, { teachers: ['سالم الرشيدي', 'مشاري الدوسري'],
+  schedules: { 'سالم الرشيدي': { 'الأحد': ['11/2 ع · التربية الفنية'] }, 'مشاري الدوسري': { 'الأحد': ['11/4 د · التربية الفنية'] } } });
+const B = world(ART2).Shouba, who1 = { subject: 'التربية الفنية', grade: 'الحادي عشر', who: 'سالم الرشيدي' },
+      who2 = { subject: 'التربية الفنية', grade: 'الحادي عشر', who: 'مشاري الدوسري' };
+const pairs2 = B.planPairs();
+ok(pairs2.length === 2 && pairs2.every(p => p.grade === 'الحادي عشر') && pairs2.map(p => p.who).join() === 'سالم الرشيدي,مشاري الدوسري',
+   'المادة الحرة سطر لكل معلم في الصف الواحد', pairs2.map(p => p.subject + '·' + p.who));
+B.setPlanPick(who1, 'الرسم والتصوير'); B.setPlanPick(who2, 'التصميم الزخرفي');
+const BL = B.planLinks(data, new Date(2026, 9, 14));
+ok(BL.pairs.map(p => p.who).join('|') === 'سالم الرشيدي|مشاري الدوسري', 'الربط يحمل معلم المادة الحرة الى الشاشات (به تعرف الشاشة اي سطر تغير)', BL.pairs.map(p => p.who));
+ok(BL.pairs.map(p => p.spec).join('|') === 'الرسم والتصوير|التصميم الزخرفي' && BL.unpicked.length === 0,
+   'لكل معلم تخصصه وخطته — لا يغلب اختيار معلم على زميله', BL.pairs.map(p => p.spec));
+ok(B.planPairsOf('مشاري الدوسري', data).pairs.length === 1 && B.planPairsOf('مشاري الدوسري', data).pairs[0].spec === 'التصميم الزخرفي',
+   'مواد المعلم في ملفه وسجلاته تحمل تخصصه هو');
+const C = world(ART2).Shouba;   /* اختيار بناء ٨١ كان للصف بلا معلم */
+C.data().planPick = { 'التربية الفنية|الحادي عشر': 'فن الصباغة والطباعة' }; C.save();
+ok(C.planLinks(data).pairs.every(p => p.spec === 'فن الصباغة والطباعة'), 'اختيار الصف قبل هذا البناء يقرأ لمعلميه حتى يخص كل معلم باختياره');
+C.setPlanPick(who2, 'التصميم الزخرفي');
+const CL = C.planLinks(data);
+ok(CL.pairs.map(p => p.spec).join('|') === 'فن الصباغة والطباعة|التصميم الزخرفي', 'وما خص به معلم يتقدم على اختيار الصف القديم', CL.pairs.map(p => p.spec));
+
+/* المادة غير الحرة تبقى سطرا واحدا للصف مهما تعدد معلموها */
+ok(S.planPairs().every(p => !p.who) && S.planPairs().filter(p => p.subject === 'الرياضيات' && p.grade === 'العاشر').length === 1,
+   'سائر المواد سطر واحد للصف ومعلموه فيه');
+
 console.log('\n' + (fail ? '✗' : '✓') + ' ' + pass + ' سليم · ' + fail + ' معيب');
 process.exit(fail ? 1 : 0);

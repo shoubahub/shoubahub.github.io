@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=82" />
-<link rel="stylesheet" href="shell.css?v=82" />
-<link rel="stylesheet" href="components.css?v=82" />
-<link rel="stylesheet" href="frame.css?v=82" />
+<link rel="stylesheet" href="identity/tokens.css?v=83" />
+<link rel="stylesheet" href="shell.css?v=83" />
+<link rel="stylesheet" href="components.css?v=83" />
+<link rel="stylesheet" href="frame.css?v=83" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -38,6 +38,10 @@
   .ptr .who{flex:none;width:104px;display:flex;gap:4px;align-items:baseline;white-space:nowrap}
   .ptr .who b{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;font-weight:700;color:var(--shouba-navy)}
   .ptr .who small{flex:none;font-size:10.5px;font-weight:600;color:var(--shouba-label)}
+  /* سطر المادة الحرة عنوانه تخصصه («فن الصباغة والطباعة») وقد يطول: عمود اوسع بسطرين — وعلى قياسه سطور الجدول
+     كلها فتبقى الاعمدة مصطفة (قاعدة ⑪)، ولا يوسع الا حين يظهر تخصص (2026-09-19) */
+  #ptbl.wspec .ptr .who{width:126px;flex-direction:column;align-items:flex-start;gap:0;white-space:normal}
+  #ptbl.wspec .ptr .who b{overflow:visible;text-overflow:clip;line-height:1.35}
   .ptr .ls{flex:1;min-width:0;font-size:12px;font-weight:600;color:var(--shouba-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ptr .ls.none{color:var(--shouba-hint)}
   .ptr .pp{flex:none;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
@@ -178,14 +182,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=82"></script>
-<script src="refdata.js?v=82"></script>
-<script src="rec-templates.js?v=82"></script>
-<script src="rec-engine.js?v=82"></script>
-<script src="derive.js?v=82"></script>
-<script src="plan-data.js?v=82"></script>
-<script src="icons.js?v=82"></script>
-<script src="components.js?v=82"></script>
+<script src="build.js?v=83"></script>
+<script src="refdata.js?v=83"></script>
+<script src="rec-templates.js?v=83"></script>
+<script src="rec-engine.js?v=83"></script>
+<script src="derive.js?v=83"></script>
+<script src="plan-data.js?v=83"></script>
+<script src="icons.js?v=83"></script>
+<script src="components.js?v=83"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -809,14 +813,19 @@
     line.innerHTML = !L.week ? 'حسب خطط التوجيه'
       : n === 0 ? 'الفصل يبدأ الأحد <b>' + Shouba.dayMonth(L.week.from) + '</b> — وهذه دروس أسبوعه الأول'
       : 'الأسبوع <b>' + n + '</b> من ' + total + ' · ' + Shouba.weekRange(L.week.from, L.week.to) + ' — حسب خطط التوجيه';
+    tb.classList.toggle('wspec', L.pairs.some(function(p){ return p.spec; }));
     L.pairs.forEach(function(p){
       var r = document.createElement('div'), who = document.createElement('div'), b = document.createElement('b'), s = document.createElement('small'), ls = document.createElement('div');
       r.className = 'tr ptr' + (p.plan ? '' : ' miss'); who.className = 'who';
-      b.textContent = p.subject; s.textContent = p.grade; who.appendChild(b); who.appendChild(s); r.appendChild(who);
+      /* المادة الحرة: التخصص المختار هو عنوان السطر — فسطرا معلمين في الصف الواحد يفترقان باسم تخصصيهما */
+      b.textContent = p.spec || p.subject; s.textContent = p.grade; who.appendChild(b); who.appendChild(s); r.appendChild(who);
       /* المادة الحرة (2026-09-15): خطط تخصصاتها معتمدة ولم يختر رئيس الشعبة ايها يدرس لهذا الصف — «اختر خطته» يفتح
          الاختيار (Shouba.pickPlan) لا «يجب رفع الخطة» */
       if (!p.plan) {
-        ls.className = 'ls none'; ls.textContent = p.choose ? 'أي تخصص يدرس؟' : 'لم تعتمد خطته بعد'; r.appendChild(ls);
+        ls.className = 'ls none';
+        ls.textContent = !p.choose ? 'لم تعتمد خطته بعد'
+          : p.who ? 'أي تخصص يدرسه أ. ' + Shouba.shortName(p.who) + '؟' : 'أي تخصص يدرس؟';
+        r.appendChild(ls);
         var ch = document.createElement('span'); ch.className = 'chip'; ch.textContent = p.choose ? 'اختر خطته' : 'يجب رفع الخطة'; r.appendChild(ch);
         if (p.choose) { r.classList.add('pick'); r.setAttribute('role', 'button'); r.addEventListener('click', function(){ Shouba.pickPlan(p, paintPlan); }); }
         tb.appendChild(r); return;
@@ -834,7 +843,9 @@
       if (p.spec) {
         var sb = document.createElement('button'), sbb = document.createElement('b'), sbs = document.createElement('span');
         sb.type = 'button'; sb.className = 'spec'; sbb.textContent = p.spec; sbs.textContent = 'غير التخصص ›';
-        sb.appendChild(document.createTextNode('تخصص ')); sb.appendChild(sbb); sb.appendChild(document.createTextNode(' · ')); sb.appendChild(sbs);
+        sb.appendChild(document.createTextNode('تخصص ')); sb.appendChild(sbb);
+        if (p.who) sb.appendChild(document.createTextNode(' · أ. ' + Shouba.shortName(p.who)));
+        sb.appendChild(document.createTextNode(' · ')); sb.appendChild(sbs);
         sb.addEventListener('click', function(){ Shouba.pickPlan(p, paintPlan); });
         wk.appendChild(sb);
       }

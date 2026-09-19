@@ -672,7 +672,10 @@
           if (!v) return;
           var s = S.splitSlot(v), g = S.gradeOfClass(s.cls);
           if (!s.subject || !g) return;
-          var k = g + '|' + s.subject, e = map[k] || (map[k] = { subject: s.subject, grade: g, classes: [], teachers: [] });
+          /* المادة الحرة سطر لكل معلم (2026-09-19، رصد زميل المستخدم: «الصف نفسه لمعلمين وبتخصصين مختلفين»):
+             التخصص يتبع المعلم لا الصف، فلا يغلب اختيار معلم على زميله. وسائر المواد سطر واحد للصف كما كان */
+          var el = S.isElective(s.subject), k = g + '|' + s.subject + (el ? '|' + t : '');
+          var e = map[k] || (map[k] = { subject: s.subject, grade: g, classes: [], teachers: [], who: el ? t : '' });
           if (s.cls && e.classes.indexOf(s.cls) < 0) e.classes.push(s.cls);
           if (e.teachers.indexOf(t) < 0) e.teachers.push(t);
         });
@@ -734,8 +737,13 @@
       return (seen[sp] = true);
     }).sort(function (a, b) { var x = S.planSpec(a), y = S.planSpec(b); return x < y ? -1 : x > y ? 1 : 0; });
   };
-  function pickKey(pair) { return pair.subject + '|' + pair.grade; }
-  S.planPickOf = function (pair) { return (S.data().planPick || {})[pickKey(pair)] || ''; };
+  /* المفتاح «المادة|الصف|المعلم» (2026-09-19) — وكان «المادة|الصف» في بناء ٨١، فما اختير قبله يقرأ لمعلمي الصف
+     حتى يختار لكل معلم تخصصه */
+  function pickKey(pair) { return pair.subject + '|' + pair.grade + (pair.who ? '|' + pair.who : ''); }
+  S.planPickOf = function (pair) {
+    var m = S.data().planPick || {};
+    return m[pickKey(pair)] || (pair.who ? m[pair.subject + '|' + pair.grade] || '' : '');
+  };
   S.setPlanPick = function (pair, spec) {
     var d = S.data(), m = d.planPick || (d.planPick = {});
     if (spec) m[pickKey(pair)] = spec; else delete m[pickKey(pair)];
@@ -760,7 +768,7 @@
     var plans = data ? data.plans || [] : [];
     var pairs = S.planPairs().map(function (p) {
       var plan = data ? S.planFor(p, plans) : null, opts = data && S.isElective(p.subject) ? S.electiveOptions(p.subject, plans) : [];
-      return { subject: p.subject, grade: p.grade, classes: p.classes, teachers: p.teachers, plan: plan,
+      return { subject: p.subject, grade: p.grade, classes: p.classes, teachers: p.teachers, who: p.who || '', plan: plan,
                choose: opts.length > 0, spec: plan && opts.indexOf(plan) > -1 ? S.planSpec(plan) : '' };
     });
     return { ready: !!data, week: data ? S.planWeek(data.calendar, today) : null, pairs: pairs,

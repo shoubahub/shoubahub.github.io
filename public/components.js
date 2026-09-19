@@ -291,6 +291,13 @@ Shouba.nextLabel = function (def) {
     close: function () { close(); }
   };
 
+  /* سبب تعثر جلب خطط التوزيع بلغة صاحبها (2026-09-19) — واحد للوحة ولشاشة الخطة */
+  Shouba.planFailText = function (why) {
+    return why === 'offline' ? 'لا اتصال بالشبكة — لم تصل خطط التوزيع'
+         : why === 'auth' ? 'انتهت جلستك — ادخل لتصل خطط التوزيع'
+         : 'تعذر الوصول إلى الخادم — لم تصل خطط التوزيع';
+  };
+
   /* خطة المادة الحرة (2026-09-15): اي تخصص يدرس لهذا الصف — مرة لكل صف، ويغير متى شاء. لوحة واحدة تفتح من اللوحة
      وشاشة الخطة؛ والتخصصات والحفظ في derive.js (S.electiveOptions · S.setPlanPick) */
   Shouba.pickPlan = function (pair, done) {

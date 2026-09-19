@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=83" />
-<link rel="stylesheet" href="shell.css?v=83" />
-<link rel="stylesheet" href="components.css?v=83" />
-<link rel="stylesheet" href="frame.css?v=83" />
+<link rel="stylesheet" href="identity/tokens.css?v=84" />
+<link rel="stylesheet" href="shell.css?v=84" />
+<link rel="stylesheet" href="components.css?v=84" />
+<link rel="stylesheet" href="frame.css?v=84" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -182,14 +182,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=83"></script>
-<script src="refdata.js?v=83"></script>
-<script src="rec-templates.js?v=83"></script>
-<script src="rec-engine.js?v=83"></script>
-<script src="derive.js?v=83"></script>
-<script src="plan-data.js?v=83"></script>
-<script src="icons.js?v=83"></script>
-<script src="components.js?v=83"></script>
+<script src="build.js?v=84"></script>
+<script src="refdata.js?v=84"></script>
+<script src="rec-templates.js?v=84"></script>
+<script src="rec-engine.js?v=84"></script>
+<script src="derive.js?v=84"></script>
+<script src="plan-data.js?v=84"></script>
+<script src="icons.js?v=84"></script>
+<script src="components.js?v=84"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -801,7 +801,17 @@
       if (!L.pairs.length) {
         line.textContent = 'أدخل جداول معلميك ليظهر أسبوع كل مادة في خطتها ›'; line.classList.add('go');
         line.onclick = function(){ location.href = 'schedule.html'; };
-      } else line.textContent = 'تجلب خطط التوزيع…';
+      } else {
+        /* تعثر الجلب يعلن ولا يبقى «تجلب…» ابدا (2026-09-19): المحاولات تعاد وحدها، وهذا مخرج صاحبها حين تفشل كلها */
+        var st = window.ShoubaPlans ? ShoubaPlans.state() : { at: 'loading', why: '' };
+        if (st.at === 'fail') {
+          line.textContent = Shouba.planFailText(st.why) + ' · أعد المحاولة ›'; line.classList.add('go');
+          line.onclick = function(){
+            if (st.why === 'auth') { Shouba.signIn(); return; }
+            ShoubaPlans.retry(Shouba.data().stage); paintPlan();
+          };
+        } else line.textContent = 'تجلب خطط التوزيع…';
+      }
       return;
     }
     var matched = L.pairs.filter(function(p){ return p.plan; });

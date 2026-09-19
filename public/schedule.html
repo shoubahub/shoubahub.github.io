@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=84" />
-<link rel="stylesheet" href="shell.css?v=84" />
-<link rel="stylesheet" href="components.css?v=84" />
-<link rel="stylesheet" href="frame.css?v=84" />
-<link rel="stylesheet" href="rec-print.css?v=84" />
+<link rel="stylesheet" href="identity/tokens.css?v=85" />
+<link rel="stylesheet" href="shell.css?v=85" />
+<link rel="stylesheet" href="components.css?v=85" />
+<link rel="stylesheet" href="frame.css?v=85" />
+<link rel="stylesheet" href="rec-print.css?v=85" />
 <style>
   /* خاص بشاشة الجداول — الرأس والشريط السفلي واللوحة السفلية من components.css.
      الهامش الجانبي هنا أضيق من الموحد عمدا: المصفوفة تحتاج كل بكسل (الوظيفة قبل الشكل). */
@@ -172,6 +172,8 @@
         <div class="clashes" id="clashes"></div>
         <div class="untr" id="untr"></div>
         <button class="btn-ghost gcls" id="gcls" type="button" hidden>فصول مدرستك</button>
+        <!-- مراقبة الشعبة (2026-09-19): ايامها وحدها، ويذكر بها جدول اليوم في اللوحة -->
+        <button class="btn-ghost gcls" id="gduty" type="button">مراقبة شعبتك</button>
         <button class="btn-ghost gprint" id="gprint" type="button">اطبع الجدول العام</button>
         <div class="hintline" id="hintline"></div>
       </div>
@@ -201,12 +203,12 @@
   </div>
  </div></div>
 
-<script src="build.js?v=84"></script>
-<script src="refdata.js?v=84"></script>
-<script src="derive.js?v=84"></script>
-<script src="icons.js?v=84"></script>
-<script src="components.js?v=84"></script>
-<script src="rec-print.js?v=84"></script>
+<script src="build.js?v=85"></script>
+<script src="refdata.js?v=85"></script>
+<script src="derive.js?v=85"></script>
+<script src="icons.js?v=85"></script>
+<script src="components.js?v=85"></script>
+<script src="rec-print.js?v=85"></script>
 <script>
   var R=window.SHOUBA_REF;
   var d = Shouba.data();          /* المصدر الواحد — القراءة والكتابة من طبقة الاشتقاق */
@@ -654,6 +656,38 @@
         : 'لم تحددها بعد، والأرقام ١ إلى ٦');
     }
     document.getElementById('gcls').addEventListener('click', function(){ openCounts(false); });
+
+    /* ── مراقبة شعبتك (2026-09-19، طلب المستخدم): ايام المراقبة وحدها — بلا اماكن ولا نوب معلمين.
+       موضعها هنا لا في الاعدادات: مع «فصول مدرستك» وسائر ما يخص اسبوع الشعبة، وتحفظ مع كل لمسة */
+    var CHECK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">'
+              + '<path d="M2.5 6.4 4.8 8.7 9.5 3.6" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    function openDuty(){
+      var node = document.createElement('div');
+      node.className = 'stack';
+      var lead = document.createElement('div');
+      lead.className = 'sheet-note';
+      lead.textContent = 'أي أيام الأسبوع على شعبتك فيها مراقبة؟ يذكرك بها جدول اليوم في اللوحة.';
+      node.appendChild(lead);
+      (SHOUBA_REF.days || []).forEach(function(day){
+        var on = Shouba.dutyDays().indexOf(day) > -1;
+        var b = document.createElement('button'), mk = document.createElement('span'), tx = document.createElement('div'), nb = document.createElement('b');
+        b.type = 'button'; mk.className = 'mark'; tx.className = 'tx'; nb.textContent = day; tx.appendChild(nb);
+        b.appendChild(mk); b.appendChild(tx);
+        function sync(){ b.className = 'pick' + (on ? ' on' : ''); mk.innerHTML = on ? CHECK : ''; }
+        b.addEventListener('click', function(){
+          on = !on; Shouba.setDutyDay(day, on); sync(); d = Shouba.data(); paintDuty();
+        });
+        sync();
+        node.appendChild(b);
+      });
+      Shouba.sheet.open('مراقبة شعبتك', node, { onDone: function(){ Shouba.toast('تم الحفظ: أيام مراقبة شعبتك'); return true; } });
+    }
+    function paintDuty(){
+      var days = Shouba.dutyDays();
+      document.getElementById('gduty').textContent = 'مراقبة شعبتك — ' + (days.length ? days.join(' · ') : 'لم تحدد أيامها بعد');
+    }
+    document.getElementById('gduty').addEventListener('click', openDuty);
+    paintDuty();
     /* حصص بلا مسار (الاختيار الحر قبل 2026-09-14) — لا يخمن مسارها: تعرض ليعاد اختيار مادتها بمسارها */
     function paintUntracked(){
       var box = document.getElementById('untr'), list = Shouba.untracked().filter(function(u){ return full || u.who === cur; });

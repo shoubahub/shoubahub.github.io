@@ -520,10 +520,18 @@
     var head = S && S.user ? S.user().name : '';
     /* الترتيب من اليمين (قرار المستخدم 2026-09-13): رئيس الشعبة · الموجه الفني · مدير المدرسة — ويسبقهم المعلم صاحب
        السجل ان اختير («معلم الفصل» يمينا في تقرير الزيارة ص١٣) */
+    /* توقيع رئيس الشعبة صورة يرفعها في «ترويسة سجلاتك» (2026-09-19، طلب المستخدم) — فوق اسمه وحده:
+       توقيع المدير والموجه ليس ملكه فلا يوضع عنهما، ويخفى بمفتاحه (printStampOff) حين يريد ورقة يوقعها بيده */
+    var stamp = d.printStamp && !d.printStampOff ? d.printStamp : '';
     [['teacher', 'المعلم', rec && rec.who], ['head', 'رئيس الشعبة', head], ['supervisor', 'الموجه الفني', d.supervisor], ['principal', 'مدير المدرسة', d.principal]].forEach(function (r) {
       if (!o[r[0]]) return;
       var g = el('div', 'sg');
       g.appendChild(el('div', 'r', r[1]));
+      if (r[0] === 'head' && stamp) {
+        var im = document.createElement('img');
+        im.className = 'stmp'; im.src = stamp; im.alt = '';
+        g.appendChild(im);
+      }
       g.appendChild(el('div', 'nm', nm(r[2])));
       n.appendChild(g);
     });

@@ -65,6 +65,8 @@
 .pp-appr{ margin-top:auto; padding-top:10mm; display:flex; justify-content:space-between; align-items:flex-start; break-inside:avoid; font-size:11.5pt; line-height:1.5; }
 .pp-appr .sg{ display:flex; flex-direction:column; align-items:center; gap:1.5mm; min-width:52mm; text-align:center; }
 .pp-appr .r{ font-weight:700; }
+/* توقيع رئيس الشعبة المرفوع: فوق اسمه بمقاس لا يزاحم السطر (2026-09-19) */
+.pp-appr .stmp{ display:block; height:13mm; max-width:44mm; object-fit:contain; margin:-1mm 0 -1.5mm; }
 /* ⑦ الحضور: مجموعتان متجاورتان، اليمنى تملأ اولا، والتوقيع فارغ لليد */
 /* جدول الحضور ثابت في اسفل الصفحة والفراغ فوقه (قرار المستخدم 2026-09-13) — margin-top:auto في العمود المرن،
    وسطر التوقيعات يليه مباشرة */

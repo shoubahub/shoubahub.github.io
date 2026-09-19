@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<title>عينة · واجهة شعبتك للزائر</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../identity/tokens.css" />
+<style>
+  /* ===========================================================================
+     عينة الواجهة العامة (2026-09-19، المرحلة ④ من خطة المنصة) — للعرض على المستخدم قبل البناء.
+     سطح جديد لا شاشة تطبيق: بلا شريط تبويبات ولا اطار جهاز — صفحة يفتحها الزائر برابط.
+     البيانات هنا مثال مكتوب في الملف، ولا تمس المنصة ولا بياناتها.
+     =========================================================================== */
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--shouba-canvas);color:var(--shouba-ink);
+    font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding-bottom:40px}
+
+  /* الترويسة: من «ترويسة سجلاتك» — الشعار واسم المدرسة واسم الشعبة */
+  .head{background:linear-gradient(180deg,#1B5183 0%,#16456E 100%);color:var(--shouba-cream);
+    padding:22px var(--gap-side) 26px;display:flex;gap:14px;align-items:center}
+  .head .crest{width:56px;height:56px;border-radius:999px;flex:none;background:rgba(255,255,255,.12);
+    display:grid;place-items:center;border:1.5px solid rgba(255,255,255,.28)}
+  .head .crest svg{width:30px;height:30px}
+  .head .tx{min-width:0}
+  .head .tx b{display:block;font-size:19px;font-weight:700;line-height:1.35}
+  .head .tx span{display:block;font-size:12.5px;font-weight:600;color:var(--shouba-navy-light);margin-top:3px}
+
+  section{margin:22px var(--gap-side) 0}
+  .stitle{display:flex;align-items:center;gap:9px;margin:0 0 10px;font-size:13px;font-weight:700;color:var(--shouba-label);
+    letter-spacing:.02em}
+  .stitle::before{content:'';width:3px;height:15px;border-radius:2px;background:var(--rail,var(--shouba-amber-deep))}
+  .card{background:var(--shouba-paper);border:1px solid var(--shouba-line);border-radius:16px;padding:14px}
+
+  /* ① الجدول: يوم يختاره الزائر، وتحته حصص الشعبة */
+  .days{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none}
+  .days::-webkit-scrollbar{display:none}
+  .day{flex:none;border:0;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--shouba-text-muted);
+    background:var(--shouba-sand);border-radius:999px;padding:7px 14px}
+  .day.on{background:var(--shouba-navy);color:var(--shouba-cream)}
+  .prow{display:flex;gap:10px;align-items:center;padding:9px 2px;border-top:1px solid var(--shouba-line)}
+  .prow:first-child{border-top:0}
+  .prow .n{flex:none;width:30px;font-size:11px;font-weight:700;color:var(--shouba-label);font-family:'IBM Plex Sans',monospace}
+  .prow .who{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--shouba-navy);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prow .sub{flex:none;font-size:11.5px;font-weight:600;color:var(--shouba-text-muted)}
+  .prow .cls{flex:none;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:'IBM Plex Sans',monospace}
+  .prow.free .who{color:var(--shouba-hint);font-weight:600}
+
+  /* ② اللوحة الاعلانية */
+  .post{background:var(--shouba-paper);border:1px solid var(--shouba-line);border-radius:16px;padding:13px 14px;margin-bottom:9px}
+  .post b{display:block;font-size:14px;font-weight:700;margin-bottom:5px}
+  .post p{margin:0;font-size:12.5px;font-weight:500;line-height:1.75;color:var(--shouba-text-muted)}
+  .post .by{display:flex;gap:8px;align-items:center;margin-top:9px;font-size:11px;font-weight:700;color:var(--shouba-label)}
+  .post .by .tag{background:rgba(22,69,110,.09);color:var(--shouba-navy);border-radius:999px;padding:2px 9px}
+
+  /* ③ الفعاليات */
+  .ev{display:flex;gap:11px;align-items:flex-start;padding:11px 2px;border-top:1px solid var(--shouba-line)}
+  .ev:first-child{border-top:0}
+  .ev .dt{flex:none;width:52px;text-align:center;background:var(--shouba-sand);border-radius:12px;padding:6px 0}
+  .ev .dt b{display:block;font-size:16px;font-weight:700;color:var(--shouba-navy);font-family:'IBM Plex Sans',monospace;line-height:1.1}
+  .ev .dt span{display:block;font-size:10px;font-weight:700;color:var(--shouba-label);margin-top:2px}
+  .ev .tx{flex:1;min-width:0}
+  .ev .tx b{display:block;font-size:13.5px;font-weight:700}
+  .ev .tx span{display:block;font-size:11.5px;font-weight:600;color:var(--shouba-text-muted);margin-top:3px;line-height:1.6}
+  .ev.done .dt{background:rgba(120,98,66,.08)}
+  .ev.done .dt b{color:var(--shouba-text-muted)}
+  .ev.done .tx b{color:var(--shouba-text-muted)}
+
+  /* ④ معرض الصور */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px}
+  .ph{border-radius:14px;overflow:hidden;border:1px solid var(--shouba-line);background:var(--shouba-sand)}
+  .ph .im{aspect-ratio:4/3;display:block;width:100%}
+  .ph small{display:block;padding:8px 10px;font-size:11px;font-weight:600;color:var(--shouba-text-muted);line-height:1.5}
+
+  .foot{margin:26px var(--gap-side) 0;text-align:center;font-size:11px;font-weight:600;color:var(--shouba-hint);line-height:1.9}
+  .foot b{color:var(--shouba-label)}
+  /* شريط العينة — لا يظهر في الواجهة الحقيقية */
+  .demo{background:rgba(169,112,27,.12);color:var(--shouba-amber-deep);font-size:11.5px;font-weight:700;
+    padding:8px var(--gap-side);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="demo">عينة للعرض — بيانات مثال، ولا رابط حقيقيا بعد</div>
+
+  <div class="head">
+    <div class="crest">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M10 2.6 3.4 5.4v4.2c0 3.5 2.7 6.4 6.6 7.8 3.9-1.4 6.6-4.3 6.6-7.8V5.4z" stroke="#F4F1EA" stroke-width="1.4" stroke-linejoin="round"/><path d="M7.3 10.2 9.2 12l3.5-3.6" stroke="#E8A33D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="tx">
+      <b>شعبة التربية الفنية</b>
+      <span>مدرسة الرقة الثانوية للبنين · منطقة حولي التعليمية</span>
+    </div>
+  </div>
+
+  <!-- ① جدول الشعبة -->
+  <section style="--rail:var(--shouba-navy)">
+    <h2 class="stitle">جدول الشعبة</h2>
+    <div class="card">
+      <div class="days">
+        <button class="day on">الأحد</button>
+        <button class="day">الاثنين</button>
+        <button class="day">الثلاثاء</button>
+        <button class="day">الأربعاء</button>
+        <button class="day">الخميس</button>
+      </div>
+      <div class="prow"><span class="n">١</span><span class="who">أ. سالم الرشيدي</span><span class="sub">التربية الفنية</span><span class="cls">11/2 ع</span></div>
+      <div class="prow"><span class="n">٢</span><span class="who">أ. مشاري الدوسري</span><span class="sub">التربية الفنية</span><span class="cls">12/1 د</span></div>
+      <div class="prow free"><span class="n">٣</span><span class="who">الفرصة الأولى</span><span class="sub"></span><span class="cls"></span></div>
+      <div class="prow"><span class="n">٤</span><span class="who">أ. سالم الرشيدي</span><span class="sub">التربية الفنية</span><span class="cls">11/4 د</span></div>
+      <div class="prow"><span class="n">٥</span><span class="who">أ. مشاري الدوسري</span><span class="sub">التربية الفنية</span><span class="cls">12/3 ع</span></div>
+      <div class="prow free"><span class="n">٦</span><span class="who">لا حصص</span><span class="sub"></span><span class="cls"></span></div>
+    </div>
+  </section>
+
+  <!-- ② اللوحة الاعلانية -->
+  <section style="--rail:var(--shouba-amber-deep)">
+    <h2 class="stitle">لوحة الشعبة</h2>
+    <div class="post">
+      <b>معرض «ألوان الرقة» يفتح أبوابه الأحد</b>
+      <p>يعرض متعلمو الشعبة أعمالهم في الرسم والتصوير والخزف بصالة المدرسة، ودعوة مفتوحة لأولياء الأمور من الثامنة صباحا.</p>
+      <div class="by"><span class="tag">رئيس الشعبة</span><span>٢٠٢٦/٩/١٤</span></div>
+    </div>
+    <div class="post">
+      <b>ورشة الخزف للصف الحادي عشر</b>
+      <p>ثلاث جلسات عملية في مرسم المدرسة، يتدرب فيها المتعلمون على التشكيل والحرق والزخرفة.</p>
+      <div class="by"><span class="tag">أ. مشاري الدوسري</span><span>٢٠٢٦/٩/١٠</span></div>
+    </div>
+  </section>
+
+  <!-- ③ الفعاليات -->
+  <section style="--rail:var(--shouba-link)">
+    <h2 class="stitle">الفعاليات القادمة</h2>
+    <div class="card">
+      <div class="ev">
+        <div class="dt"><b>٢٧</b><span>سبتمبر</span></div>
+        <div class="tx"><b>معرض ألوان الرقة</b><span>صالة المدرسة · ٨:٠٠ صباحا</span></div>
+      </div>
+      <div class="ev">
+        <div class="dt"><b>٥</b><span>أكتوبر</span></div>
+        <div class="tx"><b>زيارة مرسم الفنون بحولي</b><span>خارج المدرسة · متعلمو الثاني عشر</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="--rail:var(--shouba-hint)">
+    <h2 class="stitle">فعاليات تمت</h2>
+    <div class="card">
+      <div class="ev done">
+        <div class="dt"><b>٨</b><span>سبتمبر</span></div>
+        <div class="tx"><b>اليوم المفتوح للرسم الحر</b><span>ساحة المدرسة · شارك ٦٤ متعلما</span></div>
+      </div>
+      <div class="ev done">
+        <div class="dt"><b>١</b><span>سبتمبر</span></div>
+        <div class="tx"><b>تهيئة المرسم لبداية العام</b><span>مرسم المدرسة</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ معرض الصور -->
+  <section style="--rail:var(--shouba-amber-deep)">
+    <h2 class="stitle">معرض الصور</h2>
+    <div class="grid">
+      <figure class="ph" style="margin:0">
+        <svg class="im" viewBox="0 0 80 60" preserveAspectRatio="none"><rect width="80" height="60" fill="#D9C7A8"/><circle cx="24" cy="22" r="9" fill="#E8A33D"/><path d="M0 60 26 34l14 13 13-11 27 24z" fill="#16456E" opacity=".75"/></svg>
+        <small>اليوم المفتوح للرسم الحر</small>
+      </figure>
+      <figure class="ph" style="margin:0">
+        <svg class="im" viewBox="0 0 80 60" preserveAspectRatio="none"><rect width="80" height="60" fill="#CBD8E4"/><rect x="12" y="14" width="26" height="32" rx="2" fill="#F9F4E9" stroke="#16456E" stroke-width="1.2"/><rect x="44" y="20" width="24" height="26" rx="2" fill="#E8A33D" opacity=".8"/></svg>
+        <small>أعمال الخزف — الحادي عشر</small>
+      </figure>
+      <figure class="ph" style="margin:0">
+        <svg class="im" viewBox="0 0 80 60" preserveAspectRatio="none"><rect width="80" height="60" fill="#E3D9C6"/><path d="M8 46c10-18 22-26 34-24s20 14 30 20" stroke="#A9701B" stroke-width="3" fill="none"/><circle cx="58" cy="18" r="7" fill="#B7443A" opacity=".7"/></svg>
+        <small>ورشة الزخرفة الإسلامية</small>
+      </figure>
+      <figure class="ph" style="margin:0">
+        <svg class="im" viewBox="0 0 80 60" preserveAspectRatio="none"><rect width="80" height="60" fill="#CFE0D2"/><rect x="10" y="10" width="60" height="40" rx="3" fill="#F9F4E9" stroke="#16456E" stroke-width="1.2"/><path d="M18 42l12-14 9 9 8-7 15 12z" fill="#16456E" opacity=".6"/></svg>
+        <small>تهيئة المرسم</small>
+      </figure>
+    </div>
+  </section>
+
+  <div class="foot">
+    <b>شعبة التربية الفنية · مدرسة الرقة الثانوية للبنين</b><br />
+    آخر تحديث للصفحة: ٢٠٢٦/٩/١٤ · صفحة من منصة شعبة
+  </div>
+</div>
+</body>
+</html>

@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=84" />
-<link rel="stylesheet" href="shell.css?v=84" />
-<link rel="stylesheet" href="components.css?v=84" />
-<link rel="stylesheet" href="frame.css?v=84" />
-<link rel="stylesheet" href="rec-print.css?v=84" />
+<link rel="stylesheet" href="identity/tokens.css?v=85" />
+<link rel="stylesheet" href="shell.css?v=85" />
+<link rel="stylesheet" href="components.css?v=85" />
+<link rel="stylesheet" href="frame.css?v=85" />
+<link rel="stylesheet" href="rec-print.css?v=85" />
 <style>
   /* ترويسة سجلاتك (2026-09-12، ثم 2026-09-14 بطلب المستخدم): كل ما في ترويسة الورق في شاشة واحدة من «الإعدادات» —
      اسطرها الاربعة يكتبها صاحبها كما يشاء، وشعار المدرسة بمعاينة قبل الاعتماد واستبدال وحذف ظاهرين، والسجلات التي يظهر
@@ -25,6 +25,9 @@
   .pvw .pp-sheet{position:absolute;top:0;right:0;transform-origin:top right;min-height:0}
   .pvcap{margin-top:8px;font-size:12px;font-weight:500;color:var(--shouba-hint);line-height:1.7}
   .part{font-size:14px;font-weight:700;color:var(--shouba-navy);margin-bottom:-8px}
+  /* معاينة التوقيع المرفوع: على ابيض كالورق، بمقاس يقارب مقاس الطباعة */
+  .spv{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(40,30,15,.14);padding:10px;display:grid;place-items:center}
+  .spv img{max-width:170px;max-height:60px;object-fit:contain;display:block}
   .acts{display:flex;gap:12px}
   .acts > .btn-ghost{flex:1}
   .lconf{display:flex;flex-direction:column;gap:16px}
@@ -79,6 +82,14 @@
           <div class="hint" id="lhint"></div>
         </div>
 
+        <!-- توقيعك (2026-09-19، طلب المستخدم): صورة توقيعه او ختمه تطبع فوق اسمه في سطر التوقيعات -->
+        <div class="part">توقيعك على المطبوعات</div>
+        <div class="field" data-need="opt">
+          <div class="stack" id="stamps"></div>
+          <div class="acts" id="sacts" hidden></div>
+          <div class="hint" id="shint"></div>
+        </div>
+
         <div class="field" id="perBox" data-need="opt" hidden>
           <label>يظهر الشعار في</label>
           <div class="stack" id="per"></div>
@@ -94,14 +105,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=84"></script>
-<script src="refdata.js?v=84"></script>
-<script src="rec-templates.js?v=84"></script>
-<script src="rec-engine.js?v=84"></script>
-<script src="derive.js?v=84"></script>
-<script src="icons.js?v=84"></script>
-<script src="components.js?v=84"></script>
-<script src="rec-print.js?v=84"></script>
+<script src="build.js?v=85"></script>
+<script src="refdata.js?v=85"></script>
+<script src="rec-templates.js?v=85"></script>
+<script src="rec-engine.js?v=85"></script>
+<script src="derive.js?v=85"></script>
+<script src="icons.js?v=85"></script>
+<script src="components.js?v=85"></script>
+<script src="rec-print.js?v=85"></script>
 <script>
   var S = Shouba, P = ShoubaPrint, d = S.data();
 
@@ -134,7 +145,7 @@
     return sheet;
   }
   function paint(){ drawHead(pvw); }
-  function refresh(){ d = S.data(); renderLogos(); renderPer(); paint(); }
+  function refresh(){ d = S.data(); renderLogos(); renderStamp(); renderPer(); paint(); }
 
   /* ── الاسطر: الوزارة والمنطقة والمدرسة في printHead (فارغها يعود الى الافتراض، والمنطقة لا تطبع)، والتوجيه مفتاح
      الاعداد نفسه (directorate) — تحفظ مع كل حرف ─────────────────────────────────── */
@@ -242,6 +253,99 @@
     /* الصلة تقال صراحة: شعار الواجهة يطبع على الورق ما لم يختر غيره */
     document.getElementById('lhint').textContent = cur === 'crest' ? 'هذا شعار الواجهة الذي اخترته عند التسجيل، ويطبع على ورق سجلاتك ما لم تختر غيره.'
       : cur === 'upload' ? 'صورة للورق وحده — لا تغير شعار الواجهة.' : 'بلا شعار تبقى الأسطر في موضعها.';
+  }
+
+  /* ── توقيعك (2026-09-19، طلب المستخدم: «يحمل صورة ختمه لتستخدم في المطبوعات») ───────────────────────
+     صورة توقيعه او ختمه تطبع فوق اسمه في سطر التوقيعات — فوق اسمه وحده لا اسم المدير والموجه. ومفتاح
+     يطفئها حين يريد ورقة يوقعها بيده. والصورة بنسبتها وشفافيتها (shrinkFit لا shrinkImage: المربع الابيض
+     يبتلع التوقيع العريض) */
+  function pickStamp(){
+    var f = document.createElement('input');
+    f.type = 'file'; f.accept = 'image/*';
+    f.addEventListener('change', function(){
+      var file = f.files && f.files[0];
+      if (!file) return;
+      S.shrinkFit(file, 420, 170, function(url, ratio){
+        if (!url) { S.toast('تعذر فتح الصورة — اختر صورة أخرى'); return; }
+        confirmStamp(url, ratio);
+      });
+    });
+    f.click();
+  }
+  function confirmStamp(url, ratio){
+    var n = el('div', 'lconf'), box = el('div', 'pvw'), yes = el('button', 'cta', 'اعتمد التوقيع'), other = el('button', 'btn-ghost', 'اختر صورة غيرها');
+    yes.type = other.type = 'button';
+    if (ratio && ratio < 0.8) n.appendChild(el('div', 'warnbox', 'الصورة طويلة: التوقيع يطبع في شريط عرضه ٤٤ مم وارتفاعه ١٣ مم، فتصغر الطويلة كثيرا. الأنسب صورة عريضة للتوقيع وحده.'));
+    n.appendChild(el('p', null, 'هكذا يطبع فوق اسمك في سطر التوقيعات:'));
+    n.appendChild(box);
+    /* المعاينة بمكون الطباعة نفسه: سطر توقيعات فيه رئيس الشعبة وحده */
+    var sheet = P.sheet('portrait'), appr = document.createElement('div'), sg = document.createElement('div');
+    appr.className = 'pp-appr'; sg.className = 'sg';
+    var r = el('div', 'r', 'رئيس الشعبة'), im = document.createElement('img'), nmv = S.user && S.user() ? S.user().name : '';
+    im.className = 'stmp'; im.src = url; im.alt = '';
+    sg.appendChild(r); sg.appendChild(im);
+    sg.appendChild(el('div', 'nm', 'أ. ' + (String(nmv || '').replace(/^أ\.\s*/, '') || '...........................')));
+    appr.appendChild(sg); sheet.appendChild(appr);
+    box.textContent = ''; box.appendChild(sheet);
+    function fit(){
+      var w = box.clientWidth, sw = sheet.offsetWidth;
+      if (!w || !sw) return;
+      var k = w / sw;
+      sheet.style.transform = 'scale(' + k + ')';
+      box.style.height = Math.ceil((appr.offsetTop + appr.offsetHeight + 16) * k) + 'px';
+    }
+    if (window.ResizeObserver) new ResizeObserver(fit).observe(box); else setTimeout(fit, 400);
+    function approve(){
+      S.save({ printStamp: url, printStampOff: false });
+      refresh();
+      S.toast('اعتمد توقيعك — يطبع فوق اسمك');
+    }
+    yes.addEventListener('click', function(){ approve(); S.sheet.close(); });
+    other.addEventListener('click', function(){ S.sheet.close(); setTimeout(pickStamp, 320); });
+    n.appendChild(yes); n.appendChild(other);
+    S.sheet.open('معاينة توقيعك', n, { onDone: function(){ approve(); return true; } });
+    setTimeout(fit, 60);
+  }
+  function renderStamp(){
+    var list = document.getElementById('stamps'), acts = document.getElementById('sacts');
+    list.textContent = ''; acts.textContent = '';
+    acts.hidden = !d.printStamp;
+    if (!d.printStamp) {
+      var add = el('div', 'pick');
+      add.tabIndex = 0; add.setAttribute('role', 'button');
+      add.innerHTML = '<span class="mark"></span><div class="tx"><b></b><small></small></div>';
+      add.querySelector('b').textContent = 'ارفع صورة توقيعك';
+      add.querySelector('small').textContent = 'تعاينها فوق اسمك قبل أن تعتمدها';
+      add.addEventListener('click', pickStamp);
+      add.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickStamp(); } });
+      list.appendChild(add);
+      document.getElementById('shint').textContent = 'صورة توقيعك أو ختمك، تطبع فوق اسمك في سطر التوقيعات. والأوضح صورة بخلفية شفافة (PNG).';
+      return;
+    }
+    var on = !d.printStampOff, row = el('div', 'pick' + (on ? ' on' : ''));
+    row.setAttribute('role', 'checkbox'); row.setAttribute('aria-checked', on ? 'true' : 'false'); row.tabIndex = 0;
+    row.innerHTML = '<span class="mark">' + CHK + '</span><div class="tx"><b></b><small></small></div>';
+    row.querySelector('b').textContent = 'يطبع توقيعك فوق اسمك';
+    row.querySelector('small').textContent = on ? 'يظهر في كل سجل توقيعه عليك' : 'مطفأ — توقع الورق بيدك';
+    function tap(){ S.save({ printStampOff: on }); refresh(); }
+    row.addEventListener('click', tap);
+    row.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } });
+    list.appendChild(row);
+    var prev = el('div', 'spv'), pim = document.createElement('img');
+    pim.src = d.printStamp; pim.alt = 'توقيعك';
+    prev.appendChild(pim);
+    list.appendChild(prev);
+    var rep = el('button', 'btn-ghost', 'استبدل التوقيع'), del = el('button', 'btn-ghost', 'احذف التوقيع');
+    rep.type = del.type = 'button';
+    rep.addEventListener('click', pickStamp);
+    del.addEventListener('click', function(){
+      var was = { printStamp: d.printStamp, printStampOff: !!d.printStampOff };
+      S.save({ printStamp: '', printStampOff: false });
+      refresh();
+      S.toast('حذفت توقيعك', function(){ S.save(was); refresh(); });
+    });
+    acts.appendChild(rep); acts.appendChild(del);
+    document.getElementById('shint').textContent = 'التوقيع فوق اسمك وحده — لا يوضع عن مدير المدرسة ولا الموجه الفني.';
   }
 
   /* ── السجلات التي يظهر فيها الشعار (printLogoOff — كرقاقة «شعار المدرسة» في معاينة كل سجل، هنا مجموعة):

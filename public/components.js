@@ -352,6 +352,28 @@ Shouba.nextLabel = function (def) {
      احتواء لا اقتصاص (الشعارات نادرا مربعة فكانت تقص اطرافها)، وخلفية بيضاء (الشعارات PNG شفافة
      فتبهت على الكحلي) — رصدهما المستخدم على شعار مدرسته 2026-09-06.
      نقلت من ش① (2026-09-12) ليستعملها شعار المطبوعات كذلك — مصدر واحد للقاعدة. */
+  /* صورة بنسبتها وبخلفيتها كما هي (التوقيع والختم — 2026-09-19): shrinkImage يضعها في مربع ابيض فيبتلع
+     المربع التوقيع العريض وتضيع شفافيته. هنا الحد الاكبر عرضا وطولا، والنسبة محفوظة، ولا تكبر صورة صغيرة.
+     يعيد (url, ratio) — و'' ان تعذرت قراءتها */
+  Shouba.shrinkFit = function (file, maxW, maxH, cb) {
+    var fr = new FileReader();
+    fr.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        var k = Math.min((maxW || 420) / img.width, (maxH || 170) / img.height, 1);
+        var cv = document.createElement('canvas');
+        cv.width = Math.max(1, Math.round(img.width * k));
+        cv.height = Math.max(1, Math.round(img.height * k));
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+        cb(cv.toDataURL('image/png'), img.width / img.height);
+      };
+      img.onerror = function () { cb('', 0); };
+      img.src = fr.result;
+    };
+    fr.onerror = function () { cb('', 0); };
+    fr.readAsDataURL(file);
+  };
+
   Shouba.shrinkImage = function (file, size, cb) {
     var s = size || 256, fr = new FileReader();
     fr.onload = function () {

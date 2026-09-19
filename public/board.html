@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=84" />
-<link rel="stylesheet" href="shell.css?v=84" />
-<link rel="stylesheet" href="components.css?v=84" />
-<link rel="stylesheet" href="frame.css?v=84" />
+<link rel="stylesheet" href="identity/tokens.css?v=85" />
+<link rel="stylesheet" href="shell.css?v=85" />
+<link rel="stylesheet" href="components.css?v=85" />
+<link rel="stylesheet" href="frame.css?v=85" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -182,14 +182,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=84"></script>
-<script src="refdata.js?v=84"></script>
-<script src="rec-templates.js?v=84"></script>
-<script src="rec-engine.js?v=84"></script>
-<script src="derive.js?v=84"></script>
-<script src="plan-data.js?v=84"></script>
-<script src="icons.js?v=84"></script>
-<script src="components.js?v=84"></script>
+<script src="build.js?v=85"></script>
+<script src="refdata.js?v=85"></script>
+<script src="rec-templates.js?v=85"></script>
+<script src="rec-engine.js?v=85"></script>
+<script src="derive.js?v=85"></script>
+<script src="plan-data.js?v=85"></script>
+<script src="icons.js?v=85"></script>
+<script src="components.js?v=85"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -355,10 +355,9 @@
       /* صف الفرصة: يحمل تنبيه المراقبة إن كان اليوم على الشعبة مراقبة (قرار المستخدم 2026-09-01) */
       if(isBreak){
         var duty = (t.duty && d.duty && d.duty[todayName]) || null;   // التنبيه في الفرص فقط لا في لقاء الصباح
-        var dutyHtml = duty
-          ? '<div class="duty"><span>مراقبة الشعبة اليوم</span>'
-            + '<a id="dutyLink">جدول المراقبة ›</a></div>'
-          : '';
+        /* اليوم وحده يذكر — بلا اماكن ولا نوب (قرار المستخدم 2026-09-19)، وكان هنا رابط «جدول المراقبة ›»
+           لا يفتح شيئا (عنصر وهمي) فازيل: ايام المراقبة تحدد من تبويب الجدول «مراقبة شعبتك» */
+        var dutyHtml = duty ? '<div class="duty"><span>مراقبة الشعبة اليوم</span></div>' : '';
         html += '<div class="per brk' + (isNow ? ' now' : '') + (isPastRow ? ' past' : '')
              + (isOpen ? '' : ' fold') + '">' + head + '</div>' + dutyHtml + '</div>';
         return;

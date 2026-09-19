@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=85" />
-<link rel="stylesheet" href="shell.css?v=85" />
-<link rel="stylesheet" href="components.css?v=85" />
-<link rel="stylesheet" href="frame.css?v=85" />
+<link rel="stylesheet" href="identity/tokens.css?v=86" />
+<link rel="stylesheet" href="shell.css?v=86" />
+<link rel="stylesheet" href="components.css?v=86" />
+<link rel="stylesheet" href="frame.css?v=86" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -58,6 +58,10 @@
   .pwk .l em{flex:none;font-style:normal;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
   .pwk .none{font-size:12px;color:var(--shouba-hint)}
   @media (prefers-reduced-motion: reduce){ .ptr .chev{transition:none} }
+  /* ايام الاسبوع في لوحة الموعد المتكرر (2026-09-19): خمسة اسماء لا تتسع في سطر واحد على الجوال — تلتف
+     ثلاثة ثم اثنين فتبقى كلها ملموسة (كانت «الخميس» تفيض خارج اللوحة) */
+  #evday{flex-wrap:wrap}
+  #evday .seg{flex:1 1 28%}
   .todo{padding:0 var(--gap-side);display:flex;flex-direction:column;gap:7px}
   .calopt{display:flex;align-items:flex-start;gap:10px;padding:10px 2px 14px;cursor:pointer}
   .calopt input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:var(--shouba-navy)}
@@ -182,14 +186,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=85"></script>
-<script src="refdata.js?v=85"></script>
-<script src="rec-templates.js?v=85"></script>
-<script src="rec-engine.js?v=85"></script>
-<script src="derive.js?v=85"></script>
-<script src="plan-data.js?v=85"></script>
-<script src="icons.js?v=85"></script>
-<script src="components.js?v=85"></script>
+<script src="build.js?v=86"></script>
+<script src="refdata.js?v=86"></script>
+<script src="rec-templates.js?v=86"></script>
+<script src="rec-engine.js?v=86"></script>
+<script src="derive.js?v=86"></script>
+<script src="plan-data.js?v=86"></script>
+<script src="icons.js?v=86"></script>
+<script src="components.js?v=86"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -259,8 +263,11 @@
   function evOf(day){
     var dt = DAY_DATE[day];
     var list = dt ? Shouba.eventsOnDate(iso(dt)) : [];
+    /* المتكرر اسبوعيا في يومه من كل اسبوع (2026-09-19) */
+    list = list.concat(Shouba.weeklyEvents(day));
     /* ⚠ القديمة بلا تاريخ تنسب إلى **الأسبوع الجاري وحده** — وإلا ظهرت في كل أسبوع تقلبه */
-    return weekOffset === 0 ? list.concat(Shouba.legacyEventsOfDay(day)) : list;
+    if (weekOffset === 0) list = list.concat(Shouba.legacyEventsOfDay(day));
+    return Shouba.sortEvents(list);     /* بالوقت، وما لا وقت له بعدها */
   }
 
   /* ===== الحصص ===== */
@@ -420,7 +427,8 @@
     cardMode = '';
     /* ⚠ البطاقة عن اليوم الحقيقي — لا تتأثر بتقليب الرزنامة */
     /* مواعيد اليوم بتاريخه ولو بلا دوام (اجتماع قبل بدء الدراسة يعرض)، والقديمة بلا تاريخ باسم يوم الدوام وحده */
-    var todayEvents = Shouba.eventsOnDate(iso(now)).concat(todayName ? Shouba.legacyEventsOfDay(todayName) : []);
+    var todayEvents = Shouba.sortEvents(Shouba.eventsOnDate(iso(now))
+      .concat(todayName ? Shouba.weeklyEvents(todayName).concat(Shouba.legacyEventsOfDay(todayName)) : []));
     if(currentIdx>-1 && hasSchedules){
       /* ⚠ الفهرس بحسب **رقم الحصة** لا ترتيب الصف — الفرص تزيح الترتيب،
          فكانت البطاقة تقول «الحصة ٦» والجدول «الرابعة»، وتقرأ خانات حصة أخرى
@@ -436,7 +444,8 @@
                           + (busy.length>2 ? '  +'+(busy.length-2) : '') + (free ? '  ·  ' + Shouba.count(free,{one:'متفرغ',two:'متفرغان',few:'متفرغون',many:'متفرغا'}) : '')
                         : (curNo ? 'كل معلميك متفرغون في هذه الحصة.' : 'وقت راحة — لا حصص الآن.');
     } else if(todayEvents.length){
-      kicker='اليوم'; ttl=todayEvents[0].title; sub=todayEvents[0].type + ' · ' + todayName;
+      kicker='اليوم'; ttl=todayEvents[0].title;
+      sub=todayEvents[0].type + ' · ' + todayName + (todayEvents[0].at ? ' · ' + todayEvents[0].at : '');
     } else if(!hasSchedules){
       kicker='ابدأ من هنا'; ttl='أدخل جداول معلميك'; sub='ابدأ بيوم واحد لكل معلميك — تضيء لوحتك في دقائق، وأكمل بقية الأيام على مهلك.';
     } else if(off){
@@ -513,9 +522,14 @@
       col.className='wcol' + (weekOffset === 0 && day===todayName && !isWeekend ? ' today' : '');
       /* اسم اليوم كاملا «الثلاثاء» لا مختصرا «ثلا» (طلب المستخدم 2026-09-13) */
       var inner='<div class="wh">' + day + '<b>' + dt.getDate() + '</b></div>';
+      /* يوم مراقبة الشعبة موسوم في الشريط (2026-09-19، طلب المستخدم): يرى من اول الاسبوع لا في صبيحة يومه */
+      if((d.duty || {})[day]) inner += '<div class="wduty">مراقبة</div>';
       if(list.length){
-        list.forEach(function(e){ inner += '<div class="wi ' + (TYPE_CLASS[e.type]||'') + '">' + e.title + '</div>'; });
-      } else inner += '<div class="wq">+</div>';
+        list.forEach(function(e){
+          inner += '<div class="wi ' + (TYPE_CLASS[e.type]||'') + '">'
+                 + (e.at ? '<i>' + e.at + '</i>' : '') + e.title + '</div>';
+        });
+      } else if(!(d.duty || {})[day]) inner += '<div class="wq">+</div>';
       col.innerHTML=inner;
       col.addEventListener('click', function(){ daySheet(day); });
       weekEl.appendChild(col);
@@ -546,7 +560,9 @@
     list.forEach(function(ev){
       var r = document.createElement('div');
       r.className = 'evrow ' + (TYPE_CLASS[ev.type] || '');
-      r.innerHTML = '<b>' + ev.title + '</b><span class="ty">' + ev.type + '</span>';
+      /* الوقت ان كان، و«كل أسبوع» للمتكرر — فيعرف انه ليس موعد هذا اليوم وحده (2026-09-19) */
+      r.innerHTML = '<b>' + (ev.at ? ev.at + ' · ' : '') + ev.title + '</b><span class="ty">'
+        + ev.type + (ev.repeat === 'weekly' ? ' · كل أسبوع' : '') + '</span>';
       var x = document.createElement('button');
       x.className = 'del'; x.setAttribute('aria-label','حذف'); x.textContent = '×';
       /* الحذف يغلق كالإضافة — والمصفوفة خلفها تظهر النتيجة فورا، و«تراجع» يعيده (قاعدة الادخال 2026-09-13) */
@@ -606,13 +622,46 @@
   function addSheet(startIso, fromList){
     var n = document.createElement('div');
     var chosen = EV_TYPES[0];
-    n.innerHTML = '<div class="field" data-need="req" style="padding-bottom:4px"><label for="evd">تاريخ الموعد</label>'
+    /* التكرار (2026-09-19، طلب المستخدم): «مرة واحدة» بتاريخها · «كل أسبوع» بيومها — كاجتماع الشعبة الأسبوعي.
+       والوقت حقل اختياري في الحالين */
+    n.innerHTML = '<div class="field" data-need="req" style="padding-bottom:4px"><label>تكراره</label>'
+      + '<div class="segs" id="evrep"></div></div>'
+      + '<div class="field" data-need="req" style="padding-bottom:4px" id="onceBox"><label for="evd">تاريخ الموعد</label>'
       + '<div class="paper"><input id="evd" type="date" value="' + startIso + '" /></div>'
       + '<div class="hint">أي يوم في عامك الدراسي — لا هذا الأسبوع وحده.</div></div>'
+      + '<div class="field" data-need="req" style="padding-bottom:4px" id="weekBox" hidden><label>يوم الأسبوع</label>'
+      + '<div class="segs" id="evday"></div>'
+      + '<div class="hint">يتكرر في هذا اليوم كل أسبوع حتى تحذفه.</div></div>'
       + '<div class="field" data-need="req" style="padding-bottom:4px"><label>نوع الموعد</label>'
       + '<div class="segs" id="evsegs"></div></div>'
+      + '<div class="field" data-need="opt" style="padding-bottom:4px"><label for="evh">وقته</label>'
+      + '<div class="paper"><input id="evh" type="time" /></div>'
+      + '<div class="hint">اختياري — يظهر الوقت قبل عنوان الموعد.</div></div>'
       + '<div class="field" data-need="req" style="padding-bottom:6px"><label for="evt">العنوان</label>'
       + '<div class="paper"><input id="evt" type="text" maxlength="60" placeholder="اكتب عنوان الموعد" /></div></div>';
+    var weekly = false, wday = R.days[0];
+    var repSegs = n.querySelector('#evrep');
+    [['مرة واحدة', false], ['كل أسبوع', true]].forEach(function(o, i){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'seg' + (i === 0 ? ' on' : ''); b.textContent = o[0];
+      b.addEventListener('click', function(){
+        weekly = o[1];
+        [].forEach.call(repSegs.children, function(x){ x.classList.toggle('on', x === b); });
+        n.querySelector('#onceBox').hidden = weekly;
+        n.querySelector('#weekBox').hidden = !weekly;
+      });
+      repSegs.appendChild(b);
+    });
+    var daySegs = n.querySelector('#evday');
+    R.days.forEach(function(day, i){
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'seg' + (i === 0 ? ' on' : ''); b.textContent = day;
+      b.addEventListener('click', function(){
+        wday = day;
+        [].forEach.call(daySegs.children, function(x){ x.classList.toggle('on', x === b); });
+      });
+      daySegs.appendChild(b);
+    });
     var segs = n.querySelector('#evsegs');
     EV_TYPES.forEach(function(t, i){
       var b = document.createElement('button');
@@ -650,15 +699,20 @@
        أدخل موعدا واحدا، وهو الحال الغالب. والموعد يظهر في مصفوفة الأسبوع
        خلف اللوحة فور إغلاقها، فلا يضيع أثر الإضافة. */
     function submit(){
-      var v = inp.value.trim(), dv = n.querySelector('#evd').value;
+      var v = inp.value.trim(), dv = n.querySelector('#evd').value, at = n.querySelector('#evh').value || '';
       /* لا اهمال صامت ولا حفظ صامت (قاعدة الادخال 2026-09-13) */
-      if(!dv){ Shouba.toast('اختر تاريخ الموعد أولا.'); return false; }
+      if(!weekly && !dv){ Shouba.toast('اختر تاريخ الموعد أولا.'); return false; }
       if(v.length < 2){ Shouba.toast('اكتب عنوان الموعد — حرفان على الأقل.'); inp.focus(); return false; }
-      Shouba.addEvent({ date: dv, type: chosen, title: v });
-      Shouba.toast('أضيف الموعد: ' + v + ' — ' + Shouba.dm(dv));
-      if(n.querySelector('#tocal').checked) toDeviceCalendar(dv, chosen, v);
-      var far = dv < iso(DAY_DATE[R.days[0]]) || dv > iso(DAY_DATE[R.days[4]]);
-      if(far) setWeek(weekOffset);      /* موعد خارج الأسبوع المعروض: نبقي العرض كما هو */
+      if(weekly){
+        Shouba.addEvent({ repeat: 'weekly', day: wday, type: chosen, title: v, at: at });
+        Shouba.toast('أضيف الموعد المتكرر: ' + v + ' — كل ' + wday + (at ? ' · ' + at : ''));
+      } else {
+        Shouba.addEvent({ date: dv, type: chosen, title: v, at: at });
+        Shouba.toast('أضيف الموعد: ' + v + ' — ' + Shouba.dm(dv) + (at ? ' · ' + at : ''));
+        if(n.querySelector('#tocal').checked) toDeviceCalendar(dv, chosen, v);
+        var far = dv < iso(DAY_DATE[R.days[0]]) || dv > iso(DAY_DATE[R.days[4]]);
+        if(far) setWeek(weekOffset);      /* موعد خارج الأسبوع المعروض: نبقي العرض كما هو */
+      }
       paintWeek(); paintCard();
       Shouba.sheet.close();
       return true;
@@ -679,12 +733,32 @@
     add.addEventListener('click', function(){ addSheet(iso(now), true); });
     n.appendChild(add);
 
+    /* المتكرر أسبوعيا أولا — لا تاريخ له، وهو ثابت الأسبوع (2026-09-19) */
+    var wk = Shouba.weeklyEvents();
+    if(wk.length){
+      var wh = document.createElement('div');
+      wh.className = 'sheet-note'; wh.textContent = 'كل أسبوع';
+      n.appendChild(wh);
+      R.days.forEach(function(day){
+        Shouba.sortEvents(Shouba.weeklyEvents(day)).forEach(function(ev){
+          var r = document.createElement('div');
+          r.className = 'evrow ' + (TYPE_CLASS[ev.type] || '');
+          r.innerHTML = '<b>' + (ev.at ? ev.at + ' · ' : '') + ev.title + '</b><span class="ty">' + ev.type + ' · كل ' + day + '</span>';
+          var x = document.createElement('button');
+          x.className = 'del'; x.setAttribute('aria-label','حذف'); x.textContent = '×';
+          x.addEventListener('click', function(){ Shouba.removeEvent(ev.id); paintWeek(); paintCard(); calendarSheet(); undoEvent(ev); });
+          r.appendChild(x);
+          n.appendChild(r);
+        });
+      });
+    }
+
     /* من اليوم فصاعدا — الماضي مضى، وقد ظهر في أسبوعه */
     var todayIso = iso(now);
     var list = Shouba.events().filter(function(e){ return e.date && e.date >= todayIso; })
       .sort(function(a,b){ return a.date < b.date ? -1 : 1; });
 
-    if(!list.length){
+    if(!list.length && !wk.length){
       var e0 = document.createElement('div');
       e0.className = 'soon-note';
       e0.textContent = 'لا مواعيد بعد. أضف اختباراتك واجتماعاتك وأنشطتك — من اليوم إلى آخر العام.';
@@ -706,7 +780,7 @@
       var wd = R.days[dt.getDay()] || '';
       var r = document.createElement('div');
       r.className = 'evrow ' + (TYPE_CLASS[ev.type] || '');
-      r.innerHTML = '<b>' + ev.title + '</b><span class="ty">'
+      r.innerHTML = '<b>' + (ev.at ? ev.at + ' · ' : '') + ev.title + '</b><span class="ty">'
         + (wd ? wd + ' · ' : '') + Shouba.dm(p.join('-')) + '</span>';
       var x = document.createElement('button');
       x.className = 'del'; x.setAttribute('aria-label','حذف'); x.textContent = '×';

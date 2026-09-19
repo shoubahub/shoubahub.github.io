@@ -286,6 +286,11 @@
 .wcol .wi.t-meet{border-inline-start-color:var(--shouba-navy)}
 .wcol .wi.t-act{border-inline-start-color:var(--shouba-amber)}
 .wcol .wq{font-size:10px;color:var(--shouba-hint);text-align:center;padding:4px 0}
+/* وقت الموعد قبل عنوانه (2026-09-19) — بارز صغير فلا يزاحم العنوان */
+.wcol .wi i{display:block;font-style:normal;font-size:9px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num);margin-bottom:1px}
+/* يوم مراقبة الشعبة: وسم هادئ في عمود يومه (2026-09-19) */
+.wcol .wduty{font-size:9.5px;font-weight:700;text-align:center;color:var(--shouba-amber-deep);
+  background:rgba(232,163,61,.16);border-radius:8px;padding:3px 2px}
 
 /* ---------- شعار المدرسة أو رمز الشعبة (للواجهة فقط — النماذج لها إعداداتها لاحقا) ---------- */
 .crestpick{display:flex;flex-direction:column;align-items:center;gap:7px;padding:6px var(--gap-side) 0}

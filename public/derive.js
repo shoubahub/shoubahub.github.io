@@ -628,10 +628,23 @@
   S.eventsOnDate = function (iso) {
     return S.events().filter(function (e) { return e.date === iso; });
   };
-  /* المواعيد التي لا تاريخ لها (صيغة قديمة) تنسب إلى يومها في الأسبوع المعروض */
+  /* المواعيد التي لا تاريخ لها (صيغة قديمة) تنسب إلى يومها في الأسبوع المعروض — والمتكرر اسبوعيا ليس منها */
   S.legacyEventsOfDay = function (day) {
-    return S.events().filter(function (e) { return !e.date && e.day === day; });
+    return S.events().filter(function (e) { return !e.date && e.repeat !== 'weekly' && e.day === day; });
   };
+  /* ── الموعد المتكرر اسبوعيا (2026-09-19، طلب المستخدم: «يوم معين يتكرر فيه الموعد كاجتماع القسم او الادارة»):
+     بلا تاريخ، وله يوم الاسبوع وrepeat:'weekly' — فيظهر في يومه من كل اسبوع تقلبه، ويحذف مرة واحدة فينتهي */
+  S.weeklyEvents = function (day) {
+    return S.events().filter(function (e) { return e.repeat === 'weekly' && (!day || e.day === day); });
+  };
+  /* وقت الموعد (at: «HH:MM») اختياري — وبه ترتب مواعيد اليوم، وما لا وقت له بعدها */
+  S.sortEvents = function (list) {
+    return (list || []).slice().sort(function (a, b) {
+      var x = a.at || '~', y = b.at || '~';
+      return x < y ? -1 : x > y ? 1 : 0;
+    });
+  };
+  S.evTimeText = function (e) { return e && e.at ? e.at : ''; };
   S.eventsAfter = function (iso) {
     return S.events().filter(function (e) { return e.date && e.date > iso; })
       .sort(function (a, b) { return a.date < b.date ? -1 : 1; });

@@ -58,6 +58,11 @@
 .pp-meta{ font-size:.92em; }
 /* ⑥ المرفقات: قائمة الاسماء بين مساحة النص والحضور */
 .pp-files{ margin:0 0 5mm; }
+/* وبوضع print:'grid' (سجل الفعاليات 2026-09-20): الصور نفسها صفين في الصفحة، ولا تنقسم صورة بين صفحتين */
+.pp-grid{ display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin-top:2mm; }
+.pp-shot{ break-inside:avoid; display:flex; flex-direction:column; gap:1mm; }
+.pp-shot img{ width:100%; height:52mm; object-fit:cover; border:1px solid #000; }
+.pp-shot .nm{ font-size:.86em; text-align:center; }
 /* (حذفت الاسطر المنقطة .pp-fill — قرار المستخدم 2026-09-13: «احذف الاسطر تماما») */
 /* ⑧ سطر التوقيعات (P.approval — 2026-09-13): اسفل كل نموذج، بلا اطار (قرار المستخدم: «حتى لا يأخذ مكان المحتوى»).
    المدير يمينا ورئيس الشعبة يسارا والموجه وسطا — space-between يوزعهم. margin-top:auto ينزله الى اسفل الورقة،

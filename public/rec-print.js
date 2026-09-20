@@ -116,7 +116,9 @@
       if (f.kind === 'date' && x) {
         if (f.show === 'weekday+date') { td.appendChild(el('span', null, window.ShoubaRec.weekday(x))); td.appendChild(el('span', 'gap')); }
         td.appendChild(el('span', null, P.date(x)));
-      } else td.textContent = P.ar(x == null ? '' : x);
+      /* معلمون في خانة بيانات: باللقب وبفاصل الشعبة لا بفاصلة المصفوفة — «أ. خالد العنزي · أ. فهد المطيري» (2026-09-20) */
+      } else if (f.kind === 'teacher') td.textContent = (Array.isArray(x) ? x : (x ? [x] : [])).map(P.whoLabel).join(' · ');
+      else td.textContent = P.ar(x == null ? '' : x);
       tr.appendChild(td);
     });
     if (two && b.fields.length % 2) { tr.appendChild(el('th')); tr.appendChild(el('td')); }   /* السطر الاخير بخانتيه */
@@ -406,6 +408,27 @@
     if (!items.length) return null;
     var d = sec(b.title || 'المرفقات');
     d.classList.add('pp-files');
+    /* print: 'grid' (2026-09-20) — الصور نفسها شبكة لا اسماء: سجل الفعاليات ورقته صورها، وقائمة
+       «صورة · صورة» لا تقول شيئا. وPDF لا يرسم صورة فيبقى في السطر باسمه. */
+    if (b.print === 'grid') {
+      var g = el('div', 'pp-grid'), FL = window.ShoubaFiles;
+      items.forEach(function (it) {
+        var cell = el('div', 'pp-shot');
+        if (it.mime === 'application/pdf' || !FL) {
+          cell.appendChild(el('div', 'nm', String(it.name || '').trim() || 'ملف PDF'));
+        } else {
+          var img = document.createElement('img');
+          img.src = FL.url(it.file);
+          img.alt = String(it.name || '').trim() || 'صورة';
+          cell.appendChild(img);
+          var nm = String(it.name || '').trim();
+          if (nm) cell.appendChild(el('div', 'nm', nm));
+        }
+        g.appendChild(cell);
+      });
+      d.appendChild(g);
+      return d;
+    }
     d.appendChild(ol(items, function (li, it) {
       li.textContent = String(it.name || '').trim() || (it.mime === 'application/pdf' ? 'ملف PDF' : 'صورة');
     }));

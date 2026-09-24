@@ -38,11 +38,23 @@
   /* أسطر الترويسة بما كتبه صاحبها في «ترويسة سجلاتك» (printHead — 2026-09-14، طلب المستخدم: «يقوم بادراج كل محتويات
      الترويسة حسب رغبته»): الوزارة والمدرسة بما كتب والا الافتراض، والمنطقة التعليمية سطر اختياري لا يطبع فارغا،
      والتوجيه مفتاح الاعداد نفسه (Shouba.directorate) */
-  P.headerData = function (title, noLogo) {
-    var S = window.Shouba, d = S.data(), h = d.printHead || {};
+  /* ── اسطر الترويسة الظاهرة في هذا السجل (2026-09-24، طلب المستخدم: «نماذج يوضع لها اسم التوجيه ونماذج لا») ──
+     اختيار لكل قالب ومطبوعه (printHeadLines[«قالب» او «قالب:مطبوع»]) كالتوقيعات والشعار سواء، وافتراضه الاربعة
+     كلها — فلا يتغير على احد شيء حتى يختار. والنصوص نفسها في «ترويسة سجلاتك»: هناك ماذا يقول السطر، وهنا أيظهر */
+  P.HEAD_LINES = { ministry: true, region: true, directorate: true, school: true };
+  P.headLinesOf = function (d, key, tpl) {
+    var o = ((d && d.printHeadLines) || {})[key] || (tpl && tpl.headLines) || P.HEAD_LINES;
+    return { ministry: !!o.ministry, region: !!o.region, directorate: !!o.directorate, school: !!o.school };
+  };
+  P.headerData = function (title, noLogo, lines) {
+    var S = window.Shouba, d = S.data(), h = d.printHead || {}, L = lines || P.HEAD_LINES;
     function or(x, def) { x = String(x || '').trim(); return x || def; }
-    return { title: title || '', ministry: or(h.ministry, 'وزارة التربية'), region: or(h.region, ''), directorate: S.directorate(),
-      school: or(h.school, d.schoolName || ''), logo: noLogo ? '' : P.logoOf(d) };
+    return { title: title || '',
+      ministry: L.ministry ? or(h.ministry, 'وزارة التربية') : '',
+      region: L.region ? or(h.region, '') : '',
+      directorate: L.directorate ? S.directorate() : '',
+      school: L.school ? or(h.school, d.schoolName || '') : '',
+      logo: noLogo ? '' : P.logoOf(d) };
   };
 
   function el(tag, cls, txt) {
@@ -553,7 +565,7 @@
   };
   P.render = function (tpl, rec, ctx, fontId) {
     var s = P.sheet(tpl.page && tpl.page.orient, fontId);
-    s.appendChild(P.header(P.headerData(tpl.title, ctx && ctx.noLogo)));
+    s.appendChild(P.header(P.headerData(tpl.title, ctx && ctx.noLogo, ctx && ctx.head)));
     return P.body(s, tpl, rec, ctx);
   };
 
@@ -624,7 +636,7 @@
     function page(first) {
       cur = P.sheet(orient, fontId);
       cur.classList.add('pp-page');
-      if (first) cur.appendChild(P.header(P.headerData((ctx.print && ctx.print.title) || tpl.title, ctx.noLogo)));
+      if (first) cur.appendChild(P.header(P.headerData((ctx.print && ctx.print.title) || tpl.title, ctx.noLogo, ctx.head)));
       host.appendChild(cur);
       pages.push(cur);
     }
@@ -783,7 +795,7 @@
     opt = opt || {};
     var S = window.Shouba, R = window.ShoubaRec, d = S.data(), s = P.sheet('portrait', fontId), mid = el('div', 'pp-rcv-mid');
     s.classList.add('pp-page', 'pp-rcv');
-    var h = P.header(P.headerData('')), tt = h.querySelector('.pp-title');
+    var h = P.header(P.headerData('', false, opt.head)), tt = h.querySelector('.pp-title');
     if (tt) h.replaceChild(el('div'), tt);
     s.appendChild(h);
     var who = [], dates = [], n, label;
@@ -867,7 +879,7 @@
       /* الغلاف: الترويسة باسم الملف، ووسطه الشعبة والمدرسة والفصل ورئيس الشعبة */
       var cv = P.sheet('portrait', fontId), c = el('div', 'pp-cover');
       cv.classList.add('pp-page');
-      cv.appendChild(P.header(P.headerData(opt.title || 'ملف سجلات الشعبة')));
+      cv.appendChild(P.header(P.headerData(opt.title || 'ملف سجلات الشعبة', false, opt.head)));
       (opt.lines || []).forEach(function (l, k) { if (l) c.appendChild(el('div', k ? 'pp-cover-s' : 'pp-cover-t', P.ar(l))); });
       cv.appendChild(c); host.appendChild(cv); out.push(cv);
       /* الفهرس: م · السجل · الصفحة — صفحته او صفحاته (TOC_PER سطرا في كل صفحة) */

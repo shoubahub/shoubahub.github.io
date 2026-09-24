@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<title>عينة · الشاشة العريضة (خطوة المعالج)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../identity/tokens.css" />
+<link rel="stylesheet" href="../shell.css" />
+<link rel="stylesheet" href="../components.css" />
+<link rel="stylesheet" href="../frame.css" />
+<style>
+  /* ===========================================================================
+     عينة الشاشة العريضة (2026-09-20) — على شاشة المعالج الثانية نفسها:
+     نفس الحقول، نفس الخطوات الاربع، نفس البيانات والمنطق. ما تغير: التخطيط وحده.
+     الغاية: الحكم على فكرة «تصميم يناسب الشاشة بلا تغيير الالية».
+     لا تمس المنصة: الملف في _dev ولا يوصل باي شاشة.
+     =========================================================================== */
+
+  /* خاص بشاشة المعالج الثانية (منقول كما هو من setup-wizard-2.html) */
+  .sdrop.locked{opacity:.5;pointer-events:none;filter:grayscale(.3)}
+  .subjects{display:flex;flex-direction:column;gap:9px}
+  .subj{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:15px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
+  .subj b{flex:1;min-width:0;font-size:14.5px;font-weight:700;color:var(--shouba-ink)}
+  .subj .gt{font-size:11.5px;font-weight:600;color:var(--shouba-amber-deep);background:rgba(169,112,27,.1);border-radius:999px;padding:5px 11px;white-space:nowrap}
+  .subj-empty{font-size:12.5px;color:var(--shouba-hint);padding:4px 2px}
+  .hide{display:none !important}
+  .wmain{display:contents}   /* المرتبتان ١ و٢: كأنه غير موجود — التخطيط كما هو اليوم */
+
+  /* ── الخطوات مسماة: لا تظهر الا على العريض (المرتبتان ٢ و٣) ── */
+  .wsteps{display:none;align-items:center;gap:0}
+  .wsteps .ws{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--shouba-hint)}
+  .wsteps .ws i{width:22px;height:22px;border-radius:999px;display:grid;place-items:center;flex:none;
+    font-family:var(--font-num);font-size:11.5px;background:#E2D7C2;color:#8A7F6E}
+  .wsteps .ws.done{color:var(--shouba-label)}
+  .wsteps .ws.done i{background:rgba(22,69,110,.13);color:var(--shouba-navy)}
+  .wsteps .ws.on{color:var(--shouba-navy)}
+  .wsteps .ws.on i{background:var(--shouba-navy);color:#F4F1EA}
+  .wsteps .sep{width:26px;height:2px;border-radius:2px;background:#DDD0B8;margin:0 12px;flex:none}
+
+  /* ── شارة العينة: ليست من الواجهة ── */
+  .tierbadge{position:fixed;z-index:90;bottom:12px;left:12px;font-family:'IBM Plex Sans Arabic',sans-serif}
+  .tierbadge small{background:rgba(36,29,6,.84);color:#F4F1EA;border-radius:999px;padding:5px 11px;font-size:10.5px;font-weight:600}
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     المرتبة ١ — دون ٧٠٠px: لا شيء هنا. الشاشة كما هي اليوم حرفا بحرف (frame.css).
+     ═══════════════════════════════════════════════════════════════════════════ */
+
+  /* ═══ المرتبة ٢ — ٧٠٠ فما فوق: عمود مريح، خطوات مسماة، زر في سياق النموذج ═══ */
+  @media (min-width:700px){
+    body.wide{background:var(--shouba-canvas);display:block;padding:0;min-height:100vh}
+    body.wide .device{width:100%;max-width:none;height:auto;min-height:100vh;border-radius:0;padding:0;box-shadow:none;margin:0}
+    body.wide .device .viewport{width:100%;max-width:none;height:auto;min-height:100vh;border-radius:0;overflow:visible;background:var(--shouba-canvas)}
+    body.wide .screen{max-width:none !important;width:100%;min-height:100vh !important;overflow:visible;padding-top:0 !important;display:block}
+    body.wide .screen.has-foot{padding-bottom:64px}
+
+    /* الرأس شريط عريض ملازم لاعلى الصفحة */
+    body.wide .navrow{padding:0 var(--wgap);height:76px;margin:0;
+      background:linear-gradient(180deg,#FBF7EE 0%,#F4EDE0 100%);
+      border-bottom:1px solid rgba(190,172,140,.55);position:sticky;top:0;z-index:3}
+    body.wide .navrow .brand{gap:16px}
+    body.wide .navrow .brand img{width:44px}
+    body.wide .prog{align-items:center}
+    body.wide .prog .lbl,body.wide .prog .dots{display:none}
+    body.wide .wsteps{display:flex}
+
+    /* وعاء متمركز موحد لكل مناطق الشاشة */
+    body.wide{--wgap:40px;--wmax:760px}
+    body.wide .head,body.wide .fields,body.wide .foot{
+      max-width:var(--wmax) !important;margin-inline:auto !important;
+      padding-inline:var(--wgap) !important}
+    body.wide .head{padding-top:38px}
+    body.wide .head .h{font-size:31px}
+    body.wide .head .s{font-size:14.5px}
+    body.wide .fields{padding-top:30px;gap:26px}
+    body.wide .field > label{font-size:15px}
+
+    /* الزر في سياق النموذج لا معلقا اسفل شاشة عريضة */
+    body.wide .foot{position:static !important;max-width:var(--wmax) !important;background:none;
+      padding-top:34px;padding-bottom:0;flex-direction:row;justify-content:flex-start}
+    body.wide .foot .cta{width:auto;min-width:260px;flex:none;padding-inline:34px}
+
+    /* المنسدلة: لوحة ملاصقة للحقل بدل اللوحة السفلية (وجه ثان للمكون) */
+    body.wide .sdrop{position:relative}
+    .wdrop{position:absolute;z-index:20;top:calc(100% + 7px);right:0;left:0;
+      background:linear-gradient(180deg,#FBF7EE 0%,#F4EDE0 100%);border-radius:16px;padding:7px;
+      max-height:290px;overflow:auto;
+      box-shadow:0 0 0 1px rgba(190,172,140,.55), 0 18px 34px rgba(120,98,66,.22)}
+    .wdrop button{display:block;width:100%;text-align:start;border:0;background:transparent;cursor:pointer;
+      font-family:var(--font-ar);font-size:14.5px;font-weight:600;color:var(--shouba-ink);
+      padding:11px 13px;border-radius:11px}
+    .wdrop button:hover{background:rgba(22,69,110,.07)}
+    .wdrop button.on{background:rgba(22,69,110,.11);color:var(--shouba-navy);font-weight:700}
+  }
+
+  /* ═══ المرتبة ٣ — ١١٠٠ فما فوق: عمودان. الاختيار يمينا ونتيجته يسارا في نظرة ═══ */
+  @media (min-width:1100px){
+    body.wide{--wgap:52px;--wmax:1180px}
+    body.wide .fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.92fr);
+      column-gap:48px;align-items:start}
+    body.wide .wmain{display:flex;flex-direction:column;gap:26px}
+    body.wide #subjectsWrap{align-self:start;position:sticky;top:112px}
+  }
+</style>
+</head>
+<body class="framed wide">
+ <div class="device"><div class="viewport">
+  <div class="screen has-foot">
+    <div class="navrow">
+      <div class="brand">
+        <img src="../identity/assets/logo-vec-color.svg" alt="شعبة" />
+        <span class="vsep"></span>
+        <div class="prog">
+          <div class="lbl">إعداد الشعبة · <b>خطوة <span class="num">٢</span> من <span class="num">٤</span></b></div>
+          <div class="dots"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+          <div class="wsteps">
+            <span class="ws done"><i class="num">١</i>المدرسة</span><span class="sep"></span>
+            <span class="ws on"><i class="num">٢</i>القسم</span><span class="sep"></span>
+            <span class="ws"><i class="num">٣</i>العام</span><span class="sep"></span>
+            <span class="ws"><i class="num">٤</i>الإشراف</span>
+          </div>
+        </div>
+      </div>
+      <div class="back" onclick="history.back()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none"><path d="M8 4 L14 10 L8 16" stroke="#5F5648" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+
+    <div class="head">
+      <div class="h">شعبتك</div>
+      <div class="s">حدد مرحلتك ثم تخصصك — وتظهر مواد شعبتك تلقائيا.</div>
+    </div>
+
+    <form class="fields" autocomplete="off" onsubmit="return false">
+      <div class="wmain">
+      <div class="field" data-need="req">
+        <label>المرحلة</label>
+        <div class="sdrop" data-label="المرحلة">
+          <button type="button" class="trigger">
+            <span class="val ph">اختر المرحلة</span>
+            <span class="chev"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M5 8 L10 13 L15 8" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <select id="stage"><option value="" disabled selected hidden>اختر المرحلة</option></select>
+        </div>
+      </div>
+
+      <div class="field" data-need="req">
+        <label>الشعبة (التخصص)</label>
+        <div class="sdrop locked" id="deptDrop" data-label="الشعبة">
+          <button type="button" class="trigger">
+            <span class="val ph">اختر الشعبة</span>
+            <span class="chev"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M5 8 L10 13 L15 8" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <select id="dept"><option value="" disabled selected hidden>اختر الشعبة</option></select>
+        </div>
+      </div>
+
+      <div class="field hide" id="dirWrap" data-need="opt">
+        <label for="dir">التوجيه</label>
+        <div class="paper"><input id="dir" type="text" maxlength="80" /></div>
+        <div class="hint">يظهر في ترويسة سجلاتك — عدله إن كانت صيغة مدرستك مختلفة.</div>
+      </div>
+
+      </div>
+
+      <div class="field hide" id="subjectsWrap">
+        <label>مواد شعبتك</label>
+        <div class="subjects" id="subjects"></div>
+      </div>
+    </form>
+
+    <div class="foot">
+      <button class="cta" id="next" disabled>التالي</button>
+    </div>
+  </div>
+ </div></div>
+
+<div class="tierbadge"><small id="tb">عينة</small></div>
+
+<script src="../refdata.js"></script>
+<script src="../build.js"></script>
+<script src="../components.js"></script>
+<script>
+  /* ── منطق الشاشة: منقول كما هو من setup-wizard-2.html، بلا حرف تغيير ── */
+  var KEY='shouba.setup.widesample', R=window.SHOUBA_REF;
+  function load(){ try{return JSON.parse(localStorage.getItem(KEY))||{};}catch(e){return {};} }
+  function save(patch){ var d=load(); Object.assign(d,patch); localStorage.setItem(KEY,JSON.stringify(d)); }
+
+  var stageSel=document.getElementById('stage'), deptSel=document.getElementById('dept');
+  var deptDrop=document.getElementById('deptDrop'), next=document.getElementById('next');
+  var subjectsWrap=document.getElementById('subjectsWrap'), subjects=document.getElementById('subjects');
+  var dirWrap=document.getElementById('dirWrap'), dirIn=document.getElementById('dir');
+
+  function setTrigger(dropSel, text, isPh){
+    var v=dropSel.closest('.sdrop').querySelector('.val');
+    v.textContent=text; v.classList.toggle('ph', !!isPh);
+  }
+  function fillOptions(sel, list, ph){
+    sel.innerHTML='<option value="" disabled selected hidden>'+ph+'</option>';
+    list.forEach(function(o){ var op=document.createElement('option'); op.textContent=o; sel.appendChild(op); });
+  }
+  fillOptions(stageSel, R.stages, 'اختر المرحلة');
+
+  function onStage(){
+    var st=stageSel.value; if(!st) return;
+    fillOptions(deptSel, R.departments[st]||[], 'اختر الشعبة');
+    setTrigger(deptSel, 'اختر الشعبة', true);
+    deptDrop.classList.remove('locked');
+    subjectsWrap.classList.add('hide'); subjects.innerHTML='';
+    dirWrap.classList.add('hide'); dirIn.value='';
+    save({ stage: st, department:'', directorate:'' });
+    validate();
+  }
+  function onDept(){
+    var dp=deptSel.value; if(!dp) return;
+    var list=R.subjectsOf(stageSel.value, dp);
+    subjects.innerHTML='';
+    if(list.length){
+      var rows=[], byKey={};
+      list.forEach(function(s){
+        var k=s.name+'|'+s.grade, g=byKey[k];
+        if(!g){ g=byKey[k]={ name:s.name, grade:s.grade, tracks:[], elective:false, shared:false }; rows.push(g); }
+        if(s.track && g.tracks.indexOf(s.track)<0) g.tracks.push(s.track);
+        g.elective=g.elective || !!s.elective; g.shared=g.shared || !!s.shared;
+      });
+      rows.forEach(function(s){
+        var row=document.createElement('div'); row.className='subj';
+        var meta = s.tracks.length ? s.grade + ' · ' + s.tracks.join(' و') : s.grade;
+        row.innerHTML='<b></b><span class="gt"></span>';
+        row.querySelector('b').textContent = s.name;
+        row.querySelector('.gt').textContent = meta;
+        if(s.elective){ var tag=document.createElement('span'); tag.className='free'; tag.textContent='اختيار حر'; row.appendChild(tag); }
+        if(s.shared){ var sh=document.createElement('span'); sh.className='free shared'; sh.textContent='مشتركة'; row.appendChild(sh); }
+        subjects.appendChild(row);
+      });
+    } else {
+      subjects.innerHTML='<div class="subj-empty">مواد هذه الشعبة تضاف لاحقا من الإدارة.</div>';
+    }
+    subjectsWrap.classList.remove('hide');
+    var prev=load(), def=R.directorateOf(stageSel.value, dp);
+    var dir=(prev.department===dp && prev.directorate) ? prev.directorate : def;
+    dirIn.value=dir; dirWrap.classList.toggle('hide', !dir && !def);
+    save({ department: dp, subjects: list, directorate: dir });
+    validate();
+  }
+  dirIn.addEventListener('input', function(){
+    save({ directorate: dirIn.value.trim() || R.directorateOf(stageSel.value, deptSel.value) });
+  });
+  function validate(){ next.disabled = !(stageSel.value && deptSel.value); }
+  stageSel.addEventListener('change', onStage);
+  deptSel.addEventListener('change', onDept);
+  (function prefill(){
+    var s=load();
+    if(s.stage){ stageSel.value=s.stage; setTrigger(stageSel, s.stage, false);
+      fillOptions(deptSel, R.departments[s.stage]||[], 'اختر الشعبة'); deptDrop.classList.remove('locked');
+      if(s.department){ deptSel.value=s.department; setTrigger(deptSel, s.department, false); onDept(); }
+    }
+    validate();
+  })();
+  next.addEventListener('click', function(){ if(!next.disabled) alert('عينة: الخطوة الثالثة (العام) تأتي هنا.'); });
+
+  /* ══ الوجه الثاني للمنسدلة: على العريض لوحة ملاصقة للحقل، وعلى الجوال اللوحة السفلية كما هي ══
+     الالية واحدة: «اختر من قائمة». ما تغير موضع القائمة لا الخطوة. */
+  var WIDE = function(){ return innerWidth >= 700; };
+  function closeWide(){ var p=document.querySelector('.wdrop'); if(p) p.remove(); }
+  function openWide(drop){
+    closeWide();
+    var sel=drop.querySelector('select'), p=document.createElement('div'); p.className='wdrop';
+    [].forEach.call(sel.options, function(o){
+      if(!o.value) return;
+      var b=document.createElement('button'); b.type='button'; b.textContent=o.textContent;
+      if(o.value===sel.value) b.className='on';
+      b.addEventListener('click', function(){
+        sel.value=o.value;
+        var v=drop.querySelector('.val'); v.textContent=o.textContent; v.classList.remove('ph');
+        sel.dispatchEvent(new Event('change')); closeWide();
+      });
+      p.appendChild(b);
+    });
+    drop.appendChild(p);
+  }
+  document.addEventListener('click', function(e){
+    var t=e.target.closest ? e.target.closest('.sdrop .trigger') : null;
+    if(t && WIDE()){ e.stopImmediatePropagation(); e.preventDefault(); openWide(t.closest('.sdrop')); return; }
+    if(!e.target.closest || !e.target.closest('.wdrop')) closeWide();
+  }, true);
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeWide(); });
+
+  /* ── شارة العينة: تعلن المرتبة الظاهرة (ليست من الواجهة) ── */
+  var tb=document.getElementById('tb');
+  function tier(){
+    var w=innerWidth, t = w<700 ? 'المرتبة ١ · الجوال (كما هي اليوم)'
+                    : w<1100 ? 'المرتبة ٢ · عمود مريح' : 'المرتبة ٣ · عمودان';
+    tb.textContent = t + ' — ' + w + 'px';
+  }
+  addEventListener('resize', tier); tier();
+</script>
+</body>
+</html>

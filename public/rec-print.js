@@ -638,12 +638,13 @@
     f.appendChild(cap);
     return f;
   }
-  P.pages = function (tpl, rec, ctx, host, fontId) {
+  function buildPages(tpl, rec, ctx, host, fontId, pt) {
     ctx = drawCtx(ctx, tpl, rec);
     var orient = (tpl.page && tpl.page.orient) || 'portrait', H = P.pageH(orient) - FOOT_MM * PX_MM;
     var pages = [], cur;
     function page(first) {
       cur = P.sheet(orient, fontId);
+      if (pt) cur.style.fontSize = pt + 'pt';
       cur.classList.add('pp-page');
       if (first) cur.appendChild(P.header(P.headerData((ctx.print && ctx.print.title) || tpl.title, ctx.noLogo, ctx.head)));
       host.appendChild(cur);
@@ -802,6 +803,32 @@
     }
     pages.forEach(function (p, i) { P.fitHeads(p); p.appendChild(el('div', 'pp-pageno', 'صفحة ' + P.ar(i + 1) + ' من ' + P.ar(pages.length))); });
     return pages;
+  }
+
+  /* ── صفحة للجدول وحده لا تحتمل (2026-09-30، قرار المستخدم: «صغر الخط في حال كان الجدول هو في صفحة منفردة، اما اذا
+     كان المحتوى يمتد لصفحتين فلا مشكلة»): ان لم يكن في الصفحة الاخيرة الا جدول الحضور وسطر التوقيعات — اي ان محتوى
+     السجل نفسه وسع صفحته — صغر خط الورقة نصف نقطة بعد نصف حتى يجتمع في صفحة، ولا ينزل عن ١١ نقطة. فان لم يجتمع
+     عاد الى خطه الكامل وبقي على صفحتيه: المحتوى الطويل صفحتان بلا حرج */
+  var SHRINK = [13.5, 13, 12.5, 12, 11.5, 11];
+  function tailOnlySigns(pages) {
+    if (pages.length < 2) return false;
+    var last = pages[pages.length - 1];
+    return [].every.call(last.children, function (c) {
+      return c.classList.contains('pp-att') || c.classList.contains('pp-appr') || c.classList.contains('pp-pageno') || c.classList.contains('pp-head');
+    });
+  }
+  function drop(pages) { pages.forEach(function (p) { if (p.parentNode) p.parentNode.removeChild(p); }); }
+  P.pages = function (tpl, rec, ctx, host, fontId) {
+    var pages = buildPages(tpl, rec, ctx, host, fontId, 0);
+    if (!tailOnlySigns(pages)) return pages;
+    for (var i = 0; i < SHRINK.length; i++) {
+      var tryPages = (function (pt) { drop(pages); return buildPages(tpl, rec, ctx, host, fontId, pt); })(SHRINK[i]);
+      if (tryPages.length < pages.length && !tailOnlySigns(tryPages)) return tryPages;
+      pages = tryPages;
+      if (pages.length === 1) return pages;
+    }
+    drop(pages);
+    return buildPages(tpl, rec, ctx, host, fontId, 0);   /* لم يجتمع: خطه الكامل وصفحتاه */
   };
 
   /* ── صفحة تقديم السجل (2026-09-14، النموذج أ الذي اعتمده المستخدم: «صفحة تقديم لكل سجل في حال طباعته كاملا… عنوان

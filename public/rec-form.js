@@ -283,14 +283,17 @@
   /* قائمة مرقمة: لكل بند عنوان (مطلوب) وتفاصيل (اختيارية)، باضافة وحذف واعادة ترتيب */
   SECTION.list = function (s, v, ctx, changed) {
     var arr = v[s.id] = Array.isArray(v[s.id]) ? v[s.id] : [];
-    var sec = section(s.title), box = el('div', 'stack');
+    /* تقال مرة تحت عنوان القسم لا تحت كل بند (2026-09-30) */
+    var sec = section(s.title, 'تفاصيل البند نقطة في كل سطر — تطبع نقاطا تحته.'), box = el('div', 'stack');
     function move(i, d) { var x = arr.splice(i, 1)[0]; arr.splice(i + d, 0, x); changed(); paint(); }
     function paint() {
       box.textContent = '';
       arr.forEach(function (it, i) {
         var card = el('div', 'rb-item');
         card.appendChild(input(it.title, function (x) { it.title = x; changed(); }, { ph: s.ph || 'العنوان', label: (s.ph || 'العنوان') + ' ' + (i + 1) }).box);
-        card.appendChild(input(it.details, function (x) { it.details = x; changed(); }, { long: true, rows: 2, ph: 'تفاصيل — اختياري' }).box);
+        /* نقطة في كل سطر (2026-09-30، طلب المستخدم: «تدخل متراصة كأنها نص وانا احتاجها نقاط متتالية») */
+        card.appendChild(input(it.details, function (x) { it.details = x; changed(); }, { long: true, rows: 3,
+          ph: 'نقطة في كل سطر — اختياري' }).box);
         card.appendChild(tools(i > 0 ? function () { move(i, -1); } : null,
                                i < arr.length - 1 ? function () { move(i, 1); } : null,
                                function () { undoable(arr, i, 'البند ' + (i + 1), changed, paint); }));

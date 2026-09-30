@@ -54,6 +54,12 @@
 .pp-sec li{ counter-increment:n; position:relative; padding-right:7mm; margin-bottom:1mm; }
 .pp-sec li::before{ content:counter(n, arabic-indic) "."; position:absolute; right:0; }
 .pp-para{ white-space:pre-wrap; }
+/* نقاط البند تحت عنوانه (2026-09-30): شرطة لكل نقطة، بمحاذاة نص البند لا بحافة الصفحة */
+.pp-pts{ list-style:none; margin:1mm 0 0; padding:0; }
+/* ⚠ النقطة ليست بندا في العداد (2026-09-30): .pp-sec li يزيد العداد لكل li، فكانت ثلاث نقاط تقفز بالمحور
+   التالي من ٢ الى ٥ (رصد في المعاينة) */
+.pp-pts li{ position:relative; padding-right:5mm; margin-bottom:.8mm; counter-increment:none; }
+.pp-pts li::before{ content:"–"; position:absolute; right:0; }
 .pp-status{ display:inline-block; border:1.2px solid #000; padding:0 2mm; margin-inline-start:3mm; font-weight:700; font-size:.875em; line-height:1.5; }
 .pp-meta{ font-size:.92em; }
 /* ⑥ المرفقات: قائمة الاسماء بين مساحة النص والحضور */

@@ -161,10 +161,19 @@
     var arr = (v[s.id] || []).filter(function (it) { return it && (String(it.title || '').trim() || String(it.details || '').trim()); });
     if (!arr.length) return null;
     var d = sec(s.title);
+    /* تفاصيل البند: السطر نقطة (2026-09-30، رصد المستخدم: «تدخل بشكل متراص كأنها نص وانا احتاجها نقاط متتالية»).
+       سطر واحد يبقى في سطر عنوانه كما كان، والاسطر المتعددة نقاط تحته — فلا يتبدل شكل ما كتب سطرا واحدا */
     d.appendChild(ol(arr, function (li, it) {
-      var ti = String(it.title || '').trim(), de = String(it.details || '').trim();
-      if (ti) li.appendChild(el('b', null, ti + (de ? ': ' : '')));
-      if (de) li.appendChild(document.createTextNode(de));
+      var ti = String(it.title || '').trim();
+      var pts = String(it.details || '').split(/\r?\n/).map(function (x) { return x.replace(/^\s*[-–—•*]\s*/, '').trim(); })
+        .filter(function (x) { return x; });
+      if (ti) li.appendChild(el('b', null, ti + (pts.length === 1 ? ': ' : '')));
+      if (pts.length === 1) li.appendChild(document.createTextNode(pts[0]));
+      else if (pts.length) {
+        var ul = el('ul', 'pp-pts');
+        pts.forEach(function (p) { ul.appendChild(el('li', null, p)); });
+        li.appendChild(ul);
+      }
     }));
     return d;
   };

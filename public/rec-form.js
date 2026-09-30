@@ -665,13 +665,50 @@
      زيارة الموجه). القيمة { بند: { pick: [..], note } } — والورق يطبع العبارات كلها والمؤشر منها بارزا كالنموذج */
   BLOCK.rating = function (b, v, ctx, changed) {
     var sec = section(b.title || '', b.hint), box = el('div', 'stack');
+    var S = window.Shouba;
+    /* حذف عنصر من هذا التقرير وحده واعادته (2026-09-30، طلب المستخدم) — يكتب في لقطة السجل لا في اختيار الشعبة،
+       فتقرير الزميل الآخر لا يمس، وما كتب في المحذوف يبقى فيعود معه */
+    var canEdit = !!(b.choose && S && S.itemsPick && ctx.rec);
+    function pick() { return S.itemsPick(ctx.rec, b); }
+    function hidden() {
+      var p = pick(), out = [];
+      (b.items || []).forEach(function (it) { if (p.on.indexOf(it.id) < 0) out.push({ it: it, official: true }); });
+      var have = {};
+      p.extra.forEach(function (x) { have[x.id] = 1; });
+      var shouba = (S.pickOf && S.pickOf(ctx.rec.tpl)) || {};
+      ((shouba[b.id] && shouba[b.id].extra) || []).forEach(function (x) { if (x && !have[x.id]) out.push({ it: x, official: false }); });
+      return out;
+    }
+    function drop(it) {
+      var p = pick(), k = p.on.indexOf(it.id);
+      if (k > -1) p.on.splice(k, 1);
+      p.extra = p.extra.filter(function (x) { return x.id !== it.id; });
+      S.setItemsPick(ctx.rec, b, p);
+      changed(); paint();
+    }
+    function back(h) {
+      var p = pick();
+      if (h.official) { if (p.on.indexOf(h.it.id) < 0) p.on.push(h.it.id); }
+      else p.extra.push({ id: h.it.id, label: h.it.label, opts: (h.it.opts || []).slice(), one: !!h.it.one });
+      S.setItemsPick(ctx.rec, b, p);
+      changed(); paint();
+    }
+    function paint() {
+    box.textContent = '';
     /* العناصر الظاهرة: ما اختاره رئيس الشعبة من الرسمي وما اضافه (choose — Shouba.itemsOf) */
     var items = window.Shouba && Shouba.itemsOf ? Shouba.itemsOf(ctx.rec, b) : b.items;
     items.forEach(function (it) {
       var x = v[it.id] = (v[it.id] && typeof v[it.id] === 'object' && !Array.isArray(v[it.id])) ? v[it.id] : {};
       x.pick = Array.isArray(x.pick) ? x.pick : [];
       var opts = it.opts || [], card = el('div', 'rb-item');
-      card.appendChild(el('div', 'rb-q', it.label));
+      var q = el('div', 'rb-q', it.label);
+      if (canEdit) {
+        var x0 = el('button', 'del');
+        x0.type = 'button'; x0.textContent = '×'; x0.setAttribute('aria-label', 'احذف ' + it.label + ' من هذا التقرير');
+        x0.addEventListener('click', function () { drop(it); });
+        q.appendChild(x0);
+      }
+      card.appendChild(q);
       if (opts.length) card.appendChild(toggles(opts.map(function (o) { return { v: o, t: o }; }),
         function (o) { return x.pick.indexOf(o) > -1; },
         function (o) {
@@ -688,6 +725,31 @@
         ph: (opts.length ? (b.note || 'ملاحظات أخرى') : ((b.head && b.head[1]) || 'الملاحظات')) + ' — اختياري' }).box);
       box.appendChild(card);
     });
+    /* ما اخرجته من هذا التقرير يعاد منه — ولا يذكر شيء ان لم يخرج منه شيء */
+    if (canEdit) {
+      var gone = hidden();
+      if (gone.length) {
+        var add = el('button', 'btn-ghost');
+        add.type = 'button';
+        add.textContent = 'أعد عنصرا إلى هذا التقرير (' + gone.length + ')';
+        add.addEventListener('click', function () {
+          var n = el('div', 'stack');
+          n.appendChild(el('div', 'soon-note', 'عناصر ليست في هذا التقرير — المس عنصرا ليعود، وما كتبته فيه يعود معه.'));
+          gone.forEach(function (h) {
+            var r = el('button', 'sheet-opt');
+            r.type = 'button';
+            r.innerHTML = '<span></span><span class="mk"></span>';
+            r.querySelector('span').textContent = h.it.label + (h.official ? '' : ' — أضفته');
+            r.addEventListener('click', function () { Shouba.sheet.close(); back(h); });
+            n.appendChild(r);
+          });
+          Shouba.sheet.open('أعد عنصرا', n);
+        });
+        box.appendChild(add);
+      }
+    }
+    }
+    paint();
     sec.appendChild(box);
     return sec;
   };

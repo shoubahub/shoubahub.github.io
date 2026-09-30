@@ -585,6 +585,26 @@
       .concat(arr(p.extra).filter(function (x) { return x && isId(x.id) && x.label; }));
   };
 
+  /* لقطة عناصر السجل صريحة { on, extra } — تنشأ من الظاهر فيه الآن ان لم تكن (سجل قديم بلا لقطة).
+     بها يحذف عنصر من تقرير بعينه فلا يمس غيره (2026-09-30، طلب المستخدم: «اضافة امكانية حذف عنصر من خلال
+     التقرير نفسه اثناء تعديله») */
+  R.itemsPick = function (rec, b, now) {
+    var p = (rec && rec.items && rec.items[b.id]) || (now && now[b.id]) || null;
+    if (p && typeof p === 'object' && !Array.isArray(p)) {
+      return { on: arr(p.on).slice(), extra: arr(p.extra).map(function (x) { return { id: x.id, label: x.label, opts: arr(x.opts).slice(), one: !!x.one }; }) };
+    }
+    return { on: arr(b && b.items).map(function (it) { return it.id; }), extra: [] };
+  };
+  R.setItemsPick = function (rec, b, p) {
+    if (!rec || !b) return null;
+    (rec.items = rec.items || {})[b.id] = { on: arr(p && p.on).slice(), extra: arr(p && p.extra).slice() };
+    return rec.items[b.id];
+  };
+  /* جداول التقييم التي يختار عناصرها في قالب — من يسأل عن سجل او يعمم اختيارا على سجلات */
+  R.chooseBlocks = function (tpl) {
+    return arr(tpl && tpl.blocks).filter(function (b) { return b.type === 'rating' && b.choose; });
+  };
+
   /* الرقم التسلسلي: يبدأ من ١ كل عام دراسي، ويليه اكبر رقم مسجل (لا عدد السجلات:
      حذف سجل لا يعيد رقمه لغيره). who (serial:who): زيارات المعلم نفسه وحده في عامه */
   R.nextSerial = function (records, tplId, year, who) {

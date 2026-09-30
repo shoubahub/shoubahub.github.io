@@ -959,6 +959,39 @@
   S.colsOf = function (rec, b, tplId) { return E() ? E().colsOf(rec, b, S.pickOf((rec && rec.tpl) || tplId)) : ((b && b.columns) || []); };   /* tplId: للنموذج الفارغ بلا سجل */
   /* بنود جدول التقييم الظاهرة (rating.choose): لقطة السجل ⟵ اختيار الشعبة ⟵ الرسمية كلها — ShoubaRec.itemsOf */
   S.itemsOf = function (rec, b, tplId) { return E() ? E().itemsOf(rec, b, S.pickOf((rec && rec.tpl) || tplId)) : ((b && b.items) || []); };
+  /* عناصر تقرير بعينه: لقطته هو — يحذف منها ويعاد اليها من داخله، ولا تمس تقريرا آخر (2026-09-30) */
+  S.itemsPick = function (rec, b) { return E() ? E().itemsPick(rec, b, S.pickOf(rec && rec.tpl)) : { on: [], extra: [] }; };
+  S.setItemsPick = function (rec, b, p) { return E() ? E().setItemsPick(rec, b, p) : null; };
+  /* تعميم اختيار الشعبة على تقاريرها السابقة (طلب المستخدم 2026-09-30): كل سجل للقالب يتبع الاختيار الحاضر،
+     ويعاد ما كان لقطاته ليتراجع عنه. وما كتب في عنصر اخفي يبقى في السجل فان عاد العنصر عاد بما فيه */
+  S.applyPickToRecs = function (tplId) {
+    var eng = E(); if (!eng) return null;
+    var tpl = eng.latest(tplId), blocks = eng.chooseBlocks(tpl), now = S.pickOf(tplId), d = S.data(), was = [], n = 0;
+    if (!blocks.length) return { n: 0, was: was };
+    (d.recs || []).forEach(function (r) {
+      if (r.tpl !== tplId) return;
+      var t = eng.of(r) || tpl, bs = eng.chooseBlocks(t), touched = false;
+      bs.forEach(function (b) {
+        var before = r.items && r.items[b.id] ? JSON.parse(JSON.stringify(r.items[b.id])) : null;
+        var p = eng.itemsPick(null, b, now);        /* الحاضر: اختيار الشعبة، او الرسمي كله */
+        eng.setItemsPick(r, b, p);
+        if (JSON.stringify(before) !== JSON.stringify(r.items[b.id])) { was.push({ id: r.id, block: b.id, p: before }); touched = true; }
+      });
+      if (touched) n++;
+    });
+    if (n) S.save();
+    return { n: n, was: was };
+  };
+  S.restorePicks = function (was) {
+    var d = S.data();
+    (was || []).forEach(function (w) {
+      var r = (d.recs || []).filter(function (x) { return x.id === w.id; })[0];
+      if (!r) return;
+      if (w.p) (r.items = r.items || {})[w.block] = w.p;
+      else if (r.items) delete r.items[w.block];
+    });
+    S.save();
+  };
   S.archive = function (tplId, opt) { return E().archive(S.recs(tplId), opt); };
   /* جدول الزيارات الصفية من تقارير الزيارة (2026-09-14، طلب المستخدم: «جدول الزيارات يتغذى منه» — لا سجل منعزل):
      تقارير زيارة رئيس الشعبة في العام والفصل، كل تقرير صف، بتاريخه ثم حصته. والملاحظات موضوع الدرس */

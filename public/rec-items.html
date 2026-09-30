@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=89" />
-<link rel="stylesheet" href="shell.css?v=89" />
-<link rel="stylesheet" href="components.css?v=89" />
-<link rel="stylesheet" href="frame.css?v=89" />
+<link rel="stylesheet" href="identity/tokens.css?v=90" />
+<link rel="stylesheet" href="shell.css?v=90" />
+<link rel="stylesheet" href="components.css?v=90" />
+<link rel="stylesheet" href="frame.css?v=90" />
 <style>
   /* عناصر النموذج (2026-09-12، قرار المستخدم) — رئيس الشعبة يختار من عناصر شبكة المتابعة ما يتابعه:
      «الاغلب لا يملأ النموذج كله». ⚠ غير مؤشرة ابتداء وهو يؤشر (قراره صراحة) — خلاف قائمة السجلات
@@ -54,13 +54,13 @@
   </div>
  </div></div>
 
-<script src="build.js?v=89"></script>
-<script src="refdata.js?v=89"></script>
-<script src="rec-templates.js?v=89"></script>
-<script src="rec-engine.js?v=89"></script>
-<script src="derive.js?v=89"></script>
-<script src="icons.js?v=89"></script>
-<script src="components.js?v=89"></script>
+<script src="build.js?v=90"></script>
+<script src="refdata.js?v=90"></script>
+<script src="rec-templates.js?v=90"></script>
+<script src="rec-engine.js?v=90"></script>
+<script src="derive.js?v=90"></script>
+<script src="icons.js?v=90"></script>
+<script src="components.js?v=90"></script>
 <script>
   var S = Shouba, d = S.data(), Q = new URLSearchParams(location.search), t = ShoubaRec.latest(Q.get('tpl') || '');
 
@@ -236,6 +236,37 @@
     xs.appendChild(xh); xs.appendChild(xl); xs.appendChild(af);
     itemsEl.appendChild(xs);
     paintX();
+
+    /* ── تعميم الاختيار على التقارير السابقة (2026-09-30، طلب المستخدم: «طبق التعديلات على عناصر النموذج حتى على
+       التقارير المدخلة سابقا»): كل تقرير يحفظ لقطته يوم انشائه فلا يتبدل بعد طباعته وتوقيعه — وهذا الزر يخرق ذلك
+       بتصريح صاحبه لا بصمت، وبتراجع يعيد اللقطات كما كانت. وما كتب في عنصر اخفي يبقى فيعود معه ان اعيد */
+    var mine = S.recs(t.id).length;
+    if (mine) {
+      var ap = el('section', 'grp'), ah = el('div', 'sect'), al = el('div', 'stack');
+      ah.appendChild(el('div', 'h', 'تقاريرك السابقة'));
+      al.appendChild(el('div', 'hint', 'ما كتبته من تقارير يبقى بعناصره يوم كتبته. وإن أردتها كلها على اختيارك الحاضر:'));
+      var ab = el('button', 'btn-ghost', 'طبق على تقاريري السابقة (' + S.count(mine, t.noun || { one: 'تقرير', two: 'تقريران', few: 'تقارير', many: 'تقريرا' }) + ')');
+      ab.type = 'button';
+      ab.addEventListener('click', function(){
+        var n = el('div', 'stack');
+        n.appendChild(el('div', 'soon-note', 'تصير تقاريرك كلها على عناصرك الحاضرة — وما كتبته في عنصر تخفيه يبقى محفوظا، فإن أعدته عاد بما فيه.'));
+        var yes = el('button', 'cta', 'طبقه على الكل');
+        yes.type = 'button';
+        yes.addEventListener('click', function(){
+          persist();                                  /* اختياره الحاضر يحفظ اولا */
+          var r = S.applyPickToRecs(t.id);
+          S.sheet.close();
+          if (!r || !r.n) { S.toast('تقاريرك على هذه العناصر أصلا — لا تغيير'); return; }
+          S.toast('طبق على ' + S.count(r.n, t.noun || { one: 'تقرير', two: 'تقريران', few: 'تقارير', many: 'تقريرا' }),
+            function(){ S.restorePicks(r.was); S.toast('رجعت تقاريرك كما كانت'); });
+        });
+        n.appendChild(yes);
+        S.sheet.open('طبق على تقاريرك السابقة', n);
+      });
+      al.appendChild(ab);
+      ap.appendChild(ah); ap.appendChild(al);
+      itemsEl.appendChild(ap);
+    }
 
     ok.addEventListener('click', function(){ if (ok.disabled) return; persist(); done(); });
     refresh();

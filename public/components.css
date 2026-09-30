@@ -758,7 +758,10 @@ body.solo .tsel{display:none}
 .paper.empty[data-ph]::after{content:attr(data-ph);position:absolute;inset-inline-start:16px;top:50%;transform:translateY(-50%);
   color:var(--shouba-hint);font-family:var(--font-ar);font-size:15px;font-weight:500;pointer-events:none;z-index:2;white-space:nowrap}
 .paper.empty > input::-webkit-datetime-edit{color:transparent}
-.rb-q{font-size:14.5px;font-weight:700;color:var(--shouba-navy);line-height:1.7}
+.rb-q{font-size:14.5px;font-weight:700;color:var(--shouba-navy);line-height:1.7;display:flex;align-items:flex-start;gap:10px}
+/* حذف العنصر من هذا التقرير وحده (2026-09-30): في آخر سطر عنوانه، هادئ حتى يلمس */
+.rb-q .del{flex:none;margin-inline-start:auto;width:26px;height:26px;border:0;cursor:pointer;border-radius:8px;
+  background:rgba(183,68,58,.10);color:var(--shouba-error);font-size:16px;font-weight:700;line-height:1;font-family:var(--font-ar)}
 .rb-tools{display:flex;gap:8px;justify-content:flex-end}
 .rb-btn{width:34px;height:34px;border-radius:999px;border:0;cursor:pointer;display:grid;place-items:center;
   background:var(--shouba-paper);color:var(--shouba-text-muted);font-family:var(--font-ar);font-size:18px;font-weight:700}

@@ -343,6 +343,29 @@ ok(R.itemsOf(hv4, eb, null).map(x => x.id).join() === 'warm,prep,know,xel', 'ا�
 Wv.setPick('hvisit', null);
 ok(R.itemsOf(hv4, eb, Wv.pickOf('hvisit')).length === 4 && R.itemsOf(hv1, eb, Wv.pickOf('hvisit')).length === 10, 'تغيير الاختيار بعد الانشاء لا يمس تقريرا مكتوبا');
 
+// ١٦ج) حذف عنصر من التقرير نفسه واعادته، وتعميم الاختيار على السابق (طلب المستخدم 2026-09-30)
+ok(R.chooseBlocks(R.latest('hvisit')).length === 1 && R.chooseBlocks(R.latest('meetings')).length === 0, 'جداول التقييم التي تختار عناصرها تعرف من القالب');
+const pk4 = R.itemsPick(hv4, eb, null);
+ok(pk4.on.join() === 'warm,prep,know' && pk4.extra.length === 1, 'لقطة التقرير تقرأ كما هي', pk4);
+const pk1 = R.itemsPick(hv1, eb, null);
+ok(pk1.on.length === 10 && pk1.extra.length === 0, 'وتقرير بلا لقطة: الرسمي كله — فحذف عنصر منه لا يحذف غيره');
+R.setItemsPick(hv1, eb, { on: pk1.on.filter(id => id !== 'warm'), extra: [] });
+ok(R.itemsOf(hv1, eb, null).length === 9 && R.itemsOf(hv1, eb, null).every(x => x.id !== 'warm')
+   && R.itemsOf(hv2, eb, null).length === 10, 'حذف عنصر من تقرير يمسه وحده — وتقرير زميله كما هو');
+const backOn = R.itemsPick(hv1, eb, null);
+backOn.on.push('warm');
+R.setItemsPick(hv1, eb, backOn);
+ok(R.itemsOf(hv1, eb, null).map(x => x.id).indexOf('warm') === 0, 'واعادته تعيده في موضعه من النموذج لا في آخره');
+/* التعميم: لقطة كل تقرير تصير الاختيار الحاضر، وما كتب في عنصر مخفي يبقى في قيم السجل */
+hv1.values = hv1.values || {}; hv1.values[eb.id] = { warm: { pick: ['ممتاز'], note: 'محفوظ' } };
+Wv.setPick('hvisit', { eval: { on: ['prep'], extra: [] } });
+const applied = Wv.applyPickToRecs('hvisit');
+ok(applied.n >= 2 && R.itemsOf(hv1, eb, Wv.pickOf('hvisit')).map(x => x.id).join() === 'prep'
+   && hv1.values[eb.id].warm.note === 'محفوظ', 'التعميم يسري على السابق، وما كتب في المخفي باق', { n: applied.n });
+Wv.restorePicks(applied.was);
+ok(R.itemsOf(hv1, eb, Wv.pickOf('hvisit')).length === 10, 'والتراجع يعيد لقطات التقارير كما كانت', R.itemsOf(hv1, eb, Wv.pickOf('hvisit')).length);
+Wv.setPick('hvisit', null);
+
 // ١٧) فصول المدرسة ومسار الاختيار الحر (طلب المستخدم 2026-09-14)
 const clDoc = { stage: 'ثانوي', department: 'الرياضيات', refDataVersion: 4, teachers: ['أحمد علي'],
   subjects: [{ name: 'الرياضيات', grade: 'العاشر', track: 'موحد' }, { name: 'الرياضيات', grade: 'الحادي عشر', track: 'علمي' },

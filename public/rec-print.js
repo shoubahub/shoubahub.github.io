@@ -668,9 +668,20 @@
       go.forEach(function (x) { cur.appendChild(x); });
       return true;
     }
+    /* ⚠ لا تنتقل كتلة لفيض يسير (2026-09-30، رصد المستخدم: «اسماء المحضر تدخل بصفحة ثانية»): ورقة امتلأت ٢٩٩ مم
+       والصفحة ٢٩٣، فانتقل جدول الحضور وسطر التوقيعات معا وبقي اسفل الصفحة فراغ. فقبل النقل تضغط الورقة (pp-tight:
+       فسحة التوقيعات وارتفاع صفوف الحضور) ويعاد القياس — فان اتسعت بقيت، والا انتقلت كما كانت. ولا يقص محتوى */
+    function tightFits() {
+      if (cur.classList.contains('pp-tight')) return false;
+      cur.classList.add('pp-tight');
+      if (!over()) return true;
+      cur.classList.remove('pp-tight');
+      return false;
+    }
     function place(n) {
       cur.appendChild(n);
       if (!over()) return;
+      if (tightFits()) return;
       if (n.tagName === 'TABLE') {
         var t = n, tb = t.tBodies[0], trs = [].slice.call(tb.rows), groups = [];
         /* الصف وما تمتد عليه خانته (rowSpan — «م» البند في جدول التقييم وسطر «ملاحظات أخرى» تحته) ينتقلان معا، فلا
@@ -764,7 +775,7 @@
       cur.appendChild(sg);
       var blanks = [].slice.call(cur.querySelectorAll('tr.blank'));
       while (over() && blanks.length) { var bl = blanks.pop(); bl.parentNode.removeChild(bl); }
-      if (over()) { cur.removeChild(sg); place(sg); }
+      if (over() && !tightFits()) { cur.removeChild(sg); place(sg); }
     }
     /* ملحق الشواهد (print.appendix): بعد التقرير، اربع صور في الصفحة وتحت كل صورة اجراؤها وتاريخها ومنفذه
        (من البيانات بلا ادخال). وملفات PDF لا تدمج — تذكر اسماؤها. والصور المستبعدة في print.off */

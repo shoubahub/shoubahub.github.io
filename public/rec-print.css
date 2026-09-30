@@ -87,6 +87,11 @@
 .pp-att th{ font-weight:700; height:auto; }
 .pp-att .m{ width:8mm; text-align:center; }
 .pp-att .sig{ width:30%; }
+/* الورقة المضغوطة (2026-09-30): حين يفيض الحضور والتوقيعات بقليل، تضيق فسحتهما بدل ان ينتقلا الى صفحة تالية
+   ويبقى اسفل صفحتهما فراغ. لا يمس النص ولا حجم خطه — الفسح وحدها */
+.pp-tight .pp-appr{ padding-top:5mm; }
+.pp-tight .pp-att th,.pp-tight .pp-att td{ height:7mm; padding:.8mm 2mm; }
+.pp-tight .pp-text{ margin-bottom:3mm; }
 
 /* ③ الجدول (المرحلة الثانية أ): اطار اسود، رأس برمادي فاتح يتكرر في كل صفحة، وعناوين رأسية تقرأ صعودا */
 .pp-tbl{ width:100%; border-collapse:collapse; table-layout:fixed; margin:0 0 5mm; font-size:.92em; }

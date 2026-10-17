@@ -420,6 +420,16 @@ ok(R.summary(sp).title === 'ناصر' && R.text(sp).indexOf('ناصر') > -1, '�
 ok(R.validate({ id: 'g', v: 1, title: 'ش', owner: 'teacher', page: { orient: 'portrait', fit: 'flow' }, blocks: [{ type: 'grid', id: 'x', cols: [{ id: 'a', label: 'أ' }], rows: [{ id: 'r', label: 'ر', kind: 'color' }] }] })
   .some(e => e.includes('نوع خارج القائمة')), 'الشبكة ترفض نوع صف خارج القائمة');
 
+// ٨ب) سجل فعاليات الشعبة (2026-09-20) — مصدر واجهة الشعبة
+const EV = R.latest('events');
+ok(!!EV && R.byReady('فعاليات الشعبة وأنشطتها') === EV, 'سجل الفعاليات مسجل ويربط باسمه في المرجعية');
+ok(EV.owner === 'shouba', 'الفعالية سجل للشعبة لا لمعلم');
+ok(EV.blocks[0].fields.some(f => f.kind === 'teacher' && f.multi), 'المشاركون خانة معلمين متعددة');
+ok(!EV.blocks.some(b => b.type === 'fields' && b.fields.some(f => /حال|قادم/.test(f.label))),
+  'لا حقل حالة: «قادمة» و«ما تم» تشتقان من التاريخ');
+ok(EV.blocks.some(b => b.type === 'files' && b.print === 'grid'), 'صور الفعالية تطبع شبكة لا قائمة اسماء');
+ok(W.SHOUBA_REF.readyRecords.indexOf('فعاليات الشعبة وأنشطتها') > -1, 'الفعاليات في ترتيب الاهمية');
+
 // ٩) بلا تشكيل في القوالب والمحرك
 const H = new RegExp('[' + String.fromCharCode(0x064B) + '-' + String.fromCharCode(0x0652) + String.fromCharCode(0x0670) + ']');
 ok(!H.test(read('rec-templates.js')) && !H.test(read('rec-engine.js')), 'القوالب والمحرك بلا تشكيل');

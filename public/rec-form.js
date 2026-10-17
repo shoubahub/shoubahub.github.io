@@ -125,6 +125,9 @@
       }
       /* فصل (تقرير الزيارة): فصول صاحب السجل رقاقات من جدوله كعمود الجدول (CELL.class) */
       if (f.kind === 'class') fld.appendChild(CELL['class'](f, v, ctx, function () { hint(); changed(); }));
+      /* معلمون متعددون في خانة بيانات (المشاركون في الفعالية — 2026-09-20): رقاقات كعمود الجدول (CELL.teacher)،
+         فالخانة المفردة منسدلة لواحد لا غير. القيمة مصفوفة، وفيها «معلمو الشعبة» و«الادارة المدرسية» كالجدول */
+      else if (f.kind === 'teacher' && f.multi) fld.appendChild(CELL.teacher(f, v, ctx, function () { hint(); changed(); }));
       else if (f.kind === 'choice' || f.kind === 'teacher') {
         var opts = f.kind === 'teacher'
           ? (ctx.teachers || []).map(function (n) { return { v: n, t: 'أ. ' + n }; })

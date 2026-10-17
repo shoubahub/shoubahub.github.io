@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<title>عينة · واجهة الشعبة</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../identity/tokens.css" />
+<link rel="stylesheet" href="../shell.css" />
+<link rel="stylesheet" href="../components.css" />
+<link rel="stylesheet" href="../frame.css" />
+<style>
+  /* ===========================================================================
+     عينة واجهة الشعبة — التبويبات الاربعة (2026-09-20)
+     على ملفات المنصة نفسها: tokens + shell + components + frame، فالقياسات حقيقية.
+     البيانات كلها امثلة مكتوبة في هذا الملف، ولا تمس المنصة ولا قاعدة بياناتها.
+     القرارات المطبقة هنا: الترويسة عنبرية · تعريف لا ملكية · الفارغ لا يظهر ·
+     لا مؤشر يكشف ما لم ينجز · الانطباع مجرد بلا نسبة · التعليق خاص لا ينشر.
+     =========================================================================== */
+
+  /* ── الترويسة العنبرية (معتمدة 2026-09-20) ── */
+  .topbar{background:linear-gradient(180deg,#C8862A 0%,#A9701B 58%,#8A5A12 100%);
+    border-bottom:2px solid var(--shouba-navy)}
+  .topbar .tbcrest{box-shadow:0 0 0 2px var(--shouba-navy);background:rgba(244,241,234,.18)}
+  .topbar .tt span{color:rgba(244,241,234,.80)}
+
+  /* ── شارة العينة ── */
+  .samplebar{position:fixed;z-index:70;bottom:98px;left:10px;font-family:'IBM Plex Sans Arabic',sans-serif}
+  .samplebar small{background:rgba(36,29,6,.82);color:#F4F1EA;border-radius:999px;padding:4px 10px;font-size:10px;font-weight:600}
+
+  /* ── لبنات العينة (ليست من المنصة بعد) ── */
+  .pane{display:none}
+  .pane.on{display:block}
+
+  .nums{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0 var(--gap-side)}
+  .num{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:16px;padding:12px 14px;
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 8px 16px rgba(120,98,66,.14)}
+  .num b{display:block;font-size:23px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num);line-height:1.1}
+  .num span{display:block;font-size:11.5px;font-weight:600;color:var(--shouba-label);margin-top:4px}
+
+  /* يوميات: شريط متقلب — بوست او صورة */
+  .diary{margin:0;display:flex;gap:9px;overflow-x:auto;scrollbar-width:none;padding:0 var(--gap-side) 2px}
+  .diary::-webkit-scrollbar{display:none}
+  .dcard{flex:none;width:236px;background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:16px;
+    overflow:hidden;box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 8px 16px rgba(120,98,66,.14)}
+  .dcard .im{aspect-ratio:16/10;background:linear-gradient(135deg,#C9BCA3,#8E8163)}
+  .dcard .bd{padding:11px 13px}
+  .dcard .dt{font-size:10.5px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+  .dcard p{margin:4px 0 0;font-size:12.5px;font-weight:600;color:var(--shouba-ink);line-height:1.7}
+
+  /* علامات الانطباع — تظهر حين توجد فقط، ومجردة بلا نسبة لاحد */
+  .marks{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px solid rgba(226,215,194,.85)}
+  .mk{border:0;cursor:pointer;font-family:var(--font-ar);display:flex;gap:5px;align-items:center;background:rgba(22,69,110,.07);
+    border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--shouba-navy)}
+  .mk u{text-decoration:none;font-family:var(--font-num);color:var(--shouba-label)}
+  .mk.mine{background:rgba(169,112,27,.16);color:var(--shouba-amber-deep)}
+  .mk.mine u{color:var(--shouba-amber-deep)}
+
+  /* منتقي الايام */
+  .days{display:flex;gap:6px;margin:0 0 11px;padding:0 var(--gap-side);overflow-x:auto;scrollbar-width:none}
+  .days::-webkit-scrollbar{display:none}
+  .day{flex:none;border:0;cursor:pointer;font-family:var(--font-ar);font-size:12.5px;font-weight:700;
+    color:var(--shouba-label);background:var(--shouba-sand);border-radius:999px;padding:7px 15px}
+  .day.on{background:var(--shouba-navy);color:var(--shouba-cream)}
+
+  /* شبكة اليوم: صف لكل حصة، وتحته من يعمل فيها (والفارغون لا يذكرون) */
+  .prow{display:flex;gap:10px;padding:10px 13px;border-bottom:1px solid rgba(226,215,194,.75)}
+  .prow:last-child{border-bottom:0}
+  .prow.now{background:rgba(22,69,110,.10);box-shadow:inset 3px 0 0 var(--shouba-navy)}
+  .prow .pn{flex:none;width:34px;text-align:center}
+  .prow .pn b{display:block;font-size:14px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num);line-height:1.2}
+  .prow .pn span{display:block;font-size:9.5px;font-weight:700;color:var(--shouba-hint)}
+  .prow .pl{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+  .tline{display:flex;gap:7px;align-items:center;cursor:pointer;background:none;border:0;padding:0;font-family:var(--font-ar);text-align:right}
+  .tline b{font-size:12.5px;font-weight:700;color:var(--shouba-navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tline small{font-size:11px;font-weight:600;color:var(--shouba-text-muted)}
+  .tline .cl{margin-inline-start:auto;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num);flex:none}
+  .prow .none{font-size:12px;font-weight:600;color:var(--shouba-hint)}
+
+  /* جدول المعلم في لوحة سفلية */
+  .wk{display:grid;grid-template-columns:auto repeat(7,1fr);gap:3px;font-family:var(--font-num);font-size:10px}
+  .wk div{background:rgba(120,98,66,.06);border-radius:5px;padding:6px 2px;text-align:center;color:var(--shouba-text-muted);font-weight:700}
+  .wk .h{background:transparent;color:var(--shouba-label);font-family:var(--font-ar);font-size:10px;padding:4px 2px}
+  .wk .d{background:transparent;color:var(--shouba-label);font-family:var(--font-ar);font-size:10.5px;text-align:right;padding-inline-end:5px;white-space:nowrap}
+  .wk .f{background:transparent;color:var(--shouba-hint)}
+  .wk .r{background:rgba(169,112,27,.14);color:var(--shouba-amber-deep);font-family:var(--font-ar)}
+  .wk .c{background:rgba(22,69,110,.10);color:var(--shouba-navy)}
+
+  /* الفعاليات */
+  .ev{display:flex;gap:11px;padding:12px 13px;border-bottom:1px solid rgba(226,215,194,.75)}
+  .ev:last-child{border-bottom:0}
+  .ev .th{flex:none;width:62px;height:62px;border-radius:13px;background:linear-gradient(135deg,#C9BCA3,#8E8163)}
+  .ev .tx{flex:1;min-width:0}
+  .ev .tx b{display:block;font-size:13.5px;font-weight:700;color:var(--shouba-ink);line-height:1.5}
+  .ev .tx .mt{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:5px;font-size:10.5px;font-weight:700;color:var(--shouba-label)}
+  .ev .tx .mt em{font-style:normal;font-family:var(--font-num);color:var(--shouba-amber-deep)}
+  .ev .marks{margin-top:8px;padding-top:8px}
+
+  /* الخطة: محاور واجراءات بلا عمود متابعة */
+  .ax{margin:0 var(--gap-side) 13px;border-radius:18px;overflow:hidden;
+    background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 8px 16px rgba(120,98,66,.14)}
+  .ax > .hd{background:rgba(22,69,110,.07);padding:10px 13px;font-size:13px;font-weight:700;color:var(--shouba-navy)}
+  .ax .gl{padding:10px 13px;font-size:12px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8;
+    border-bottom:1px solid rgba(226,215,194,.75)}
+  .act{padding:10px 13px;border-bottom:1px solid rgba(226,215,194,.75)}
+  .act:last-child{border-bottom:0}
+  .act b{display:block;font-size:12.5px;font-weight:700;color:var(--shouba-ink);line-height:1.6}
+  .act .mt{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+
+  /* شاشة التعليق */
+  .sheet textarea,.sheet input,.sheet select{width:100%;font-family:var(--font-ar);font-size:14px;font-weight:600;color:var(--shouba-ink);
+    background:var(--shouba-cream);border:1.5px solid var(--shouba-line);border-radius:13px;padding:11px 12px;outline:none}
+  .sheet textarea{min-height:92px;resize:none;line-height:1.8}
+  .sheet .fields{display:flex;flex-direction:column;gap:13px;overflow:auto}
+  .privnote{display:flex;gap:8px;align-items:flex-start;background:rgba(22,69,110,.07);border-radius:13px;padding:10px 12px;
+    font-size:11.5px;font-weight:600;color:var(--shouba-navy);line-height:1.7}
+</style>
+</head>
+<body class="framed">
+
+<div class="samplebar"><small>عينة · بيانات أمثلة</small></div>
+
+<div class="device"><div class="viewport">
+
+  <div class="topbar">
+    <div class="tbcrest"><img src="../identity/assets/logo-vec-dark.svg" alt="شعار المدرسة" style="object-fit:contain;padding:6px" /></div>
+    <div class="tt">
+      <b>شعبة علم النفس والفلسفة</b>
+      <span>ثانوية عبدالله الجابر · رئيس الشعبة: أ. محمد البراك</span>
+    </div>
+  </div>
+
+  <div class="screen has-topbar">
+
+    <!-- ══════════ ① الشعبة ══════════ -->
+    <div class="pane on board" id="p1">
+      <div class="card-soft">
+        <div class="top">
+          <span class="kicker"><i class="pulse"></i> الحصة الثالثة جارية</span>
+          <span class="left">بقي ١٧ د</span>
+        </div>
+        <div class="ttl" id="nowLine">—</div>
+      </div>
+
+      <div>
+        <div class="sect" style="margin:0 var(--gap-side) 11px"><span class="h">من يعمل الآن</span></div>
+        <div class="tbl" id="nowList"></div>
+      </div>
+
+      <div>
+        <div class="sect" style="margin:0 var(--gap-side) 11px"><span class="h">حصيلة الشعبة هذا العام</span></div>
+        <div class="nums">
+          <div class="num"><b>٤</b><span>اجتماعات عقدت</span></div>
+          <div class="num"><b>٧</b><span>فعاليات أقيمت</span></div>
+          <div class="num"><b>٢</b><span>لجان شاركت فيها</span></div>
+          <div class="num"><b>١</b><span>مبادرة أطلقت</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sect" style="margin:0 var(--gap-side) 11px"><span class="h">يوميات الشعبة</span></div>
+        <div class="diary" id="diary"></div>
+      </div>
+      <div style="height:104px"></div>
+    </div>
+
+    <!-- ══════════ ② الجدول ══════════ -->
+    <div class="pane board" id="p2">
+      <div class="days" id="days"></div>
+      <div class="tbl" id="dayGrid"></div>
+      <div style="padding:12px var(--gap-side) 0;font-size:11.5px;font-weight:600;color:var(--shouba-hint);line-height:1.8">
+        لمسة على اسم المعلم تعرض جدول أسبوعه.
+      </div>
+      <div style="height:104px"></div>
+    </div>
+
+    <!-- ══════════ ③ الفعاليات ══════════ -->
+    <div class="pane board" id="p3">
+      <div class="segs sm" style="margin:0 var(--gap-side)">
+        <button type="button" class="seg on" data-ev="done">ما تم</button>
+        <button type="button" class="seg" data-ev="soon">قادمة</button>
+      </div>
+      <div class="tbl" id="evList"></div>
+      <div style="height:104px"></div>
+    </div>
+
+    <!-- ══════════ ④ الخطة ══════════ -->
+    <div class="pane board" id="p4">
+      <div style="margin:0 var(--gap-side);font-size:12px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8">
+        الخطة التشغيلية للشعبة · العام الدراسي ٢٠٢٦ / ٢٠٢٧
+      </div>
+      <div id="planBox"></div>
+      <div style="height:104px"></div>
+    </div>
+
+  </div>
+
+  <!-- ══ الشريط ══ -->
+  <div class="tabbar">
+    <button type="button" class="tab on" data-pane="p1">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 8.4 10 3l7 5.4V16a1 1 0 0 1-1 1h-3.5v-4.5h-5V17H4a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>الشعبة</button>
+    <button type="button" class="tab" data-pane="p2">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3.5" y="4.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 8.5h13M7 3v3M13 3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>الجدول</button>
+    <button type="button" class="tab-add" id="btnSay" aria-label="اكتب تعليقا">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3.5 5.5a1.5 1.5 0 0 1 1.5-1.5h10a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5H8l-3.2 2.6a.5.5 0 0 1-.8-.4V13H5a1.5 1.5 0 0 1-1.5-1.5z" stroke="#241D06" stroke-width="1.9" stroke-linejoin="round"/></svg></button>
+    <button type="button" class="tab" data-pane="p3">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 6.5h12M4 10h12M4 13.5h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="16" cy="13.5" r="1.4" fill="currentColor"/></svg>الفعاليات</button>
+    <button type="button" class="tab" data-pane="p4">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 3h10a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 7.5h6M7 11h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>الخطة</button>
+  </div>
+
+  <!-- ══ اللوحات السفلية ══ -->
+  <div class="sheet-backdrop" id="bd"></div>
+
+  <div class="sheet" id="shSay">
+    <div class="grab"></div>
+    <div class="sheet-title">تعليقك على عمل الشعبة</div>
+    <div class="fields">
+      <div class="privnote">
+        <span>يصل رئيس الشعبة وحده، ولا يظهر على هذه الصفحة.</span>
+      </div>
+      <div class="field"><label>الاسم</label><input type="text" placeholder="اسمك" /></div>
+      <div class="field"><label>الصفة</label>
+        <select><option>مدير المدرسة</option><option>الموجّه الفني</option><option>مدير مساعد</option></select>
+      </div>
+      <div class="field"><label>تعليقك</label><textarea placeholder="اكتب ما تريد إبلاغه رئيس الشعبة"></textarea></div>
+      <button type="button" class="cta" id="sendSay">أرسل</button>
+    </div>
+  </div>
+
+  <div class="sheet" id="shWk">
+    <div class="grab"></div>
+    <div class="sheet-title" id="wkTitle">جدول المعلم</div>
+    <div class="fields"><div class="wk" id="wkGrid"></div></div>
+    <div class="sheet-foot"><button type="button" class="sh-done" data-close>تم</button></div>
+  </div>
+
+</div></div>
+
+<script>
+/* ══ بيانات العينة — أمثلة مكتوبة هنا، ولا صلة لها ببيانات المنصة ══ */
+var AR = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+function n2(n){ return String(n).replace(/[0-9]/g, function(d){ return AR[+d]; }); }
+
+var DAYS = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'];
+var CLS  = ['١٠/١','١٠/٢','١١/١ ع','١١/٢ د','١٢/١ ع','١٢/٣ ع','١٢/٢ د'];
+var TEACH = [
+  { name: 'أ. عبدالعزيز الفهد', subj: 'فلسفة',   wk: ['0-52-3-','-10R4-2','30451--','-240-R3','1-3-52-'] },
+  { name: 'أ. فيصل المطيري',   subj: 'علم نفس', wk: ['-31-0-4','2-45-1-','-022R35','4-1-3-0','-52-1-4'] },
+  { name: 'أ. سعود العجمي',    subj: 'فلسفة',   wk: ['4-0R-1-','-3-2-50','10R4-2-','0-5-14-','2-0-3R-'] },
+  { name: 'أ. بدر الرشيدي',    subj: 'علم نفس', wk: ['-2-4R0-','5-0-3-1','-4--0-2','-3R2-51','0-4-2-3'] }
+];
+var TODAY = 2, NOWP = 3;   /* الثلاثاء، الحصة الثالثة */
+
+var DIARY = [
+  { photo: true,  date: '١٨ سبتمبر ٢٠٢٦', tx: 'زيارة صفية لأ. فيصل المطيري في درس «مدارس علم النفس».', mk: [2,1,0] },
+  { photo: false, date: '١٥ سبتمبر ٢٠٢٦', tx: 'وزّعت خطط التوزيع على معلمي الشعبة، واعتمدت جداول الحصص للفصل الأول.', mk: [1,0,0] },
+  { photo: true,  date: '٩ سبتمبر ٢٠٢٦',  tx: 'أول اجتماعات الشعبة لهذا العام، وفيه أقرّت خطة الأنشطة.', mk: [0,0,0] }
+];
+
+var EVENTS = {
+  done: [
+    { t: 'ملتقى «الفلسفة في حياتنا»',        d: '١١ سبتمبر ٢٠٢٦', who: 'ثلاثة معلمين · ٤٠ متعلما', mk: [3,2,1] },
+    { t: 'ركن التوعية النفسية في الطابور',   d: '٤ سبتمبر ٢٠٢٦',  who: 'أ. سعود العجمي',          mk: [1,1,0] },
+    { t: 'لجنة الاختبارات — الفصل الأول',     d: '٣٠ أغسطس ٢٠٢٦',  who: 'أ. بدر الرشيدي',          mk: [0,0,0] }
+  ],
+  soon: [
+    { t: 'مبادرة «اسأل فيلسوفا»',            d: '٢ أكتوبر ٢٠٢٦',  who: 'الشعبة كاملة',            mk: [0,0,0] },
+    { t: 'ورشة مهارات الحوار الصفي',         d: '١٤ أكتوبر ٢٠٢٦', who: 'بالتنسيق مع التوجيه الفني', mk: [0,0,0] }
+  ]
+};
+
+var MARKS = ['جهد مشكور','عمل متميّز','يستحق التعميم'];
+
+var PLAN = [
+  { ax: 'المحور الأول · الأنشطة والفعاليات',
+    goal: 'ترسيخ حضور الشعبة في الحياة المدرسية، وربط مادتيها بواقع المتعلم.',
+    acts: [ { w: 'إقامة ملتقى فصلي مفتوح لمتعلمي الصف الثاني عشر', who: 'الشعبة كاملة', when: 'سبتمبر · فبراير' },
+            { w: 'ركن توعية نفسية أسبوعي في الطابور الصباحي',      who: 'أ. سعود العجمي', when: 'على مدار العام' },
+            { w: 'مبادرة «اسأل فيلسوفا» عبر لوحة الشعبة',          who: 'أ. عبدالعزيز الفهد', when: 'أكتوبر' } ] },
+  { ax: 'المحور الثاني · النمو المهني',
+    goal: 'رفع كفاية معلمي الشعبة في أساليب الحوار وإدارة النقاش الصفي.',
+    acts: [ { w: 'ورشة داخلية في مهارات الحوار الصفي', who: 'بالتنسيق مع التوجيه الفني', when: 'أكتوبر' },
+            { w: 'تبادل زيارات بين معلمي الشعبة',       who: 'الشعبة كاملة',              when: 'نوفمبر · مارس' } ] }
+];
+
+/* ══ الرسم ══ */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+/* علامات الانطباع: لا تظهر خانة لما لا انطباع عليه */
+function marksHtml(mk){
+  var out = '', any = false, i;
+  for (i = 0; i < 3; i++) if (mk[i] > 0) any = true;
+  if (!any) return '';
+  out = '<div class="marks">';
+  for (i = 0; i < 3; i++) if (mk[i] > 0)
+    out += '<button type="button" class="mk"><i>' + MARKS[i] + '</i><u>' + n2(mk[i]) + '</u></button>';
+  return out + '</div>';
+}
+
+/* ① من يعمل الآن — الفارغون لا يذكرون */
+(function paintNow(){
+  var out = '<div class="tr hd"><span class="c3">المعلم والمادة</span><span class="c4">الفصل</span></div>', busy = 0;
+  TEACH.forEach(function (t) {
+    var ch = t.wk[TODAY].charAt(NOWP - 1);
+    if (ch === '-') return;                               /* فارغ الآن: لا يظهر */
+    busy++;
+    var what = ch === 'R' ? 'احتياط' : t.subj;
+    var cls  = ch === 'R' ? '—' : CLS[+ch];
+    out += '<div class="tr now"><span class="c3">' + esc(t.name) + ' · ' + what + '</span>' +
+           '<span class="c4">' + cls + '</span></div>';
+  });
+  document.getElementById("nowList").innerHTML = out;
+  var WORD = ["لا أحد من معلمي الشعبة في فصله الآن","معلم واحد من الشعبة في فصله الآن","معلمان من معلمي الشعبة في فصولهما الآن","ثلاثة من معلمي الشعبة في فصولهم الآن","أربعة من معلمي الشعبة في فصولهم الآن"];
+  document.getElementById("nowLine").textContent = WORD[Math.min(busy, 4)];
+})();
+
+/* ① اليوميات */
+(function paintDiary(){
+  document.getElementById('diary').innerHTML = DIARY.map(function (d) {
+    return '<div class="dcard">' + (d.photo ? '<div class="im"></div>' : '') +
+      '<div class="bd"><div class="dt">' + d.date + '</div><p>' + esc(d.tx) + '</p>' + marksHtml(d.mk) + '</div></div>';
+  }).join('');
+})();
+
+/* ② الجدول: يوم يختاره الزائر */
+var curDay = TODAY;
+function paintDays(){
+  document.getElementById('days').innerHTML = DAYS.map(function (d, i) {
+    return '<button type="button" class="day' + (i === curDay ? ' on' : '') + '" data-d="' + i + '">' + d + '</button>';
+  }).join('');
+}
+function paintDay(){
+  var out = '', p, any;
+  for (p = 1; p <= 7; p++) {
+    var lines = '';
+    any = false;
+    TEACH.forEach(function (t) {
+      var ch = t.wk[curDay].charAt(p - 1);
+      if (ch === '-') return;
+      any = true;
+      var what = ch === 'R' ? 'احتياط' : t.subj;
+      var cls  = ch === 'R' ? '' : '<span class="cl">' + CLS[+ch] + '</span>';
+      lines += '<button type="button" class="tline" data-t="' + esc(t.name) + '"><b>' + esc(t.name) + '</b>' +
+               '<small>' + what + '</small>' + cls + '</button>';
+    });
+    out += '<div class="prow' + (curDay === TODAY && p === NOWP ? ' now' : '') + '">' +
+           '<div class="pn"><b>' + n2(p) + '</b><span>الحصة</span></div>' +
+           '<div class="pl">' + (any ? lines : '<span class="none">لا حصص للشعبة</span>') + '</div></div>';
+  }
+  document.getElementById('dayGrid').innerHTML = out;
+}
+
+/* ③ الفعاليات */
+function paintEvents(kind){
+  document.getElementById('evList').innerHTML = EVENTS[kind].map(function (e) {
+    return '<div class="ev"><div class="th"></div><div class="tx"><b>' + esc(e.t) + '</b>' +
+      '<div class="mt"><em>' + e.d + '</em><span>' + esc(e.who) + '</span></div>' + marksHtml(e.mk) + '</div></div>';
+  }).join('');
+}
+
+/* ④ الخطة — بلا عمود المتابعة */
+(function paintPlan(){
+  document.getElementById('planBox').innerHTML = PLAN.map(function (a) {
+    return '<div class="ax" style="margin-top:13px"><div class="hd">' + esc(a.ax) + '</div>' +
+      '<div class="gl">' + esc(a.goal) + '</div>' +
+      a.acts.map(function (c) {
+        return '<div class="act"><b>' + esc(c.w) + '</b><div class="mt">' +
+          '<span class="chip navy">' + esc(c.who) + '</span><span class="chip">' + esc(c.when) + '</span></div></div>';
+      }).join('') + '</div>';
+  }).join('');
+})();
+
+/* ══ التنقل واللوحات ══ */
+var bd = document.getElementById('bd');
+function openSheet(id){ document.getElementById(id).classList.add('open'); bd.classList.add('open'); }
+function closeSheets(){
+  [].forEach.call(document.querySelectorAll('.sheet'), function (s) { s.classList.remove('open'); });
+  bd.classList.remove('open');
+}
+bd.addEventListener('click', closeSheets);
+[].forEach.call(document.querySelectorAll('[data-close]'), function (b) { b.addEventListener('click', closeSheets); });
+
+document.querySelector('.tabbar').addEventListener('click', function (e) {
+  var b = e.target.closest('.tab'); if (!b) return;
+  [].forEach.call(document.querySelectorAll('.tab'), function (t) { t.classList.remove('on'); });
+  b.classList.add('on');
+  [].forEach.call(document.querySelectorAll('.pane'), function (p) { p.classList.remove('on'); });
+  document.getElementById(b.getAttribute('data-pane')).classList.add('on');
+  document.querySelector('.screen').scrollTop = 0;
+});
+document.getElementById('btnSay').addEventListener('click', function () { openSheet('shSay'); });
+document.getElementById('sendSay').addEventListener('click', function () {
+  closeSheets();
+  alert('في الواجهة الحقيقية: يصل تعليقك رئيس الشعبة، ولا يظهر على الصفحة.');
+});
+
+document.getElementById('days').addEventListener('click', function (e) {
+  var b = e.target.closest('.day'); if (!b) return;
+  curDay = +b.getAttribute('data-d'); paintDays(); paintDay();
+});
+document.getElementById('dayGrid').addEventListener('click', function (e) {
+  var b = e.target.closest('.tline'); if (!b) return;
+  var name = b.getAttribute('data-t'), t = null, i;
+  for (i = 0; i < TEACH.length; i++) if (TEACH[i].name === name) t = TEACH[i];
+  if (!t) return;
+  document.getElementById('wkTitle').textContent = t.name + ' · ' + t.subj;
+  var g = '<div class="h"></div>';
+  for (i = 1; i <= 7; i++) g += '<div class="h">' + n2(i) + '</div>';
+  DAYS.forEach(function (d, di) {
+    g += '<div class="d">' + d + '</div>';
+    for (var p = 0; p < 7; p++) {
+      var ch = t.wk[di].charAt(p);
+      if (ch === '-')      g += '<div class="f">·</div>';
+      else if (ch === 'R') g += '<div class="r">احتياط</div>';
+      else                 g += '<div class="c">' + CLS[+ch] + '</div>';
+    }
+  });
+  document.getElementById('wkGrid').innerHTML = g;
+  openSheet('shWk');
+});
+
+[].forEach.call(document.querySelectorAll('[data-ev]'), function (b) {
+  b.addEventListener('click', function () {
+    [].forEach.call(document.querySelectorAll('[data-ev]'), function (x) { x.classList.remove('on'); });
+    b.classList.add('on');
+    paintEvents(b.getAttribute('data-ev'));
+  });
+});
+
+/* لمسة على علامة الانطباع — للمعاينة فقط */
+document.addEventListener('click', function (e) {
+  var m = e.target.closest('.mk'); if (!m) return;
+  m.classList.toggle('mine');
+  var u = m.querySelector('u'), v = u.textContent;
+  var num = '٠١٢٣٤٥٦٧٨٩'.indexOf(v) >= 0 ? '٠١٢٣٤٥٦٧٨٩'.indexOf(v) : 0;
+  u.textContent = n2(m.classList.contains('mine') ? num + 1 : num - 1);
+});
+
+paintDays(); paintDay(); paintEvents('done');
+</script>
+</body>
+</html>

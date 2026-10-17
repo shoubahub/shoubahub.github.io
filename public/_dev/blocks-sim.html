@@ -26,7 +26,7 @@
  <div class="device"><div class="viewport">
   <div class="topbar">
     <div class="tbcrest" id="tbCrest"></div>
-    <div class="tt"><b>سجل الاجتماعات</b><span>عينة اللبنات — أداة تطوير</span></div>
+    <div class="tt"><b id="simTitle">سجل الاجتماعات</b><span>عينة اللبنات — أداة تطوير</span></div>
     <div class="iconbtn" data-home title="اللوحة"></div>
   </div>
   <div class="screen has-topbar has-foot">
@@ -79,12 +79,24 @@
   b.values.body.decide = [{ id: 'dC', text: 'إعداد اختبار قصير موحد للصف العاشر', owner: 'خالد العنزي', due: '2026-10-01' }];
   S.saveRec(b);
 
-  var rec = S.newRec('meetings'), tpl = ShoubaRec.of(rec), Q = new URLSearchParams(location.search);
+  /* ?tpl=<معرف القالب> — الاداة كانت على الاجتماعات وحدها (2026-09-20) */
+  var Q = new URLSearchParams(location.search), TPL = Q.get('tpl') || 'meetings';
+  var rec = S.newRec(TPL), tpl = ShoubaRec.of(rec);
+  document.getElementById('simTitle').textContent = tpl.title;
   var formEl = document.getElementById('form'), paperEl = document.getElementById('paper');
   function ctx() { return { teachers: S.teachers(), open: S.openDecisions(rec) }; }
   window.SIM = { rec: rec, tpl: tpl };
   /* ?filled — محضر مملوء كما يملؤه رئيس الشعبة · ?print — الورقة وحدها بمقاسها (وتطبع بـ⌘P) */
-  if (Q.has('filled')) {
+  if (Q.has('filled') && TPL === 'events') {
+    var ve = rec.values;
+    ve.meta.title = 'ملتقى «الرياضيات في حياتنا»';
+    ve.meta.date = '2026-09-11';
+    ve.meta.who = ['خالد العنزي', 'فهد المطيري'];
+    ve.body.about = 'ملتقى مفتوح لمتعلمي الصف الثاني عشر عرضت فيه الشعبة تطبيقات المادة في الحياة اليومية، وشارك فيه أربعون متعلما.';
+    ve.shots = { items: [
+      { file: 'f00000000000000000000003', mime: 'image/jpeg', size: 402000, name: 'افتتاح الملتقى', at: '2026-09-11T08:00:00.000Z' },
+      { file: 'f00000000000000000000004', mime: 'image/jpeg', size: 388000, name: 'ركن التطبيقات', at: '2026-09-11T08:30:00.000Z' } ] };
+  } else if (Q.has('filled')) {
     var v = rec.values;
     v.meta.topic = 'خطة الفصل الأول ومتابعة الاختبارات';
     v.body.carry = { dB: 'done', dC: 'cont' };

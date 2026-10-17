@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<title>عينة · ترويسة واجهة الشعبة</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../identity/tokens.css" />
+<link rel="stylesheet" href="../shell.css" />
+<link rel="stylesheet" href="../components.css" />
+<link rel="stylesheet" href="../frame.css" />
+<style>
+  /* ===========================================================================
+     عينة محور الهوية (2026-09-20) — الترويسة والشريط، على قياسات المنصة نفسها:
+     tokens + shell + components + frame كما تحملها شاشات المنصة، فما يرى هنا
+     هو ما سيرى هناك. المحتوى مثال مكتوب في الملف، ولا يمس المنصة ولا بياناتها.
+     الغاية: اختيار لون الترويسة (كحلي التطبيق ام عنبري الواجهة)، لا اتقان الشاشة.
+     =========================================================================== */
+
+  /* ── الترويسة العنبرية: تسري حين يحمل body الصنف amber ── */
+  body.amber .topbar{background:linear-gradient(180deg,#C8862A 0%,#A9701B 58%,#8A5A12 100%);
+    border-bottom:2px solid var(--shouba-navy)}
+  body.amber .topbar .tbcrest{box-shadow:0 0 0 2px var(--shouba-navy);background:rgba(244,241,234,.18)}
+  body.amber .topbar .tt span{color:rgba(244,241,234,.78)}
+
+  /* ── شريط العينة: لا يظهر في الواجهة الحقيقية ── */
+  .samplebar{position:fixed;z-index:99;bottom:96px;left:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;
+    font-family:'IBM Plex Sans Arabic',sans-serif}
+  .samplebar small{background:rgba(36,29,6,.86);color:#F4F1EA;border-radius:999px;padding:4px 10px;font-size:10px;font-weight:600}
+  .samplebar button{border:0;cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:700;border-radius:999px;
+    padding:8px 13px;background:#241D06;color:#F4F1EA;box-shadow:0 6px 16px rgba(60,45,20,.4)}
+
+  /* ── لبنات العينة وحدها (ليست من المنصة): شبكة الارقام وبطاقتا اليوميات ── */
+  .nums{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0 var(--gap-side)}
+  .num{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:16px;padding:12px 14px;
+    box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 8px 16px rgba(120,98,66,.14)}
+  .num b{display:block;font-size:23px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num);line-height:1.1}
+  .num span{display:block;font-size:11.5px;font-weight:600;color:var(--shouba-label);margin-top:4px}
+  .diary{margin:0 var(--gap-side);display:flex;gap:9px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .diary::-webkit-scrollbar{display:none}
+  .dcard{flex:none;width:232px;background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:16px;
+    overflow:hidden;box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 8px 16px rgba(120,98,66,.14)}
+  .dcard .im{aspect-ratio:16/10;background:linear-gradient(135deg,#C9BCA3,#8E8163 100%)}
+  .dcard .bd{padding:11px 13px}
+  .dcard .dt{font-size:10.5px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+  .dcard p{margin:4px 0 0;font-size:12.5px;font-weight:600;color:var(--shouba-ink);line-height:1.7}
+  /* علامات الانطباع — مجردة بلا نسبة، ولا تظهر الا حين توجد */
+  .marks{display:flex;gap:6px;align-items:center;margin-top:9px;padding-top:9px;border-top:1px solid rgba(226,215,194,.85)}
+  .marks .mk{display:flex;gap:5px;align-items:center;background:rgba(22,69,110,.07);border-radius:999px;padding:3px 9px;
+    font-size:11px;font-weight:700;color:var(--shouba-navy)}
+  .marks .mk i{font-style:normal}
+  .marks .mk u{text-decoration:none;font-family:var(--font-num);color:var(--shouba-label)}
+</style>
+</head>
+<body class="framed">
+
+<div class="samplebar">
+  <small>عينة · الأسماء والأرقام أمثلة</small>
+  <button id="bSwap">جرّب العنبري</button>
+</div>
+
+<div class="device"><div class="viewport">
+
+  <!-- ══ الترويسة: الشعار · اسم الشعبة · المدرسة ورئيسها · بلا أزرار ══ -->
+  <div class="topbar">
+    <div class="tbcrest"><img src="../identity/assets/logo-vec-dark.svg" alt="شعار المدرسة" style="object-fit:contain;padding:6px" /></div>
+    <div class="tt">
+      <b>شعبة علم النفس والفلسفة</b>
+      <span>ثانوية عبدالله الجابر · رئيس الشعبة: أ. محمد البراك</span>
+    </div>
+  </div>
+
+  <div class="screen has-topbar">
+    <div class="board">
+
+      <!-- ① الجدول الحي: ما يجري الآن -->
+      <div class="card-soft">
+        <div class="top">
+          <span class="kicker"><i class="pulse"></i> الحصة الثالثة جارية</span>
+          <span class="left">بقي ١٧ د</span>
+        </div>
+        <div class="ttl">ثلاثة من معلمي الشعبة في فصولهم الآن</div>
+      </div>
+
+      <div>
+        <div class="sect" style="margin:0 var(--gap-side)"><span class="h">من يعمل الآن</span></div>
+        <div class="tbl">
+          <div class="tr hd"><span class="c3">المعلم والمادة</span><span class="c4">الفصل</span></div>
+          <div class="tr now"><span class="c3">أ. عبدالعزيز الفهد · فلسفة</span><span class="c4">١٢/٣ ع</span></div>
+          <div class="tr now"><span class="c3">أ. فيصل المطيري · علم نفس</span><span class="c4">١١/١ د</span></div>
+          <div class="tr now"><span class="c3">أ. سعود العجمي · احتياط</span><span class="c4">—</span></div>
+        </div>
+      </div>
+
+      <!-- ② أرقام الشعبة -->
+      <div>
+        <div class="sect" style="margin:0 var(--gap-side)"><span class="h">حصيلة الشعبة هذا العام</span></div>
+        <div class="nums">
+          <div class="num"><b>٤</b><span>اجتماعات عقدت</span></div>
+          <div class="num"><b>٧</b><span>فعاليات أقيمت</span></div>
+          <div class="num"><b>٢</b><span>لجان شاركت فيها</span></div>
+          <div class="num"><b>١</b><span>مبادرة أطلقت</span></div>
+        </div>
+      </div>
+
+      <!-- ③ يوميات الشعبة -->
+      <div>
+        <div class="sect" style="margin:0 var(--gap-side)"><span class="h">يوميات الشعبة</span></div>
+        <div class="diary">
+          <div class="dcard">
+            <div class="im" style="background:linear-gradient(135deg,#C9BCA3,#8E8163)"></div>
+            <div class="bd">
+              <div class="dt">١٨ سبتمبر ٢٠٢٦</div>
+              <p>زيارة صفية لأ. فيصل المطيري في درس «مدارس علم النفس».</p>
+              <div class="marks">
+                <span class="mk"><i>أعجبني</i><u>٢</u></span>
+                <span class="mk"><i>عمل متميّز</i><u>١</u></span>
+              </div>
+            </div>
+          </div>
+          <div class="dcard">
+            <div class="bd">
+              <div class="dt">١٥ سبتمبر ٢٠٢٦</div>
+              <p>وزّعت خطط التوزيع على معلمي الشعبة، واعتمدت جداول الحصص للفصل الأول.</p>
+              <div class="marks">
+                <span class="mk"><i>شكرا لكم</i><u>١</u></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:96px"></div>
+    </div>
+  </div>
+
+  <!-- ══ الشريط: أربعة تبويبات، والزر الأوسط للتعليق ══ -->
+  <div class="tabbar">
+    <button type="button" class="tab on">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 8.4 10 3l7 5.4V16a1 1 0 0 1-1 1h-3.5v-4.5h-5V17H4a1 1 0 0 1-1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>الشعبة</button>
+    <button type="button" class="tab">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3.5" y="4.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 8.5h13M7 3v3M13 3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>الجدول</button>
+    <button type="button" class="tab-add" aria-label="اكتب تعليقا">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3.5 5.5a1.5 1.5 0 0 1 1.5-1.5h10a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5H8l-3.2 2.6a.5.5 0 0 1-.8-.4V13H5a1.5 1.5 0 0 1-1.5-1.5z" stroke="#241D06" stroke-width="1.9" stroke-linejoin="round"/></svg></button>
+    <button type="button" class="tab">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 6.5h12M4 10h12M4 13.5h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="16" cy="13.5" r="1.4" fill="currentColor"/></svg>الفعاليات</button>
+    <button type="button" class="tab">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 3h10a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 7.5h6M7 11h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>الخطة</button>
+  </div>
+
+</div></div>
+
+<script>
+  var b = document.body, sw = document.getElementById('bSwap');
+  sw.addEventListener('click', function () {
+    var on = b.classList.toggle('amber');
+    sw.textContent = on ? 'ارجع للكحلي' : 'جرّب العنبري';
+  });
+</script>
+
+</body>
+</html>

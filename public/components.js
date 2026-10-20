@@ -166,7 +166,9 @@ Shouba.nextLabel = function (def) {
     titleEl.textContent = current.title;
     list.innerHTML = '';
     current.nodes.forEach(function (x) { list.appendChild(x); });
-    backBtn.classList.toggle('on', stack.length > 0);
+    /* خطوة التأكيد (noDone) بزريها وحدهما: «تراجع» فيها يعيد الخطوة السابقة، فلا «رجوع» ثالث يكررها (2026-10-20).
+       ويعود «رجوع» بالخروج منها، لان كل خطوة تعيد حسابه هنا */
+    backBtn.classList.toggle('on', stack.length > 0 && !current.noDone);
     doneBtn.hidden = current.noDone;
     list.scrollTop = 0;
     document.body.style.overflow = 'hidden';

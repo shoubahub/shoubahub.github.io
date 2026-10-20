@@ -43,13 +43,14 @@
 .ftabs a.on{background:var(--shouba-navy);color:var(--shouba-cream)}
 .fpane[hidden]{display:none}
 
-/* الآن في الشعبة: بطاقات افقية تمرر داخل صفها (لا الصفحة) — من في فصله الآن بحد كحلي، ثم الحصة القادمة بلا حد */
+/* الآن في الشعبة: بطاقات افقية تمرر داخل صفها (لا الصفحة) — من في فصله الآن بحد كحلي، وتحتها رابط «الجدول كاملاً» */
 .fsec > h2 .when{font-size:13px;font-weight:600;color:var(--shouba-label);margin-inline-start:6px}
 .nowrow{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 6px;margin:0 -2px;-webkit-overflow-scrolling:touch}
 .nowrow::-webkit-scrollbar{display:none}
 .ncard{flex:none;width:150px;border-radius:16px;background:var(--shouba-paper);border:2px solid transparent;padding:11px 12px;
   display:flex;flex-direction:column;gap:3px;text-align:right;font-family:var(--font-ar);cursor:pointer;color:var(--shouba-ink)}
 .ncard.in{border-color:var(--shouba-navy)}
+.fall{display:inline-block;margin-top:8px;font-size:13px;font-weight:700;color:var(--shouba-link);text-decoration:none}
 .ncard .p{font-size:11px;font-weight:700;color:var(--shouba-label)}
 .ncard.in .p{color:var(--shouba-navy)}
 .ncard .cl{white-space:nowrap}

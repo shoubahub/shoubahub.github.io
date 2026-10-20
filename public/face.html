@@ -51,6 +51,7 @@
     <section class="fsec" id="nowSec" hidden>
       <h2>الآن في الشعبة<span class="when" id="nowWhen"></span></h2>
       <div class="nowrow" id="nowRow"></div>
+      <a class="fall" id="toJ" href="#الجدول">الجدول كاملاً ›</a>
     </section>
 
     <section class="fsec" id="soonSec" hidden>
@@ -152,20 +153,19 @@
     $('wkTxt').hidden = !(teacher && w.text);
   }
 
-  /* ③ الآن في الشعبة: من في فصله في الحصة الجارية (بحد كحلي)، ثم من له الحصة القادمة — وفي الفرصة اسمها وما يليها.
-     وقبل الدوام وبعده وفي العطلة يختفي القسم بعنوانه */
-  var ORD = ['', 'الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة', 'الثامنة', 'التاسعة'];
+  /* ③ الآن في الشعبة: من في فصله في الحصة الجارية وحده (قرار المستخدم 2026-10-20: «من يعمل الآن فقط، ومن اراد
+     الجدول كاملا ذهب لتبويب الجدول») — وفي الفرصة وقبل الدوام وبعده وفي العطلة لا احد في فصله، فيختفي القسم بعنوانه */
   function periods() { return (SNAP.times || []).filter(function (t) { return !t.brk; }); }
   function pIndex(n) { var ps = periods(); for (var i = 0; i < ps.length; i++) if (ps[i].n === n) return i; return -1; }
-  function cards(day, n, inClass) {
+  function cards(day, n) {
     var i = pIndex(n), out = '';
     if (i < 0) return '';
     (SNAP.people || []).forEach(function (p, k) {
       var v = ((p.wk || {})[day] || [])[i];
       if (!v) return;
       var s = F.slot(v);
-      out += '<button type="button" class="ncard' + (inClass ? ' in' : '') + '" data-k="' + k + '">'
-        + '<span class="p">' + (inClass ? 'في الفصل الآن' : 'الحصة القادمة') + '</span>'
+      out += '<button type="button" class="ncard in" data-k="' + k + '">'
+        + '<span class="p">في الفصل الآن</span>'
         + '<b>' + esc(title(p.name)) + '</b>'
         + '<span class="m">' + [s.subject ? esc(s.subject) : '', clsHtml(s.cls)].filter(Boolean).join(' · ') + '</span></button>';
     });
@@ -176,12 +176,7 @@
     if (st.state === 'period') {
       var t = periods()[pIndex(st.n)];
       when = 'الحصة ' + num(st.n) + (t ? ' · ' + num(t.from + '–' + t.to) : '');
-      out = cards(st.day, st.n, true) + (pIndex(st.n + 1) > -1 ? cards(st.day, st.n + 1, false) : '');
-    } else if ((st.state === 'break' || st.state === 'gap') && st.next) {
-      var nx = periods()[pIndex(st.next)];
-      when = (st.state === 'break' ? esc(st.label || 'الفرصة') + ' · ' : '') + 'تليها الحصة ' + esc(ORD[st.next] || st.next)
-        + (nx ? ' · ' + num(nx.from) : '');
-      out = cards(st.day, st.next, false);
+      out = cards(st.day, st.n);
     }
     $('nowWhen').innerHTML = when ? ' · ' + when : '';
     $('nowRow').innerHTML = out;
@@ -286,7 +281,7 @@
   }
   window.addEventListener('hashchange', route);
   /* ⚠ <base href="../"> يجعل «#الجدول» رابطا الى جذر المنصة — فيكتب الرابط كاملا بمسار الصفحة نفسها */
-  [['tabS', 'الشعبة'], ['tabJ', 'الجدول']].forEach(function (x) {
+  [['tabS', 'الشعبة'], ['tabJ', 'الجدول'], ['toJ', 'الجدول']].forEach(function (x) {
     $(x[0]).setAttribute('href', location.pathname + location.search + '#' + encodeURIComponent(x[1]));
   });
 

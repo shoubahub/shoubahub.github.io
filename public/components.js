@@ -589,12 +589,19 @@ Shouba.nextLabel = function (def) {
 
   /* حذف سجل بتأكيد — **مصدر واحد** للأرشيف وشاشة السجل: يصرح بما يذهب معه (ملفاته، واثره
      على متابعة القرارات)، ثم Shouba.deleteRec (derive.js) يحذفه وملفاته. onDone بعد الحذف */
+  /* المؤنث (اسم القالب بالتاء المربوطة: فعالية · خطة · بطاقة) يؤنث فعله وضميره — «احذفها نهائيا» لا «احذفه»
+     (رصد 2026-10-20، القاعدة نفسها في زر الحذف بشاشة السجل) */
+  Shouba.recFem = function (rec) {
+    var t = window.ShoubaRec && window.ShoubaRec.of(rec);
+    return /ة$/.test((t && t.noun && t.noun.one) || '');
+  };
   Shouba.askDeleteRec = function (rec, title, onDone) {
     var files = window.ShoubaRec ? window.ShoubaRec.files(rec).length : 0;
-    var open = Shouba.stillOpen ? Shouba.stillOpen(rec).length : 0;
-    Shouba.ask('حذف ' + title, 'سيحذف «' + title + '» نهائيا من سجلاتك ولا يسترجع.'
-      + (files ? ' ومعه ما أرفق به من ملفات.' : '')
-      + (open ? ' وقراراته المفتوحة لن تظهر بعد في متابعة ما يليه.' : ''), 'احذفه نهائيا', function () {
+    var open = Shouba.stillOpen ? Shouba.stillOpen(rec).length : 0, f = Shouba.recFem(rec);
+    Shouba.ask('حذف ' + title, (f ? 'ستحذف «' + title + '» نهائيا من سجلاتك ولا تسترجع.' : 'سيحذف «' + title + '» نهائيا من سجلاتك ولا يسترجع.')
+      + (files ? (f ? ' ومعها ما أرفق بها من ملفات.' : ' ومعه ما أرفق به من ملفات.') : '')
+      + (open ? (f ? ' وقراراتها المفتوحة لن تظهر بعد في متابعة ما يليها.' : ' وقراراته المفتوحة لن تظهر بعد في متابعة ما يليه.') : ''),
+      f ? 'احذفها نهائيا' : 'احذفه نهائيا', function () {
       Shouba.deleteRec(rec);
       if (onDone) onDone();
     });

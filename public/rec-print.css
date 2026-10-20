@@ -74,9 +74,14 @@
 .pp-shots.n1,.pp-shots.n2{ grid-template-columns:1fr; }
 .pp-shots.n1 .im{ height:130mm; }
 .pp-shots.n2 .im{ height:70mm; }
-.pp-shots.n3 .pp-shot:first-child{ grid-column:1 / -1; }
+/* ثلاث: الصف السفلي صورتان متجاورتان بفسحة ثابتة، والصف كله في الوسط تحت العليا
+   (قرار المستخدم 2026-10-20 — كانتا ملتصقتين بطرفي عموديهما وبينهما فراغ واسع) */
+.pp-shots.n3{ display:flex; flex-wrap:wrap; justify-content:center; gap:4mm; }
+.pp-shots.n3 .pp-shot:first-child{ flex:0 0 100%; }
 .pp-shots.n3 .pp-shot:first-child .im{ height:76mm; }
-.pp-shots.n3 .im{ height:62mm; }
+.pp-shots.n3 .pp-shot:not(:first-child){ flex:0 1 auto; max-width:calc(50% - 2mm); }
+.pp-shots.n3 .pp-shot:not(:first-child) .im{ height:auto; }
+.pp-shots.n3 .pp-shot:not(:first-child) img{ height:62mm; width:auto; max-height:none; }
 .pp-shot .nm{ font-size:.86em; text-align:center; }
 /* (حذفت الاسطر المنقطة .pp-fill — قرار المستخدم 2026-09-13: «احذف الاسطر تماما») */
 /* ⑧ سطر التوقيعات (P.approval — 2026-09-13): اسفل كل نموذج، بلا اطار (قرار المستخدم: «حتى لا يأخذ مكان المحتوى»).

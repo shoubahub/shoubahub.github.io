@@ -91,7 +91,8 @@ ok(snap.people.length === 2 && snap.people.every(p => p.name !== 'بدر'), 'م�
 ok(snap.people[0].wk['الأحد'].length === times.filter(t => !t.brk).length, 'ايام الجدول بطول الحصص');
 ok(snap.people[1].subj === 'علم نفس', 'المادة الغالبة من الجدول');
 ok(snap.events.map(e => e.title).join('|') === 'لجنة|ملتقى|زيارة الموجه', 'لا مخفية ولا غير مختارة ولا ناقصة ولا منتظرة في النسخة', snap.events.map(e => e.title));
-ok(snap.events.every(e => !('id' in e) && !('hidden' in e)), 'ولا معرفات السجلات');
+ok(snap.events.every(e => Object.keys(e).sort().join() === 'about,date,done,id,photos,src,title,who'),
+  'ولا يخرج من الفعالية غير ما يعرض ومعرفها ومصدرها (للمطابقة، 2026-10-20) — لا hidden ولا created ولا status', snap.events);
 ok(snap.crest && snap.crest.icon === 'book' && !snap.crest.svg, 'الشعار معرف رمز لا SVG نص');
 ok(F.snapshot({ doc: Object.assign({}, doc, { crest: { type: 'image', data: 'javascript:x' } }), roster: [], times, days: REF.days, today: T }).crest === null,
   'صورة شعار ليست data:image لا تنشر');
@@ -134,6 +135,20 @@ ok(!by2('r4').hidden && !by2('r6').hidden && !by2('w3').hidden && by2('r1').hidd
 const snap2 = F.snapshot({ doc: Object.assign({}, doc, { face: f2 }), roster: [], times, days: REF.days, today: T, groups, recs });
 ok(snap2.events.map(e => e.title).join('|') === 'مخفية|لم تختر|لم تنشر', 'والنسخة منه وحده', snap2.events.map(e => e.title));
 ok(F.setShown({}, []).show.length === 0 && !('hide' in F.setShown({}, [])), 'سحب الواجهة كلها: show فارغة');
+
+// ٤د) المطابقة بالمعرف (2026-10-20، معاينة السلوك): ما عدل عنوانه او تاريخه بعد نشره يبقى منشورا، ويعرف انه عدل
+ok(snap.events.every(e => e.id && (e.src === 'rec' || e.src === 'own')), 'النسخة تحمل معرف الفعالية ومصدرها', snap.events);
+ok(snap.events.every(e => F.isPub(byId(e.id), snap) && !F.stale(byId(e.id), snap)), 'ما نشر للتو: منشور، ولا تعديل بعده');
+const recsE = recs.map(r => r.id === 'r1' ? rec('r1', 'ملتقى الفلسفة', '2026-10-27', '2026-10-01T08:00:00Z') : r);
+const listE = F.events(face, recsE, T, groups), r1E = listE.filter(e => e.id === 'r1')[0];
+ok(F.isPub(r1E, snap) && F.stale(r1E, snap), 'عدل عنوانها وتاريخها بعد النشر: منشورة، و«عدلت بعد النشر»');
+ok(F.nextShown(listE, snap, ['r6'], true).sort().join() === ['r1', 'r3', 'w1', 'r6'].sort().join(),
+  'انشر غيرها: المعدلة لا تسقط بصمت', F.nextShown(listE, snap, ['r6'], true));
+ok(F.nextShown(listE, snap, ['r1'], false).indexOf('r1') < 0, 'واسحبها: تسحب بمعرفها');
+ok(!F.isPub({ id: 'r1', src: 'own', title: 'ملتقى', date: '2026-10-25' }, snap), 'المعرف نفسه من مصدر آخر: غير منشورة');
+ok(!F.isPub({ id: 'r9', src: 'rec', title: 'ملتقى', date: '2026-10-25' }, snap), 'وبالمعرف لا بالعنوان: سميتها لا تكفي');
+ok(F.isPub(byId('r1'), PUBS) && !F.stale(byId('r1'), { events: [Object.assign({}, F.pubEvent(byId('r1')), { id: undefined, src: undefined })] }),
+  'النسخة القديمة بلا معرفات: بالعنوان والتاريخ كما كانت');
 
 // ٥) ما يراه الزائر: بساعته هو
 const v1 = F.visible(snap, T);

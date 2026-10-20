@@ -156,10 +156,25 @@
   };
 
   /* ── التحديد والنشر والسحب (2026-10-20، طلب المستخدم: «مربع اختيار لكل فعالية، وزرا انشر واسحب ينفذان») ──
-     «منشورة» ما في آخر نسخة نشرت — تطابق بالعنوان والتاريخ، فالنسخة لا تحمل معرفات السجلات.
+     «منشورة» ما في آخر نسخة نشرت — تطابق بمعرفها ومصدرها (تحملهما النسخة منذ 2026-10-20)، فما عدل عنوانه او تاريخه
+     بعد نشره يبقى منشورا. والنسخة الاقدم بلا معرفات: تطابق بالعنوان والتاريخ.
      ⚠ والاساس ما على الرابط فعلا لا show المحفوظة: show القديمة (بناء ٩٧) فيها ما «اضيف» ولم ينشر */
-  F.isPub = function (e, snap) {
-    return !!(e && snap) && arr(snap.events).some(function (p) { return p && p.title === e.title && p.date === e.date; });
+  F.pubOf = function (e, snap) {
+    if (!e || !snap) return null;
+    return arr(snap.events).filter(function (p) {
+      return p && (p.id ? p.id === e.id && (!p.src || p.src === e.src) : p.title === e.title && p.date === e.date);
+    })[0] || null;
+  };
+  F.isPub = function (e, snap) { return !!F.pubOf(e, snap); };
+  /* الفعالية كما تدخل النسخة — وبها يعرف ان المنشورة عدلت بعد نشرها */
+  F.pubEvent = function (e) {
+    return { id: e.id, src: e.src, title: e.title, date: e.date, who: e.who, about: e.about, photos: e.photos, done: F.isDone(e) };
+  };
+  F.stale = function (e, snap) {
+    var p = F.pubOf(e, snap);
+    if (!p) return false;
+    var q = F.pubEvent(e);
+    return ['title', 'date', 'who', 'about', 'photos', 'done'].some(function (k) { return JSON.stringify(p[k]) !== JSON.stringify(q[k]); });
   };
   /* المعرفات المنشورة بعد الفعل: add انشر (المنشور ∪ المحدد) · وإلا اسحب (المنشور − المحدد). الناقصة لا تدخل ابدا */
   F.nextShown = function (list, snap, sel, add) {
@@ -242,9 +257,7 @@
     var w = F.weekFilled(face.week) ? face.week : null;
     var events = F.events(face, inp.recs, inp.today, inp.groups)
       .filter(function (e) { return !e.hidden && !e.missing && (e.status === 'soon' || e.status === 'done'); })
-      .map(function (e) {
-        return { title: e.title, date: e.date, who: e.who, about: e.about, photos: e.photos, done: F.isDone(e) };
-      });
+      .map(F.pubEvent);
     /* الشعار صورة (data:image) او معرف رمز من icons.js — لا SVG نصا يحقن في صفحة عامة */
     var c = d.crest || {}, crest = c.type === 'image' && /^data:image\//.test(c.data || '') ? { img: c.data }
       : c.type === 'icon' && c.id ? { icon: String(c.id) } : null;

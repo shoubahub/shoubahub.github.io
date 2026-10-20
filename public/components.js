@@ -117,7 +117,7 @@ Shouba.nextLabel = function (def) {
      · زر الرجوع في الهاتف يرجع خطوة او يغلق — لا يخرج من الصفحة: فتح اللوحة يضيف مدخلا في التاريخ.
        ⚠ والاغلاق لا ينادي history.back (قد يلغي انتقالا تبدؤه الشيفرة بعده): يسم المدخل «خاملا» فيعاد استعماله
        في الفتح التالي، ومن رجع منه الى ما قبله يمضى به خطوة اخرى — فلا يلمس الرجوع مرتين */
-  var stack = [], current = null, hist = false, atInert = false, backBtn;
+  var stack = [], current = null, hist = false, atInert = false, backBtn, doneBtn;
   function ensure() {
     if (sheet) return;
     backdrop = document.createElement('div');
@@ -134,7 +134,8 @@ Shouba.nextLabel = function (def) {
     backBtn = sheet.querySelector('.sh-back');
     backdrop.addEventListener('click', close);
     backBtn.addEventListener('click', back);
-    sheet.querySelector('.sh-done').addEventListener('click', done);
+    doneBtn = sheet.querySelector('.sh-done');
+    doneBtn.addEventListener('click', done);
     window.addEventListener('popstate', onPop);
   }
   function isOpen() { return !!(sheet && sheet.classList.contains('open')); }
@@ -148,10 +149,10 @@ Shouba.nextLabel = function (def) {
   /* «تم»: ان كان للخطوة عمل يتمه (onDone — نموذج اضافة كتب فيه) نفذ، فلا يضيع ما كتب؛ وان رده (false: ادخال
      ناقص، ورسالته تظهر) بقيت اللوحة مفتوحة */
   function done() { var f = current && current.onDone; if (f && f() === false) return; close(); }
-  function show(title, nodes, step, onDone) {
+  function show(title, nodes, step, onDone, noDone) {
     ensure();
     if (step && isOpen() && current) stack.push(current); else stack = [];
-    current = { title: title || '', nodes: nodes, onDone: onDone || null };
+    current = { title: title || '', nodes: nodes, onDone: onDone || null, noDone: !!noDone };
     paint();
     if (!hist) {
       try {
@@ -166,6 +167,7 @@ Shouba.nextLabel = function (def) {
     list.innerHTML = '';
     current.nodes.forEach(function (x) { list.appendChild(x); });
     backBtn.classList.toggle('on', stack.length > 0);
+    doneBtn.hidden = current.noDone;
     list.scrollTop = 0;
     document.body.style.overflow = 'hidden';
     backdrop.classList.add('open');
@@ -280,10 +282,11 @@ Shouba.nextLabel = function (def) {
 
   /* لوحة سفلية عامة لأي محتوى (شبكة رموز مثلا) — تعيد استعمال نفس العنصر.
      opt.step: خطوة تالية في اللوحة نفسها، و«رجوع» اسفلها يعيد السابقة (انظر اعلاه).
-     opt.onDone: ما يتمه «تم» (نموذج اضافة: يضيف ان كتب فيه) — يعيد false ليبقي اللوحة */
+     opt.onDone: ما يتمه «تم» (نموذج اضافة: يضيف ان كتب فيه) — يعيد false ليبقي اللوحة
+     opt.noDone: بلا «تم» — للتأكيد (Shouba.ask) وحده: «تم» تحت فعل خطر يقرأ موافقة وهو يغلق فقط (2026-10-20) */
   Shouba.sheet = {
     open: function (title, node, opt) {
-      show(title, [node], !!(opt && opt.step), opt && opt.onDone);
+      show(title, [node], !!(opt && opt.step), opt && opt.onDone, opt && opt.noDone);
       Shouba.tagNeeds(node);
     },
     back: function () { back(); },
@@ -579,7 +582,7 @@ Shouba.nextLabel = function (def) {
     yes.addEventListener('click', function () { Shouba.sheet.close(); onYes(); });
     no.addEventListener('click', function () { if (step) Shouba.sheet.back(); else Shouba.sheet.close(); });
     n.appendChild(p); n.appendChild(yes); n.appendChild(no);
-    Shouba.sheet.open(title, n, { step: step });
+    Shouba.sheet.open(title, n, { step: step, noDone: true });
   };
 
   /* حذف سجل بتأكيد — **مصدر واحد** للأرشيف وشاشة السجل: يصرح بما يذهب معه (ملفاته، واثره

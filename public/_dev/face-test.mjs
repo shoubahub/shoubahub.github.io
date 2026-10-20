@@ -136,7 +136,7 @@ ok((admT.match(/حدد فعالية أولا/g) || []).length === 1 && !admT.inc
   'شاشة الادارة: «حدد فعالية أولا» سطر واحد تحت القائمة — لا عنوانا للزر العنبري (2026-10-20)');
 ok(admT.includes('var ids = add ? SEL : pubSel()') && admT.includes('if (!add && !ids.length) return;') && admT.includes('pull.hidden = !k'),
   'شاشة الادارة: «اسحب» للمنشور من المحدد وحده، ويختفي حتى يحدد منشور (2026-10-20)');
-ok(admT.includes('F.stale(e, pubNow())') && admT.includes('عُدّلت بعد النشر — انشرها لتحديثها'),
+ok(admT.includes('F.stale(e, pubNow())') && admT.includes('عدلت بعد النشر — انشرها لتحديثها'),
   'شاشة الادارة: المنشورة المعدلة بعد نشرها تبقى منشورة وتنبه (2026-10-20)');
 ok(admT.includes("var DOT = '<span aria-hidden=\"true\">·</span>&nbsp;'") && !admT.includes('<span aria-hidden="true">·</span><span>'),
   'شاشة الادارة: الفاصل داخل ما يليه بمسافة لا تنكسر — لا يعلق في آخر السطر (2026-10-20)');

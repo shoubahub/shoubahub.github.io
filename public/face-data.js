@@ -10,7 +10,8 @@
 
    اعدادات الواجهة في وثيقة الشعبة تحت face (تزامن وتصدر كبقيتها):
      week: { kind, text, who, to, photo }   خانة الاسبوع · to آخر يوم تظهر فيه · photo { file, mime } صورة اختيارية
-     hide: [معرف سجل]                 فعالية من السجل اخفيت عن الواجهة — السجل لا يمس
+     show: [معرف سجل]                 فعالية من السجل اختارها رئيس الشعبة للواجهة — لا يظهر من السجل غيرها
+     hide: [معرف سجل]                 (قديم) فعالية من السجل اخفيت — تبقى مخفية ولو كانت في show. السجل لا يمس
      done: [معرف سجل]                 فعالية من السجل اكد رئيس الشعبة اقامتها
      own:  [{ id, title, date, note, created, done }]   فعاليات للواجهة وحدها
      theme: 'amber' | 'navy'          لون الترويسة · العنبري افتراضا
@@ -129,15 +130,20 @@
       created: F.localDay(o.created), done: !!o.done };
   }
 
-  /* كل فعاليات الواجهة لشاشة الادارة: من السجل (ومعها hidden) ثم الخاصة — بحالها في اليوم */
+  /* كل فعاليات الواجهة لشاشة الادارة: من السجل ثم الخاصة — بحالها في اليوم.
+     ⚠ فعالية السجل لا تظهر الا باختيار: hidden ما لم تكن في show (او كانت في hide القديمة).
+     ⚠ والناقصة (بلا عنوان او تاريخ) لا تسقط بصمت: تعود ومعها missing ['title'|'date'] لتكمل في السجل،
+       وتبقى hidden ابدا — لا تضاف للواجهة حتى تكمل. */
   F.events = function (face, recs, today, groups) {
     face = face || {};
-    var hide = arr(face.hide), done = arr(face.done), out = [];
+    var show = arr(face.show), hide = arr(face.hide), done = arr(face.done), out = [];
     arr(recs).forEach(function (r) {
-      var e = F.fromRec(r, groups);
-      if (!e.title || !e.date) return;
+      var e = F.fromRec(r, groups), miss = [];
+      if (!e.title) miss.push('title');
+      if (!e.date) miss.push('date');
       e.done = done.indexOf(r.id) > -1;
-      e.hidden = hide.indexOf(r.id) > -1;
+      if (miss.length) e.missing = miss;
+      e.hidden = !!miss.length || show.indexOf(r.id) < 0 || hide.indexOf(r.id) > -1;
       out.push(e);
     });
     arr(face.own).forEach(function (o) {
@@ -193,7 +199,7 @@
 
   /* ── النسخة المنشورة ───────────────────────────────────────────
      تبنى في جهاز رئيس الشعبة من وثيقته وترسل كما هي (face.js لا يعرف شكلها).
-     ⚠ ما لا يظهر لا يرسل: فعالية مخفية او بانتظار التأكيد لا تدخل النسخة، والجدول لمن له جدول وحده.
+     ⚠ ما لا يظهر لا يرسل: فعالية سجل لم تختر للواجهة او ناقصة او بانتظار التأكيد لا تدخل النسخة، والجدول لمن له جدول وحده.
      in: { doc, self, roster, staff (معلمو الشعبة للفريق — roster ان غاب), times, days, today, groups, recs (سجلات الفعاليات), meetings (عدد اجتماعات العام) } */
   F.snapshot = function (inp) {
     var d = inp.doc || {}, face = d.face || {}, sch = d.schedules || {}, periods = arr(inp.times).filter(function (t) { return !t.brk; }).length;
@@ -211,7 +217,7 @@
     });
     var w = F.weekFilled(face.week) ? face.week : null;
     var events = F.events(face, inp.recs, inp.today, inp.groups)
-      .filter(function (e) { return !e.hidden && (e.status === 'soon' || e.status === 'done'); })
+      .filter(function (e) { return !e.hidden && !e.missing && (e.status === 'soon' || e.status === 'done'); })
       .map(function (e) {
         return { title: e.title, date: e.date, who: e.who, about: e.about, photos: e.photos, done: F.isDone(e) };
       });

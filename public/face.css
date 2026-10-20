@@ -207,6 +207,7 @@
   color:var(--shouba-navy);background:rgba(22,69,110,.09)}
 .erow .op.warn{color:var(--shouba-error);background:rgba(163,56,48,.08)}
 .erow.off b{color:var(--shouba-label)}
+.erow .miss,.erow.off b.miss{color:var(--shouba-error)}
 .grp{padding:7px 13px;background:rgba(120,98,66,.07);font-size:11px;font-weight:700;color:var(--shouba-label)}
 /* المعاينة: الصفحة كما يراها الزائر في طبقة فوق الشاشة */
 .pview{position:fixed;inset:0;z-index:100;background:var(--shouba-canvas);display:flex;flex-direction:column}

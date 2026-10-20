@@ -371,7 +371,8 @@
       ['wait', 'مضى يومها — أكد إقامتها لتظهر في «تمت»', function (e) { return !e.hidden && e.status === 'wait'; }],
       ['soon', 'قادمة', function (e) { return !e.hidden && e.status === 'soon'; }],
       ['done', 'تمت', function (e) { return !e.hidden && e.status === 'done'; }],
-      ['hid', 'مخفية عن الواجهة', function (e) { return e.hidden; }]
+      ['hid', 'من السجل — لم تضف للواجهة', function (e) { return e.hidden && !e.missing; }],
+      ['miss', 'ناقصة — أكملها في السجل', function (e) { return !!e.missing; }]
     ];
     GR.forEach(function (g) {
       var rows = list.filter(g[2]);
@@ -382,14 +383,17 @@
     });
   }
   function evRow(e) {
-    var r = el('div', 'erow' + (e.hidden ? ' off' : ''));
-    r.innerHTML = '<div class="t"><b>' + esc(e.title) + '</b><span class="chip ' + (e.src === 'rec' ? 'muted' : 'navy') + '">'
+    var r = el('div', 'erow' + (e.hidden ? ' off' : '')), miss = e.missing || [];
+    r.innerHTML = '<div class="t"><b' + (e.title ? '>' + esc(e.title) : ' class="miss">بلا عنوان') + '</b><span class="chip ' + (e.src === 'rec' ? 'muted' : 'navy') + '">'
       + (e.src === 'rec' ? 'من السجل' : 'للواجهة وحدها') + '</span></div>'
-      + '<div class="mt"><em>' + dateHtml(e.date) + '</em>' + (e.who.length ? '<span>' + esc(e.who.join('، ')) + '</span>' : '') + '</div>';
+      + '<div class="mt">' + (e.date ? '<em>' + dateHtml(e.date) + '</em>' : '<em class="miss">بلا تاريخ</em>')
+      + (e.who.length ? '<span>' + esc(e.who.join('، ')) + '</span>' : '') + '</div>';
     var ops = el('div', 'ops');
     function op(label, cls, fn) { var b = el('button', 'op' + (cls ? ' ' + cls : '')); b.type = 'button'; b.textContent = label; b.addEventListener('click', fn); ops.appendChild(b); }
+    /* الناقصة لا تضاف للواجهة حتى تكمل: بابها السجل وحده */
+    if (miss.length) { op('أكملها في السجل', '', function () { location.href = 'record.html?id=' + encodeURIComponent(e.id); }); r.appendChild(ops); return r; }
     if (e.status === 'wait' && !e.hidden) op('أقيمت', '', function () { confirmDone(e); });
-    if (e.src === 'rec') op(e.hidden ? 'أظهرها في الواجهة' : 'أخفها من الواجهة', '', function () { toggleHide(e); });
+    if (e.src === 'rec') op(e.hidden ? 'أضفها للواجهة' : 'أخفها من الواجهة', '', function () { toggleShow(e); });
     else op('احذفها', 'warn', function () { removeOwn(e); });
     r.appendChild(ops);
     return r;
@@ -406,13 +410,19 @@
       setFace(g);
     });
   }
-  /* «حذف» فعالية السجل من الواجهة = اخفاؤها: السجل نفسه لا يمس */
-  function toggleHide(e) {
-    var f = face(), hide = (f.hide || []).filter(function (x) { return x !== e.id; });
-    if (!e.hidden) hide.push(e.id);
-    f.hide = hide; setFace(f);
-    if (!e.hidden) S.toast('أخفيت من الواجهة — وتبقى في سجل الفعاليات', function () {
-      var g = face(); g.hide = (g.hide || []).filter(function (x) { return x !== e.id; }); setFace(g);
+  /* فعالية السجل لا تظهر الا باختياره (show)، واخفاؤها رفعها من show: السجل نفسه لا يمس.
+     واضافتها ترفعها من hide القديمة ايضا — والا بقيت مخفية */
+  function setShown(id, on) {
+    var g = face(), show = (g.show || []).filter(function (x) { return x !== id; });
+    if (on) { show.push(id); if (g.hide) g.hide = g.hide.filter(function (x) { return x !== id; }); }
+    g.show = show; setFace(g);
+  }
+  function toggleShow(e) {
+    var on = e.hidden, was = (face().hide || []).slice();
+    setShown(e.id, on);
+    S.toast(on ? 'أضيفت للواجهة — انشر لتظهر على الرابط' : 'أخفيت من الواجهة — وتبقى في سجل الفعاليات', function () {
+      setShown(e.id, !on);
+      if (on) { var g = face(); g.hide = was; setFace(g); }
     });
   }
   /* فعالية الواجهة وحدها تحذف حقا — بتراجع */

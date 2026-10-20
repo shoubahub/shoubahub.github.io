@@ -125,7 +125,12 @@ const anon = { };
 ok((await fetch(`${BASE}/face-admin.html`, { headers: anon })).status === 404, 'شاشة الادارة: الزائر بلا حساب لا يجدها');
 ok((await fetch(`${BASE}/face-admin.html`, { headers: ZH })).status === 404, 'شاشة الادارة: الزميل لا يجدها');
 const adm = await fetch(`${BASE}/face-admin.html`, { headers: H() });
-ok(adm.ok && (await adm.text()).includes('face-data.js'), 'شاشة الادارة: لصاحب المنصة');
+const admT = adm.ok ? await adm.text() : '';
+ok(admT.includes('face-data.js'), 'شاشة الادارة: لصاحب المنصة');
+ok(admT.includes('لم تضف للواجهة') && admT.includes('أضفها للواجهة') && /g\.show = show/.test(admT),
+  'شاشة الادارة: فعالية السجل تضاف للواجهة باختيار (show) — لا تظهر وحدها');
+ok(admT.includes('ناقصة — أكملها في السجل') && admT.includes('بلا عنوان') && admT.includes("'record.html?id='"),
+  'شاشة الادارة: الناقصة تذكر في مجموعتها وبابها السجل');
 ok((await fetch(`${BASE}/face.html`, { headers: anon })).status === 404, 'الصفحة مباشرة (face.html): مغلقة على الزائر — بابه /face/<الرمز>');
 ok((await fetch(`${BASE}/face.html?preview=1`, { headers: ZH })).status === 404, 'والزميل لا يفتح المعاينة');
 ok((await fetch(`${BASE}/face.html?preview=1`, { headers: H() })).ok, 'وصاحب المنصة يعاين بها');

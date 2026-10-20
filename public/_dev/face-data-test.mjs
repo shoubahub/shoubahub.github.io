@@ -42,7 +42,7 @@ ok(F.status({ date: '2026-10-10', created: '2026-10-01', done: true }, T) === 'd
 ok(F.status({ date: '2026-10-10', created: '2026-10-12' }, T) === 'done', 'كتب تقريرها بعد يومها: تمّت بلا سؤال');
 ok(F.localDay('2026-10-19T22:30:00.000Z') === F.iso(new Date('2026-10-19T22:30:00.000Z')), 'يوم الانشاء بتوقيت الجهاز لا UTC');
 
-// ٣) الفعاليات من السجل: الاخفاء لا يمس السجل، والصور وحدها
+// ٣) الفعاليات من السجل: لا تظهر الا باختيار، والناقصة تذكر لتكمل، والاخفاء لا يمس السجل، والصور وحدها
 const rec = (id, title, date, created, extra) => ({ id, tpl: 'events', created, values: Object.assign({
   meta: { title, date, who: ['@all', 'فيصل'] }, body: { about: 'نبذة' },
   shots: { items: [{ file: 'f' + 'a'.repeat(24), mime: 'image/jpeg' }, { file: 'f' + 'b'.repeat(24), mime: 'application/pdf' }] } }, extra || {}) });
@@ -51,17 +51,24 @@ const recs = [
   rec('r2', 'ركن التوعية', '2026-10-10', '2026-10-01T08:00:00Z'),
   rec('r3', 'لجنة', '2026-10-05', '2026-10-06T08:00:00Z'),
   rec('r4', 'مخفية', '2026-10-04', '2026-10-06T08:00:00Z'),
-  rec('r5', '', '2026-10-04', '2026-10-06T08:00:00Z')
+  rec('r5', '', '2026-10-04', '2026-10-06T08:00:00Z'),
+  rec('r6', 'لم تختر', '2026-10-26', '2026-10-01T08:00:00Z'),
+  rec('r7', 'بلا تاريخ', '', '2026-10-06T08:00:00Z')
 ];
 const groups = {}; REF.whoGroups.forEach(g => { groups[g.id] = g.t; });
-const face = { hide: ['r4'], done: [], own: [
+const face = { show: ['r1', 'r2', 'r3', 'r4', 'r5', 'r7'], hide: ['r4'], done: [], own: [
   { id: 'w1', title: 'زيارة الموجه', date: '2026-10-28', note: 'للواجهة', created: '2026-10-19', done: false },
   { id: 'w2', title: 'معرض قديم', date: '2026-10-12', note: '', created: '2026-10-01', done: false }
 ] };
 const list = F.events(face, recs, T, groups);
-ok(list.length === 6, 'بلا عنوان لا تذكر', list.map(e => e.title));
+ok(list.length === 9, 'الناقصة لا تسقط بصمت', list.map(e => e.title));
 const byId = id => list.filter(e => e.id === id)[0];
-ok(byId('r4').hidden && byId('r4').status === 'done', 'المخفية تبقى في القائمة بحالها');
+ok(!byId('r1').hidden && !byId('r3').hidden, 'المختارة للواجهة تظهر');
+ok(byId('r6').hidden && byId('r6').status === 'soon' && !byId('r6').missing, 'فعالية السجل لا تظهر حتى تختار — وتبقى في القائمة بحالها');
+ok(byId('r4').hidden && byId('r4').status === 'done', 'hide القديمة تغلب show');
+ok(byId('r5').hidden && byId('r5').missing.join() === 'title', 'بلا عنوان: ناقصة مخفية ولو اختيرت', byId('r5'));
+ok(byId('r7').hidden && byId('r7').missing.join() === 'date' && byId('r7').status === '', 'بلا تاريخ: ناقصة مخفية ولو اختيرت', byId('r7'));
+ok(F.events({}, [rec('r1', 'ملتقى', '2026-10-25', '2026-10-01T08:00:00Z')], T, groups)[0].hidden, 'بلا show: لا يظهر من السجل شيء');
 ok(byId('r1').photos.length === 1, 'الصور وحدها — لا PDF', byId('r1').photos);
 ok(byId('r1').who[0] === 'معلمو الشعبة', 'المجموعة باسمها لا برمزها', byId('r1').who);
 ok(byId('r2').status === 'wait' && byId('w2').status === 'wait', 'الماضية بلا تأكيد من السجل ومن الواجهة');
@@ -81,7 +88,7 @@ const snap = F.snapshot({ doc, self: 'محمد البراك', roster: ['محمد
 ok(snap.people.length === 2 && snap.people.every(p => p.name !== 'بدر'), 'من لا جدول له لا يذكر', snap.people.map(p => p.name));
 ok(snap.people[0].wk['الأحد'].length === times.filter(t => !t.brk).length, 'ايام الجدول بطول الحصص');
 ok(snap.people[1].subj === 'علم نفس', 'المادة الغالبة من الجدول');
-ok(snap.events.map(e => e.title).join('|') === 'لجنة|ملتقى|زيارة الموجه', 'لا مخفية ولا منتظرة في النسخة', snap.events.map(e => e.title));
+ok(snap.events.map(e => e.title).join('|') === 'لجنة|ملتقى|زيارة الموجه', 'لا مخفية ولا غير مختارة ولا ناقصة ولا منتظرة في النسخة', snap.events.map(e => e.title));
 ok(snap.events.every(e => !('id' in e) && !('hidden' in e)), 'ولا معرفات السجلات');
 ok(snap.crest && snap.crest.icon === 'book' && !snap.crest.svg, 'الشعار معرف رمز لا SVG نص');
 ok(F.snapshot({ doc: Object.assign({}, doc, { crest: { type: 'image', data: 'javascript:x' } }), roster: [], times, days: REF.days, today: T }).crest === null,

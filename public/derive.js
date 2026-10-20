@@ -167,7 +167,9 @@
           if (!blank(mine)) send();         /* ترحيل: يرتفع ما على الجهاز */
           return 'ok';
         }
-        if (blank(mine))     { adopt(srv, rev); return 'ok'; }
+        /* جهاز بلا نسخة (فتحت الشاشة مباشرة لا من الموجه): ترسم الشاشة فارغة ثم تصل الوثيقة —
+           فتعلن «shouba:data» على document لترسم من يستمع من جديد بلا تحديث (2026-10-20) */
+        if (blank(mine))     { adopt(srv, rev); try { document.dispatchEvent(new Event('shouba:data')); } catch (e) {} return 'ok'; }
         if (same(mine, srv)) { setRev(rev); mark(srv); return 'ok'; }
         /* مختلفان */
         if (base === rev) { send(); return 'ok'; }          /* الخادم لم يتغير منذ بنينا ⟵ تعديلاتنا ترتفع */

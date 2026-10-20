@@ -540,6 +540,8 @@
     box.forEach(function (e, i) { if (e.scrollTop !== ys[i]) e.scrollTop = ys[i]; });
   }
   paint();
+  /* وصلت الوثيقة من الخادم بعد الرسم الاول (جهاز بلا نسخة) — يعاد الرسم، واللوحة المفتوحة لا تمس */
+  document.addEventListener('shouba:data', paint);
 
   /* حال الواجهة من الخادم، وآخر نسخة منشورة — بها يعرف «فيها تعديلات لم تنشر» ولو نشر من جهاز آخر */
   api('GET', 'api/face/me').then(function (j) {

@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="frame.css?v=93" />
 <style>
   /* خاص بالإدارة: صف الحساب وجدوله. لا هيكل ولا هوامش عامة. */
-  .urow{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;
+  .urow{background:var(--shouba-paper-grad);border-radius:14px;
     padding:12px 14px;display:flex;align-items:center;gap:11px;
     box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
   .urow .ini{width:34px;height:34px;border-radius:999px;flex:none;display:grid;place-items:center;
@@ -25,7 +25,7 @@
     padding:7px 12px;border-radius:999px;background:rgba(22,69,110,.09);color:var(--shouba-navy)}
   .urow .rst:active{transform:translateY(1px)}
   .dot{width:7px;height:7px;border-radius:999px;flex:none}
-  .dot.on{background:#2E7D57} .dot.off{background:var(--shouba-hint)}
+  .dot.on{background:var(--shouba-success)} .dot.off{background:var(--shouba-hint)}
 
   .inv{display:flex;align-items:center;gap:10px;background:var(--shouba-navy);border-radius:14px;padding:13px 15px}
   .inv .k{font-size:11.5px;font-weight:600;color:var(--shouba-navy-light)}
@@ -45,7 +45,7 @@
   .invbtns .btn-ghost{padding:13px 8px;font-size:13.5px;color:var(--shouba-navy)}
 
   /* الملاحظات — ورقة لكل ملاحظة، والجديدة بحلقة كحلية */
-  .fbrow{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;padding:12px 14px;
+  .fbrow{background:var(--shouba-paper-grad);border-radius:14px;padding:12px 14px;
     display:flex;flex-direction:column;gap:7px;box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
   .fbrow.new{box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 0 0 2px var(--shouba-navy)}
   .fbrow .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:11px;color:var(--shouba-label)}
@@ -58,7 +58,7 @@
   /* خطط التوزيع (2026-09-13، الخطوة ب) — صف الخطة كصف الحساب، واللوحة السفلية اسابيعها ودروسها */
   #tabs{margin-bottom:4px}
   .plab{display:block;margin-top:8px;font-size:12px;font-weight:700;color:var(--shouba-text-muted)}
-  .prow{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:14px;padding:12px 14px;
+  .prow{background:var(--shouba-paper-grad);border-radius:14px;padding:12px 14px;
     display:flex;align-items:center;gap:11px;cursor:pointer;box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45)}
   .prow:active{transform:translateY(1px)}
   .prow .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}

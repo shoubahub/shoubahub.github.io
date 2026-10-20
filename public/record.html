@@ -467,7 +467,9 @@
     /* الحذف من شاشته (وفي الارشيف كذلك) — بتأكيد يصرح باثره، ومصدره واحد: Shouba.askDeleteRec.
        يظهر بعد اول حفظ فقط: الجديد الذي لم يكتب فيه شيء لا شيء فيه يحذف */
     var delBtn = document.getElementById('delRec');
-    delBtn.textContent = 'احذف هذا ' + (/^ال/.test(noun1) ? noun1 : 'ال' + noun1);   /* «هذا المحضر» لا «هذا محضر» */
+    /* «هذا المحضر» لا «هذا محضر»، والمؤنث بالتاء المربوطة «هذه الفعالية» لا «هذا الفعالية» (رصد 2026-10-20):
+       فعالية · خطة · بطاقة — والمذكر في القوالب كلها بلا تاء */
+    delBtn.textContent = 'احذف ' + (/ة$/.test(noun1) ? 'هذه ' : 'هذا ') + (/^ال/.test(noun1) ? noun1 : 'ال' + noun1);
     document.getElementById('rdel').hidden = !saved;
     delBtn.addEventListener('click', function(){
       var s = ShoubaRec.summary(rec), title = s.no !== '' ? noun1 + ' رقم ' + s.no : noun1;

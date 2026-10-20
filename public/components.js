@@ -814,6 +814,38 @@ Shouba.nextLabel = function (def) {
     });
   }
 
+  /* ── الزر الاوسط لواجهة الشعبة (2026-10-20، نطاق اعتمده المستخدم): عند من فعلت له الواجهة وحده يصير الزر العنبري
+     بابها برمزها (لوحة عرض)، فيفتح شاشة ادارتها. والبوابة سؤال الخادم نفسه (/api/face/me: ٢٠٠ مفعلة · ٤٠٤ لا) —
+     فغيره يبقى له «+» وقائمته كما هي. ووظائف «+» الثلاث لها مواضعها: الترس في اللوحة · «أضف معلما» في المعلمين ·
+     «أضف موعدا» في اللوحة.
+     ⚠ يستنسخ الزر بلا مستمعيه (الشاشات تربط quickAdd بنفسها) — ويحفظ الجواب فلا يومض «+» قبل الرمز في كل فتح */
+  var FACE_SVG = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">'
+    + '<rect x="3" y="3.2" width="14" height="9.8" rx="1.8" stroke="#241D06" stroke-width="1.9"/>'
+    + '<path d="M6.5 7.2h7M6.5 9.8h4" stroke="#241D06" stroke-width="1.7" stroke-linecap="round"/>'
+    + '<path d="M7.4 17.2 10 13l2.6 4.2" stroke="#241D06" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function faceTab() {
+    var K = 'shouba.face', on = false;
+    function apply() {
+      [].forEach.call(document.querySelectorAll('.tab-add:not([data-face])'), function (b) {
+        on = true;
+        var n = b.cloneNode(false);
+        n.setAttribute('data-face', '');
+        n.setAttribute('aria-label', 'واجهة الشعبة');
+        n.innerHTML = FACE_SVG;
+        n.addEventListener('click', function () { location.href = 'face-admin.html'; });
+        b.parentNode.replaceChild(n, b);
+      });
+    }
+    try { if (localStorage.getItem(K) === '1') apply(); } catch (e) {}
+    if (!window.fetch) return;
+    fetch('api/face/me', { credentials: 'same-origin', cache: 'no-store' }).then(function (r) {
+      if (r.ok) { try { localStorage.setItem(K, '1'); } catch (e) {} apply(); return; }
+      if (r.status !== 401 && r.status !== 404) return;            /* خلل عابر: يبقى ما كان */
+      try { localStorage.removeItem(K); } catch (e) {}
+      if (on) location.reload();                                    /* اغلقت بعد فتح: يعود «+» بمستمعيه */
+    }).catch(function () {});                                       /* بلا اتصال: يبقى ما حفظ */
+  }
+
   /* ═══ تنبيه النسخة الأحدث (قرار المستخدم 2026-09-08) ═══════════════
      version.json كان يجلب من الشبكة في عامل الخدمة **ولا يقرؤه أحد** —
      فلا مقارنة ولا تنبيه. ومن أبقى المنصة مفتوحة أو ثبتها أيقونة قد
@@ -1267,6 +1299,6 @@ Shouba.nextLabel = function (def) {
     });
   }
 
-  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); bindResume(); }
-  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); bindResume(); });
+  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); faceTab(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); bindResume(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); faceTab(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); bindResume(); });
 })();

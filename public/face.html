@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<!-- الصفحة تخدم على /face/<الرمز>: الاصول من جذر المنصة لا من /face/ -->
+<base href="../" />
+<title>واجهة الشعبة</title>
+<meta name="theme-color" content="#E8A33D" /><!-- --shouba-amber: أعلى تدرج الترويسة -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=94" />
+<link rel="stylesheet" href="face.css?v=94" />
+<!-- ===========================================================================
+     واجهة الشعبة — صفحة الزائر (2026-10-20، الاتجاه المعتمد بعد «أنسب للعمل وليست للعرض»)
+     تبويبان تحت الترويسة (#الشعبة · #الجدول): الشعبة للآن والفعاليات والحصيلة، والجدول الكامل في تبويبه.
+     صفحة عرض واحدة طويلة كموقع الشعبة، للعرض وحده بلا حساب: لا تبويبات ولا شريط ولا اطار جهاز،
+     ولا قطع المنصة (shell · components · frame) — tokens.css وface.css وحدهما.
+     تحت الترويسة فريق الشعبة ثم خانة الاسبوع (في التبويبين). والشعبة من اعلى: الآن في الشعبة · فعاليات اقيمت · فعاليات قادمة · حصيلة العام (اقيمت قبل القادمة — قرار المستخدم).
+     وكل قسم فارغ يختفي بعنوانه. والحصة الجارية تحسب بساعة الزائر (face.js: المنشور بيانات لا صورة).
+     ⚠ وعامل الخدمة يتركها (sw.js) فلا تقدم من مخزن جهاز نسخة قديمة.
+     =========================================================================== -->
+</head>
+<body class="face-pub">
+
+<div id="page" hidden>
+  <header class="fhead" id="head">
+    <div class="fp">
+      <div class="crest" id="crest"></div>
+      <div class="school" id="school"></div>
+      <h1 id="dept">واجهة الشعبة</h1>
+      <div class="hi" id="hi"></div>
+    </div>
+  </header>
+
+  <!-- فريق الشعبة تحت الترويسة مباشرة وفوق التبويبين، فيظهر فيهما معا (قرار المستخدم 2026-10-20: «يظهر من البداية اسفل الترويسة») -->
+  <div class="fp"><div class="fteam" id="team" hidden></div></div>
+
+  <!-- بطاقة الاسبوع تحت الفريق وفوق التبويبين، فتظهر فيهما معا (قرار المستخدم 2026-10-20: «قبل التبويب، اسفل اعضاء الشعبة») -->
+  <div class="fp">
+    <div class="fweek" id="week" hidden>
+      <img class="wide" id="wkWide" alt="" hidden />
+      <div class="row">
+        <img class="face" id="wkFace" alt="" hidden />
+        <div class="tx">
+          <div class="k" id="wkKind"></div>
+          <div class="t" id="wkTtl"></div>
+          <div class="x" id="wkTxt" hidden></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="fp ftabs" aria-label="أقسام الصفحة">
+    <div class="seg2">
+      <a href="#الشعبة" id="tabS" class="on">الشعبة</a>
+      <a href="#الجدول" id="tabJ">الجدول</a>
+    </div>
+  </nav>
+
+  <main class="fp fmain">
+   <div class="fpane" id="paneS">
+    <section class="fsec" id="nowSec">
+      <h2>الآن في الشعبة<span class="when" id="nowWhen"></span></h2>
+      <div class="nowrow" id="nowRow"></div>
+      <p class="nowmsg" id="nowMsg" hidden></p>
+      <a class="fall" id="toJ" href="#الجدول">الجدول كاملاً ›</a>
+    </section>
+
+
+    <section class="fsec" id="doneSec" hidden>
+      <h2>فعاليات أقيمت</h2>
+      <div class="done" id="done"></div>
+    </section>
+
+    <section class="fsec" id="soonSec" hidden>
+      <h2>فعاليات قادمة</h2>
+      <div class="soon" id="soon"></div>
+    </section>
+
+    <section class="fsec" id="statSec" hidden>
+      <h2>حصيلة العام</h2>
+      <div class="stats" id="stats"></div>
+    </section>
+
+   </div>
+
+   <div class="fpane" id="paneJ" hidden>
+    <section class="fsec">
+      <div class="days" id="days"></div>
+      <div class="today" id="today"></div>
+      <p class="fnote" id="todayNote">لمسة على الحصة تعرض جدول أسبوع معلمها.</p>
+    </section>
+   </div>
+
+    <footer class="ffoot">
+      <img src="identity/assets/logo-vec-color.svg" alt="شعبة" />
+      <span>صفحة منشورة من منصة شعبة</span>
+    </footer>
+  </main>
+</div>
+
+<div class="gone" id="gone" hidden>
+  <img src="identity/assets/logo-vec-color.svg" alt="شعبة" />
+  <b>لا واجهة على هذا الرابط</b>
+  <span>لم تنشر بعد، أو سحب صاحبها نشرها.</span>
+</div>
+
+<div class="fbd" id="bd"></div>
+<div class="fsheet" id="sh" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <h3 id="shTitle"></h3>
+  <div class="body" id="shBody"></div>
+  <button type="button" class="close" id="shClose">أغلق</button>
+</div>
+
+<script src="icons.js?v=94"></script>
+<script src="face-data.js?v=94"></script>
+<script>
+(function () {
+  var F = window.ShoubaFace, SNAP = null, FILES = 'api/pub/file/', DONE = [];
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function num(n) { return '<span dir="ltr" class="num">' + esc(n) + '</span>'; }
+  function today() { return F.iso(clock()); }          /* بساعة الصفحة — فمعاينة ?day تحتسب في صلاحية خانة الاسبوع والفعاليات */
+  function title(name) { return 'أ. ' + name; }
+  function dateHtml(iso) { var p = F.dateParts(iso); return p ? esc(p.wd) + ' ' + num(p.day) + ' ' + esc(p.month) : ''; }
+  /* الفصل: رقمه معزول LTR ورمز مساره بعده بالعربية («12/1» ثم «د») — كما يقرأ في جدول المنصة */
+  function clsHtml(cls) {
+    var m = String(cls || '').match(/^(.*?)(?:\s+([عد]))?$/);
+    return m && m[1] ? '<span class="cl">' + num(m[1]) + (m[2] ? ' ' + esc(m[2]) : '') + '</span>' : '';
+  }
+
+  /* ── اللوحة السفلية ── */
+  function openSheet(t, html) {
+    $('shTitle').textContent = t; $('shBody').innerHTML = html;
+    $('bd').classList.add('open'); void $('sh').offsetWidth; $('sh').classList.add('open');
+  }
+  function closeSheet() { $('sh').classList.remove('open'); $('bd').classList.remove('open'); }
+  $('bd').addEventListener('click', closeSheet);
+  $('shClose').addEventListener('click', closeSheet);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
+
+  /* ① الترويسة */
+  function paintHead() {
+    var s = SNAP;
+    $('school').textContent = s.school || '';
+    $('dept').textContent = s.dept || 'واجهة الشعبة';
+    var hd = (s.team || {}).head;
+    $('hi').textContent = 'أهلا بكم في صفحة الشعبة' + (s.head ? ' — رئيس الشعبة ' + (hd && hd.title ? hd.title + ' ' + s.head : title(s.head)) : '');
+    /* لون الترويسة: عنبري افتراضا او كحلي (face-data.js) — ولون شريط المتصفح معه */
+    var navy = F.theme(s) === 'navy';
+    $('head').classList.toggle('navy', navy);
+    var tc = document.querySelector('meta[name="theme-color"]');
+    if (tc) tc.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue(navy ? '--shouba-navy' : '--shouba-amber').trim() || tc.getAttribute('content'));
+    document.title = (s.dept || 'واجهة الشعبة') + (s.school ? ' · ' + s.school : '');
+    var c = s.crest || {}, el = $('crest');
+    if (c.img && /^data:image\//.test(c.img)) { var im = new Image(); im.alt = 'شعار المدرسة'; im.src = c.img; el.appendChild(im); }
+    else if (c.icon && window.SHOUBA_ICONS) el.innerHTML = SHOUBA_ICONS.svg(c.icon, 34);
+    else el.innerHTML = '<img src="identity/assets/logo-vec-color.svg" alt="شعبة" style="object-fit:contain;padding:8px" />';
+  }
+
+  /* ①ب فريق الشعبة: صف افقي يمرر داخله — رئيس الشعبة اولا بصورة اكبر، ثم معلموه. وبلا صورة دائرة رملية بالحرف الاول */
+  function avatar(p, cls) {
+    var ph = p.photo ? FILES + encodeURIComponent(p.photo) : '';
+    return ph ? '<img class="av ' + cls + '" alt="" src="' + ph + '" />'
+      : '<span class="av ' + cls + ' ini" aria-hidden="true">' + esc(F.initial(p.name)) + '</span>';
+  }
+  function paintTeam() {
+    var t = SNAP.team || {}, out = '';
+    if (t.head) out += '<div class="tm head">' + avatar(t.head, 'lg') + '<b>' + esc((t.head.title || 'أ.') + ' ' + t.head.name) + '</b><span>رئيس الشعبة</span></div>';
+    (t.people || []).forEach(function (p) { out += '<div class="tm">' + avatar(p, '') + '<b>' + esc(title(p.name)) + '</b></div>'; });
+    $('team').innerHTML = out; $('team').hidden = !out;
+  }
+
+  /* ② خانة الاسبوع */
+  function paintWeek() {
+    var w = F.visible(SNAP, today()).week;
+    $('week').hidden = !w;
+    if (!w) return;
+    $('wkKind').textContent = F.kindLabel(w.kind);
+    var teacher = w.kind === 'teacher';
+    $('wkTtl').textContent = teacher ? title(w.who) : w.text;
+    $('wkTxt').textContent = teacher ? (w.text || '') : '';
+    $('wkTxt').hidden = !(teacher && w.text);
+    /* الصورة: لمعلم الاسبوع دائرية على جانب البطاقة، وللانجاز عريضة اعلاها — وبلا صورة تبقى البطاقة كما هي */
+    var ph = w.photo && w.kind !== 'quote' ? FILES + encodeURIComponent(w.photo) : '';
+    $('wkFace').hidden = !(ph && teacher); $('wkWide').hidden = !(ph && !teacher);
+    if (ph) $(teacher ? 'wkFace' : 'wkWide').src = ph;
+    $('wkFace').alt = teacher ? title(w.who) : '';
+  }
+
+  /* ③ الآن في الشعبة: من في فصله في الحصة الجارية وحده (قرار المستخدم 2026-10-20: «من يعمل الآن فقط، ومن اراد
+     الجدول كاملا ذهب لتبويب الجدول») */
+  function periods() { return (SNAP.times || []).filter(function (t) { return !t.brk; }); }
+  function pIndex(n) { var ps = periods(); for (var i = 0; i < ps.length; i++) if (ps[i].n === n) return i; return -1; }
+  function cards(day, n) {
+    var i = pIndex(n), out = '';
+    if (i < 0) return '';
+    (SNAP.people || []).forEach(function (p, k) {
+      var v = ((p.wk || {})[day] || [])[i];
+      if (!v) return;
+      var s = F.slot(v);
+      out += '<button type="button" class="ncard in" data-k="' + k + '">'
+        + '<span class="p">في الفصل الآن</span>'
+        + '<b>' + esc(title(p.name)) + '</b>'
+        + '<span class="m">' + [s.subject ? esc(s.subject) : '', clsHtml(s.cls)].filter(Boolean).join(' · ') + '</span></button>';
+    });
+    return out;
+  }
+  /* ⚠ القسم ظاهر دائما (قرار المستخدم 2026-10-20، للمرة الثالثة: «اظهر في الواجهة … المعلمين الذين يعملون حاليا»):
+     كان يختفي خارج الحصص فظنه المستخدم غير منفذ. الآن: في الحصة بطاقات من في فصله، وفي غيرها سطر يصرح بالحال */
+  /* ساعة الصفحة: ساعة الزائر — ومعاملا المعاينة ?at=HH:MM و?day=sun..thu يحاكيانها (لا يمسان البيانات)،
+     ليرى صاحب الشعبة «الآن في الشعبة» في وقت حصة وهو يراجع بعد الدوام */
+  var Q = new URLSearchParams(location.search), AT = /^(\d{1,2}):(\d{2})$/.exec(Q.get('at') || ''), DAYQ = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4 }[Q.get('day') || ''];
+  function clock() {
+    var d = new Date();
+    if (DAYQ !== undefined) d.setDate(d.getDate() - d.getDay() + DAYQ);
+    if (AT) d.setHours(+AT[1], +AT[2], 0, 0);
+    return d;
+  }
+  function paintNow() {
+    var now = clock(), st = F.now(SNAP.times, SNAP.days, now), out = '', when = '', msg = '', ps = periods();
+    var startOf = function (n) { var t = ps[pIndex(n)]; return t ? ' الساعة ' + num(t.from) : ''; };
+    /* اول حصة في يوم الدوام التالي — بعد الخميس والعطلة الاحد */
+    var nextDay = function () { var g = now.getDay(), days = SNAP.days || []; return g >= 4 ? days[0] : days[g + 1]; };
+    if (st.state === 'period') {
+      var t = ps[pIndex(st.n)];
+      when = 'الحصة ' + num(st.n) + (t ? ' · ' + num(t.from + '–' + t.to) : '');
+      out = cards(st.day, st.n);
+      if (!out) msg = 'لا أحد من معلمي الشعبة في فصله في هذه الحصة.';
+    } else if ((st.state === 'break' || st.state === 'gap') && st.next) {
+      msg = esc(st.state === 'break' ? (st.label || 'فرصة') : 'بين حصتين') + ' · تبدأ الحصة ' + num(st.next) + startOf(st.next);
+    } else if (st.state === 'before') {
+      msg = 'يبدأ الدوام' + (ps[0] ? ' الساعة ' + num(ps[0].from) : '');
+    } else {
+      msg = (st.state === 'after' ? 'انتهى دوام اليوم' : 'لا دوام اليوم') + ' · أول حصة ' + esc(nextDay() || '') + (ps[0] ? ' الساعة ' + num(ps[0].from) : '');
+    }
+    $('nowWhen').innerHTML = when ? ' · ' + when : '';
+    $('nowRow').innerHTML = out; $('nowRow').hidden = !out;
+    $('nowMsg').innerHTML = msg; $('nowMsg').hidden = !msg;
+    $('nowSec').hidden = false;                            /* ظاهر دائما — لا يختفي ابدا */
+  }
+
+  /* ④ تبويب الجدول: يوم يختاره الزائر (اليوم افتراضا، وفي العطلة الاحد)، والجارية كحلية في اليوم الحالي */
+  var curDay = null;
+  function paintDays() {
+    $('days').innerHTML = (SNAP.days || []).map(function (d) {
+      return '<button type="button" class="day' + (d === curDay ? ' on' : '') + '" data-d="' + esc(d) + '">' + esc(d) + '</button>';
+    }).join('');
+  }
+  function paintDay() {
+    var st = F.now(SNAP.times, SNAP.days, clock()), out = '';
+    periods().forEach(function (t, i) {
+      (SNAP.people || []).forEach(function (p, k) {
+        var v = ((p.wk || {})[curDay] || [])[i];
+        if (!v) return;
+        var s = F.slot(v), now = st.state === 'period' && st.day === curDay && st.n === t.n;
+        out += '<button type="button" class="cell' + (now ? ' now' : '') + '" data-k="' + k + '">'
+          + '<span class="p">' + (now ? 'الآن · ' : '') + 'الحصة ' + num(t.n) + '</span>'
+          + '<b>' + esc(title(p.name)) + '</b>'
+          + '<span class="m">' + [s.subject ? esc(s.subject) : '', clsHtml(s.cls)].filter(Boolean).join(' · ') + '</span></button>';
+      });
+    });
+    $('today').innerHTML = out || '';
+    $('today').hidden = !out;
+    $('todayNote').textContent = out ? 'لمسة على الحصة تعرض جدول أسبوع معلمها.' : 'لا حصص للشعبة في هذا اليوم.';
+  }
+  $('days').addEventListener('click', function (e) {
+    var b = e.target.closest('.day'); if (!b) return;
+    curDay = b.getAttribute('data-d'); paintDays(); paintDay();
+  });
+  function weekOf(e) {
+    var b = e.target.closest('[data-k]'); if (!b) return;
+    var p = SNAP.people[+b.getAttribute('data-k')], ps = periods();
+    if (!p) return;
+    var g = '<div class="wk" style="--np:' + ps.length + '"><div class="h"></div>';
+    ps.forEach(function (t) { g += '<div class="h">' + num(t.n) + '</div>'; });
+    (SNAP.days || []).forEach(function (d) {
+      g += '<div class="d">' + esc(d) + '</div>';
+      ps.forEach(function (t, i) {
+        var s = F.slot(((p.wk || {})[d] || [])[i]);
+        g += s.cls ? '<div class="c">' + clsHtml(s.cls) + '</div>' : '<div class="f">·</div>';
+      });
+    });
+    openSheet(title(p.name) + (p.subj ? ' · ' + p.subj : ''), g + '</div>');
+  }
+  $('today').addEventListener('click', weekOf);
+  $('nowRow').addEventListener('click', weekOf);
+
+  /* ⑤ ⑥ الفعاليات — والتي مضى يومها بلا تأكيد لا تظهر (face-data.js) */
+  function paintEvents() {
+    var v = F.visible(SNAP, today());
+    $('soon').innerHTML = v.soon.map(function (e) {
+      var p = F.dateParts(e.date) || {};
+      return '<div class="srow"><div class="dt"><b dir="ltr">' + esc(p.day) + '</b><span>' + esc(p.month) + '</span></div>'
+        + '<div class="tx"><b>' + esc(e.title) + '</b>'
+        + ((e.who || []).length || e.about ? '<span>' + esc([(e.who || []).join('، '), e.about].filter(Boolean).join(' — ')) + '</span>' : '')
+        + '</div></div>';
+    }).join('');
+    $('soonSec').hidden = !v.soon.length;
+    DONE = v.done;
+    $('done').innerHTML = v.done.map(function (e, k) {
+      var ph = e.photos || [];
+      return '<article class="dcard">'
+        + (ph.length ? '<img loading="lazy" alt="" src="' + FILES + encodeURIComponent(ph[0]) + '" />' : '')
+        + '<div class="bd"><span class="dt">' + dateHtml(e.date) + '</span><b>' + esc(e.title) + '</b>'
+        + (e.about ? '<p>' + esc(e.about) + '</p>' : '')
+        + (ph.length > 1 ? '<button type="button" class="more" data-e="' + k + '">صورها (' + num(ph.length) + ')</button>' : '')
+        + '</div></article>';
+    }).join('');
+    $('doneSec').hidden = !v.done.length;
+    return v;
+  }
+  $('done').addEventListener('click', function (e) {
+    var b = e.target.closest('.more'); if (!b) return;
+    var ev = DONE[+b.getAttribute('data-e')]; if (!ev) return;
+    openSheet(ev.title, '<div class="shots">' + ev.photos.map(function (id) {
+      return '<img loading="lazy" alt="" src="' + FILES + encodeURIComponent(id) + '" />';
+    }).join('') + '</div>');
+  });
+
+  /* ⑦ حصيلة العام — ما كان صفرا لا يظهر */
+  function paintStats(v) {
+    var m = +((SNAP.stats || {}).meetings) || 0, e = v.done.length, out = '';
+    function unit(n, f) { return n === 1 ? f[0] : n === 2 ? f[1] : (n >= 3 && n <= 10) ? f[2] : f[3]; }
+    if (m) out += '<div class="stat"><b dir="ltr">' + m + '</b><span>' + unit(m, ['اجتماع عقد', 'اجتماعان عقدا', 'اجتماعات عقدت', 'اجتماعا عقد']) + '</span></div>';
+    if (e) out += '<div class="stat"><b dir="ltr">' + e + '</b><span>' + unit(e, ['فعالية أقيمت', 'فعاليتان أقيمتا', 'فعاليات أقيمت', 'فعالية أقيمت']) + '</span></div>';
+    $('stats').innerHTML = out; $('statSec').hidden = !out;
+  }
+
+  /* التبويبان برابط: #الشعبة (الافتراضي) · #الجدول — فيفتح كل منهما مباشرة، ويعمل رجوع المتصفح بينهما */
+  function route() {
+    var h = '';
+    try { h = decodeURIComponent(location.hash.slice(1)); } catch (e) {}
+    var j = h === 'الجدول';
+    $('paneS').hidden = j; $('paneJ').hidden = !j;
+    $('tabS').classList.toggle('on', !j); $('tabJ').classList.toggle('on', j);
+    $('tabS').setAttribute('aria-current', j ? 'false' : 'page'); $('tabJ').setAttribute('aria-current', j ? 'page' : 'false');
+  }
+  window.addEventListener('hashchange', route);
+  /* ⚠ <base href="../"> يجعل «#الجدول» رابطا الى جذر المنصة — فيكتب الرابط كاملا بمسار الصفحة نفسها */
+  [['tabS', 'الشعبة'], ['tabJ', 'الجدول'], ['toJ', 'الجدول']].forEach(function (x) {
+    $(x[0]).setAttribute('href', location.pathname + location.search + '#' + encodeURIComponent(x[1]));
+  });
+
+  function paintAll() { paintWeek(); paintNow(); paintDay(); paintStats(paintEvents()); }
+  function start(snap) {
+    SNAP = snap || {};
+    var g = clock().getDay(), days = SNAP.days || [];
+    curDay = days[g <= 4 ? g : 0] || days[0];
+    paintHead(); paintTeam(); paintDays(); paintAll(); route();
+    $('page').hidden = false;
+    /* الحصة الجارية تتبدل وهو ينظر — والخانة والفعاليات بتبدل اليوم */
+    setInterval(function () { paintNow(); paintDay(); }, 30000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) paintAll(); });
+  }
+  function gone() { $('gone').hidden = false; }
+
+  /* المعاينة من شاشة الادارة: النسخة من الصفحة الام قبل نشرها، وصورها من خزانة صاحبها بجلسته */
+  var prev = /[?&]preview\b/.test(location.search) && window.parent !== window;
+  if (prev) {
+    var snap = null;
+    try { snap = window.parent.FACE_PREVIEW; } catch (e) {}
+    FILES = 'api/files/';
+    if (snap) start(JSON.parse(JSON.stringify(snap))); else gone();
+    return;
+  }
+  var m = location.pathname.match(/\/face\/([0-9a-f]{10})\/?$/);
+  if (!m) { gone(); return; }
+  fetch('api/face/' + m[1], { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (j) { if (j && j.data) start(j.data); else gone(); })
+    .catch(gone);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · واجهة الشعبة</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1B5183" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=94" />
+<link rel="stylesheet" href="shell.css?v=94" />
+<link rel="stylesheet" href="components.css?v=94" />
+<link rel="stylesheet" href="frame.css?v=94" />
+<link rel="stylesheet" href="face.css?v=94" />
+<style>
+  /* ادارة واجهة الشعبة (2026-10-20، نطاق اعتمده المستخدم) — يفتحها الزر الاوسط عند من فعلت له الواجهة.
+     خانة الاسبوع · فعاليات السجل (اظهار واخفاء لا يمس السجل) · فعاليات للواجهة وحدها · معاينة ونشر وسحب ونسخ الرابط.
+     الانماط في face.css — لا هيكل هنا */
+  #wkKinds{flex-wrap:wrap}
+  #wkKinds .seg{flex:1 1 30%}
+  #thSegs{margin:0 var(--gap-side)}
+</style>
+</head>
+<body class="framed face-adm">
+ <div class="device"><div class="viewport">
+  <div class="topbar">
+    <div class="tbcrest" id="tbCrest"></div>
+    <div class="tt"><b>واجهة الشعبة</b><span id="sub">—</span></div>
+    <div class="iconbtn" data-home title="اللوحة"></div>
+  </div>
+
+  <div class="screen has-topbar has-foot has-tabbar">
+    <div class="content">
+      <div class="wrap">
+
+        <!-- حال النشر والرابط -->
+        <div class="card-soft" id="pubCard">
+          <div class="top"><span class="kicker" id="pubKick">…</span><span class="left" id="pubAt"></span></div>
+          <div class="ttl" id="pubTtl"></div>
+          <div class="link" id="pubLink" dir="ltr"></div>
+          <div class="acts">
+            <button type="button" class="ghost2" id="copy">انسخ الرابط</button>
+            <button type="button" class="ghost2" id="preview">عاين كما يراها الزائر</button>
+          </div>
+        </div>
+
+        <section>
+          <div class="sect"><div class="h">لون الترويسة</div></div>
+          <div class="segs sm" id="thSegs"></div>
+        </section>
+
+        <section>
+          <div class="sect"><div class="h">فريق الشعبة</div></div>
+          <div class="tbl" id="tmList"></div>
+        </section>
+
+        <section>
+          <div class="sect"><div class="h">خانة الأسبوع</div><div class="a" id="wkEdit">عدّل ›</div></div>
+          <div class="tbl" id="wkBox"></div>
+        </section>
+
+        <section>
+          <div class="sect"><div class="h">الفعاليات</div><div class="a" id="evAdd">أضف فعالية ›</div></div>
+          <div class="tbl" id="evList"></div>
+        </section>
+
+        <div class="pad" id="pullBox" hidden><button type="button" class="btn-danger" id="pull">اسحب النشر</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="duo">
+      <div data-back="board.html"></div>
+      <button class="cta" id="publish" type="button" disabled>انشر الواجهة</button>
+    </div>
+  </div>
+  <div class="tabbar" data-tabs="face-admin.html"></div>
+
+  <!-- المعاينة: صفحة الزائر نفسها بالنسخة التي ستنشر -->
+  <div class="pview" id="pview" hidden>
+    <div class="pbar"><span>معاينة — كما يراها الزائر، ولم تنشر بعد</span><button type="button" id="pclose">أغلق</button></div>
+    <iframe id="pframe" title="معاينة واجهة الشعبة"></iframe>
+  </div>
+ </div></div>
+
+<script src="build.js?v=94"></script>
+<script src="refdata.js?v=94"></script>
+<script src="rec-templates.js?v=94"></script>
+<script src="rec-engine.js?v=94"></script>
+<script src="derive.js?v=94"></script>
+<script src="icons.js?v=94"></script>
+<script src="components.js?v=94"></script>
+<script src="rec-files.js?v=94"></script>
+<script src="face-data.js?v=94"></script>
+<script>
+(function () {
+  var S = Shouba, F = ShoubaFace, R = window.SHOUBA_REF || {};
+  var ME = null, PUB = null, BUSY = false;          /* حال الخادم · آخر نسخة منشورة · طلب جار */
+  var GROUPS = {};
+  (R.whoGroups || []).forEach(function (g) { GROUPS[g.id] = g.t; });
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function num(n) { return '<span dir="ltr" class="num">' + esc(n) + '</span>'; }
+  function dateHtml(iso) { var p = F.dateParts(iso); return p ? esc(p.wd) + ' ' + num(p.day) + ' ' + esc(p.month) : ''; }
+  function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+
+  /* اعدادات الواجهة في وثيقة الشعبة (face-data.js) — نسخة تعدل ثم تحفظ كاملة */
+  function face() { var f = S.data().face; return f && typeof f === 'object' ? JSON.parse(JSON.stringify(f)) : {}; }
+  function setFace(f) { S.save({ face: f }); paint(); }
+
+  function snapshot() {
+    var d = S.data();
+    return F.snapshot({
+      doc: d, self: S.self(), roster: S.roster(), staff: S.staff(), times: S.periods(), days: S.days(), today: S.today(), groups: GROUPS,
+      recs: S.recs('events'),
+      meetings: S.recs('meetings').filter(function (r) { return (r.year || '') === (d.year || ''); }).length
+    });
+  }
+  function changed() { return !PUB || JSON.stringify(PUB) !== JSON.stringify(snapshot()); }
+  function link() { return ME ? location.origin + '/face/' + ME.slug : ''; }
+
+  /* ── الرأس ── */
+  (function head() {
+    var d = S.data(), el2 = $('tbCrest'), c = d.crest;
+    $('sub').textContent = d.department || 'شعبتك';
+    if (c && c.type === 'image') el2.innerHTML = '<img src="' + c.data + '" alt="شعار المدرسة" />';
+    else if (c && c.type === 'icon' && window.SHOUBA_ICONS) el2.innerHTML = SHOUBA_ICONS.svg(c.id, 22);
+    else el2.innerHTML = '<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
+  })();
+
+  /* ── حال النشر ── */
+  function paintPub() {
+    var btn = $('publish'), diff = changed();
+    $('pubLink').textContent = link();
+    $('copy').disabled = !ME;
+    $('pullBox').hidden = !(ME && ME.published);
+    if (!ME) {
+      $('pubKick').textContent = 'لا اتصال بالخادم';
+      $('pubAt').textContent = '';
+      $('pubTtl').textContent = 'النشر يحتاج الاتصال — أعد فتح الشاشة حين تتصل.';
+      btn.disabled = true; btn.textContent = 'انشر الواجهة';
+      return;
+    }
+    $('pubAt').innerHTML = ME.published && ME.at ? 'نشرت ' + num(S.dm(new Date(ME.at))) : '';
+    if (!ME.published) {
+      $('pubKick').textContent = 'غير منشورة';
+      $('pubTtl').textContent = 'لا شيء على الرابط بعد — يظهر ما تنشره وحده.';
+      btn.textContent = 'انشر الواجهة';
+    } else if (diff) {
+      $('pubKick').textContent = 'منشورة';
+      $('pubTtl').textContent = 'فيها تعديلات لم تنشر بعد.';
+      btn.textContent = 'انشر التعديلات';
+    } else {
+      $('pubKick').textContent = 'منشورة';
+      $('pubTtl').textContent = 'الرابط يعرض آخر ما نشرت.';
+      btn.textContent = 'منشورة كما هي';
+    }
+    btn.disabled = BUSY || (ME.published && !diff);
+  }
+
+  /* ── لون الترويسة: عنبري (الافتراضي) او كحلي — ينشر مع الواجهة ── */
+  function paintTheme() {
+    var box = $('thSegs'), cur = F.theme(face());
+    box.innerHTML = '';
+    [['amber', 'عنبري'], ['navy', 'كحلي']].forEach(function (x) {
+      var b = el('button', 'seg' + (x[0] === cur ? ' on' : '')); b.type = 'button'; b.textContent = x[1];
+      b.addEventListener('click', function () {
+        if (x[0] === cur) return;
+        var f = face(); f.theme = x[0]; setFace(f);
+        S.toast('لون الترويسة ' + x[1] + ' — انشر ليظهر على الرابط');
+      });
+      box.appendChild(b);
+    });
+  }
+
+  /* ── فريق الشعبة: رئيس الشعبة ثم معلموه · صورة اختيارية لكل واحد، و«أخفه» لمن لا يريد الظهور ──
+     الصور ترفع بمسار المرفقات القائم (rec-files.js) الى خزانة الحساب، وتنشر عبر بوابة الواجهة وحدها */
+  function team() { var t = face().team; return t && typeof t === 'object' ? t : {}; }
+  function setTeam(t) { var f = face(); f.team = t; setFace(f); }
+  function headName() { return S.self() || String(team().name || '').trim(); }
+  function uploadPhoto(done, fail) {
+    var FL = window.ShoubaFiles;
+    if (!FL) return;
+    FL.pick(function (file) {
+      if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '')) { S.toast('صورة فقط — لا PDF.'); return; }
+      S.toast('تجهز الصورة وترفع إلى حسابك…');
+      FL.prepare(file).then(function (p) { return FL.upload('face-team', p); }).then(function (j) {
+        done({ file: j.id, mime: j.mime });
+      }).catch(function (e) { S.toast(e && e.user ? e.message : 'تعذر الرفع — أعد المحاولة'); });
+    });
+  }
+  function tAvatar(name, photo) {
+    var ph = F.photoOf(photo);
+    return ph ? '<img class="av" alt="" src="' + esc(ShoubaFiles.url(ph)) + '" />' : '<span class="av" aria-hidden="true">' + esc(F.initial(name)) + '</span>';
+  }
+  function paintTeam() {
+    var t = team(), box = $('tmList'), hide = t.hide || [], photos = t.photos || {}, hn = headName();
+    box.innerHTML = '';
+    function row(raw, name, sub, photo, off) {
+      var r = el('div', 'trow' + (off ? ' off' : ''));
+      r.innerHTML = tAvatar(raw, photo) + '<div class="nm"><b>' + esc(name) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
+      var ops = el('div', 'ops'); r.appendChild(ops);
+      r.op = function (label, cls, fn) { var b = el('button', 'op' + (cls ? ' ' + cls : '')); b.type = 'button'; b.textContent = label; b.addEventListener('click', fn); ops.appendChild(b); };
+      box.appendChild(r);
+      return r;
+    }
+    /* رئيس الشعبة */
+    var title = F.TITLES.indexOf(t.title) > -1 ? t.title : 'أ.';
+    var h = row(hn, hn ? title + ' ' + hn : 'رئيس الشعبة', hn ? 'رئيس الشعبة' : 'اكتب اسمه ليظهر', t.headPhoto, !hn);
+    if (F.photoOf(t.headPhoto)) h.op('احذف الصورة', 'warn', function () { var g = team(); delete g.headPhoto; setTeam(g); });
+    else h.op('أضف صورة', '', function () { uploadPhoto(function (p) { var g = team(); g.headPhoto = p; setTeam(g); }); });
+    h.op(S.self() ? 'اللقب' : 'الاسم واللقب', '', headSheet);
+    /* معلمو الشعبة */
+    S.staff().filter(function (n) { return n && n !== hn; }).forEach(function (n) {
+      var off = hide.indexOf(n) > -1, r = row(n, 'أ. ' + n, off ? 'مخفي عن الواجهة' : '', photos[n], off);
+      if (F.photoOf(photos[n])) r.op('احذف الصورة', 'warn', function () { var g = team(); g.photos = g.photos || {}; delete g.photos[n]; setTeam(g); });
+      else r.op('أضف صورة', '', function () { uploadPhoto(function (p) { var g = team(); (g.photos = g.photos || {})[n] = p; setTeam(g); }); });
+      r.op(off ? 'أظهره' : 'أخفه', '', function () {
+        var g = team(), hd = (g.hide || []).filter(function (x) { return x !== n; });
+        if (!off) hd.push(n);
+        g.hide = hd; setTeam(g);
+      });
+    });
+    box.appendChild(el('div', 'thint', 'الصورة اختيارية — وبلا صورة يظهر الحرف الأول من الاسم. ومن أخفيته لا يظهر في الواجهة.'));
+  }
+  function headSheet() {
+    var t = team(), title = F.TITLES.indexOf(t.title) > -1 ? t.title : 'أ.', n = el('div', 'wd');
+    n.innerHTML = (S.self() ? '' : '<div class="field" data-need="req"><label for="hdName">اسم رئيس الشعبة</label>'
+      + '<div class="paper"><input id="hdName" type="text" maxlength="60" /></div></div>')
+      + '<div class="field" data-need="req"><label>اللقب</label><div class="segs sm" id="hdTitles"></div></div>';
+    var segs = n.querySelector('#hdTitles');
+    F.TITLES.forEach(function (x) {
+      var b = el('button', 'seg' + (x === title ? ' on' : '')); b.type = 'button'; b.textContent = x;
+      b.addEventListener('click', function () { title = x; [].forEach.call(segs.children, function (c) { c.classList.toggle('on', c.textContent === x); }); });
+      segs.appendChild(b);
+    });
+    var inp = n.querySelector('#hdName');
+    if (inp) inp.value = t.name || '';
+    S.sheet.open('رئيس الشعبة', n, { onDone: function () {
+      var g = team();
+      if (inp) { var v = inp.value.trim(); if (!v) { S.toast('اكتب اسم رئيس الشعبة'); return false; } g.name = v; }
+      g.title = title; setTeam(g);
+    } });
+  }
+
+  /* ── خانة الاسبوع ── */
+  function paintWeek() {
+    var w = face().week, box = $('wkBox'), today = S.today();
+    if (!F.weekFilled(w)) {
+      box.innerHTML = '<div class="empty">فارغة، فلا تظهر على الواجهة. اختر معلم الأسبوع أو إنجازه أو عبارة تحفيزية.</div>';
+    } else {
+      var live = F.weekLive(w, today), p = F.dateParts(w.to);
+      var main = w.kind === 'teacher' ? 'أ. ' + w.who + (w.text ? '\n' + w.text : '') : w.text;
+      var ph = F.weekPhoto(w);
+      box.innerHTML = '<div class="wkbox" role="button" tabindex="0"><div class="k"><span class="chip navy">' + esc(F.kindLabel(w.kind)) + '</span>'
+        + (ph ? '<img class="wkthumb" alt="" src="' + esc(ShoubaFiles.url(ph)) + '" />' : '') + '</div>'
+        + '<b>' + esc(main) + '</b>'
+        + (live ? '<small>تظهر حتى ' + (p ? esc(p.wd) + ' ' + num(p.day) + ' ' + esc(p.month) : '') + '، ثم تختفي وحدها إن لم تحدّثها.</small>'
+                : '<small class="off">انتهى أسبوعها فلا تظهر على الواجهة — حدّثها لتعود.</small>') + '</div>';
+      box.firstChild.addEventListener('click', weekSheet);
+    }
+  }
+  function weekSheet() {
+    var w = face().week || {}, kind = F.kindLabel(w.kind) ? w.kind : 'teacher', staff = S.staff();
+    var n = el('div', 'wd');
+    n.innerHTML = '<div class="field" data-need="req"><label>نوعها</label><div class="segs sm" id="wkKinds"></div></div>'
+      + '<div class="field" data-need="req" id="whoBox"><label>المعلم</label>'
+      + '<div class="sdrop" data-label="معلم الأسبوع"><button type="button" class="trigger"><span class="val ph">اختر المعلم</span>'
+      + '<span class="chev"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>'
+      + '<select id="wkWho"><option value="" disabled selected>اختر المعلم</option></select></div></div>'
+      + '<div class="field" id="txtBox"><label for="wkText"></label><div class="paper"><textarea id="wkText" maxlength="160" rows="3"></textarea></div>'
+      + '<div class="hint" id="wkHint"></div></div>'
+      + '<div class="field" data-need="opt" id="phBox"><label>صورة</label><div class="wkph" id="wkPh"></div>'
+      + '<div class="hint" id="phHint"></div></div>';
+    var sel = n.querySelector('#wkWho');
+    staff.forEach(function (name) {
+      var o = document.createElement('option'); o.value = name; o.textContent = 'أ. ' + name;
+      if (w.kind === 'teacher' && w.who === name) o.selected = true;
+      sel.appendChild(o);
+    });
+    /* الصورة (2026-10-20، طلب المستخدم: «مع امكانية رفع صورة»): لمعلم الاسبوع وانجازه، ترفع بمسار المرفقات القائم
+       (rec-files.js) الى خزانة الحساب، وتنشر عبر بوابة الواجهة وحدها. والعبارة التحفيزية بلا صورة */
+    var photo = w.photo && w.photo.file ? { file: w.photo.file, mime: w.photo.mime } : null, FL = window.ShoubaFiles;
+    function paintPhoto(msg) {
+      var box = n.querySelector('#wkPh');
+      box.innerHTML = '';
+      if (photo) {
+        var im = el('img'); im.alt = ''; im.src = FL.url(photo.file); box.appendChild(im);
+        var rm = el('button', 'btn-danger'); rm.type = 'button'; rm.textContent = 'احذف الصورة';
+        rm.addEventListener('click', function () { photo = null; paintPhoto(); });
+        box.appendChild(rm);
+      } else {
+        var add = el('button', 'btn-ghost'); add.type = 'button'; add.textContent = 'أضف صورة';
+        add.addEventListener('click', pickPhoto);
+        box.appendChild(add);
+      }
+      n.querySelector('#phHint').textContent = msg || (kind === 'teacher' ? 'اختيارية — تظهر دائرية بجانب اسمه.' : 'اختيارية — تظهر عريضة أعلى البطاقة.');
+    }
+    function pickPhoto() {
+      if (!FL) return;
+      FL.pick(function (file) {
+        if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '')) { paintPhoto('صورة فقط — لا PDF.'); return; }
+        paintPhoto('تجهز الصورة وترفع إلى حسابك…');
+        FL.prepare(file).then(function (p) { return FL.upload('face-week', p); }).then(function (j) {
+          photo = { file: j.id, mime: j.mime }; paintPhoto();
+        }).catch(function (e) { paintPhoto(e && e.user ? e.message : 'تعذر الرفع — أعد المحاولة'); });
+      });
+    }
+    var txt = n.querySelector('#wkText');
+    txt.value = w.text || '';
+    var segs = n.querySelector('#wkKinds');
+    F.KINDS.forEach(function (k) {
+      var b = el('button', 'seg' + (k.id === kind ? ' on' : ''));
+      b.type = 'button'; b.textContent = k.label;
+      b.addEventListener('click', function () { kind = k.id; fit(); });
+      segs.appendChild(b);
+    });
+    function fit() {
+      [].forEach.call(segs.children, function (b, i) { b.classList.toggle('on', F.KINDS[i].id === kind); });
+      var t = kind === 'teacher';
+      n.querySelector('#whoBox').hidden = !t;
+      var box = n.querySelector('#txtBox'), lab = box.querySelector('label');
+      box.setAttribute('data-need', t ? 'opt' : 'req');
+      lab.textContent = t ? 'سبب اختياره' : kind === 'feat' ? 'الإنجاز' : 'العبارة';
+      txt.placeholder = t ? 'مثل: أتمّ خطة المنهج في موعدها' : kind === 'feat' ? 'اكتب إنجاز الشعبة هذا الأسبوع' : 'اكتب العبارة كما ستظهر';
+      var old = lab.querySelector('.need'); if (old) old.remove();
+      S.tagNeeds(n);
+      var p = F.dateParts(F.weekEnd(S.today()));
+      n.querySelector('#phBox').hidden = kind === 'quote';
+      if (kind !== 'quote') paintPhoto();
+      n.querySelector('#wkHint').innerHTML = 'تظهر حتى ' + (p ? esc(p.wd) + ' ' + num(p.day) + ' ' + esc(p.month) : '') + '، ثم تختفي وحدها إن لم تحدّثها.';
+    }
+    fit();
+    S.bindDrop(n.querySelector('.sdrop'));
+    if (!staff.length) n.querySelector('#whoBox').insertAdjacentHTML('beforeend', '<div class="hint">لا معلمين في شعبتك بعد.</div>');
+    if (F.weekFilled(face().week)) {
+      var rm = el('button', 'btn-danger'); rm.type = 'button'; rm.textContent = 'أفرغ الخانة';
+      rm.addEventListener('click', function () {
+        var f = face(), was = f.week; f.week = null; setFace(f); S.sheet.close();
+        S.toast('أفرغت خانة الأسبوع', function () { var g = face(); g.week = was; setFace(g); });
+      });
+      n.appendChild(rm);
+    }
+    S.sheet.open('خانة الأسبوع', n, { onDone: function () {
+      var who = sel.value, text = txt.value.trim();
+      if (kind === 'teacher' && !who) { S.toast('اختر معلم الأسبوع'); return false; }
+      if (kind !== 'teacher' && !text) { S.toast(kind === 'feat' ? 'اكتب الإنجاز' : 'اكتب العبارة'); return false; }
+      var f = face();
+      f.week = { kind: kind, who: kind === 'teacher' ? who : '', text: text, to: F.weekEnd(S.today()), at: S.today() };
+      if (photo && kind !== 'quote') f.week.photo = photo;
+      setFace(f);
+      S.toast('حفظت خانة الأسبوع — انشر لتظهر على الرابط');
+    } });
+  }
+
+  /* ── الفعاليات ── */
+  function paintEvents() {
+    var f = face(), list = F.events(f, S.recs('events'), S.today(), GROUPS), box = $('evList');
+    box.innerHTML = '';
+    if (!list.length) {
+      box.innerHTML = '<div class="empty">لا فعاليات بعد — ما تكتبه في سجل الفعاليات يظهر هنا، أو أضف فعالية للواجهة وحدها.</div>';
+      return;
+    }
+    var GR = [
+      ['wait', 'مضى يومها — أكّد إقامتها لتظهر في «تمّت»', function (e) { return !e.hidden && e.status === 'wait'; }],
+      ['soon', 'قادمة', function (e) { return !e.hidden && e.status === 'soon'; }],
+      ['done', 'تمّت', function (e) { return !e.hidden && e.status === 'done'; }],
+      ['hid', 'مخفية عن الواجهة', function (e) { return e.hidden; }]
+    ];
+    GR.forEach(function (g) {
+      var rows = list.filter(g[2]);
+      if (g[0] === 'done') rows.reverse();
+      if (!rows.length) return;
+      box.appendChild(el('div', 'grp', esc(g[1])));
+      rows.forEach(function (e) { box.appendChild(evRow(e)); });
+    });
+  }
+  function evRow(e) {
+    var r = el('div', 'erow' + (e.hidden ? ' off' : ''));
+    r.innerHTML = '<div class="t"><b>' + esc(e.title) + '</b><span class="chip ' + (e.src === 'rec' ? 'muted' : 'navy') + '">'
+      + (e.src === 'rec' ? 'من السجل' : 'للواجهة وحدها') + '</span></div>'
+      + '<div class="mt"><em>' + dateHtml(e.date) + '</em>' + (e.who.length ? '<span>' + esc(e.who.join('، ')) + '</span>' : '') + '</div>';
+    var ops = el('div', 'ops');
+    function op(label, cls, fn) { var b = el('button', 'op' + (cls ? ' ' + cls : '')); b.type = 'button'; b.textContent = label; b.addEventListener('click', fn); ops.appendChild(b); }
+    if (e.status === 'wait' && !e.hidden) op('أُقيمت', '', function () { confirmDone(e); });
+    if (e.src === 'rec') op(e.hidden ? 'أظهرها في الواجهة' : 'أخفها من الواجهة', '', function () { toggleHide(e); });
+    else op('احذفها', 'warn', function () { removeOwn(e); });
+    r.appendChild(ops);
+    return r;
+  }
+  function confirmDone(e) {
+    var f = face();
+    if (e.src === 'rec') { f.done = (f.done || []).filter(function (x) { return x !== e.id; }); f.done.push(e.id); }
+    else (f.own || []).forEach(function (o) { if (o.id === e.id) o.done = true; });
+    setFace(f);
+    S.toast('أكدت إقامتها — تنتقل إلى «تمّت» حين تنشر', function () {
+      var g = face();
+      if (e.src === 'rec') g.done = (g.done || []).filter(function (x) { return x !== e.id; });
+      else (g.own || []).forEach(function (o) { if (o.id === e.id) o.done = false; });
+      setFace(g);
+    });
+  }
+  /* «حذف» فعالية السجل من الواجهة = اخفاؤها: السجل نفسه لا يمس */
+  function toggleHide(e) {
+    var f = face(), hide = (f.hide || []).filter(function (x) { return x !== e.id; });
+    if (!e.hidden) hide.push(e.id);
+    f.hide = hide; setFace(f);
+    if (!e.hidden) S.toast('أخفيت من الواجهة — وتبقى في سجل الفعاليات', function () {
+      var g = face(); g.hide = (g.hide || []).filter(function (x) { return x !== e.id; }); setFace(g);
+    });
+  }
+  /* فعالية الواجهة وحدها تحذف حقا — بتراجع */
+  function removeOwn(e) {
+    var f = face(), was = null;
+    f.own = (f.own || []).filter(function (o) { if (o.id === e.id) { was = o; return false; } return true; });
+    setFace(f);
+    S.toast('حذفت «' + e.title + '»', function () { var g = face(); (g.own = g.own || []).push(was); setFace(g); });
+  }
+  function addSheet() {
+    var n = el('div', 'wd');
+    n.innerHTML = '<div class="field" data-need="req"><label for="evT">عنوان الفعالية</label>'
+      + '<div class="paper"><input id="evT" type="text" maxlength="80" placeholder="مثل: ملتقى الفلسفة في حياتنا" /></div></div>'
+      + '<div class="field" data-need="req"><label for="evD">تاريخها</label><div class="paper"><input id="evD" type="date" value="' + S.today() + '" /></div></div>'
+      + '<div class="field" data-need="opt"><label for="evN">نبذة</label><div class="paper"><textarea id="evN" maxlength="300" rows="3"></textarea></div>'
+      + '<div class="hint">للواجهة وحدها — لا تحفظ في سجل الفعاليات ولا تطبع.</div></div>';
+    S.sheet.open('فعالية للواجهة', n, { onDone: function () {
+      var t = n.querySelector('#evT').value.trim(), dt = n.querySelector('#evD').value;
+      if (!t) { S.toast('اكتب عنوان الفعالية'); return false; }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dt)) { S.toast('اختر تاريخها'); return false; }
+      var f = face();
+      (f.own = f.own || []).push({ id: 'w' + Date.now().toString(36), title: t, date: dt, note: n.querySelector('#evN').value.trim(),
+        created: S.today(), done: false });
+      setFace(f);
+      S.toast('أضيفت للواجهة — انشر لتظهر على الرابط');
+    } });
+  }
+
+  /* ── النشر والسحب والرابط والمعاينة ── */
+  function api(method, url, body) {
+    return fetch(url, { method: method, credentials: 'same-origin', cache: 'no-store',
+      headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { j.status = r.status; j.ok = r.ok; return j; }); });
+  }
+  $('publish').addEventListener('click', function () {
+    if (BUSY || !ME) return;
+    var snap = snapshot();
+    BUSY = true; paintPub();
+    api('POST', 'api/face/publish', { data: snap }).then(function (j) {
+      BUSY = false;
+      if (!j.ok) { S.toast(j.error || 'تعذر النشر — حاول بعد قليل'); paintPub(); return; }
+      ME.published = true; ME.at = j.at; ME.rev = j.rev; PUB = snap;
+      paint();
+      S.toast('نشرت — الرابط يعرضها الآن');
+    }, function () { BUSY = false; paintPub(); S.toast('لا اتصال بالخادم — لم تنشر'); });
+  });
+  $('pull').addEventListener('click', function () {
+    S.ask('سحب النشر', 'يفرغ الرابط فلا يجد الزائر شيئا، وتغلق صور الواجهة في الحال. ويبقى الرابط نفسه إن نشرت بعد.', 'اسحب النشر', function () {
+      api('DELETE', 'api/face/publish').then(function (j) {
+        if (!j.ok) { S.toast(j.error || 'تعذر السحب'); return; }
+        ME.published = false; ME.at = ''; PUB = null; paint();
+        S.toast('سحب النشر — الرابط فارغ الآن');
+      }, function () { S.toast('لا اتصال بالخادم'); });
+    });
+  });
+  $('copy').addEventListener('click', function () {
+    var u = link();
+    if (!u) return;
+    var done = function () { S.toast('نسخ الرابط' + (ME.published ? '' : ' — ولا يعرض شيئا حتى تنشر')); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(done, fallback);
+    else fallback();
+    function fallback() {
+      var t = document.createElement('textarea'); t.value = u; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); done(); } catch (x) { S.toast(u); }
+      t.remove();
+    }
+  });
+  $('preview').addEventListener('click', function () {
+    window.FACE_PREVIEW = snapshot();
+    $('pframe').src = 'face.html?preview=1&t=' + Date.now();
+    $('pview').hidden = false;
+  });
+  $('pclose').addEventListener('click', function () { $('pview').hidden = true; $('pframe').src = 'about:blank'; });
+
+  $('wkEdit').addEventListener('click', weekSheet);
+  $('evAdd').addEventListener('click', addSheet);
+
+  function paint() { paintPub(); paintTheme(); paintTeam(); paintWeek(); paintEvents(); }
+  paint();
+
+  /* حال الواجهة من الخادم، وآخر نسخة منشورة — بها يعرف «فيها تعديلات لم تنشر» ولو نشر من جهاز آخر */
+  api('GET', 'api/face/me').then(function (j) {
+    if (!j.ok) { paint(); return; }
+    ME = j;
+    if (!ME.published) { paint(); return; }
+    fetch('api/face/' + ME.slug, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (p) { PUB = p && p.data ? p.data : null; paint(); }, function () { paint(); });
+  }, function () { paint(); });
+})();
+</script>
+</body>
+</html>

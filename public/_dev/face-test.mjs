@@ -120,6 +120,66 @@ ok(!tdbRows(), 'ولا يولد له رمز رابط اصلا');
 cookie = mine;
 ok((await fetch(`${BASE}/api/face/me`, { headers: H() })).ok, 'وصاحب المنصة يجدها كما هي');
 
+// صفحتا الواجهة خلف البوابة (2026-10-20): الملفات الساكنة لا تخدمهما لغير مستخدم التجربة
+const anon = { };
+ok((await fetch(`${BASE}/face-admin.html`, { headers: anon })).status === 404, 'شاشة الادارة: الزائر بلا حساب لا يجدها');
+ok((await fetch(`${BASE}/face-admin.html`, { headers: ZH })).status === 404, 'شاشة الادارة: الزميل لا يجدها');
+const adm = await fetch(`${BASE}/face-admin.html`, { headers: H() });
+ok(adm.ok && (await adm.text()).includes('face-data.js'), 'شاشة الادارة: لصاحب المنصة');
+ok((await fetch(`${BASE}/face.html`, { headers: anon })).status === 404, 'الصفحة مباشرة (face.html): مغلقة على الزائر — بابه /face/<الرمز>');
+ok((await fetch(`${BASE}/face.html?preview=1`, { headers: ZH })).status === 404, 'والزميل لا يفتح المعاينة');
+ok((await fetch(`${BASE}/face.html?preview=1`, { headers: H() })).ok, 'وصاحب المنصة يعاين بها');
+
+// النسخة بشكلها الجديد تقرأ كما نشرت، والصفحة الحقيقية تخدم على الرابط
+const snap = { v: 1, dept: 'علم النفس والفلسفة', days: ['الأحد'], times: [{ n: 1, from: '07:30', to: '08:15' }],
+  people: [{ name: 'فيصل', subj: 'علم نفس', wk: { 'الأحد': ['12/1 · علم نفس'] } }],
+  week: { kind: 'quote', text: 'العلم نور', who: '', to: '2099-01-01' },
+  events: [{ title: 'ملتقى', date: '2026-10-01', who: [], about: '', photos: [shown.id], done: true }], stats: { meetings: 2 } };
+const p2 = await (await fetch(`${BASE}/api/face/publish`, { method: 'POST', headers: H(), body: JSON.stringify({ data: snap }) })).json();
+ok(p2.files === 1, 'صورة الفعالية في النسخة تفتح بابها', p2);
+const back = await (await fetch(`${BASE}/api/face/${me1.slug}`)).json();
+ok(JSON.stringify(back.data) === JSON.stringify(snap), 'النسخة تعود للزائر كما نشرت حرفا');
+const pg = await fetch(`${BASE}/face/${me1.slug}`);
+const pgt = await pg.text();
+ok(pg.ok && pgt.includes('face-data.js') && pgt.includes('<base href="../"'), 'الرابط يخدم صفحة الزائر نفسها، واصولها من الجذر');
+ok((pg.headers.get('x-robots-tag') || '').includes('noindex'), 'وصفحة الرابط غير مفهرسة');
+ok(!/shell\.css|components\.css|frame\.css|components\.js/.test(pgt) && pgt.includes('face.css'), 'صفحة عرض مستقلة: لا تحمل قطع المنصة (tokens وface وحدهما)');
+ok((await fetch(`${BASE}/face-data.js`)).ok && (await fetch(`${BASE}/face.css`)).ok, 'واصولها تفتح للزائر بلا حساب');
+
+// صورة خانة الاسبوع (2026-10-20): معرفها في النسخة يفتح بابها، وحذفها من الخانة ثم النشر يغلقه
+const wk = await put();
+await fetch(`${BASE}/api/face/publish`, { method: 'POST', headers: H(), body: JSON.stringify({ data: Object.assign({}, snap,
+  { events: [], week: { kind: 'teacher', who: 'فيصل', text: '', to: '2099-01-01', photo: wk.id } }) }) });
+ok((await fetch(`${BASE}/api/pub/file/${wk.id}`)).ok, 'صورة معلم الاسبوع تفتح للزائر بلا حساب');
+await fetch(`${BASE}/api/face/publish`, { method: 'POST', headers: H(), body: JSON.stringify({ data: Object.assign({}, snap,
+  { events: [], week: { kind: 'teacher', who: 'فيصل', text: '', to: '2099-01-01', photo: '' } }) }) });
+ok((await fetch(`${BASE}/api/pub/file/${wk.id}`)).status === 404, 'وحذفها من الخانة ثم النشر يغلقها في الحال');
+
+// صور فريق الشعبة (2026-10-20): تمر من بوابة face_files وحدها — المعرف في النسخة يفتح، واخفاء المعلم ثم النشر يغلق
+const tp = await put(), hp = await put();
+const pubTeam = people => fetch(`${BASE}/api/face/publish`, { method: 'POST', headers: H(), body: JSON.stringify({ data: Object.assign({}, snap,
+  { events: [], week: null, theme: 'navy', team: { head: { name: 'محمد البراك', title: 'أ.', photo: hp.id }, people } }) }) });
+await pubTeam([{ name: 'فيصل', photo: tp.id }]);
+ok((await fetch(`${BASE}/api/pub/file/${tp.id}`)).ok && (await fetch(`${BASE}/api/pub/file/${hp.id}`)).ok, 'صورة المعلم وصورة الرئيس تفتحان للزائر بلا حساب');
+await pubTeam([]);
+ok((await fetch(`${BASE}/api/pub/file/${tp.id}`)).status === 404 && (await fetch(`${BASE}/api/pub/file/${hp.id}`)).ok,
+  'واخفاء المعلم (او حذف صورته) ثم النشر يغلق صورته في الحال، وتبقى صورة الرئيس');
+ok((await fetch(`${BASE}/api/files/${tp.id}`, { headers: H() })).ok, 'والملف نفسه باق في خزانة صاحبه — البوابة وحدها اغلقت');
+
+// بلا FACE_BETA: كل شيء مغلق ولو بجلسة صاحب المنصة (خادم ثان على القاعدة نفسها)
+const PORT2 = PORT + 1, BASE2 = `http://127.0.0.1:${PORT2}`;
+const srv2 = spawn('node', ['server.js'], {
+  cwd: ROOT, stdio: ['ignore', 'ignore', 'inherit'],
+  env: { ...process.env, PORT: String(PORT2), DB_PATH: DB, ADMIN_PIN: 'test-000000', NODE_ENV: 'test', FACE_BETA: '' }
+});
+let up2 = false;
+for (let i = 0; i < 60 && !up2; i++) { try { up2 = (await fetch(`${BASE2}/health`)).ok; } catch {} if (!up2) await new Promise(r => setTimeout(r, 150)); }
+ok(up2, 'خادم ثان بلا FACE_BETA');
+ok((await fetch(`${BASE2}/face/${me1.slug}`)).status === 404, 'بلا FACE_BETA: الرابط لا يرد ولو نشر');
+ok((await fetch(`${BASE2}/face-admin.html`, { headers: H() })).status === 404, 'بلا FACE_BETA: لا شاشة ادارة ولو لصاحب المنصة');
+ok((await fetch(`${BASE2}/api/face/me`, { headers: H() })).status === 404, 'بلا FACE_BETA: والزر الاوسط يبقى «+» (me ترد ٤٠٤)');
+try { srv2.kill(); } catch {}
+
 console.log(`\n${fail ? '✗' : '✓'} ${pass} سليم · ${fail} معيب`);
 stop();
 process.exit(fail ? 1 : 0);

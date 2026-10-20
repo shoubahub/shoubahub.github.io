@@ -55,6 +55,10 @@ self.addEventListener('fetch', function (e) {
      الأصل: عامل الخدمة يخزن **ملفات الواجهة وحدها**؛ وجواب الخادم حي دائما. */
   if (url.pathname.indexOf('/api/') > -1 || url.pathname.endsWith('/health')) return;
 
+  /* ⚠ واجهة الشعبة لا تمر بالمخزن (2026-10-20): صفحة الزائر /face/<الرمز> وface.html وشاشة ادارتها
+     واصولهما — فلا يقدم لزائر (ولا لرئيس الشعبة يعاين) نسخة قديمة من مخزن جهازه */
+  if (/\/face(\/|\.html|-admin\.html|\.css|-data\.js)/.test(url.pathname)) return;
+
   /* version.json من الشبكة دائما — به يعرف أن ثمة نسخة أحدث */
   if (url.pathname.endsWith('version.json')) {
     e.respondWith(fetch(req).catch(function () { return caches.match(req); }));

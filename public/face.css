@@ -1,0 +1,237 @@
+/* ===================================================================
+   شعبة · واجهة الشعبة — انماط الصفحتين (2026-10-20)
+   صفحة الزائر (face.html · body.face-pub) صفحة عرض مستقلة كموقع الشعبة: لا تحمل shell ولا components ولا frame
+   (قرار المستخدم 2026-10-20: «أنسب للعمل وليست للعرض») — فانماطها كلها هنا، على tokens.css وحده.
+   وشاشة الادارة (face-admin.html · body.face-adm) على قطع المنصة كسائر شاشاتها.
+   ⚠ الرموز المسماة وحدها لا قيم صريحة.
+   =================================================================== */
+
+/* ═══ صفحة الزائر ═══ */
+.face-pub{margin:0;background:var(--shouba-canvas);color:var(--shouba-ink);font-family:var(--font-ar);
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+.face-pub *{box-sizing:border-box}
+.face-pub [hidden]{display:none !important}
+.face-pub .num{font-family:var(--font-num);unicode-bidi:isolate}
+.fp{max-width:720px;margin:0 auto;padding:0 max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right))}
+
+/* ① الترويسة — ⚠ استثناء مقصود لقاعدة «العنبري للفعل وحده» (قرار المستخدم 2026-10-20): العنبري في ترويسة الزائر وحدها،
+   ولا زر عنبري في الصفحة (بلا فعل). والنص عليها بلون «على العنبري» */
+.fhead{background:linear-gradient(180deg,var(--shouba-amber) 0%,var(--shouba-amber-deep) 100%);
+  border-bottom:3px solid var(--shouba-navy);color:var(--shouba-on-amber)}
+.fhead .fp{padding-top:calc(30px + env(safe-area-inset-top));padding-bottom:44px;display:flex;flex-direction:column;align-items:center;
+  text-align:center;gap:6px}
+.fhead .crest{width:64px;height:64px;border-radius:999px;overflow:hidden;display:grid;place-items:center;margin-bottom:8px;
+  background:var(--shouba-cream);box-shadow:0 0 0 3px var(--shouba-navy)}
+.fhead .crest img{width:100%;height:100%;object-fit:cover}
+.fhead .crest svg{width:34px;height:34px}
+.fhead .crest-svg .m{fill:var(--shouba-navy)}
+.fhead .crest-svg .a,.fhead .crest-svg .ca{fill:var(--shouba-amber-deep)}
+.fhead .crest-svg .s{fill:none;stroke:var(--shouba-navy);stroke-width:1.9}
+.fhead .crest-svg .sa{fill:none;stroke:var(--shouba-amber-deep);stroke-width:2.2;stroke-linecap:round}
+.fhead .crest-svg .hole{fill:var(--shouba-cream)}
+.fhead .crest-svg .ha{fill:none;stroke:var(--shouba-cream);stroke-width:1.6;stroke-linecap:round}
+.fhead .school{font-size:13px;font-weight:600}
+.fhead h1{margin:0;font-size:24px;font-weight:700;line-height:1.4}
+.fhead .hi{font-size:13.5px;font-weight:500;line-height:1.7}
+
+/* الترويسة الكحلية (قرار المستخدم 2026-10-20: اختيار من شاشة الادارة) — تدرج كحلي، وحدها السفلي عنبري رقيق، والنص كريمي */
+.fhead.navy{background:linear-gradient(180deg,var(--shouba-navy) 0%,var(--shouba-navy-deep) 100%);
+  border-bottom:2px solid var(--shouba-amber);color:var(--shouba-cream)}
+.fhead.navy .crest{box-shadow:0 0 0 3px var(--shouba-amber)}
+.fhead.navy .school,.fhead.navy .hi{color:var(--shouba-navy-light)}
+
+/* التبويبان «الشعبة · الجدول» (قرار المستخدم 2026-10-20: «الجدول بتبويب خاص») — مفتاح مقسوم تحت فريق الشعبة
+   (كان يتداخل مع حافة الترويسة، ثم صار الفريق تحتها مباشرة؛ وبلا فريق يعود التداخل)،
+   والمفعل كحلي بنص كريمي. وكل تبويب برابط (#الشعبة · #الجدول) فيفتح مباشرة */
+.ftabs{display:flex;justify-content:center;margin-top:-18px;position:relative}
+/* ومع الفريق او بطاقة الاسبوع فوقهما ينفصلان بالمسافة نفسها (١٦) */
+#page:has(.fteam:not([hidden]), .fweek:not([hidden])) .ftabs{margin-top:16px}
+/* ومسافة الترويسة السفلية ٤٤ كانت لتداخل التبويبين — ومع الفريق او البطاقة تحتها تعود ٣٠ كاعلاها */
+#page:has(.fteam:not([hidden]), .fweek:not([hidden])) .fhead .fp{padding-bottom:30px}
+.ftabs .seg2{display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--shouba-paper);box-shadow:var(--shadow-card)}
+.ftabs a{min-width:104px;text-align:center;text-decoration:none;font-size:14px;font-weight:700;border-radius:999px;padding:9px 18px;
+  color:var(--shouba-text-muted)}
+.ftabs a.on{background:var(--shouba-navy);color:var(--shouba-cream)}
+.fpane[hidden]{display:none}
+
+/* الآن في الشعبة: بطاقات افقية تمرر داخل صفها (لا الصفحة) — من في فصله الآن بحد كحلي، وتحتها رابط «الجدول كاملاً» */
+.fsec > h2 .when{font-size:13px;font-weight:600;color:var(--shouba-label);margin-inline-start:6px}
+.nowrow{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 6px;margin:0 -2px;-webkit-overflow-scrolling:touch}
+.nowrow::-webkit-scrollbar{display:none}
+.ncard{flex:none;width:150px;border-radius:16px;background:var(--shouba-paper);border:2px solid transparent;padding:11px 12px;
+  display:flex;flex-direction:column;gap:3px;text-align:right;font-family:var(--font-ar);cursor:pointer;color:var(--shouba-ink)}
+.ncard.in{border-color:var(--shouba-navy)}
+.nowmsg{margin:0;padding:14px 16px;border-radius:16px;background:var(--shouba-paper);border:1px solid var(--shouba-line);
+  font-size:14px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8}
+.fall{display:inline-block;margin-top:8px;font-size:13px;font-weight:700;color:var(--shouba-link);text-decoration:none}
+.ncard .p{font-size:11px;font-weight:700;color:var(--shouba-label)}
+.ncard.in .p{color:var(--shouba-navy)}
+.ncard .cl{white-space:nowrap}
+.ncard b{font-size:13.5px;font-weight:700;color:var(--shouba-navy);line-height:1.45}
+.ncard .m{font-size:11.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.6}
+
+/* فريق الشعبة: اول ما يرى تحت الترويسة وفوق التبويبين — صف افقي يمرر داخله، رئيس الشعبة اولا بصورة ٦٤ وتحته «رئيس الشعبة»، ثم معلموه بصورة ٥٢.
+   وبلا صورة: دائرة رملية بالحرف الاول كحليا */
+.fteam{display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;margin:16px -6px 0;padding:6px 6px 4px;-webkit-overflow-scrolling:touch;align-items:flex-start}
+.fteam::-webkit-scrollbar{display:none}
+.fteam .tm{flex:none;width:78px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.fteam .tm.head{width:92px}
+.fteam .av{width:52px;height:52px;border-radius:999px;object-fit:cover;display:grid;place-items:center;background:var(--shouba-paper);border:1px solid var(--shouba-line);
+  color:var(--shouba-navy);font-size:20px;font-weight:700;line-height:1}
+.fteam .av.lg{width:64px;height:64px;font-size:24px;box-shadow:0 0 0 2px var(--shouba-canvas),0 0 0 4px var(--shouba-navy)}
+.fteam b{font-size:12.5px;font-weight:700;color:var(--shouba-navy);line-height:1.45}
+.fteam span{font-size:11px;font-weight:700;color:var(--shouba-label);margin-top:-4px}
+
+/* منتقي الايام في تبويب الجدول */
+.days{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px}
+.days::-webkit-scrollbar{display:none}
+.day{flex:none;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;border-radius:999px;padding:8px 16px;
+  color:var(--shouba-text-muted);background:var(--shouba-sand)}
+.day.on{background:var(--shouba-navy);color:var(--shouba-cream)}
+
+/* ② بطاقة الاسبوع — الكتلة الكحلية الواحدة، تحت الفريق وفوق التبويبين (مسافتها ١٦ كالفريق) */
+.fweek{margin-top:16px;position:relative;background:var(--shouba-navy);color:var(--shouba-cream);border-radius:22px;
+  box-shadow:var(--shadow-navy);padding:18px 20px;display:flex;flex-direction:column;gap:6px}
+.fweek{overflow:hidden}
+.fweek .row{display:flex;gap:14px;align-items:center}
+.fweek .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+/* صورة معلم الاسبوع: دائرية ٧٢ بحلقة كريمية رقيقة · وصورة الانجاز عريضة ١٦/٩ اعلى البطاقة بزاويتيها */
+.fweek .face{flex:none;width:72px;height:72px;border-radius:999px;object-fit:cover;box-shadow:0 0 0 2px var(--shouba-cream);background:var(--shouba-navy-deep)}
+.fweek .wide{display:block;width:calc(100% + 40px);margin:-18px -20px 6px;aspect-ratio:16/9;object-fit:cover;border-radius:22px 22px 0 0;background:var(--shouba-navy-deep)}
+.fweek .k{font-size:12.5px;font-weight:700;color:var(--shouba-navy-light)}
+.fweek .t{font-size:21px;font-weight:700;line-height:1.5}
+.fweek .x{font-size:14px;font-weight:500;color:var(--shouba-navy-light);line-height:1.8;white-space:pre-line}
+
+/* الاقسام */
+.fsec{margin-top:30px}
+.fsec > h2{margin:0 0 12px;font-size:17px;font-weight:700;color:var(--shouba-navy)}
+.fmain > .fsec:first-child{margin-top:30px}
+
+/* ③ جدول اليوم: خلية لكل حصة يعمل فيها معلم — والجارية كحلية */
+.today{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.cell{border:1px solid var(--shouba-line);border-radius:14px;background:var(--shouba-paper);padding:10px 11px;
+  display:flex;flex-direction:column;gap:3px;text-align:right;font-family:var(--font-ar);cursor:pointer;min-width:0;color:var(--shouba-ink)}
+.cell .p{font-size:11px;font-weight:700;color:var(--shouba-label)}
+.cell b{font-size:13.5px;font-weight:700;color:var(--shouba-navy);line-height:1.45;overflow-wrap:anywhere}
+.cell .m{font-size:11.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.6}
+.cell .cl,.wk .cl{white-space:nowrap}
+.cell.now{background:var(--shouba-navy);border-color:var(--shouba-navy);color:var(--shouba-cream)}
+.cell.now .p,.cell.now .m{color:var(--shouba-navy-light)}
+.cell.now b{color:var(--shouba-cream)}
+.fnote{margin:10px 0 0;font-size:12px;font-weight:600;color:var(--shouba-hint)}
+
+/* ④ فعاليات قادمة: بطاقة ورقية كبطاقات الارقام، وكتلة التاريخ على جانبه */
+.soon{display:flex;flex-direction:column;gap:10px}
+.srow{display:flex;gap:14px;align-items:center;background:var(--shouba-paper);border:1px solid var(--shouba-line);border-radius:16px;padding:12px 14px}
+.srow .dt{flex:none;width:54px;text-align:center;display:flex;flex-direction:column;gap:1px}
+.srow .dt b{font-family:var(--font-num);font-size:26px;font-weight:700;color:var(--shouba-navy);line-height:1.1}
+.srow .dt span{font-size:11.5px;font-weight:700;color:var(--shouba-label)}
+.srow .tx{flex:1;min-width:0}
+.srow .tx b{display:block;font-size:15px;font-weight:700;color:var(--shouba-ink);line-height:1.5}
+.srow .tx span{display:block;font-size:12.5px;font-weight:500;color:var(--shouba-text-muted);line-height:1.7;margin-top:2px}
+
+/* ⑤ فعاليات اقيمت: بطاقات ورقية، صورتها اعلاها ان كانت */
+.done{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+@media (min-width:640px){ .done{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.dcard{background:var(--shouba-paper-grad);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-card);display:flex;flex-direction:column}
+.dcard img{width:100%;aspect-ratio:16/8;object-fit:cover;display:block;background:var(--shouba-sand)}
+.dcard .bd{padding:13px 15px 15px;display:flex;flex-direction:column;gap:4px}
+.dcard .dt{font-size:11.5px;font-weight:700;color:var(--shouba-label)}
+.dcard b{font-size:16px;font-weight:700;color:var(--shouba-ink);line-height:1.5}
+.dcard p{margin:0;font-size:13px;font-weight:500;color:var(--shouba-text-muted);line-height:1.8;white-space:pre-line}
+.dcard .more{border:0;background:none;padding:0;margin-top:4px;align-self:flex-start;cursor:pointer;font-family:var(--font-ar);
+  font-size:12.5px;font-weight:700;color:var(--shouba-link)}
+
+/* ⑥ حصيلة العام */
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:var(--shouba-paper);border:1px solid var(--shouba-line);border-radius:16px;padding:14px 16px}   /* ورقي بحد رقيق — الرملي كان يذوب في الخلفية */
+.stat b{display:block;font-family:var(--font-num);font-size:26px;font-weight:700;color:var(--shouba-navy);line-height:1.2}
+.stat span{display:block;font-size:12.5px;font-weight:600;color:var(--shouba-text-muted);margin-top:3px}
+
+/* ⑦ التذييل */
+.ffoot{margin-top:40px;padding:24px 0 calc(30px + env(safe-area-inset-bottom));border-top:1px solid var(--shouba-line);
+  display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.ffoot img{width:54px;height:auto}
+.ffoot span{font-size:12px;font-weight:600;color:var(--shouba-label)}
+
+/* لا نسخة على الرابط */
+.gone{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:24px}
+.gone img{width:64px;height:auto}
+.gone b{font-size:16px;font-weight:700;color:var(--shouba-navy)}
+.gone span{font-size:13px;font-weight:600;color:var(--shouba-label);line-height:1.8}
+
+/* اللوحة السفلية: اسبوع المعلم · صور الفعالية */
+.fbd{position:fixed;inset:0;background:rgba(36,33,28,.42);opacity:0;pointer-events:none;transition:opacity .25s;z-index:80}
+.fbd.open{opacity:1;pointer-events:auto}
+.fsheet{position:fixed;left:0;right:0;bottom:0;z-index:90;max-width:720px;margin:0 auto;max-height:80vh;display:flex;flex-direction:column;
+  background:var(--shouba-paper);border-radius:24px 24px 0 0;padding:10px 18px calc(18px + env(safe-area-inset-bottom));
+  transform:translateY(101%);transition:transform .3s cubic-bezier(.2,.85,.25,1);box-shadow:var(--shadow-card)}
+.fsheet.open{transform:none}
+.fsheet .grab{width:46px;height:5px;border-radius:999px;background:var(--shouba-track);margin:4px auto 10px;flex:none}
+.fsheet h3{margin:0 0 14px;text-align:center;font-size:15.5px;font-weight:700;color:var(--shouba-ink)}
+.fsheet .body{overflow:auto;min-height:0}
+.fsheet .close{flex:none;margin-top:14px;border:0;cursor:pointer;border-radius:14px;padding:12px;font-family:var(--font-ar);
+  font-size:14px;font-weight:700;color:var(--shouba-navy);background:var(--shouba-sand)}
+@media (prefers-reduced-motion: reduce){ .fsheet,.fbd{transition:none} }
+.wk{display:grid;grid-template-columns:auto repeat(var(--np,7),minmax(0,1fr));gap:3px;font-size:11px}
+.wk div{background:var(--shouba-sand);border-radius:5px;padding:6px 2px;text-align:center;color:var(--shouba-text-muted);font-weight:700;min-width:0}
+.wk .h{background:transparent;color:var(--shouba-label);padding:4px 2px}
+.wk .d{background:transparent;color:var(--shouba-label);font-size:11px;text-align:right;padding-inline-end:5px;white-space:nowrap}
+.wk .f{background:transparent;color:var(--shouba-hint)}
+.wk .c{color:var(--shouba-navy)}
+.shots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.shots img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;background:var(--shouba-sand)}
+
+/* ═══ شاشة الادارة (على قطع المنصة: shell · components · frame) ═══ */
+/* عنوان القسم وكلمة البطاقة الورقية: كحلي (العنبري للفعل وحده) */
+.face-adm .sect .h::before{background:var(--shouba-navy)}
+.face-adm .card-soft .kicker{color:var(--shouba-navy)}
+.face-adm .wrap{display:flex;flex-direction:column;gap:22px;padding:16px 0 0}
+.face-adm .card-soft .link{font-family:var(--font-num);font-size:12px;font-weight:600;color:var(--shouba-text-muted);
+  word-break:break-all;line-height:1.6}
+/* خانة الاسبوع: سطرها كما سيقرأ */
+.wkbox{padding:12px 13px;display:flex;flex-direction:column;gap:5px;cursor:pointer}
+.wkbox .k{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.wkbox b{font-size:13.5px;font-weight:700;color:var(--shouba-navy);line-height:1.6;white-space:pre-line}
+.wkbox small{font-size:11.5px;font-weight:600;color:var(--shouba-label);line-height:1.7}
+.wkbox small.off{color:var(--shouba-error)}
+/* سطر الفعالية وادواته */
+.erow{display:flex;flex-direction:column;gap:8px;padding:11px 13px;border-bottom:1px solid rgba(226,215,194,.75)}
+.erow:last-child{border-bottom:0}
+.erow .t{display:flex;gap:8px;align-items:flex-start}
+.erow .t b{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--shouba-ink);line-height:1.6}
+.erow .mt{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11px;font-weight:700;color:var(--shouba-label)}
+.erow .mt em{font-style:normal;color:var(--shouba-text-muted)}
+.erow .ops{display:flex;gap:8px;flex-wrap:wrap}
+.erow .op{border:0;cursor:pointer;font-family:var(--font-ar);font-size:12px;font-weight:700;border-radius:999px;padding:7px 13px;min-height:34px;
+  color:var(--shouba-navy);background:rgba(22,69,110,.09)}
+.erow .op.warn{color:var(--shouba-error);background:rgba(163,56,48,.08)}
+.erow.off b{color:var(--shouba-label)}
+.grp{padding:7px 13px;background:rgba(120,98,66,.07);font-size:11px;font-weight:700;color:var(--shouba-label)}
+/* المعاينة: الصفحة كما يراها الزائر في طبقة فوق الشاشة */
+.pview{position:fixed;inset:0;z-index:100;background:var(--shouba-canvas);display:flex;flex-direction:column}
+.pview[hidden]{display:none}
+.pview iframe{flex:1;width:100%;border:0;background:var(--shouba-canvas)}
+.pview .pbar{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top)) var(--gap-side) 10px;
+  background:var(--shouba-navy);color:var(--shouba-cream);font-size:12.5px;font-weight:700}
+.pview .pbar button{border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;border-radius:999px;padding:8px 16px;
+  color:var(--shouba-navy);background:var(--shouba-cream)}
+.wkph{display:flex;gap:12px;align-items:center}
+.wkph img{flex:none;width:72px;height:72px;border-radius:14px;object-fit:cover;background:var(--shouba-sand)}
+.wkph .btn-ghost,.wkph .btn-danger{width:auto;flex:1;padding:12px 14px;font-size:14px}
+.wkthumb{width:44px;height:44px;border-radius:12px;object-fit:cover;background:var(--shouba-sand)}
+.face-adm .wd{display:flex;flex-direction:column;gap:30px}   /* بين الحقول ٣٠ — والتسمية ٨ والارشاد ٦ من components.css */
+/* شاشة الادارة: لون الترويسة وفريق الشعبة */
+.trow{display:flex;gap:12px;align-items:center;padding:11px 13px;border-bottom:1px solid var(--shouba-line)}
+.trow:last-child{border-bottom:0}
+.trow .av{flex:none;width:44px;height:44px;border-radius:999px;object-fit:cover;display:grid;place-items:center;background:var(--shouba-paper);border:1px solid var(--shouba-line);
+  color:var(--shouba-navy);font-size:17px;font-weight:700}
+.trow .nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.trow .nm b{font-size:13px;font-weight:700;color:var(--shouba-ink);line-height:1.5}
+.trow .nm small{font-size:11px;font-weight:700;color:var(--shouba-label)}
+.trow.off .nm b{color:var(--shouba-label)}
+.trow .ops{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.trow .op{border:0;cursor:pointer;font-family:var(--font-ar);font-size:12px;font-weight:700;border-radius:999px;padding:7px 12px;min-height:34px;
+  color:var(--shouba-navy);background:var(--shouba-sand)}
+.trow .op.warn{color:var(--shouba-error)}
+.thint{padding:9px 13px;font-size:11.5px;font-weight:600;color:var(--shouba-label);line-height:1.7}

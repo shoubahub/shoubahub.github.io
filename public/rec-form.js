@@ -546,6 +546,18 @@
      مكون واحد للمرفقات (⑥) وشواهد المتابعة، فلا يفترق سلوكهما */
   function fileRow(it, prefix, onDel) {
     var FL = window.ShoubaFiles, row = el('div', 'rb-tools rb-file'), see = el('button', 'rb-btn'), del = el('button', 'rb-btn del');
+    /* مصغرة الصورة (2026-10-20): تعرف الصورة بنظرة لا بفتحها، ولمستها تعرضها كزر العرض.
+       تطلب بجلستك كالعارض، وان لم تبلغ (بلا اتصال) تختفي ويبقى السطر النصي وحده */
+    if (it.mime !== 'application/pdf') {
+      var th = el('button', 'rb-thumb'), im = document.createElement('img');
+      th.type = 'button'; th.setAttribute('aria-label', 'اعرض ' + FL.label(it));
+      im.alt = ''; im.loading = 'lazy'; im.decoding = 'async';
+      im.addEventListener('error', function () { if (th.parentNode) th.parentNode.removeChild(th); });
+      im.src = FL.url(it.file);
+      th.appendChild(im);
+      th.addEventListener('click', function () { FL.view(FL.label(it), it); });
+      row.appendChild(th);
+    }
     row.appendChild(el('span', 'hint', (prefix || '') + (it.mime === 'application/pdf' ? 'PDF' : 'صورة') + ' · ' + FL.kb(it.size)));
     see.type = del.type = 'button';
     see.innerHTML = ICON.eye; see.setAttribute('aria-label', 'اعرضه');

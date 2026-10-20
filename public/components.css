@@ -827,6 +827,9 @@ body.solo .tsel{display:none}
 /* ⑥ المرفقات في الادخال (2026-09-11): نوع الملف وحجمه يمينا وادواته يسارا · الحذف بلمستين */
 .rb-file{align-items:center}
 .rb-file .hint{margin-inline-end:auto}
+/* مصغرة الصورة المرفقة (2026-10-20): هدف لمس ٥٦ وزاوية العارض نفسها */
+.rb-thumb{flex:none;width:56px;height:56px;padding:0;border:1px solid var(--shouba-line);border-radius:10px;overflow:hidden;background:#fff;cursor:pointer}
+.rb-thumb img{display:block;width:100%;height:100%;object-fit:cover}
 .rb-btn.del.sure{width:auto;padding:0 14px;background:var(--shouba-error);color:#fff;font-size:13px}
 /* عارض الملف في لوحة سفلية (ShoubaFiles.view) — للنسخة الموقعة والمرفقات معا */
 .fview{display:flex;flex-direction:column;gap:12px}

@@ -48,9 +48,10 @@
       <div class="x" id="wkTxt" hidden></div>
     </div>
 
-    <section class="fsec" id="nowSec" hidden>
+    <section class="fsec" id="nowSec">
       <h2>الآن في الشعبة<span class="when" id="nowWhen"></span></h2>
       <div class="nowrow" id="nowRow"></div>
+      <p class="nowmsg" id="nowMsg" hidden></p>
       <a class="fall" id="toJ" href="#الجدول">الجدول كاملاً ›</a>
     </section>
 
@@ -154,7 +155,7 @@
   }
 
   /* ③ الآن في الشعبة: من في فصله في الحصة الجارية وحده (قرار المستخدم 2026-10-20: «من يعمل الآن فقط، ومن اراد
-     الجدول كاملا ذهب لتبويب الجدول») — وفي الفرصة وقبل الدوام وبعده وفي العطلة لا احد في فصله، فيختفي القسم بعنوانه */
+     الجدول كاملا ذهب لتبويب الجدول») */
   function periods() { return (SNAP.times || []).filter(function (t) { return !t.brk; }); }
   function pIndex(n) { var ps = periods(); for (var i = 0; i < ps.length; i++) if (ps[i].n === n) return i; return -1; }
   function cards(day, n) {
@@ -171,16 +172,38 @@
     });
     return out;
   }
+  /* ⚠ القسم ظاهر دائما (قرار المستخدم 2026-10-20، للمرة الثالثة: «اظهر في الواجهة … المعلمين الذين يعملون حاليا»):
+     كان يختفي خارج الحصص فظنه المستخدم غير منفذ. الآن: في الحصة بطاقات من في فصله، وفي غيرها سطر يصرح بالحال */
+  /* ساعة الصفحة: ساعة الزائر — ومعاملا المعاينة ?at=HH:MM و?day=sun..thu يحاكيانها (لا يمسان البيانات)،
+     ليرى صاحب الشعبة «الآن في الشعبة» في وقت حصة وهو يراجع بعد الدوام */
+  var Q = new URLSearchParams(location.search), AT = /^(\d{1,2}):(\d{2})$/.exec(Q.get('at') || ''), DAYQ = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4 }[Q.get('day') || ''];
+  function clock() {
+    var d = new Date();
+    if (DAYQ !== undefined) d.setDate(d.getDate() - d.getDay() + DAYQ);
+    if (AT) d.setHours(+AT[1], +AT[2], 0, 0);
+    return d;
+  }
   function paintNow() {
-    var st = F.now(SNAP.times, SNAP.days, new Date()), out = '', when = '';
+    var now = clock(), st = F.now(SNAP.times, SNAP.days, now), out = '', when = '', msg = '', ps = periods();
+    var startOf = function (n) { var t = ps[pIndex(n)]; return t ? ' الساعة ' + num(t.from) : ''; };
+    /* اول حصة في يوم الدوام التالي — بعد الخميس والعطلة الاحد */
+    var nextDay = function () { var g = now.getDay(), days = SNAP.days || []; return g >= 4 ? days[0] : days[g + 1]; };
     if (st.state === 'period') {
-      var t = periods()[pIndex(st.n)];
+      var t = ps[pIndex(st.n)];
       when = 'الحصة ' + num(st.n) + (t ? ' · ' + num(t.from + '–' + t.to) : '');
       out = cards(st.day, st.n);
+      if (!out) msg = 'لا أحد من معلمي الشعبة في فصله في هذه الحصة.';
+    } else if ((st.state === 'break' || st.state === 'gap') && st.next) {
+      msg = esc(st.state === 'break' ? (st.label || 'فرصة') : 'بين حصتين') + ' · تبدأ الحصة ' + num(st.next) + startOf(st.next);
+    } else if (st.state === 'before') {
+      msg = 'يبدأ الدوام' + (ps[0] ? ' الساعة ' + num(ps[0].from) : '');
+    } else {
+      msg = (st.state === 'after' ? 'انتهى دوام اليوم' : 'لا دوام اليوم') + ' · أول حصة ' + esc(nextDay() || '') + (ps[0] ? ' الساعة ' + num(ps[0].from) : '');
     }
     $('nowWhen').innerHTML = when ? ' · ' + when : '';
-    $('nowRow').innerHTML = out;
-    $('nowSec').hidden = !out;
+    $('nowRow').innerHTML = out; $('nowRow').hidden = !out;
+    $('nowMsg').innerHTML = msg; $('nowMsg').hidden = !msg;
+    $('nowSec').hidden = false;                            /* ظاهر دائما — لا يختفي ابدا */
   }
 
   /* ④ تبويب الجدول: يوم يختاره الزائر (اليوم افتراضا، وفي العطلة الاحد)، والجارية كحلية في اليوم الحالي */
@@ -191,7 +214,7 @@
     }).join('');
   }
   function paintDay() {
-    var st = F.now(SNAP.times, SNAP.days, new Date()), out = '';
+    var st = F.now(SNAP.times, SNAP.days, clock()), out = '';
     periods().forEach(function (t, i) {
       (SNAP.people || []).forEach(function (p, k) {
         var v = ((p.wk || {})[curDay] || [])[i];
@@ -288,7 +311,7 @@
   function paintAll() { paintWeek(); paintNow(); paintDay(); paintStats(paintEvents()); }
   function start(snap) {
     SNAP = snap || {};
-    var g = new Date().getDay(), days = SNAP.days || [];
+    var g = clock().getDay(), days = SNAP.days || [];
     curDay = days[g <= 4 ? g : 0] || days[0];
     paintHead(); paintDays(); paintAll(); route();
     $('page').hidden = false;

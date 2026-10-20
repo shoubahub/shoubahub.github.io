@@ -50,6 +50,8 @@
 .ncard{flex:none;width:150px;border-radius:16px;background:var(--shouba-paper);border:2px solid transparent;padding:11px 12px;
   display:flex;flex-direction:column;gap:3px;text-align:right;font-family:var(--font-ar);cursor:pointer;color:var(--shouba-ink)}
 .ncard.in{border-color:var(--shouba-navy)}
+.nowmsg{margin:0;padding:14px 16px;border-radius:16px;background:var(--shouba-paper);border:1px solid var(--shouba-line);
+  font-size:14px;font-weight:600;color:var(--shouba-text-muted);line-height:1.8}
 .fall{display:inline-block;margin-top:8px;font-size:13px;font-weight:700;color:var(--shouba-link);text-decoration:none}
 .ncard .p{font-size:11px;font-weight:700;color:var(--shouba-label)}
 .ncard.in .p{color:var(--shouba-navy)}

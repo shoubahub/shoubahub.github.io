@@ -143,6 +143,7 @@ const pg = await fetch(`${BASE}/face/${me1.slug}`);
 const pgt = await pg.text();
 ok(pg.ok && pgt.includes('face-data.js') && pgt.includes('<base href="../"'), 'الرابط يخدم صفحة الزائر نفسها، واصولها من الجذر');
 ok((pg.headers.get('x-robots-tag') || '').includes('noindex'), 'وصفحة الرابط غير مفهرسة');
+ok(!/shell\.css|components\.css|frame\.css|components\.js/.test(pgt) && pgt.includes('face.css'), 'صفحة عرض مستقلة: لا تحمل قطع المنصة (tokens وface وحدهما)');
 ok((await fetch(`${BASE}/face-data.js`)).ok && (await fetch(`${BASE}/face.css`)).ok, 'واصولها تفتح للزائر بلا حساب');
 
 // بلا FACE_BETA: كل شيء مغلق ولو بجلسة صاحب المنصة (خادم ثان على القاعدة نفسها)

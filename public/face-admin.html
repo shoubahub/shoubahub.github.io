@@ -84,6 +84,7 @@
 <script src="derive.js?v=94"></script>
 <script src="icons.js?v=94"></script>
 <script src="components.js?v=94"></script>
+<script src="rec-files.js?v=94"></script>
 <script src="face-data.js?v=94"></script>
 <script>
 (function () {
@@ -160,7 +161,9 @@
     } else {
       var live = F.weekLive(w, today), p = F.dateParts(w.to);
       var main = w.kind === 'teacher' ? 'أ. ' + w.who + (w.text ? '\n' + w.text : '') : w.text;
-      box.innerHTML = '<div class="wkbox" role="button" tabindex="0"><div class="k"><span class="chip navy">' + esc(F.kindLabel(w.kind)) + '</span></div>'
+      var ph = F.weekPhoto(w);
+      box.innerHTML = '<div class="wkbox" role="button" tabindex="0"><div class="k"><span class="chip navy">' + esc(F.kindLabel(w.kind)) + '</span>'
+        + (ph ? '<img class="wkthumb" alt="" src="' + esc(ShoubaFiles.url(ph)) + '" />' : '') + '</div>'
         + '<b>' + esc(main) + '</b>'
         + (live ? '<small>تظهر حتى ' + (p ? esc(p.wd) + ' ' + num(p.day) + ' ' + esc(p.month) : '') + '، ثم تختفي وحدها إن لم تحدّثها.</small>'
                 : '<small class="off">انتهى أسبوعها فلا تظهر على الواجهة — حدّثها لتعود.</small>') + '</div>';
@@ -176,13 +179,43 @@
       + '<span class="chev"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="#8A7F6E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>'
       + '<select id="wkWho"><option value="" disabled selected>اختر المعلم</option></select></div></div>'
       + '<div class="field" id="txtBox"><label for="wkText"></label><div class="paper"><textarea id="wkText" maxlength="160" rows="3"></textarea></div>'
-      + '<div class="hint" id="wkHint"></div></div>';
+      + '<div class="hint" id="wkHint"></div></div>'
+      + '<div class="field" data-need="opt" id="phBox"><label>صورة</label><div class="wkph" id="wkPh"></div>'
+      + '<div class="hint" id="phHint"></div></div>';
     var sel = n.querySelector('#wkWho');
     staff.forEach(function (name) {
       var o = document.createElement('option'); o.value = name; o.textContent = 'أ. ' + name;
       if (w.kind === 'teacher' && w.who === name) o.selected = true;
       sel.appendChild(o);
     });
+    /* الصورة (2026-10-20، طلب المستخدم: «مع امكانية رفع صورة»): لمعلم الاسبوع وانجازه، ترفع بمسار المرفقات القائم
+       (rec-files.js) الى خزانة الحساب، وتنشر عبر بوابة الواجهة وحدها. والعبارة التحفيزية بلا صورة */
+    var photo = w.photo && w.photo.file ? { file: w.photo.file, mime: w.photo.mime } : null, FL = window.ShoubaFiles;
+    function paintPhoto(msg) {
+      var box = n.querySelector('#wkPh');
+      box.innerHTML = '';
+      if (photo) {
+        var im = el('img'); im.alt = ''; im.src = FL.url(photo.file); box.appendChild(im);
+        var rm = el('button', 'btn-danger'); rm.type = 'button'; rm.textContent = 'احذف الصورة';
+        rm.addEventListener('click', function () { photo = null; paintPhoto(); });
+        box.appendChild(rm);
+      } else {
+        var add = el('button', 'btn-ghost'); add.type = 'button'; add.textContent = 'أضف صورة';
+        add.addEventListener('click', pickPhoto);
+        box.appendChild(add);
+      }
+      n.querySelector('#phHint').textContent = msg || (kind === 'teacher' ? 'اختيارية — تظهر دائرية بجانب اسمه.' : 'اختيارية — تظهر عريضة أعلى البطاقة.');
+    }
+    function pickPhoto() {
+      if (!FL) return;
+      FL.pick(function (file) {
+        if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '')) { paintPhoto('صورة فقط — لا PDF.'); return; }
+        paintPhoto('تجهز الصورة وترفع إلى حسابك…');
+        FL.prepare(file).then(function (p) { return FL.upload('face-week', p); }).then(function (j) {
+          photo = { file: j.id, mime: j.mime }; paintPhoto();
+        }).catch(function (e) { paintPhoto(e && e.user ? e.message : 'تعذر الرفع — أعد المحاولة'); });
+      });
+    }
     var txt = n.querySelector('#wkText');
     txt.value = w.text || '';
     var segs = n.querySelector('#wkKinds');
@@ -203,6 +236,8 @@
       var old = lab.querySelector('.need'); if (old) old.remove();
       S.tagNeeds(n);
       var p = F.dateParts(F.weekEnd(S.today()));
+      n.querySelector('#phBox').hidden = kind === 'quote';
+      if (kind !== 'quote') paintPhoto();
       n.querySelector('#wkHint').innerHTML = 'تظهر حتى ' + (p ? esc(p.wd) + ' ' + num(p.day) + ' ' + esc(p.month) : '') + '، ثم تختفي وحدها إن لم تحدّثها.';
     }
     fit();
@@ -222,6 +257,7 @@
       if (kind !== 'teacher' && !text) { S.toast(kind === 'feat' ? 'اكتب الإنجاز' : 'اكتب العبارة'); return false; }
       var f = face();
       f.week = { kind: kind, who: kind === 'teacher' ? who : '', text: text, to: F.weekEnd(S.today()), at: S.today() };
+      if (photo && kind !== 'quote') f.week.photo = photo;
       setFace(f);
       S.toast('حفظت خانة الأسبوع — انشر لتظهر على الرابط');
     } });

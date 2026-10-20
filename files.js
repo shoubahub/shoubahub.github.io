@@ -66,6 +66,8 @@ function refsOf(doc) {
     });
   }
   (Array.isArray(doc && doc.recs) ? doc.recs : []).forEach(walk);
+  /* واعدادات واجهة الشعبة (2026-10-20): صورة خانة الاسبوع { file } — والا حذفتها المصالحة بعد مهلتها وهي منشورة */
+  walk(doc && doc.face);
   return out;
 }
 

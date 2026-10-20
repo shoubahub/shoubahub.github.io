@@ -43,9 +43,15 @@
   <main class="fp fmain">
    <div class="fpane" id="paneS">
     <div class="fweek" id="week" hidden>
-      <div class="k" id="wkKind"></div>
-      <div class="t" id="wkTtl"></div>
-      <div class="x" id="wkTxt" hidden></div>
+      <img class="wide" id="wkWide" alt="" hidden />
+      <div class="row">
+        <img class="face" id="wkFace" alt="" hidden />
+        <div class="tx">
+          <div class="k" id="wkKind"></div>
+          <div class="t" id="wkTtl"></div>
+          <div class="x" id="wkTxt" hidden></div>
+        </div>
+      </div>
     </div>
 
     <section class="fsec" id="nowSec">
@@ -153,6 +159,11 @@
     $('wkTtl').textContent = teacher ? title(w.who) : w.text;
     $('wkTxt').textContent = teacher ? (w.text || '') : '';
     $('wkTxt').hidden = !(teacher && w.text);
+    /* الصورة: لمعلم الاسبوع دائرية على جانب البطاقة، وللانجاز عريضة اعلاها — وبلا صورة تبقى البطاقة كما هي */
+    var ph = w.photo && w.kind !== 'quote' ? FILES + encodeURIComponent(w.photo) : '';
+    $('wkFace').hidden = !(ph && teacher); $('wkWide').hidden = !(ph && !teacher);
+    if (ph) $(teacher ? 'wkFace' : 'wkWide').src = ph;
+    $('wkFace').alt = teacher ? title(w.who) : '';
   }
 
   /* ③ الآن في الشعبة: من في فصله في الحصة الجارية وحده (قرار المستخدم 2026-10-20: «من يعمل الآن فقط، ومن اراد

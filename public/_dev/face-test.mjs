@@ -146,6 +146,15 @@ ok((pg.headers.get('x-robots-tag') || '').includes('noindex'), 'وصفحة ال�
 ok(!/shell\.css|components\.css|frame\.css|components\.js/.test(pgt) && pgt.includes('face.css'), 'صفحة عرض مستقلة: لا تحمل قطع المنصة (tokens وface وحدهما)');
 ok((await fetch(`${BASE}/face-data.js`)).ok && (await fetch(`${BASE}/face.css`)).ok, 'واصولها تفتح للزائر بلا حساب');
 
+// صورة خانة الاسبوع (2026-10-20): معرفها في النسخة يفتح بابها، وحذفها من الخانة ثم النشر يغلقه
+const wk = await put();
+await fetch(`${BASE}/api/face/publish`, { method: 'POST', headers: H(), body: JSON.stringify({ data: Object.assign({}, snap,
+  { events: [], week: { kind: 'teacher', who: 'فيصل', text: '', to: '2099-01-01', photo: wk.id } }) }) });
+ok((await fetch(`${BASE}/api/pub/file/${wk.id}`)).ok, 'صورة معلم الاسبوع تفتح للزائر بلا حساب');
+await fetch(`${BASE}/api/face/publish`, { method: 'POST', headers: H(), body: JSON.stringify({ data: Object.assign({}, snap,
+  { events: [], week: { kind: 'teacher', who: 'فيصل', text: '', to: '2099-01-01', photo: '' } }) }) });
+ok((await fetch(`${BASE}/api/pub/file/${wk.id}`)).status === 404, 'وحذفها من الخانة ثم النشر يغلقها في الحال');
+
 // بلا FACE_BETA: كل شيء مغلق ولو بجلسة صاحب المنصة (خادم ثان على القاعدة نفسها)
 const PORT2 = PORT + 1, BASE2 = `http://127.0.0.1:${PORT2}`;
 const srv2 = spawn('node', ['server.js'], {

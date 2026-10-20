@@ -27,6 +27,11 @@ ok(F.weekLive(wk, '2026-10-24') && !F.weekLive(wk, '2026-10-25'), 'تختفي و
 ok(!F.weekFilled({ kind: 'teacher', text: 'سبب', who: '' }), 'معلم الاسبوع بلا اسم: لا تظهر');
 ok(F.weekFilled({ kind: 'teacher', text: '', who: 'فيصل' }), 'معلم الاسبوع باسمه وحده: تظهر');
 ok(!F.weekFilled({ kind: 'nope', text: 'x' }), 'نوع خارج الثلاثة: لا تظهر');
+const PH = { file: 'f' + 'c'.repeat(24), mime: 'image/jpeg' };
+ok(F.weekPhoto({ kind: 'teacher', who: 'فيصل', photo: PH }) === PH.file && F.weekPhoto({ kind: 'feat', text: 'x', photo: PH }) === PH.file,
+  'صورة الخانة لمعلم الاسبوع وانجازه');
+ok(F.weekPhoto({ kind: 'quote', text: 'x', photo: PH }) === '', 'والعبارة التحفيزية بلا صورة');
+ok(F.weekPhoto({ kind: 'teacher', who: 'فيصل', photo: { file: PH.file, mime: 'application/pdf' } }) === '', 'وPDF لا ينشر صورة');
 
 // ٢) حال الفعالية
 const T = '2026-10-20';
@@ -82,6 +87,9 @@ ok(snap.crest && snap.crest.icon === 'book' && !snap.crest.svg, 'الشعار م
 ok(F.snapshot({ doc: Object.assign({}, doc, { crest: { type: 'image', data: 'javascript:x' } }), roster: [], times, days: REF.days, today: T }).crest === null,
   'صورة شعار ليست data:image لا تنشر');
 ok(snap.week === null, 'خانة فارغة لا تنشر');
+const snapW = F.snapshot({ doc: Object.assign({}, doc, { face: { week: { kind: 'teacher', who: 'فيصل', text: '', to: '2026-10-24', photo: PH } } }),
+  self: 'محمد البراك', roster: [], times, days: REF.days, today: T });
+ok(snapW.week && snapW.week.photo === PH.file, 'معرف صورة الخانة في النسخة — فيلتقطه face.js ويفتح بابها');
 ok(snap.stats.meetings === 3, 'عدد الاجتماعات في الحصيلة');
 
 // ٥) ما يراه الزائر: بساعته هو

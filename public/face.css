@@ -69,6 +69,12 @@
 /* ② بطاقة الاسبوع — الكتلة الكحلية الواحدة */
 .fweek{margin-top:16px;position:relative;background:var(--shouba-navy);color:var(--shouba-cream);border-radius:22px;
   box-shadow:var(--shadow-navy);padding:18px 20px;display:flex;flex-direction:column;gap:6px}
+.fweek{overflow:hidden}
+.fweek .row{display:flex;gap:14px;align-items:center}
+.fweek .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+/* صورة معلم الاسبوع: دائرية ٧٢ بحلقة كريمية رقيقة · وصورة الانجاز عريضة ١٦/٩ اعلى البطاقة بزاويتيها */
+.fweek .face{flex:none;width:72px;height:72px;border-radius:999px;object-fit:cover;box-shadow:0 0 0 2px var(--shouba-cream);background:var(--shouba-navy-deep)}
+.fweek .wide{display:block;width:calc(100% + 40px);margin:-18px -20px 6px;aspect-ratio:16/9;object-fit:cover;border-radius:22px 22px 0 0;background:var(--shouba-navy-deep)}
 .fweek .k{font-size:12.5px;font-weight:700;color:var(--shouba-navy-light)}
 .fweek .t{font-size:21px;font-weight:700;line-height:1.5}
 .fweek .x{font-size:14px;font-weight:500;color:var(--shouba-navy-light);line-height:1.8;white-space:pre-line}
@@ -187,4 +193,8 @@
   background:var(--shouba-navy);color:var(--shouba-cream);font-size:12.5px;font-weight:700}
 .pview .pbar button{border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;border-radius:999px;padding:8px 16px;
   color:var(--shouba-navy);background:var(--shouba-cream)}
+.wkph{display:flex;gap:12px;align-items:center}
+.wkph img{flex:none;width:72px;height:72px;border-radius:14px;object-fit:cover;background:var(--shouba-sand)}
+.wkph .btn-ghost,.wkph .btn-danger{width:auto;flex:1;padding:12px 14px;font-size:14px}
+.wkthumb{width:44px;height:44px;border-radius:12px;object-fit:cover;background:var(--shouba-sand)}
 .face-adm .wd{display:flex;flex-direction:column;gap:30px}   /* بين الحقول ٣٠ — والتسمية ٨ والارشاد ٦ من components.css */

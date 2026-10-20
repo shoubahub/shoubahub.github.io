@@ -9,7 +9,7 @@
    ⚠ والتاريخ نص YYYY-MM-DD بتوقيت الجهاز: الزائر يحسب بساعته هو.
 
    اعدادات الواجهة في وثيقة الشعبة تحت face (تزامن وتصدر كبقيتها):
-     week: { kind, text, who, to }   خانة الاسبوع · to آخر يوم تظهر فيه
+     week: { kind, text, who, to, photo }   خانة الاسبوع · to آخر يوم تظهر فيه · photo { file, mime } صورة اختيارية
      hide: [معرف سجل]                 فعالية من السجل اخفيت عن الواجهة — السجل لا يمس
      done: [معرف سجل]                 فعالية من السجل اكد رئيس الشعبة اقامتها
      own:  [{ id, title, date, note, created, done }]   فعاليات للواجهة وحدها
@@ -63,6 +63,11 @@
   F.weekFilled = function (w) {
     if (!w || !F.kindLabel(w.kind)) return false;
     return w.kind === 'teacher' ? !!str(w.who) : !!str(w.text);
+  };
+  /* صورة الخانة: لمعلم الاسبوع وانجازه وحدهما، وصورة لا PDF — معرفها في النسخة فيلتقطه face.js فيفتح بابها */
+  F.weekPhoto = function (w) {
+    var p = w && w.photo;
+    return w && w.kind !== 'quote' && p && typeof p.file === 'string' && /^image\//.test(p.mime || '') ? p.file : '';
   };
   F.weekLive = function (w, today) { return F.weekFilled(w) && !!w.to && today <= w.to; };
 
@@ -193,7 +198,7 @@
       year: str(d.year), term: str(d.term), crest: crest,
       days: arr(inp.days), times: arr(inp.times),
       people: people,
-      week: w ? { kind: w.kind, text: str(w.text), who: str(w.who), to: w.to } : null,
+      week: w ? { kind: w.kind, text: str(w.text), who: str(w.who), to: w.to, photo: F.weekPhoto(w) } : null,
       events: events,
       stats: { meetings: +inp.meetings || 0 }
     };

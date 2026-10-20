@@ -10,10 +10,11 @@
 
    اعدادات الواجهة في وثيقة الشعبة تحت face (تزامن وتصدر كبقيتها):
      week: { kind, text, who, to, photo }   خانة الاسبوع · to آخر يوم تظهر فيه · photo { file, mime } صورة اختيارية
-     show: [معرف سجل]                 فعالية من السجل اختارها رئيس الشعبة للواجهة — لا يظهر من السجل غيرها
+     show: [معرف]                     الفعاليات المنشورة (من السجل والخاصة) — تتغير بـ«انشر» و«اسحب» وحدهما (2026-10-20)،
+                                      فهي ما على الرابط. وما ليس فيها غير منشور — بلا ترحيل لما قبلها (قرار مقصود)
      hide: [معرف سجل]                 (قديم) فعالية من السجل اخفيت — تبقى مخفية ولو كانت في show. السجل لا يمس
      done: [معرف سجل]                 فعالية من السجل اكد رئيس الشعبة اقامتها
-     own:  [{ id, title, date, note, created, done }]   فعاليات للواجهة وحدها
+     own:  [{ id, title, date, note, created, done }]   فعاليات للواجهة وحدها — منشورة ان كانت في show
      theme: 'amber' | 'navy'          لون الترويسة · العنبري افتراضا
      team: { title, name, headPhoto, photos: { اسم: { file, mime } }, hide: [اسم] }
                                       فريق الشعبة · title لقب رئيس الشعبة (أ. افتراضا) · name اسمه ان لم يكن في الحساب
@@ -125,13 +126,13 @@
       created: F.localDay(rec.created)
     };
   };
-  function fromOwn(o) {
+  function fromOwn(o, show) {
     return { id: o.id, src: 'own', title: str(o.title), date: str(o.date), who: [], about: str(o.note), photos: [],
-      created: F.localDay(o.created), done: !!o.done };
+      created: F.localDay(o.created), done: !!o.done, hidden: show.indexOf(o.id) < 0 };
   }
 
   /* كل فعاليات الواجهة لشاشة الادارة: من السجل ثم الخاصة — بحالها في اليوم.
-     ⚠ فعالية السجل لا تظهر الا باختيار: hidden ما لم تكن في show (او كانت في hide القديمة).
+     ⚠ فعالية السجل لا تظهر الا باختيار: hidden ما لم تكن في show (او كانت في hide القديمة)، والخاصة كذلك ما لم تكن في show.
      ⚠ والناقصة (بلا عنوان او تاريخ) لا تسقط بصمت: تعود ومعها missing ['title'|'date'] لتكمل في السجل،
        وتبقى hidden ابدا — لا تضاف للواجهة حتى تكمل. */
   F.events = function (face, recs, today, groups) {
@@ -147,11 +148,34 @@
       out.push(e);
     });
     arr(face.own).forEach(function (o) {
-      var e = fromOwn(o);
+      var e = fromOwn(o, show);
       if (e.title && e.date) out.push(e);
     });
     out.forEach(function (e) { e.status = F.status(e, today); });
     return out.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+  };
+
+  /* ── التحديد والنشر والسحب (2026-10-20، طلب المستخدم: «مربع اختيار لكل فعالية، وزرا انشر واسحب ينفذان») ──
+     «منشورة» ما في آخر نسخة نشرت — تطابق بالعنوان والتاريخ، فالنسخة لا تحمل معرفات السجلات.
+     ⚠ والاساس ما على الرابط فعلا لا show المحفوظة: show القديمة (بناء ٩٧) فيها ما «اضيف» ولم ينشر */
+  F.isPub = function (e, snap) {
+    return !!(e && snap) && arr(snap.events).some(function (p) { return p && p.title === e.title && p.date === e.date; });
+  };
+  /* المعرفات المنشورة بعد الفعل: add انشر (المنشور ∪ المحدد) · وإلا اسحب (المنشور − المحدد). الناقصة لا تدخل ابدا */
+  F.nextShown = function (list, snap, sel, add) {
+    var ok = arr(list).filter(function (e) { return !e.missing; });
+    var on = ok.filter(function (e) { return F.isPub(e, snap); }).map(function (e) { return e.id; });
+    sel = arr(sel).filter(function (id) { return ok.some(function (e) { return e.id === id; }); });
+    if (add) sel.forEach(function (id) { if (on.indexOf(id) < 0) on.push(id); });
+    else on = on.filter(function (id) { return sel.indexOf(id) < 0; });
+    return on;
+  };
+  /* اعدادات الواجهة بعد الفعل (نسخة لا تمس الاصل): show المنشورة كلها، وhide القديمة ترفع عما نشر — والا بقي مخفيا */
+  F.setShown = function (face, ids) {
+    var f = JSON.parse(JSON.stringify(face || {}));
+    f.show = arr(ids).slice();
+    if (f.hide) f.hide = arr(f.hide).filter(function (id) { return f.show.indexOf(id) < 0; });
+    return f;
   };
 
   /* ── الجدول الحي بساعة الزائر ───────────────────────────────────

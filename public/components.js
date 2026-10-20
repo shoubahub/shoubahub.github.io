@@ -740,17 +740,18 @@ Shouba.nextLabel = function (def) {
      المنصة (رجوع في التاريخ، فتعود كما تركها)، والا data-back الافتراضي.
      الاستعمال: <div class="foot"><div data-back="records.html"></div> …زر العمل ان وجد…</div> — والرسم والتسمية من هنا */
   var PAGE_NAME = { 'board.html': 'اللوحة', 'records.html': 'سجلاتك', 'schedule.html': 'الجدول', 'teachers.html': 'المعلمين',
-    'teacher.html': 'ملف المعلم', 'record.html': 'السجل', 'archive.html': 'الأرشيف', 'bundle.html': 'ملف الفصل', 'plan.html': 'خطة المنهج', 'visits.html': 'جدول الزيارات' };
+    'teacher.html': 'ملف المعلم', 'record.html': 'السجل', 'archive.html': 'الأرشيف', 'bundle.html': 'ملف الفصل', 'plan.html': 'خطة المنهج', 'visits.html': 'جدول الزيارات',
+    'face-admin.html': 'واجهة الشعبة' };
   function pageOf(url) { var m = String(url || '').match(/\/([a-z0-9\-]+\.html)(?:[?#]|$)/i); return m ? m[1] : ''; }
 
   /* ── العودة الى من فتح الشاشة (قاعدة المنصة 2026-09-14، رصد المستخدم في «الملاحظات التربوية»): كان «تم» في السجل
      يذهب الى الارشيف ايا كان مصدرك، وزر العودة في الارشيف يعيد الى السجل الذي فتحه الارشيف نفسه — فيدور بينهما ولا
      يصل الى ملف المعلم. القاعدة: العودة تصعد الى من فتح الشاشة، ولا تنزل ابدا الى شاشة تفتحها هي.
      المراتب (LEVEL): اللوحة ٠ · التبويبات ١ · ملف المعلم والخطة ٢ · الارشيف ٣ (يفتح من ملف المعلم ايضا: تقارير زياراته)
-     · ملف الفصل ٤ · السجل ٥ — ومن فتح الشاشة
+     · ملف الفصل ٤ · السجل ٥ · وواجهة الشعبة ١ (تبويب؛ «أكملها في السجل» منها يعود اليها — 2026-10-20) — ومن فتح الشاشة
      (مرتبته ادنى منها) يحفظ للجلسة، فالعائد اليها من شاشة جانبية (اعدادات المطبوعات) او فرعية يجد وجهته كما كانت.
      go(): رجوع في التاريخ ان جاء منها مباشرة (فتعود كما تركتها)، والا انتقال اليها. replace: بلا اثر في التاريخ (بعد الحذف) */
-  var LEVEL = { 'board.html': 0, 'records.html': 1, 'teachers.html': 1, 'schedule.html': 1,
+  var LEVEL = { 'board.html': 0, 'records.html': 1, 'teachers.html': 1, 'schedule.html': 1, 'face-admin.html': 1,
     'teacher.html': 2, 'plan.html': 2, 'archive.html': 3, 'bundle.html': 4, 'visits.html': 4, 'record.html': 5 };
   Shouba.opener = function (def) {
     var here = pageOf(location.href), key = 'shouba.from.' + here, ref = '', url = '', direct = false;

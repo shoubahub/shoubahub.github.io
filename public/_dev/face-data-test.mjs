@@ -56,12 +56,13 @@ const recs = [
   rec('r7', 'بلا تاريخ', '', '2026-10-06T08:00:00Z')
 ];
 const groups = {}; REF.whoGroups.forEach(g => { groups[g.id] = g.t; });
-const face = { show: ['r1', 'r2', 'r3', 'r4', 'r5', 'r7'], hide: ['r4'], done: [], own: [
+const face = { show: ['r1', 'r2', 'r3', 'r4', 'r5', 'r7', 'w1', 'w2'], hide: ['r4'], done: [], own: [
   { id: 'w1', title: 'زيارة الموجه', date: '2026-10-28', note: 'للواجهة', created: '2026-10-19', done: false },
-  { id: 'w2', title: 'معرض قديم', date: '2026-10-12', note: '', created: '2026-10-01', done: false }
+  { id: 'w2', title: 'معرض قديم', date: '2026-10-12', note: '', created: '2026-10-01', done: false },
+  { id: 'w3', title: 'لم تنشر', date: '2026-10-29', note: '', created: '2026-10-19', done: false }
 ] };
 const list = F.events(face, recs, T, groups);
-ok(list.length === 9, 'الناقصة لا تسقط بصمت', list.map(e => e.title));
+ok(list.length === 10, 'الناقصة لا تسقط بصمت', list.map(e => e.title));
 const byId = id => list.filter(e => e.id === id)[0];
 ok(!byId('r1').hidden && !byId('r3').hidden, 'المختارة للواجهة تظهر');
 ok(byId('r6').hidden && byId('r6').status === 'soon' && !byId('r6').missing, 'فعالية السجل لا تظهر حتى تختار — وتبقى في القائمة بحالها');
@@ -72,6 +73,7 @@ ok(F.events({}, [rec('r1', 'ملتقى', '2026-10-25', '2026-10-01T08:00:00Z')],
 ok(byId('r1').photos.length === 1, 'الصور وحدها — لا PDF', byId('r1').photos);
 ok(byId('r1').who[0] === 'معلمو الشعبة', 'المجموعة باسمها لا برمزها', byId('r1').who);
 ok(byId('r2').status === 'wait' && byId('w2').status === 'wait', 'الماضية بلا تأكيد من السجل ومن الواجهة');
+ok(!byId('w1').hidden && byId('w3').hidden, 'الخاصة منشورة ان كانت في show وحدها — بلا ترحيل لما قبلها');
 
 // ٤) النسخة المنشورة: لا يدخلها مخفي ولا منتظر، والجدول لمن له جدول
 const doc = {
@@ -115,6 +117,24 @@ ok(snapN.team.head.name === 'خالد' && snapN.team.head.title === 'أ.' && sna
 ok(F.snapshot({ doc, self: '', roster: [], times, days: REF.days, today: T }).team.head === null, 'بلا اسم للرئيس: لا بطاقة له');
 ok(F.initial('  محمد') === 'م' && F.initial('') === '', 'الحرف الاول للدائرة بلا صورة');
 
+// ٤ج) التحديد والنشر والسحب (2026-10-20): «منشورة» ما في آخر نسخة، وانشر = المنشور ∪ المحدد، واسحب = المنشور − المحدد
+const PUBS = { events: [{ title: 'ملتقى', date: '2026-10-25' }, { title: 'زيارة الموجه', date: '2026-10-28' }] };
+ok(F.isPub(byId('r1'), PUBS) && F.isPub(byId('w1'), PUBS) && !F.isPub(byId('r6'), PUBS) && !F.isPub(byId('r1'), null),
+  'منشورة: في آخر نسخة بعنوانها وتاريخها، وبلا نسخة لا منشور');
+ok(!F.isPub(byId('r3'), PUBS), 'في show ولم تنشر بعد (بناء ٩٧: «أضفها» بلا نشر): غير منشورة');
+ok(F.nextShown(list, PUBS, ['r6', 'w3'], true).sort().join() === ['r1', 'w1', 'r6', 'w3'].sort().join(), 'انشر: المنشور مع المحدد');
+ok(F.nextShown(list, PUBS, ['r1'], true).sort().join() === 'r1,w1', 'انشر المنشور: لا يتكرر');
+ok(F.nextShown(list, PUBS, ['w1', 'r6'], false).join() === 'r1', 'اسحب: المنشور بلا المحدد، وغير المنشور لا اثر له');
+ok(F.nextShown(list, PUBS, ['r5', 'r7'], true).sort().join() === 'r1,w1', 'الناقصة لا تنشر ولو حددت');
+ok(F.nextShown(list, null, ['r6'], true).join() === 'r6', 'الواجهة غير منشورة: انشر المحدد وحده — لا show القديمة');
+const f2 = F.setShown(face, ['r4', 'r6', 'w3']);
+ok(f2.show.join() === 'r4,r6,w3' && f2.hide.indexOf('r4') < 0 && face.show.length === 8 && face.hide[0] === 'r4', 'setShown: show ما نشر، وhide القديمة ترفع عنه، والاصل لا يمس');
+const l2 = F.events(f2, recs, T, groups), by2 = id => l2.filter(e => e.id === id)[0];
+ok(!by2('r4').hidden && !by2('r6').hidden && !by2('w3').hidden && by2('r1').hidden && by2('w1').hidden, 'وبعدها يظهر ما نشر وحده');
+const snap2 = F.snapshot({ doc: Object.assign({}, doc, { face: f2 }), roster: [], times, days: REF.days, today: T, groups, recs });
+ok(snap2.events.map(e => e.title).join('|') === 'مخفية|لم تختر|لم تنشر', 'والنسخة منه وحده', snap2.events.map(e => e.title));
+ok(F.setShown({}, []).show.length === 0 && !('hide' in F.setShown({}, [])), 'سحب الواجهة كلها: show فارغة');
+
 // ٥) ما يراه الزائر: بساعته هو
 const v1 = F.visible(snap, T);
 ok(v1.soon.map(e => e.title).join('|') === 'ملتقى|زيارة الموجه' && v1.done.map(e => e.title).join('|') === 'لجنة', 'قادمة بالاقرب · تمّت', v1);
@@ -135,6 +155,24 @@ ok(F.now(times, REF.days, at(5, '09:00')).state === 'off', 'الجمعة: لا �
 const brk = times.filter(t => t.brk && t.duty)[0];
 st = F.now(times, REF.days, at(1, brk.from));
 ok(st.state === 'break' && st.label === brk.label && st.next > 0 && st.day === 'الاثنين', 'في الفرصة وتليها حصة', st);
+
+// ٦ب) «أكملها في السجل» ثم «تم»: يعود الى واجهة الشعبة لا الى الارشيف (قاعدة Shouba.opener، 2026-10-20)
+{
+  const cj = read('components.js');
+  const pick = re => { const m = cj.match(re); if (!m) throw new Error('opener: ' + re); return m[0]; };
+  const src = [pick(/var PAGE_NAME = \{[\s\S]*?\};/), pick(/function pageOf\(url\) \{.*\}/), pick(/var LEVEL = \{[\s\S]*?\};/),
+    pick(/Shouba\.opener = function \(def\) \{[\s\S]*?\n  \};/)].join('\n');
+  const run = (here, ref) => {
+    const store = {}, o = { Shouba: {}, URL, location: { href: 'http://x' + here, origin: 'http://x' }, document: { referrer: ref ? 'http://x' + ref : '' },
+      history: { length: 2 }, sessionStorage: { getItem: k => store[k] || null, setItem: (k, v) => { store[k] = v; } } };
+    vm.createContext(o); vm.runInContext(src, o);
+    return o.Shouba.opener('archive.html?tpl=events');
+  };
+  const op = run('/record.html?id=r1', '/face-admin.html');
+  ok(op.url.endsWith('/face-admin.html') && op.name === 'واجهة الشعبة', 'السجل المفتوح من واجهة الشعبة: «تم — عودة إلى واجهة الشعبة»', op);
+  ok(run('/record.html?id=r1', '/archive.html?tpl=events').name === 'الأرشيف' && run('/record.html?id=r1', '').name === 'الأرشيف',
+    'ومن الارشيف او بلا مصدر: الى الارشيف كما كان');
+}
 
 // ٧) عامل الخدمة يترك الواجهة ولا يخزنها
 function swHandles(url) {

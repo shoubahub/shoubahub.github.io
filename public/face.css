@@ -196,8 +196,14 @@
 .wkbox small{font-size:11.5px;font-weight:600;color:var(--shouba-label);line-height:1.7}
 .wkbox small.off{color:var(--shouba-error)}
 /* سطر الفعالية وادواته */
-.erow{display:flex;flex-direction:column;gap:8px;padding:11px 13px;border-bottom:1px solid rgba(226,215,194,.75)}
+.erow{display:flex;gap:4px;align-items:flex-start;padding:11px 13px;border-bottom:1px solid rgba(226,215,194,.75)}
 .erow:last-child{border-bottom:0}
+.erow .eb{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+/* مربع التحديد: مساحة لمس ٤٤ والمربع نفسه ٢٢ (2026-10-20) */
+.erow .ck{flex:none;width:44px;height:44px;margin:-11px -9px -11px 0;display:grid;place-items:center;cursor:pointer}
+.erow .ck input{width:22px;height:22px;margin:0;cursor:pointer;accent-color:var(--shouba-navy)}
+.erow .st{color:var(--shouba-label)}
+.erow .st.on{color:var(--shouba-success)}
 .erow .t{display:flex;gap:8px;align-items:flex-start}
 .erow .t b{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--shouba-ink);line-height:1.6}
 .erow .mt{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11px;font-weight:700;color:var(--shouba-label)}
@@ -208,6 +214,10 @@
 .erow .op.warn{color:var(--shouba-error);background:rgba(163,56,48,.08)}
 .erow.off b{color:var(--shouba-label)}
 .erow .miss,.erow.off b.miss{color:var(--shouba-error)}
+/* «اسحب المحددة» ثم سحب الواجهة كلها نصا هادئا */
+.pulls{display:flex;flex-direction:column;align-items:center;gap:6px}
+.qlink{border:0;background:transparent;cursor:pointer;font-family:var(--font-ar);font-size:12.5px;font-weight:700;
+  color:var(--shouba-label);text-decoration:underline;text-underline-offset:3px;padding:12px 10px;min-height:44px}
 .grp{padding:7px 13px;background:rgba(120,98,66,.07);font-size:11px;font-weight:700;color:var(--shouba-label)}
 /* المعاينة: الصفحة كما يراها الزائر في طبقة فوق الشاشة */
 .pview{position:fixed;inset:0;z-index:100;background:var(--shouba-canvas);display:flex;flex-direction:column}

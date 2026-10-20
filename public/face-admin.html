@@ -18,7 +18,8 @@
 <link rel="stylesheet" href="face.css?v=97" />
 <style>
   /* ادارة واجهة الشعبة (2026-10-20، نطاق اعتمده المستخدم) — يفتحها الزر الاوسط عند من فعلت له الواجهة.
-     خانة الاسبوع · فعاليات السجل (اظهار واخفاء لا يمس السجل) · فعاليات للواجهة وحدها · معاينة ونشر وسحب ونسخ الرابط.
+     خانة الاسبوع · فعاليات السجل (نشر وسحب لا يمس السجل) · فعاليات للواجهة وحدها · معاينة ونشر وسحب ونسخ الرابط.
+     الفعاليات (2026-10-20، طلب المستخدم): مربع اختيار لكل فعالية، و«انشر» ينشر المحددة و«اسحب» يرفعها من الرابط.
      الانماط في face.css — لا هيكل هنا */
   #wkKinds{flex-wrap:wrap}
   #wkKinds .seg{flex:1 1 30%}
@@ -68,7 +69,10 @@
           <div class="tbl" id="evList"></div>
         </section>
 
-        <div class="pad" id="pullBox" hidden><button type="button" class="btn-danger" id="pull">اسحب النشر</button></div>
+        <div class="pad pulls">
+          <button type="button" class="btn-danger" id="pull" disabled>اسحب المحددة</button>
+          <button type="button" class="qlink" id="pullAll" hidden>اسحب الواجهة كلها</button>
+        </div>
       </div>
     </div>
   </div>
@@ -101,6 +105,7 @@
 (function () {
   var S = Shouba, F = ShoubaFace, R = window.SHOUBA_REF || {};
   var ME = null, PUB = null, BUSY = false;          /* حال الخادم · آخر نسخة منشورة · طلب جار */
+  var SEL = [];                                     /* الفعاليات المحددة (معرفاتها) — تفرغ بعد كل نشر او سحب */
   var GROUPS = {};
   (R.whoGroups || []).forEach(function (g) { GROUPS[g.id] = g.t; });
 
@@ -114,15 +119,17 @@
   function face() { var f = S.data().face; return f && typeof f === 'object' ? JSON.parse(JSON.stringify(f)) : {}; }
   function setFace(f) { S.save({ face: f }); paint(); }
 
-  function snapshot() {
+  function snapshot(f) {
     var d = S.data();
     return F.snapshot({
-      doc: d, self: S.self(), roster: S.roster(), staff: S.staff(), times: S.periods(), days: S.days(), today: S.today(), groups: GROUPS,
+      doc: f ? Object.assign({}, d, { face: f }) : d, self: S.self(), roster: S.roster(), staff: S.staff(), times: S.periods(), days: S.days(), today: S.today(), groups: GROUPS,
       recs: S.recs('events'),
       meetings: S.recs('meetings').filter(function (r) { return (r.year || '') === (d.year || ''); }).length
     });
   }
   function changed() { return !PUB || JSON.stringify(PUB) !== JSON.stringify(snapshot()); }
+  function evList() { return F.events(face(), S.recs('events'), S.today(), GROUPS); }
+  function pubNow() { return ME && ME.published ? PUB : null; }
   function link() { return ME ? location.origin + '/face/' + ME.slug : ''; }
 
   /* ── الرأس ── */
@@ -135,11 +142,15 @@
   })();
 
   /* ── حال النشر ── */
+  /* «انشر» للمحددة، او لتعديلات الصفحة (الفريق · الخانة · اللون) بلا تحديد — فلا تحبس خانة الاسبوع حتى تحدد فعالية.
+     و«اسحب» للمحددة وحدها. وبلا تحديد ولا تعديل: «حدد فعالية أولاً» */
   function paintPub() {
-    var btn = $('publish'), diff = changed();
+    var btn = $('publish'), diff = changed(), n = SEL.length, pull = $('pull');
     $('pubLink').textContent = link();
     $('copy').disabled = !ME;
-    $('pullBox').hidden = !(ME && ME.published);
+    $('pullAll').hidden = !(ME && ME.published);
+    pull.disabled = BUSY || !n || !(ME && ME.published);
+    pull.textContent = n ? 'اسحب المحددة (' + n + ')' : 'اسحب المحددة';
     if (!ME) {
       $('pubKick').textContent = 'لا اتصال بالخادم';
       $('pubAt').textContent = '';
@@ -162,6 +173,8 @@
       btn.textContent = 'منشورة كما هي';
     }
     btn.disabled = BUSY || (ME.published && !diff);
+    if (n) { btn.textContent = 'انشر المحددة (' + n + ')'; btn.disabled = BUSY; }
+    else if (btn.disabled && !BUSY) btn.textContent = 'حدد فعالية أولاً';
   }
 
   /* ── لون الترويسة: عنبري (الافتراضي) او كحلي — ينشر مع الواجهة ── */
@@ -361,17 +374,17 @@
 
   /* ── الفعاليات ── */
   function paintEvents() {
-    var f = face(), list = F.events(f, S.recs('events'), S.today(), GROUPS), box = $('evList');
+    var list = evList(), box = $('evList');
+    SEL = SEL.filter(function (id) { return list.some(function (e) { return e.id === id && !e.missing; }); });
     box.innerHTML = '';
     if (!list.length) {
       box.innerHTML = '<div class="empty">لا فعاليات بعد — ما تكتبه في سجل الفعاليات يظهر هنا، أو أضف فعالية للواجهة وحدها.</div>';
       return;
     }
     var GR = [
-      ['wait', 'مضى يومها — أكد إقامتها لتظهر في «تمت»', function (e) { return !e.hidden && e.status === 'wait'; }],
-      ['soon', 'قادمة', function (e) { return !e.hidden && e.status === 'soon'; }],
-      ['done', 'تمت', function (e) { return !e.hidden && e.status === 'done'; }],
-      ['hid', 'من السجل — لم تضف للواجهة', function (e) { return e.hidden && !e.missing; }],
+      ['wait', 'مضى يومها — أكد إقامتها لتظهر في «تمت»', function (e) { return !e.missing && e.status === 'wait'; }],
+      ['soon', 'قادمة', function (e) { return !e.missing && e.status === 'soon'; }],
+      ['done', 'تمت', function (e) { return !e.missing && e.status === 'done'; }],
       ['miss', 'ناقصة — أكملها في السجل', function (e) { return !!e.missing; }]
     ];
     GR.forEach(function (g) {
@@ -381,22 +394,44 @@
       box.appendChild(el('div', 'grp', esc(g[1])));
       rows.forEach(function (e) { box.appendChild(evRow(e)); });
     });
+    var n = SEL.length;
+    box.appendChild(el('div', 'thint', n ? 'حددت ' + num(n) + ' — «انشر» يضيفها إلى الرابط، و«اسحب» يرفعها عنه.'
+      : 'حدد فعالية أولاً، ثم انشرها أو اسحبها.'));
   }
+  /* سطر الفعالية: مربع اختيار للمكتملة، وحالها على الرابط (منشورة · غير منشورة) */
   function evRow(e) {
-    var r = el('div', 'erow' + (e.hidden ? ' off' : '')), miss = e.missing || [];
-    r.innerHTML = '<div class="t"><b' + (e.title ? '>' + esc(e.title) : ' class="miss">بلا عنوان') + '</b><span class="chip ' + (e.src === 'rec' ? 'muted' : 'navy') + '">'
+    var miss = e.missing || [], r = el('div', 'erow' + (miss.length ? ' off' : '')), on = F.isPub(e, pubNow());
+    var body = el('div', 'eb');
+    body.innerHTML = '<div class="t"><b' + (e.title ? '>' + esc(e.title) : ' class="miss">بلا عنوان') + '</b><span class="chip ' + (e.src === 'rec' ? 'muted' : 'navy') + '">'
       + (e.src === 'rec' ? 'من السجل' : 'للواجهة وحدها') + '</span></div>'
-      + '<div class="mt">' + (e.date ? '<em>' + dateHtml(e.date) + '</em>' : '<em class="miss">بلا تاريخ</em>')
+      + '<div class="mt">' + (miss.length ? '' : '<span class="st' + (on ? ' on' : '') + '">' + (on ? 'منشورة' : 'غير منشورة') + '</span><span aria-hidden="true">·</span>')
+      + (e.date ? '<em>' + dateHtml(e.date) + '</em>' : '<em class="miss">بلا تاريخ</em>')
       + (e.who.length ? '<span aria-hidden="true">·</span><span>' + esc(e.who.join('، ')) + '</span>' : '') + '</div>';
     var ops = el('div', 'ops');
     function op(label, cls, fn) { var b = el('button', 'op' + (cls ? ' ' + cls : '')); b.type = 'button'; b.textContent = label; b.addEventListener('click', fn); ops.appendChild(b); }
-    /* الناقصة لا تضاف للواجهة حتى تكمل: بابها السجل وحده */
-    if (miss.length) { op('أكملها في السجل', '', function () { location.href = 'record.html?id=' + encodeURIComponent(e.id); }); r.appendChild(ops); return r; }
-    if (e.status === 'wait' && !e.hidden) op('أقيمت', '', function () { confirmDone(e); });
-    if (e.src === 'rec') op(e.hidden ? 'أضفها للواجهة' : 'أخفها من الواجهة', '', function () { toggleShow(e); });
-    else op('احذفها', 'warn', function () { removeOwn(e); });
-    r.appendChild(ops);
+    /* الناقصة لا تحدد ولا تنشر حتى تكمل: بابها السجل وحده */
+    if (miss.length) { op('أكملها في السجل', '', function () { location.href = 'record.html?id=' + encodeURIComponent(e.id); }); }
+    else {
+      var ck = el('label', 'ck'), box = el('input');
+      box.type = 'checkbox'; box.checked = SEL.indexOf(e.id) > -1;
+      box.setAttribute('aria-label', 'حدد «' + e.title + '»');
+      box.addEventListener('change', function () {
+        SEL = SEL.filter(function (x) { return x !== e.id; });
+        if (box.checked) SEL.push(e.id);
+        paintPub(); paintHint();
+      });
+      ck.appendChild(box); r.appendChild(ck);
+      if (e.status === 'wait') op('أقيمت', '', function () { confirmDone(e); });
+      if (e.src === 'own') op('احذفها', 'warn', function () { removeOwn(e); });
+    }
+    if (ops.children.length) body.appendChild(ops);
+    r.appendChild(body);
     return r;
+  }
+  function paintHint() {
+    var h = $('evList').querySelector('.thint:last-child'), n = SEL.length;
+    if (h) h.innerHTML = n ? 'حددت ' + num(n) + ' — «انشر» يضيفها إلى الرابط، و«اسحب» يرفعها عنه.'
+      : 'حدد فعالية أولاً، ثم انشرها أو اسحبها.';
   }
   function confirmDone(e) {
     var f = face();
@@ -408,21 +443,6 @@
       if (e.src === 'rec') g.done = (g.done || []).filter(function (x) { return x !== e.id; });
       else (g.own || []).forEach(function (o) { if (o.id === e.id) o.done = false; });
       setFace(g);
-    });
-  }
-  /* فعالية السجل لا تظهر الا باختياره (show)، واخفاؤها رفعها من show: السجل نفسه لا يمس.
-     واضافتها ترفعها من hide القديمة ايضا — والا بقيت مخفية */
-  function setShown(id, on) {
-    var g = face(), show = (g.show || []).filter(function (x) { return x !== id; });
-    if (on) { show.push(id); if (g.hide) g.hide = g.hide.filter(function (x) { return x !== id; }); }
-    g.show = show; setFace(g);
-  }
-  function toggleShow(e) {
-    var on = e.hidden, was = (face().hide || []).slice();
-    setShown(e.id, on);
-    S.toast(on ? 'أضيفت للواجهة — انشر لتظهر على الرابط' : 'أخفيت من الواجهة — وتبقى في سجل الفعاليات', function () {
-      setShown(e.id, !on);
-      if (on) { var g = face(); g.hide = was; setFace(g); }
     });
   }
   /* فعالية الواجهة وحدها تحذف حقا — بتراجع */
@@ -447,7 +467,7 @@
       (f.own = f.own || []).push({ id: 'w' + Date.now().toString(36), title: t, date: dt, note: n.querySelector('#evN').value.trim(),
         created: S.today(), done: false });
       setFace(f);
-      S.toast('أضيفت للواجهة — انشر لتظهر على الرابط');
+      S.toast('أضيفت إلى القائمة غير منشورة — حددها وانشرها لتظهر على الرابط');
     } });
   }
 
@@ -457,24 +477,30 @@
       headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { j.status = r.status; j.ok = r.ok; return j; }); });
   }
-  $('publish').addEventListener('click', function () {
+  /* النشر والسحب كلاهما نشر للصفحة كلها (الفريق والخانة واللون كما هي الآن) بمجموعة فعاليات جديدة:
+     انشر = المنشور ∪ المحدد · اسحب = المنشور − المحدد. وshow لا تحفظ الا بعد قبول الخادم — فتبقى ما على الرابط */
+  function send(add) {
     if (BUSY || !ME) return;
-    var snap = snapshot();
+    var n = SEL.length, f = F.setShown(face(), F.nextShown(evList(), pubNow(), SEL, add)), snap = snapshot(f);
     BUSY = true; paintPub();
     api('POST', 'api/face/publish', { data: snap }).then(function (j) {
       BUSY = false;
-      if (!j.ok) { S.toast(j.error || 'تعذر النشر — حاول بعد قليل'); paintPub(); return; }
-      ME.published = true; ME.at = j.at; ME.rev = j.rev; PUB = snap;
-      paint();
-      S.toast('نشرت — الرابط يعرضها الآن');
-    }, function () { BUSY = false; paintPub(); S.toast('لا اتصال بالخادم — لم تنشر'); });
-  });
-  $('pull').addEventListener('click', function () {
-    S.ask('سحب النشر', 'يفرغ الرابط فلا يجد الزائر شيئا، وتغلق صور الواجهة في الحال. ويبقى الرابط نفسه إن نشرت بعد.', 'اسحب النشر', function () {
+      if (!j.ok) { S.toast(j.error || (add ? 'تعذر النشر — حاول بعد قليل' : 'تعذر السحب — حاول بعد قليل')); paintPub(); return; }
+      ME.published = true; ME.at = j.at; ME.rev = j.rev; PUB = snap; SEL = [];
+      setFace(f);
+      S.toast(!n ? 'نشرت — الرابط يعرضها الآن' : add ? 'نشرت المحددة — الرابط يعرضها الآن' : 'سحبت المحددة من الرابط');
+    }, function () { BUSY = false; paintPub(); S.toast(add ? 'لا اتصال بالخادم — لم تنشر' : 'لا اتصال بالخادم — لم تسحب'); });
+  }
+  $('publish').addEventListener('click', function () { send(true); });
+  $('pull').addEventListener('click', function () { if (SEL.length) send(false); });
+  /* سحب الواجهة كلها: الرابط فارغ — ولا منشور بعده، فتفرغ show */
+  $('pullAll').addEventListener('click', function () {
+    S.ask('سحب الواجهة كلها', 'يفرغ الرابط فلا يجد الزائر شيئا، وتغلق صور الواجهة في الحال. ويبقى الرابط نفسه إن نشرت بعد.', 'اسحب الواجهة كلها', function () {
       api('DELETE', 'api/face/publish').then(function (j) {
         if (!j.ok) { S.toast(j.error || 'تعذر السحب'); return; }
-        ME.published = false; ME.at = ''; PUB = null; paint();
-        S.toast('سحب النشر — الرابط فارغ الآن');
+        ME.published = false; ME.at = ''; PUB = null; SEL = [];
+        setFace(F.setShown(face(), []));
+        S.toast('سحبت الواجهة كلها — الرابط فارغ الآن');
       }, function () { S.toast('لا اتصال بالخادم'); });
     });
   });

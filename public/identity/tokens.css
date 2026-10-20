@@ -10,15 +10,36 @@
   --shouba-canvas: #EFE6D6;      /* خلفية شاشات الهاتف */
   --shouba-line: #E2D7C2;        /* حدود رقيقة */
   --shouba-text-muted: #5F5648;
-  --shouba-label: #8A7F6E;       /* عناوين صغيرة متباعدة الأحرف */
-  --shouba-hint: #A79A86;
+  --shouba-label: #6E6352;       /* عناوين صغيرة متباعدة الأحرف */
+  --shouba-hint: #726653;
   --shouba-navy-light: #A8C6E2;  /* نص ثانوي على الكحلي */
-  --shouba-link: #3E7FB4;
+  --shouba-link: #2C6593;
   --shouba-amber-deep: #A9701B;  /* ظل الزر العنبري */
-  --shouba-error: #B7443A;
+  --shouba-amber-text: #83550F;  /* نص عنبري صغير على الفاتح (رقاقات) — تباين ≥4.5 · 2026-10-20 */
+  --shouba-error: #A33830;
+
+  /* ألوان مشتقة مسمّاة — كانت مكتوبة بقيمها في الملفات (2026-10-20) */
+  --shouba-on-amber: #241D06;     /* نص الزر العنبري */
+  --shouba-on-error: #FFF3F1;     /* نص على الأحمر */
+  --shouba-navy-hi: #1B5183;      /* أعلى تدرّج الشريط العلوي، ولون شريط المتصفح (theme-color) */
+  --shouba-navy-deep: #123A5E;    /* أسفل تدرّج الشريط العلوي */
+  --shouba-paper-lo: #F4EDE0;     /* أسفل تدرّج البطاقة الورقية */
+  --shouba-raised-hi: #FBF7EE;    /* أعلى تدرّج الأزرار الفاتحة */
+  --shouba-raised-lo: #F3ECDE;    /* أسفله */
+  --shouba-track: #D9CCB2;        /* نقاط الخطوات غير النشطة، ومقبض الورقة، والزر المعطّل الصغير */
+  --shouba-off-hi: #E4DAC7;       /* الزر الرئيسي معطّلاً: أعلى التدرّج */
+  --shouba-off-lo: #DCD1BA;       /* أسفله */
+  --shouba-off-edge: #C9BCA1;     /* حافته السفلية */
+  --shouba-off-text: #9A8E79;     /* نصه */
+  --shouba-success: #2E7D57;      /* حالة «نشط» */
+  /* ألوان التصنيف (رقاقات الحصص) — t0 كحلي و t2 عنبري غامق من الرموز أعلاه */
+  --shouba-cat-1: #3E7FB4; --shouba-cat-3: #5E7A4A; --shouba-cat-4: #A2553C;
+  --shouba-cat-5: #6B5B8A; --shouba-cat-6: #2F7D74; --shouba-cat-7: #7A5C3A;
 
   /* Amber CTA gradient */
   --shouba-cta: linear-gradient(180deg, #F2BC66 0%, #E8A33D 46%, #D18E28 100%);
+  --shouba-paper-grad: linear-gradient(180deg, var(--shouba-paper) 0%, var(--shouba-paper-lo) 100%);
+  --shouba-raised: linear-gradient(180deg, var(--shouba-raised-hi) 0%, var(--shouba-raised-lo) 100%);
 
   /* Type */
   --font-ar: "IBM Plex Sans Arabic", sans-serif;   /* 300–700 */

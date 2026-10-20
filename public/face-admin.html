@@ -105,6 +105,10 @@
 (function () {
   var S = Shouba, F = ShoubaFace, R = window.SHOUBA_REF || {};
   var ME = null, PUB = null, BUSY = false;          /* حال الخادم · آخر نسخة منشورة · طلب جار */
+  /* «جارٍ التحميل…» حتى يجيب الخادم عن حال الواجهة (ومنشورها)، وعلى جهاز بلا نسخة حتى تنتهي مراجعة الوثيقة —
+     كانت تظهر «لا اتصال بالخادم» و«لا فعاليات بعد» لحظة ثم تتبدل، وعلى شبكة الجوال البطيئة ثواني تشبه العطل (معاينة السلوك 2026-10-20) */
+  var LOAD = true, FRESH = !Object.keys(S.data()).length;
+  function loading() { return LOAD || (FRESH && !S.synced); }
   var SEL = [];                                     /* الفعاليات المحددة (معرفاتها) — تفرغ بعد كل نشر او سحب */
   var GROUPS = {};
   (R.whoGroups || []).forEach(function (g) { GROUPS[g.id] = g.t; });
@@ -153,6 +157,13 @@
     pull.hidden = !k || !(ME && ME.published);
     pull.disabled = BUSY;
     pull.textContent = 'اسحب المحددة (' + k + ')';
+    if (loading()) {
+      $('pubKick').textContent = 'جارٍ التحميل…';
+      $('pubAt').textContent = ''; $('pubTtl').textContent = '';
+      pull.hidden = true; $('pullAll').hidden = true;
+      btn.disabled = true; btn.textContent = 'انشر الواجهة';
+      return;
+    }
     if (!ME) {
       $('pubKick').textContent = 'لا اتصال بالخادم';
       $('pubAt').textContent = '';
@@ -378,6 +389,7 @@
     var list = evList(), box = $('evList');
     SEL = SEL.filter(function (id) { return list.some(function (e) { return e.id === id && !e.missing; }); });
     box.innerHTML = '';
+    if (!list.length && loading()) { box.innerHTML = '<div class="empty">جارٍ التحميل…</div>'; return; }
     if (!list.length) {
       box.innerHTML = '<div class="empty">لا فعاليات بعد — ما تكتبه في سجل الفعاليات يظهر هنا، أو أضف فعالية للواجهة وحدها.</div>';
       return;
@@ -542,15 +554,17 @@
   paint();
   /* وصلت الوثيقة من الخادم بعد الرسم الاول (جهاز بلا نسخة) — يعاد الرسم، واللوحة المفتوحة لا تمس */
   document.addEventListener('shouba:data', paint);
+  document.addEventListener('shouba:synced', paint);
 
   /* حال الواجهة من الخادم، وآخر نسخة منشورة — بها يعرف «فيها تعديلات لم تنشر» ولو نشر من جهاز آخر */
+  function loaded() { LOAD = false; paint(); }
   api('GET', 'api/face/me').then(function (j) {
-    if (!j.ok) { paint(); return; }
+    if (!j.ok) { loaded(); return; }
     ME = j;
-    if (!ME.published) { paint(); return; }
+    if (!ME.published) { loaded(); return; }
     fetch('api/face/' + ME.slug, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (p) { PUB = p && p.data ? p.data : null; paint(); }, function () { paint(); });
-  }, function () { paint(); });
+      .then(function (p) { PUB = p && p.data ? p.data : null; loaded(); }, function () { loaded(); });
+  }, function () { loaded(); });
 })();
 </script>
 </body>

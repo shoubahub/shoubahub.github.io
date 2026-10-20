@@ -11,7 +11,7 @@ const SRC = fs.readFileSync(path.join(ROOT, 'derive.js'), 'utf8');
 let pass = 0, fail = 0;
 const ok = (c, name, extra) => { if (c) { pass++; console.log('✓', name); } else { fail++; console.log('✗', name, extra !== undefined ? '— ' + JSON.stringify(extra) : ''); } };
 
-function world(local, server) {
+function world(local, server, offline) {
   const store = local ? { 'shouba.setup': JSON.stringify(local), 'shouba.rev': '3' } : {};
   const fired = [];
   const c = {
@@ -19,7 +19,7 @@ function world(local, server) {
     localStorage: { getItem: k => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } },
     setTimeout: () => 0, clearTimeout: () => {},
     document: { dispatchEvent: e => { fired.push(e.type); return true; }, addEventListener: () => {} },
-    fetch: () => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ owner: '#1', user: 'u', data: server, rev: 3 }) })
+    fetch: () => offline ? Promise.reject(new Error('offline')) : Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ owner: '#1', user: 'u', data: server, rev: 3 }) })
   };
   c.window = c;
   vm.createContext(c);
@@ -45,6 +45,25 @@ ok(!w.fired.includes('shouba:data'), 'الخادم فارغ: لا اعلان', w
 
 const fa = fs.readFileSync(path.join(ROOT, 'face-admin.html'), 'utf8');
 ok(/addEventListener\('shouba:data',\s*paint\)/.test(fa), 'ادارة الواجهة تعيد الرسم عند «shouba:data»');
+
+// «shouba:synced» بعد انتهاء المراجعة في كل حال — وبه تكف ادارة الواجهة عن «جارٍ التحميل…» (2026-10-20)
+w = world(null, DOC);
+ok(!w.S.synced, 'قبل المراجعة: synced غير مضبوط');
+await w.S.connect();
+ok(w.S.synced && w.fired.indexOf('shouba:synced') > w.fired.indexOf('shouba:data'), 'جهاز فارغ: «shouba:synced» بعد «shouba:data»', w.fired);
+w = world(DOC, DOC); await w.S.connect();
+ok(w.fired.includes('shouba:synced'), 'نسخة مطابقة: «shouba:synced»', w.fired);
+w = world(null, {}); await w.S.connect();
+ok(w.fired.includes('shouba:synced'), 'الخادم فارغ: «shouba:synced»', w.fired);
+w = world(null, DOC, true);
+ok(await w.S.connect() === 'none' && w.fired.includes('shouba:synced'), 'لا اتصال: «none» ويعلن الانتهاء', w.fired);
+
+const fa2 = fa.replace(/\s+/g, ' ');
+ok(fa.includes("document.addEventListener('shouba:synced', paint)"), 'ادارة الواجهة تعيد الرسم عند «shouba:synced»');
+ok(/if \(loading\(\)\) \{ \$\('pubKick'\)\.textContent = 'جارٍ التحميل…'/.test(fa2), 'حال النشر: «جارٍ التحميل…» قبل «لا اتصال بالخادم»');
+ok(fa2.indexOf("if (loading())") < fa2.indexOf("if (!ME) {"), 'فحص التحميل يسبق «لا اتصال»');
+ok(/if \(!list\.length && loading\(\)\) \{ box\.innerHTML = '<div class="empty">جارٍ التحميل…<\/div>'/.test(fa2), 'الفعاليات: سطر التحميل بدل «لا فعاليات بعد»');
+ok(/function loaded\(\) \{ LOAD = false; paint\(\); \}/.test(fa2) && (fa2.match(/loaded\(\)/g) || []).length >= 6, 'ينتهي التحميل في كل مخرج لطلب api/face/me');
 
 console.log(`\n${pass} نجح · ${fail} فشل`);
 process.exit(fail ? 1 : 0);

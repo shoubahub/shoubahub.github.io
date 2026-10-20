@@ -180,7 +180,12 @@
         raise({ data: srv, rev: rev, updatedAt: res.updatedAt });
         return 'conflict';
       });
-    }).catch(function () { return 'none'; });
+    }).catch(function () { return 'none'; }).then(function (r) {
+      /* انتهت المراجعة مع الخادم (نجحت او لم تصل) — فتعلن «shouba:synced»، وبها تعرف الشاشة متى تكف عن «جارٍ التحميل…» */
+      S.synced = true;
+      try { document.dispatchEvent(new Event('shouba:synced')); } catch (e) {}
+      return r;
+    });
   };
   S.online = function () { return online; };
 

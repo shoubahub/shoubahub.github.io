@@ -34,8 +34,37 @@
 .fhead h1{margin:0;font-size:24px;font-weight:700;line-height:1.4}
 .fhead .hi{font-size:13.5px;font-weight:500;line-height:1.7}
 
-/* ② بطاقة الاسبوع — الكتلة الكحلية الواحدة، تتداخل مع الترويسة */
-.fweek{margin-top:-18px;position:relative;background:var(--shouba-navy);color:var(--shouba-cream);border-radius:22px;
+/* التبويبان «الشعبة · الجدول» (قرار المستخدم 2026-10-20: «الجدول بتبويب خاص») — مفتاح مقسوم يتداخل مع حافة الترويسة،
+   والمفعل كحلي بنص كريمي. وكل تبويب برابط (#الشعبة · #الجدول) فيفتح مباشرة */
+.ftabs{display:flex;justify-content:center;margin-top:-18px;position:relative}
+.ftabs .seg2{display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--shouba-paper);box-shadow:var(--shadow-card)}
+.ftabs a{min-width:104px;text-align:center;text-decoration:none;font-size:14px;font-weight:700;border-radius:999px;padding:9px 18px;
+  color:var(--shouba-text-muted)}
+.ftabs a.on{background:var(--shouba-navy);color:var(--shouba-cream)}
+.fpane[hidden]{display:none}
+
+/* الآن في الشعبة: بطاقات افقية تمرر داخل صفها (لا الصفحة) — من في فصله الآن بحد كحلي، ثم الحصة القادمة بلا حد */
+.fsec > h2 .when{font-size:13px;font-weight:600;color:var(--shouba-label);margin-inline-start:6px}
+.nowrow{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 6px;margin:0 -2px;-webkit-overflow-scrolling:touch}
+.nowrow::-webkit-scrollbar{display:none}
+.ncard{flex:none;width:150px;border-radius:16px;background:var(--shouba-paper);border:2px solid transparent;padding:11px 12px;
+  display:flex;flex-direction:column;gap:3px;text-align:right;font-family:var(--font-ar);cursor:pointer;color:var(--shouba-ink)}
+.ncard.in{border-color:var(--shouba-navy)}
+.ncard .p{font-size:11px;font-weight:700;color:var(--shouba-label)}
+.ncard.in .p{color:var(--shouba-navy)}
+.ncard .cl{white-space:nowrap}
+.ncard b{font-size:13.5px;font-weight:700;color:var(--shouba-navy);line-height:1.45}
+.ncard .m{font-size:11.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.6}
+
+/* منتقي الايام في تبويب الجدول */
+.days{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px}
+.days::-webkit-scrollbar{display:none}
+.day{flex:none;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;border-radius:999px;padding:8px 16px;
+  color:var(--shouba-text-muted);background:var(--shouba-sand)}
+.day.on{background:var(--shouba-navy);color:var(--shouba-cream)}
+
+/* ② بطاقة الاسبوع — الكتلة الكحلية الواحدة */
+.fweek{margin-top:16px;position:relative;background:var(--shouba-navy);color:var(--shouba-cream);border-radius:22px;
   box-shadow:var(--shadow-navy);padding:18px 20px;display:flex;flex-direction:column;gap:6px}
 .fweek .k{font-size:12.5px;font-weight:700;color:var(--shouba-navy-light)}
 .fweek .t{font-size:21px;font-weight:700;line-height:1.5}

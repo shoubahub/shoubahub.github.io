@@ -44,9 +44,10 @@
    (كان يتداخل مع حافة الترويسة، ثم صار الفريق تحتها مباشرة؛ وبلا فريق يعود التداخل)،
    والمفعل كحلي بنص كريمي. وكل تبويب برابط (#الشعبة · #الجدول) فيفتح مباشرة */
 .ftabs{display:flex;justify-content:center;margin-top:-18px;position:relative}
-.fp:has(> .fteam:not([hidden])) + .ftabs{margin-top:16px}
-/* ومسافة الترويسة السفلية ٤٤ كانت لتداخل التبويبين — ومع الفريق تحتها تعود ٣٠ كاعلاها */
-#page:has(.fteam:not([hidden])) .fhead .fp{padding-bottom:30px}
+/* ومع الفريق او بطاقة الاسبوع فوقهما ينفصلان بالمسافة نفسها (١٦) */
+#page:has(.fteam:not([hidden]), .fweek:not([hidden])) .ftabs{margin-top:16px}
+/* ومسافة الترويسة السفلية ٤٤ كانت لتداخل التبويبين — ومع الفريق او البطاقة تحتها تعود ٣٠ كاعلاها */
+#page:has(.fteam:not([hidden]), .fweek:not([hidden])) .fhead .fp{padding-bottom:30px}
 .ftabs .seg2{display:flex;gap:4px;padding:4px;border-radius:999px;background:var(--shouba-paper);box-shadow:var(--shadow-card)}
 .ftabs a{min-width:104px;text-align:center;text-decoration:none;font-size:14px;font-weight:700;border-radius:999px;padding:9px 18px;
   color:var(--shouba-text-muted)}
@@ -88,7 +89,7 @@
   color:var(--shouba-text-muted);background:var(--shouba-sand)}
 .day.on{background:var(--shouba-navy);color:var(--shouba-cream)}
 
-/* ② بطاقة الاسبوع — الكتلة الكحلية الواحدة */
+/* ② بطاقة الاسبوع — الكتلة الكحلية الواحدة، تحت الفريق وفوق التبويبين (مسافتها ١٦ كالفريق) */
 .fweek{margin-top:16px;position:relative;background:var(--shouba-navy);color:var(--shouba-cream);border-radius:22px;
   box-shadow:var(--shadow-navy);padding:18px 20px;display:flex;flex-direction:column;gap:6px}
 .fweek{overflow:hidden}

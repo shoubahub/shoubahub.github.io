@@ -387,7 +387,7 @@
     r.innerHTML = '<div class="t"><b' + (e.title ? '>' + esc(e.title) : ' class="miss">بلا عنوان') + '</b><span class="chip ' + (e.src === 'rec' ? 'muted' : 'navy') + '">'
       + (e.src === 'rec' ? 'من السجل' : 'للواجهة وحدها') + '</span></div>'
       + '<div class="mt">' + (e.date ? '<em>' + dateHtml(e.date) + '</em>' : '<em class="miss">بلا تاريخ</em>')
-      + (e.who.length ? '<span>' + esc(e.who.join('، ')) + '</span>' : '') + '</div>';
+      + (e.who.length ? '<span aria-hidden="true">·</span><span>' + esc(e.who.join('، ')) + '</span>' : '') + '</div>';
     var ops = el('div', 'ops');
     function op(label, cls, fn) { var b = el('button', 'op' + (cls ? ' ' + cls : '')); b.type = 'button'; b.textContent = label; b.addEventListener('click', fn); ops.appendChild(b); }
     /* الناقصة لا تضاف للواجهة حتى تكمل: بابها السجل وحده */

@@ -143,14 +143,16 @@
 
   /* ── حال النشر ── */
   /* «انشر» للمحددة، او لتعديلات الصفحة (الفريق · الخانة · اللون) بلا تحديد — فلا تحبس خانة الاسبوع حتى تحدد فعالية.
-     و«اسحب» للمحددة وحدها. وبلا تحديد ولا تعديل: «حدد فعالية أولا» */
+     و«اسحب» للمنشور من المحددة وحده، ولا يظهر حتى يحدد منشور. وبلا تحديد: الزر بعنوانه معطلا، والتنبيه سطر واحد تحت القائمة */
+  function pubSel() { var l = evList(), s = pubNow(); return SEL.filter(function (id) { return l.some(function (e) { return e.id === id && F.isPub(e, s); }); }); }
   function paintPub() {
-    var btn = $('publish'), diff = changed(), n = SEL.length, pull = $('pull');
+    var btn = $('publish'), diff = changed(), n = SEL.length, pull = $('pull'), k = pubSel().length;
     $('pubLink').textContent = link();
     $('copy').disabled = !ME;
     $('pullAll').hidden = !(ME && ME.published);
-    pull.disabled = BUSY || !n || !(ME && ME.published);
-    pull.textContent = n ? 'اسحب المحددة (' + n + ')' : 'اسحب المحددة';
+    pull.hidden = !k || !(ME && ME.published);
+    pull.disabled = BUSY;
+    pull.textContent = 'اسحب المحددة (' + k + ')';
     if (!ME) {
       $('pubKick').textContent = 'لا اتصال بالخادم';
       $('pubAt').textContent = '';
@@ -174,7 +176,6 @@
     }
     btn.disabled = BUSY || (ME.published && !diff);
     if (n) { btn.textContent = 'انشر المحددة (' + n + ')'; btn.disabled = BUSY; }
-    else if (btn.disabled && !BUSY) btn.textContent = 'حدد فعالية أولا';
   }
 
   /* ── لون الترويسة: عنبري (الافتراضي) او كحلي — ينشر مع الواجهة ── */
@@ -394,19 +395,20 @@
       box.appendChild(el('div', 'grp', esc(g[1])));
       rows.forEach(function (e) { box.appendChild(evRow(e)); });
     });
-    var n = SEL.length;
-    box.appendChild(el('div', 'thint', n ? 'حددت ' + num(n) + ' — «انشر» يضيفها إلى الرابط، و«اسحب» يرفعها عنه.'
-      : 'حدد فعالية أولا، ثم انشرها أو اسحبها.'));
+    box.appendChild(el('div', 'thint', hintHtml()));
   }
-  /* سطر الفعالية: مربع اختيار للمكتملة، وحالها على الرابط (منشورة · غير منشورة) */
+  /* سطر الفعالية: مربع اختيار للمكتملة، وحالها على الرابط (منشورة · غير منشورة)، وتنبيه ان عدلت بعد نشرها.
+     الفاصل داخل ما يليه وبمسافة لا تنكسر — فينزل معه سطرا ولا يبقى معلقا في آخر السطر */
+  var DOT = '<span aria-hidden="true">·</span>&nbsp;';
   function evRow(e) {
-    var miss = e.missing || [], r = el('div', 'erow' + (miss.length ? ' off' : '')), on = F.isPub(e, pubNow());
+    var miss = e.missing || [], r = el('div', 'erow' + (miss.length ? ' off' : '')), on = F.isPub(e, pubNow()), old = on && F.stale(e, pubNow());
     var body = el('div', 'eb');
     body.innerHTML = '<div class="t"><b' + (e.title ? '>' + esc(e.title) : ' class="miss">بلا عنوان') + '</b><span class="chip ' + (e.src === 'rec' ? 'muted' : 'navy') + '">'
       + (e.src === 'rec' ? 'من السجل' : 'للواجهة وحدها') + '</span></div>'
-      + '<div class="mt">' + (miss.length ? '' : '<span class="st' + (on ? ' on' : '') + '">' + (on ? 'منشورة' : 'غير منشورة') + '</span><span aria-hidden="true">·</span>')
-      + (e.date ? '<em>' + dateHtml(e.date) + '</em>' : '<em class="miss">بلا تاريخ</em>')
-      + (e.who.length ? '<span aria-hidden="true">·</span><span>' + esc(e.who.join('، ')) + '</span>' : '') + '</div>';
+      + '<div class="mt">' + (miss.length ? '' : '<span class="st' + (on ? ' on' : '') + '">' + (on ? 'منشورة' : 'غير منشورة') + '</span>')
+      + (e.date ? '<em>' + (miss.length ? '' : DOT) + dateHtml(e.date) + '</em>' : '<em class="miss">بلا تاريخ</em>')
+      + (e.who.length ? '<span>' + DOT + esc(e.who.join('، ')) + '</span>' : '') + '</div>'
+      + (old ? '<div class="stale">عُدّلت بعد النشر — انشرها لتحديثها</div>' : '');
     var ops = el('div', 'ops');
     function op(label, cls, fn) { var b = el('button', 'op' + (cls ? ' ' + cls : '')); b.type = 'button'; b.textContent = label; b.addEventListener('click', fn); ops.appendChild(b); }
     /* الناقصة لا تحدد ولا تنشر حتى تكمل: بابها السجل وحده */
@@ -428,11 +430,12 @@
     r.appendChild(body);
     return r;
   }
-  function paintHint() {
-    var h = $('evList').querySelector('.thint:last-child'), n = SEL.length;
-    if (h) h.innerHTML = n ? 'حددت ' + num(n) + ' — «انشر» يضيفها إلى الرابط، و«اسحب» يرفعها عنه.'
-      : 'حدد فعالية أولا، ثم انشرها أو اسحبها.';
+  /* التنبيه الواحد للتحديد — تحت القائمة وحدها (لا عنوانا للزر) */
+  function hintHtml() {
+    var n = SEL.length;
+    return n ? 'حددت ' + num(n) + ' — «انشر» يضيفها إلى الرابط، و«اسحب» يرفعها عنه.' : 'حدد فعالية أولا، ثم انشرها أو اسحبها.';
   }
+  function paintHint() { var h = $('evList').querySelector('.thint:last-child'); if (h) h.innerHTML = hintHtml(); }
   function confirmDone(e) {
     var f = face();
     if (e.src === 'rec') { f.done = (f.done || []).filter(function (x) { return x !== e.id; }); f.done.push(e.id); }
@@ -481,7 +484,9 @@
      انشر = المنشور ∪ المحدد · اسحب = المنشور − المحدد. وshow لا تحفظ الا بعد قبول الخادم — فتبقى ما على الرابط */
   function send(add) {
     if (BUSY || !ME) return;
-    var n = SEL.length, f = F.setShown(face(), F.nextShown(evList(), pubNow(), SEL, add)), snap = snapshot(f);
+    var ids = add ? SEL : pubSel();                 /* اسحب: المنشور من المحدد وحده — فما لم ينشر لا يعيد النشر ولا يرفع الرقم */
+    if (!add && !ids.length) return;
+    var n = ids.length, f = F.setShown(face(), F.nextShown(evList(), pubNow(), ids, add)), snap = snapshot(f);
     BUSY = true; paintPub();
     api('POST', 'api/face/publish', { data: snap }).then(function (j) {
       BUSY = false;
@@ -492,7 +497,7 @@
     }, function () { BUSY = false; paintPub(); S.toast(add ? 'لا اتصال بالخادم — لم تنشر' : 'لا اتصال بالخادم — لم تسحب'); });
   }
   $('publish').addEventListener('click', function () { send(true); });
-  $('pull').addEventListener('click', function () { if (SEL.length) send(false); });
+  $('pull').addEventListener('click', function () { send(false); });
   /* سحب الواجهة كلها: الرابط فارغ — ولا منشور بعده، فتفرغ show */
   $('pullAll').addEventListener('click', function () {
     S.ask('سحب الواجهة كلها', 'يفرغ الرابط فلا يجد الزائر شيئا، وتغلق صور الواجهة في الحال. ويبقى الرابط نفسه إن نشرت بعد.', 'اسحب الواجهة كلها', function () {
@@ -527,7 +532,13 @@
   $('wkEdit').addEventListener('click', weekSheet);
   $('evAdd').addEventListener('click', addSheet);
 
-  function paint() { paintPub(); paintTheme(); paintTeam(); paintWeek(); paintEvents(); }
+  /* اعادة الرسم تبني القوائم من جديد — فيحفظ موضع التمرير ويعاد ان تحرك، فلا تقفز الشاشة بعد «انشر» (معاينة السلوك 2026-10-20) */
+  function paint() {
+    var box = [document.scrollingElement || document.documentElement, document.querySelector('.screen')].filter(Boolean),
+        ys = box.map(function (e) { return e.scrollTop; });          /* الجوال تمرر الصفحة، وفي اطار الجهاز تمرر .screen */
+    paintPub(); paintTheme(); paintTeam(); paintWeek(); paintEvents();
+    box.forEach(function (e, i) { if (e.scrollTop !== ys[i]) e.scrollTop = ys[i]; });
+  }
   paint();
 
   /* حال الواجهة من الخادم، وآخر نسخة منشورة — بها يعرف «فيها تعديلات لم تنشر» ولو نشر من جهاز آخر */

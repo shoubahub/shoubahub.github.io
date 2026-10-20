@@ -128,10 +128,21 @@ const adm = await fetch(`${BASE}/face-admin.html`, { headers: H() });
 const admT = adm.ok ? await adm.text() : '';
 ok(admT.includes('face-data.js'), 'شاشة الادارة: لصاحب المنصة');
 ok(!admT.includes('أضفها للواجهة') && !admT.includes('أخفها من الواجهة') && admT.includes("type = 'checkbox'")
-  && admT.includes('F.nextShown(evList(), pubNow(), SEL, add)') && admT.includes('F.setShown('),
+  && admT.includes('F.nextShown(evList(), pubNow(), ids, add)') && admT.includes('F.setShown('),
   'شاشة الادارة: مربع اختيار لكل فعالية، و«انشر»/«اسحب» ينفذان على المحدد (2026-10-20) — لا ازرار اضافة واخفاء');
 ok(admT.includes('id="pull"') && admT.includes('id="pullAll"') && admT.includes("'منشورة'") && admT.includes("'غير منشورة'")
   && admT.includes('حدد فعالية أولا'), 'شاشة الادارة: حال كل فعالية، وسحب الواجهة كلها رابط هادئ، وبلا تحديد «حدد فعالية أولا»');
+ok((admT.match(/حدد فعالية أولا/g) || []).length === 1 && !admT.includes("btn.textContent = 'حدد فعالية أولا'"),
+  'شاشة الادارة: «حدد فعالية أولا» سطر واحد تحت القائمة — لا عنوانا للزر العنبري (2026-10-20)');
+ok(admT.includes('var ids = add ? SEL : pubSel()') && admT.includes('if (!add && !ids.length) return;') && admT.includes('pull.hidden = !k'),
+  'شاشة الادارة: «اسحب» للمنشور من المحدد وحده، ويختفي حتى يحدد منشور (2026-10-20)');
+ok(admT.includes('F.stale(e, pubNow())') && admT.includes('عُدّلت بعد النشر — انشرها لتحديثها'),
+  'شاشة الادارة: المنشورة المعدلة بعد نشرها تبقى منشورة وتنبه (2026-10-20)');
+ok(admT.includes("var DOT = '<span aria-hidden=\"true\">·</span>&nbsp;'") && !admT.includes('<span aria-hidden="true">·</span><span>'),
+  'شاشة الادارة: الفاصل داخل ما يليه بمسافة لا تنكسر — لا يعلق في آخر السطر (2026-10-20)');
+const cmp = await (await fetch(`${BASE}/components.js`)).text();
+ok(cmp.includes('{ step: step, noDone: true }') && cmp.includes('doneBtn.hidden = current.noDone') && (cmp.match(/noDone: true/g) || []).length === 1,
+  'التأكيد (Shouba.ask) بلا «تم» — وحده، وبقية اللوحات على حالها (2026-10-20)');
 ok(admT.includes('ناقصة — أكملها في السجل') && admT.includes('بلا عنوان') && admT.includes("'record.html?id='"),
   'شاشة الادارة: الناقصة تذكر في مجموعتها وبابها السجل');
 ok((await fetch(`${BASE}/face.html`, { headers: anon })).status === 404, 'الصفحة مباشرة (face.html): مغلقة على الزائر — بابه /face/<الرمز>');

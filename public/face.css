@@ -208,6 +208,7 @@
 .erow .t b{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--shouba-ink);line-height:1.6}
 .erow .mt{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11px;font-weight:700;color:var(--shouba-label)}
 .erow .mt em{font-style:normal;color:var(--shouba-text-muted)}
+.erow .stale{font-size:11px;font-weight:700;color:var(--shouba-amber-text);line-height:1.6}
 .erow .ops{display:flex;gap:8px;flex-wrap:wrap}
 .erow .op{border:0;cursor:pointer;font-family:var(--font-ar);font-size:12px;font-weight:700;border-radius:999px;padding:7px 13px;min-height:34px;
   color:var(--shouba-navy);background:rgba(22,69,110,.09)}

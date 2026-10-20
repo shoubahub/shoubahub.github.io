@@ -65,5 +65,12 @@ ok(fa2.indexOf("if (loading())") < fa2.indexOf("if (!ME) {"), 'فحص التحم
 ok(/if \(!list\.length && loading\(\)\) \{ box\.innerHTML = '<div class="empty">جارٍ التحميل…<\/div>'/.test(fa2), 'الفعاليات: سطر التحميل بدل «لا فعاليات بعد»');
 ok(/function loaded\(\) \{ LOAD = false; paint\(\); \}/.test(fa2) && (fa2.match(/loaded\(\)/g) || []).length >= 6, 'ينتهي التحميل في كل مخرج لطلب api/face/me');
 
+// الرأس يرسم مع paint() (اسم الشعبة وشعارها بعد وصول الوثيقة)، وزر الرابط المعطل يبدو معطلا (2026-10-20)
+ok(fa2.includes('paintHead(); paintPub(); paintTheme();') && fa2.indexOf('function paint()') < fa2.indexOf('paintHead(); paintPub()'), 'paint() ترسم الرأس');
+ok(!/\(function head\(\)/.test(fa) && /\$\('sub'\)\.textContent = d\.department \|\| 'شعبتك'/.test(fa), 'الرأس لم يعد يرسم مرة واحدة عند الفتح');
+const fcss = fs.readFileSync(path.join(ROOT, 'face.css'), 'utf8');
+ok(/\.face-adm \.card-soft \.acts \.ghost2\[disabled\]\{color:var\(--shouba-off-text\)/.test(fcss), 'زر الرابط المعطل بلون المعطل في المنصة');
+ok(/\$\('copy'\)\.disabled = !ME;/.test(fa), 'زر الرابط معطل ما دام الخادم لم يجب');
+
 console.log(`\n${pass} نجح · ${fail} فشل`);
 process.exit(fail ? 1 : 0);

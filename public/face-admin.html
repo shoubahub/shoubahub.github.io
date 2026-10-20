@@ -136,14 +136,19 @@
   function pubNow() { return ME && ME.published ? PUB : null; }
   function link() { return ME ? location.origin + '/face/' + ME.slug : ''; }
 
-  /* ── الرأس ── */
-  (function head() {
-    var d = S.data(), el2 = $('tbCrest'), c = d.crest;
+  /* ── الرأس ── يرسم مع paint() — فعلى جهاز بلا نسخة يظهر اسم الشعبة وشعارها حين تصل الوثيقة (2026-10-20).
+     والشعار لا يعاد بناؤه الا ان تغير، فلا تومض الصورة مع كل رسم */
+  var CREST = null;
+  function paintHead() {
+    var d = S.data(), c = d.crest, key = JSON.stringify(c || null);
     $('sub').textContent = d.department || 'شعبتك';
+    if (key === CREST) return;
+    CREST = key;
+    var el2 = $('tbCrest');
     if (c && c.type === 'image') el2.innerHTML = '<img src="' + c.data + '" alt="شعار المدرسة" />';
     else if (c && c.type === 'icon' && window.SHOUBA_ICONS) el2.innerHTML = SHOUBA_ICONS.svg(c.id, 22);
     else el2.innerHTML = '<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
-  })();
+  }
 
   /* ── حال النشر ── */
   /* «انشر» للمحددة، او لتعديلات الصفحة (الفريق · الخانة · اللون) بلا تحديد — فلا تحبس خانة الاسبوع حتى تحدد فعالية.
@@ -548,7 +553,7 @@
   function paint() {
     var box = [document.scrollingElement || document.documentElement, document.querySelector('.screen')].filter(Boolean),
         ys = box.map(function (e) { return e.scrollTop; });          /* الجوال تمرر الصفحة، وفي اطار الجهاز تمرر .screen */
-    paintPub(); paintTheme(); paintTeam(); paintWeek(); paintEvents();
+    paintHead(); paintPub(); paintTheme(); paintTeam(); paintWeek(); paintEvents();
     box.forEach(function (e, i) { if (e.scrollTop !== ys[i]) e.scrollTop = ys[i]; });
   }
   paint();

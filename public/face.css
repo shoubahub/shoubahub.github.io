@@ -186,6 +186,9 @@
 /* عنوان القسم وكلمة البطاقة الورقية: كحلي (العنبري للفعل وحده) */
 .face-adm .sect .h::before{background:var(--shouba-navy)}
 .face-adm .card-soft .kicker{color:var(--shouba-navy)}
+/* زر الرابط معطلا (قبل ان يجيب الخادم): نصه بلون المعطل في المنصة (--shouba-off-text)، ولا يستجيب للضغط */
+.face-adm .card-soft .acts .ghost2[disabled]{color:var(--shouba-off-text);cursor:not-allowed}
+.face-adm .card-soft .acts .ghost2[disabled]:active{transform:none}
 .face-adm .wrap{display:flex;flex-direction:column;gap:22px;padding:16px 0 0}
 .face-adm .card-soft .link{font-family:var(--font-num);font-size:12px;font-weight:600;color:var(--shouba-text-muted);
   word-break:break-all;line-height:1.6}

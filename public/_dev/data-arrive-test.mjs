@@ -72,5 +72,18 @@ const fcss = fs.readFileSync(path.join(ROOT, 'face.css'), 'utf8');
 ok(/\.face-adm \.card-soft \.acts \.ghost2\[disabled\]\{color:var\(--shouba-off-text\)/.test(fcss), 'زر الرابط المعطل بلون المعطل في المنصة');
 ok(/\$\('copy'\)\.disabled = !ME;/.test(fa), 'زر الرابط معطل ما دام الخادم لم يجب');
 
+// ما تحت بطاقة النشر يخفى ما دام التحميل، وعند الفشل يبقى مخفيا على جهاز بلا وثيقة وحده (2026-10-20)
+ok(/var hide = loading\(\) \|\| \(!ME && !Object\.keys\(S\.data\(\)\)\.length\);/.test(fa) && /querySelectorAll\('#pubCard ~ section, #pubCard ~ \.pulls'\)\.forEach\(function \(el\) \{ el\.hidden = hide; \}\)/.test(fa), 'الاقسام تحت بطاقة النشر تخفى اثناء التحميل');
+ok(fa2.indexOf('paintEvents();') < fa2.indexOf('var hide = loading()') && fa2.indexOf('var hide = loading()') < fa2.indexOf('box.forEach(function (e, i)'), 'الاخفاء داخل paint() فيظهر الكل معا عند انتهاء التحميل');
+ok((fa.match(/<section hidden>/g) || []).length === 4 && fa.includes('<div class="pad pulls" hidden>'), 'تبدأ مخفية في الصفحة نفسها فلا تومض قبل تشغيل الشيفرة');
+{
+  // محاكاة القاعدة نفسها
+  const rule = (LOAD, FRESH, synced, ME, docKeys) => (LOAD || (FRESH && !synced)) || (!ME && !docKeys);
+  ok(rule(true, false, false, null, 3) === true, 'اثناء التحميل: مخفية ولو عند الجهاز وثيقة');
+  ok(rule(false, true, true, null, 0) === true, 'فشل وجهاز بلا وثيقة: تبقى مخفية');
+  ok(rule(false, false, true, null, 3) === false, 'فشل وعند الجهاز وثيقته: تظهر');
+  ok(rule(false, true, true, { ok: true }, 0) === false, 'نجح والخادم فارغ: تظهر');
+}
+
 console.log(`\n${pass} نجح · ${fail} فشل`);
 process.exit(fail ? 1 : 0);

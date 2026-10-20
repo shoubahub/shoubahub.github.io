@@ -38,7 +38,7 @@
     <div class="content">
       <div class="wrap">
 
-        <!-- حال النشر والرابط -->
+        <!-- حال النشر والرابط — وما تحته مخفي حتى ينتهي التحميل (يظهره paint) -->
         <div class="card-soft" id="pubCard">
           <div class="top"><span class="kicker" id="pubKick">…</span><span class="left" id="pubAt"></span></div>
           <div class="ttl" id="pubTtl"></div>
@@ -49,27 +49,27 @@
           </div>
         </div>
 
-        <section>
+        <section hidden>
           <div class="sect"><div class="h">لون الترويسة</div></div>
           <div class="segs sm" id="thSegs"></div>
         </section>
 
-        <section>
+        <section hidden>
           <div class="sect"><div class="h">فريق الشعبة</div></div>
           <div class="tbl" id="tmList"></div>
         </section>
 
-        <section>
+        <section hidden>
           <div class="sect"><div class="h">خانة الأسبوع</div><div class="a" id="wkEdit">عدل ›</div></div>
           <div class="tbl" id="wkBox"></div>
         </section>
 
-        <section>
+        <section hidden>
           <div class="sect"><div class="h">الفعاليات</div><div class="a" id="evAdd">أضف فعالية ›</div></div>
           <div class="tbl" id="evList"></div>
         </section>
 
-        <div class="pad pulls">
+        <div class="pad pulls" hidden>
           <button type="button" class="btn-danger" id="pull" disabled>اسحب المحددة</button>
           <button type="button" class="qlink" id="pullAll" hidden>اسحب الواجهة كلها</button>
         </div>
@@ -554,6 +554,10 @@
     var box = [document.scrollingElement || document.documentElement, document.querySelector('.screen')].filter(Boolean),
         ys = box.map(function (e) { return e.scrollTop; });          /* الجوال تمرر الصفحة، وفي اطار الجهاز تمرر .screen */
     paintHead(); paintPub(); paintTheme(); paintTeam(); paintWeek(); paintEvents();
+    /* ما تحت بطاقة النشر يخفى ما دام التحميل، فلا تظهر قيم افتراضية كاذبة يلمسها المستخدم (عنبري محدد · «اكتب اسمه» · خانة فارغة)،
+       ويظهر كله معا حين ينتهي. فان فشل الطلب: يبقى مخفيا على جهاز بلا وثيقة، ويظهر على جهاز عنده وثيقته فيعمل بما عنده (المطور البصري 2026-10-20) */
+    var hide = loading() || (!ME && !Object.keys(S.data()).length);
+    document.querySelectorAll('#pubCard ~ section, #pubCard ~ .pulls').forEach(function (el) { el.hidden = hide; });
     box.forEach(function (e, i) { if (e.scrollTop !== ys[i]) e.scrollTop = ys[i]; });
   }
   paint();

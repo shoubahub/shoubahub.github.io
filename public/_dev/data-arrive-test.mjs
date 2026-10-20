@@ -73,8 +73,8 @@ ok(/\.face-adm \.card-soft \.acts \.ghost2\[disabled\]\{color:var\(--shouba-off-
 ok(/\$\('copy'\)\.disabled = !ME;/.test(fa), 'زر الرابط معطل ما دام الخادم لم يجب');
 
 // ما تحت بطاقة النشر يخفى ما دام التحميل، وعند الفشل يبقى مخفيا على جهاز بلا وثيقة وحده (2026-10-20)
-ok(/var hide = loading\(\) \|\| \(!ME && !Object\.keys\(S\.data\(\)\)\.length\);/.test(fa) && /querySelectorAll\('#pubCard ~ section, #pubCard ~ \.pulls'\)\.forEach\(function \(el\) \{ el\.hidden = hide; \}\)/.test(fa), 'الاقسام تحت بطاقة النشر تخفى اثناء التحميل');
-ok(fa2.indexOf('paintEvents();') < fa2.indexOf('var hide = loading()') && fa2.indexOf('var hide = loading()') < fa2.indexOf('box.forEach(function (e, i)'), 'الاخفاء داخل paint() فيظهر الكل معا عند انتهاء التحميل');
+ok(/function blank\(\) \{ return loading\(\) \|\| \(!ME && !Object\.keys\(S\.data\(\)\)\.length\); \}/.test(fa) && /var hide = blank\(\);/.test(fa) && /querySelectorAll\('#pubCard ~ section, #pubCard ~ \.pulls'\)\.forEach\(function \(el\) \{ el\.hidden = hide; \}\)/.test(fa), 'الاقسام تحت بطاقة النشر تخفى اثناء التحميل');
+ok(fa2.indexOf('paintEvents();') < fa2.indexOf('var hide = blank()') && fa2.indexOf('var hide = blank()') < fa2.indexOf('box.forEach(function (e, i)'), 'الاخفاء داخل paint() فيظهر الكل معا عند انتهاء التحميل');
 ok((fa.match(/<section hidden>/g) || []).length === 4 && fa.includes('<div class="pad pulls" hidden>'), 'تبدأ مخفية في الصفحة نفسها فلا تومض قبل تشغيل الشيفرة');
 {
   // محاكاة القاعدة نفسها
@@ -83,6 +83,21 @@ ok((fa.match(/<section hidden>/g) || []).length === 4 && fa.includes('<div class
   ok(rule(false, true, true, null, 0) === true, 'فشل وجهاز بلا وثيقة: تبقى مخفية');
   ok(rule(false, false, true, null, 3) === false, 'فشل وعند الجهاز وثيقته: تظهر');
   ok(rule(false, true, true, { ok: true }, 0) === false, 'نجح والخادم فارغ: تظهر');
+}
+
+// «عاين كما يراها الزائر» معطل حين يعطل «انشر» للتحميل، ويبقى معطلا بعد الفشل على جهاز بلا وثيقة (2026-10-20)
+ok(/\$\('preview'\)\.disabled = blank\(\);/.test(fa), 'زر المعاينة يتبع blank()');
+ok(fa2.indexOf("$('preview').disabled = blank();") > fa2.indexOf('function paintPub()') && fa2.indexOf("$('preview').disabled = blank();") < fa2.indexOf('if (loading()) {'), 'يضبط في paintPub قبل فرع التحميل فيعطل مع «انشر»');
+ok(/\$\('preview'\)\.addEventListener\('click', function \(\) \{ if \(blank\(\)\) return;/.test(fa2), 'النقر لا يفتح المعاينة وهو معطل');
+ok(/<button type="button" class="ghost2" id="preview">/.test(fa) && /\.face-adm \.card-soft \.acts \.ghost2\[disabled\]\{color:var\(--shouba-off-text\);cursor:not-allowed\}/.test(fcss), 'المعاينة المعطلة بنمط زر الرابط المعطل نفسه');
+{
+  const blank = (LOAD, FRESH, synced, ME, docKeys) => (LOAD || (FRESH && !synced)) || (!ME && !docKeys);
+  const pubOff = (LOAD, FRESH, synced) => LOAD || (FRESH && !synced);    // «انشر» معطل لفرع التحميل
+  for (const [L, F, s, d] of [[true,false,false,3],[true,true,false,0],[false,true,false,0],[false,false,true,3]])
+    ok(blank(L, F, s, { ok: true }, d) === pubOff(L, F, s), `المعاينة تعطل مع «انشر» للتحميل (${L},${F},${s})`);
+  ok(blank(false, true, true, null, 0) === true, 'فشل وجهاز بلا وثيقة: المعاينة معطلة');
+  ok(blank(false, false, true, null, 3) === false, 'فشل وعند الجهاز وثيقته: المعاينة تعمل');
+  ok(blank(false, false, true, { ok: true }, 3) === false, 'نجح: المعاينة تعمل');
 }
 
 console.log(`\n${pass} نجح · ${fail} فشل`);

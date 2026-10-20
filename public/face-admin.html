@@ -109,6 +109,8 @@
      كانت تظهر «لا اتصال بالخادم» و«لا فعاليات بعد» لحظة ثم تتبدل، وعلى شبكة الجوال البطيئة ثواني تشبه العطل (معاينة السلوك 2026-10-20) */
   var LOAD = true, FRESH = !Object.keys(S.data()).length;
   function loading() { return LOAD || (FRESH && !S.synced); }
+  /* لا شيء يعرض: اثناء التحميل، او فشل الطلب على جهاز بلا وثيقة — تخفى الاقسام ويعطل «عاين» (2026-10-20) */
+  function blank() { return loading() || (!ME && !Object.keys(S.data()).length); }
   var SEL = [];                                     /* الفعاليات المحددة (معرفاتها) — تفرغ بعد كل نشر او سحب */
   var GROUPS = {};
   (R.whoGroups || []).forEach(function (g) { GROUPS[g.id] = g.t; });
@@ -158,6 +160,7 @@
     var btn = $('publish'), diff = changed(), n = SEL.length, pull = $('pull'), k = pubSel().length;
     $('pubLink').textContent = link();
     $('copy').disabled = !ME;
+    $('preview').disabled = blank();
     $('pullAll').hidden = !(ME && ME.published);
     pull.hidden = !k || !(ME && ME.published);
     pull.disabled = BUSY;
@@ -540,6 +543,7 @@
     }
   });
   $('preview').addEventListener('click', function () {
+    if (blank()) return;
     window.FACE_PREVIEW = snapshot();
     $('pframe').src = 'face.html?preview=1&t=' + Date.now();
     $('pview').hidden = false;
@@ -556,7 +560,7 @@
     paintHead(); paintPub(); paintTheme(); paintTeam(); paintWeek(); paintEvents();
     /* ما تحت بطاقة النشر يخفى ما دام التحميل، فلا تظهر قيم افتراضية كاذبة يلمسها المستخدم (عنبري محدد · «اكتب اسمه» · خانة فارغة)،
        ويظهر كله معا حين ينتهي. فان فشل الطلب: يبقى مخفيا على جهاز بلا وثيقة، ويظهر على جهاز عنده وثيقته فيعمل بما عنده (المطور البصري 2026-10-20) */
-    var hide = loading() || (!ME && !Object.keys(S.data()).length);
+    var hide = blank();
     document.querySelectorAll('#pubCard ~ section, #pubCard ~ .pulls').forEach(function (el) { el.hidden = hide; });
     box.forEach(function (e, i) { if (e.scrollTop !== ys[i]) e.scrollTop = ys[i]; });
   }

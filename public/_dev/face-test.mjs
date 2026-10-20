@@ -131,7 +131,7 @@ ok(!admT.includes('أضفها للواجهة') && !admT.includes('أخفها م�
   && admT.includes('F.nextShown(evList(), pubNow(), SEL, add)') && admT.includes('F.setShown('),
   'شاشة الادارة: مربع اختيار لكل فعالية، و«انشر»/«اسحب» ينفذان على المحدد (2026-10-20) — لا ازرار اضافة واخفاء');
 ok(admT.includes('id="pull"') && admT.includes('id="pullAll"') && admT.includes("'منشورة'") && admT.includes("'غير منشورة'")
-  && admT.includes('حدد فعالية أولاً'), 'شاشة الادارة: حال كل فعالية، وسحب الواجهة كلها رابط هادئ، وبلا تحديد «حدد فعالية أولاً»');
+  && admT.includes('حدد فعالية أولا'), 'شاشة الادارة: حال كل فعالية، وسحب الواجهة كلها رابط هادئ، وبلا تحديد «حدد فعالية أولا»');
 ok(admT.includes('ناقصة — أكملها في السجل') && admT.includes('بلا عنوان') && admT.includes("'record.html?id='"),
   'شاشة الادارة: الناقصة تذكر في مجموعتها وبابها السجل');
 ok((await fetch(`${BASE}/face.html`, { headers: anon })).status === 404, 'الصفحة مباشرة (face.html): مغلقة على الزائر — بابه /face/<الرمز>');

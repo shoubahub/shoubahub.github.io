@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=97" />
-<link rel="stylesheet" href="shell.css?v=97" />
-<link rel="stylesheet" href="components.css?v=97" />
-<link rel="stylesheet" href="frame.css?v=97" />
-<link rel="stylesheet" href="face.css?v=97" />
+<link rel="stylesheet" href="identity/tokens.css?v=98" />
+<link rel="stylesheet" href="shell.css?v=98" />
+<link rel="stylesheet" href="components.css?v=98" />
+<link rel="stylesheet" href="frame.css?v=98" />
+<link rel="stylesheet" href="face.css?v=98" />
 <style>
   /* ادارة واجهة الشعبة (2026-10-20، نطاق اعتمده المستخدم) — يفتحها الزر الاوسط عند من فعلت له الواجهة.
      خانة الاسبوع · فعاليات السجل (نشر وسحب لا يمس السجل) · فعاليات للواجهة وحدها · معاينة ونشر وسحب ونسخ الرابط.
@@ -92,15 +92,15 @@
   </div>
  </div></div>
 
-<script src="build.js?v=97"></script>
-<script src="refdata.js?v=97"></script>
-<script src="rec-templates.js?v=97"></script>
-<script src="rec-engine.js?v=97"></script>
-<script src="derive.js?v=97"></script>
-<script src="icons.js?v=97"></script>
-<script src="components.js?v=97"></script>
-<script src="rec-files.js?v=97"></script>
-<script src="face-data.js?v=97"></script>
+<script src="build.js?v=98"></script>
+<script src="refdata.js?v=98"></script>
+<script src="rec-templates.js?v=98"></script>
+<script src="rec-engine.js?v=98"></script>
+<script src="derive.js?v=98"></script>
+<script src="icons.js?v=98"></script>
+<script src="components.js?v=98"></script>
+<script src="rec-files.js?v=98"></script>
+<script src="face-data.js?v=98"></script>
 <script>
 (function () {
   var S = Shouba, F = ShoubaFace, R = window.SHOUBA_REF || {};
@@ -143,7 +143,7 @@
 
   /* ── حال النشر ── */
   /* «انشر» للمحددة، او لتعديلات الصفحة (الفريق · الخانة · اللون) بلا تحديد — فلا تحبس خانة الاسبوع حتى تحدد فعالية.
-     و«اسحب» للمحددة وحدها. وبلا تحديد ولا تعديل: «حدد فعالية أولاً» */
+     و«اسحب» للمحددة وحدها. وبلا تحديد ولا تعديل: «حدد فعالية أولا» */
   function paintPub() {
     var btn = $('publish'), diff = changed(), n = SEL.length, pull = $('pull');
     $('pubLink').textContent = link();
@@ -174,7 +174,7 @@
     }
     btn.disabled = BUSY || (ME.published && !diff);
     if (n) { btn.textContent = 'انشر المحددة (' + n + ')'; btn.disabled = BUSY; }
-    else if (btn.disabled && !BUSY) btn.textContent = 'حدد فعالية أولاً';
+    else if (btn.disabled && !BUSY) btn.textContent = 'حدد فعالية أولا';
   }
 
   /* ── لون الترويسة: عنبري (الافتراضي) او كحلي — ينشر مع الواجهة ── */
@@ -396,7 +396,7 @@
     });
     var n = SEL.length;
     box.appendChild(el('div', 'thint', n ? 'حددت ' + num(n) + ' — «انشر» يضيفها إلى الرابط، و«اسحب» يرفعها عنه.'
-      : 'حدد فعالية أولاً، ثم انشرها أو اسحبها.'));
+      : 'حدد فعالية أولا، ثم انشرها أو اسحبها.'));
   }
   /* سطر الفعالية: مربع اختيار للمكتملة، وحالها على الرابط (منشورة · غير منشورة) */
   function evRow(e) {
@@ -431,7 +431,7 @@
   function paintHint() {
     var h = $('evList').querySelector('.thint:last-child'), n = SEL.length;
     if (h) h.innerHTML = n ? 'حددت ' + num(n) + ' — «انشر» يضيفها إلى الرابط، و«اسحب» يرفعها عنه.'
-      : 'حدد فعالية أولاً، ثم انشرها أو اسحبها.';
+      : 'حدد فعالية أولا، ثم انشرها أو اسحبها.';
   }
   function confirmDone(e) {
     var f = face();

@@ -7,7 +7,7 @@
 <!-- الصفحة تخدم على /face/<الرمز>: الاصول من جذر المنصة لا من /face/ -->
 <base href="../" />
 <title>واجهة الشعبة</title>
-<meta name="theme-color" content="#C8862A" />
+<meta name="theme-color" content="#E8A33D" /><!-- --shouba-amber: أعلى تدرج الترويسة -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="identity/tokens.css?v=94" />
 <link rel="stylesheet" href="shell.css?v=94" />
@@ -36,7 +36,7 @@
     <!-- ① الشعبة -->
     <div class="pane board" id="p1">
       <div class="card-navy" id="weekCard" hidden>
-        <div class="top"><span class="kicker"><i class="pulse"></i><span id="wkKind"></span></span></div>
+        <div class="top"><span class="kicker" id="wkKind"></span></div>
         <div class="ttl" id="wkTtl"></div>
         <div class="sub" id="wkSub" hidden></div>
       </div>
@@ -120,6 +120,11 @@
     return p ? esc(p.wd) + ' ' + num(p.day) + ' ' + esc(p.month) : '';
   }
   function title(name) { return 'أ. ' + name; }
+  /* الفصل: رقمه معزول LTR ورمز مساره بعده بالعربية («12/1» ثم «د») — كما يقرأ في جدول المنصة */
+  function clsHtml(cls) {
+    var m = String(cls || '').match(/^(.*?)(?:\s+([عد]))?$/);
+    return m ? num(m[1]) + (m[2] ? ' ' + esc(m[2]) : '') : '';
+  }
 
   /* ── اللوحة السفلية (بلا components.js) ── */
   function openSheet(t, html) {
@@ -167,7 +172,7 @@
   function paintNow() {
     var st = F.now(SNAP.times, SNAP.days, new Date()), kick = '', left = '', line = '', busy = busyNow(st);
     if (st.state === 'period') {
-      kick = '<i class="pulse"></i> الحصة ' + esc(ORD[st.n] || st.n) + ' جارية';
+      kick = 'الحصة ' + esc(ORD[st.n] || st.n) + ' جارية';
       left = 'بقي ' + num(st.left) + ' د';
       line = countLine(busy.length);
     } else if (st.state === 'break') {
@@ -187,7 +192,7 @@
         + busy.map(function (p) {
           var s = F.slot(p.wk[st.day][st.n - 1]);
           return '<div class="tr now"><span class="c3">' + esc(title(p.name)) + (s.subject ? ' · ' + esc(s.subject) : '') + '</span>'
-            + '<span class="c4" dir="ltr">' + esc(s.cls) + '</span></div>';
+            + '<span class="c4">' + clsHtml(s.cls) + '</span></div>';
         }).join('');
     }
   }
@@ -215,7 +220,7 @@
         if (!v) return;
         var s = F.slot(v);
         lines += '<button type="button" class="tline" data-k="' + k + '"><b>' + esc(title(p.name)) + '</b>'
-          + (s.subject ? '<small>' + esc(s.subject) + '</small>' : '') + (s.cls ? '<span class="cl" dir="ltr">' + esc(s.cls) + '</span>' : '') + '</button>';
+          + (s.subject ? '<small>' + esc(s.subject) + '</small>' : '') + (s.cls ? '<span class="cl">' + clsHtml(s.cls) + '</span>' : '') + '</button>';
       });
       var now = st.state === 'period' && st.day === curDay && st.n === t.n;
       out += '<div class="prow' + (now ? ' now' : '') + '"><div class="pn"><b dir="ltr">' + esc(t.n) + '</b><span>الحصة</span></div>'
@@ -237,7 +242,7 @@
       g += '<div class="d">' + esc(d) + '</div>';
       ps.forEach(function (t, i) {
         var s = F.slot(((p.wk || {})[d] || [])[i]);
-        g += s.cls ? '<div class="c" dir="ltr">' + esc(s.cls) + '</div>' : '<div class="f">·</div>';
+        g += s.cls ? '<div class="c">' + clsHtml(s.cls) + '</div>' : '<div class="f">·</div>';
       });
     });
     openSheet(title(p.name) + (p.subj ? ' · ' + p.subj : ''), g + '</div>');

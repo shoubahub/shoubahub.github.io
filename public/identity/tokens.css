@@ -31,7 +31,7 @@
   --shouba-off-lo: #DCD1BA;       /* أسفله */
   --shouba-off-edge: #C9BCA1;     /* حافته السفلية */
   --shouba-off-text: #9A8E79;     /* نصه */
-  --shouba-success: #2E7D57;      /* حالة «نشط» */
+  --shouba-success: #287350;      /* حالة «نشط» و«منشورة» — كان #2E7D57، أُغمق لتباين ≥4.5 · 2026-10-20 */
   /* ألوان التصنيف (رقاقات الحصص) — t0 كحلي و t2 عنبري غامق من الرموز أعلاه */
   --shouba-cat-1: #3E7FB4; --shouba-cat-3: #5E7A4A; --shouba-cat-4: #A2553C;
   --shouba-cat-5: #6B5B8A; --shouba-cat-6: #2F7D74; --shouba-cat-7: #7A5C3A;

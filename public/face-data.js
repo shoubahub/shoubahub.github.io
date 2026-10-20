@@ -13,6 +13,9 @@
      hide: [معرف سجل]                 فعالية من السجل اخفيت عن الواجهة — السجل لا يمس
      done: [معرف سجل]                 فعالية من السجل اكد رئيس الشعبة اقامتها
      own:  [{ id, title, date, note, created, done }]   فعاليات للواجهة وحدها
+     theme: 'amber' | 'navy'          لون الترويسة · العنبري افتراضا
+     team: { title, name, headPhoto, photos: { اسم: { file, mime } }, hide: [اسم] }
+                                      فريق الشعبة · title لقب رئيس الشعبة (أ. افتراضا) · name اسمه ان لم يكن في الحساب
    =================================================================== */
 (function (root) {
   var F = root.ShoubaFace = {};
@@ -70,6 +73,29 @@
     return w && w.kind !== 'quote' && p && typeof p.file === 'string' && /^image\//.test(p.mime || '') ? p.file : '';
   };
   F.weekLive = function (w, today) { return F.weekFilled(w) && !!w.to && today <= w.to; };
+
+  /* ── لون الترويسة وفريق الشعبة (2026-10-20، قرار المستخدم) ─────────
+     الترويسة عنبرية افتراضا او كحلية — اختياران لا ثالث لهما.
+     والفريق: رئيس الشعبة اولا ثم معلموه، الا من اخفاه رئيس الشعبة احتراما لمن لا يريد الظهور.
+     ⚠ الصورة اختيارية، ومعرفها وحده في النسخة (صورة لا PDF) — فيلتقطه face.js فيفتح بابها في face_files */
+  F.THEMES = ['amber', 'navy'];
+  F.theme = function (face) { return face && face.theme === 'navy' ? 'navy' : 'amber'; };
+  F.TITLES = ['أ.', 'د.'];
+  F.photoOf = function (p) { return p && typeof p.file === 'string' && /^image\//.test(p.mime || '') ? p.file : ''; };
+  F.team = function (face, staff, self) {
+    var t = (face && face.team) || {}, hide = arr(t.hide), ph = t.photos || {};
+    var name = str(self) || str(t.name);
+    var head = name ? { name: name, title: F.TITLES.indexOf(t.title) > -1 ? t.title : 'أ.', photo: F.photoOf(t.headPhoto) } : null;
+    var people = [];
+    arr(staff).forEach(function (n) {
+      n = str(n);
+      if (!n || n === name || hide.indexOf(n) > -1 || people.some(function (p) { return p.name === n; })) return;
+      people.push({ name: n, photo: F.photoOf(ph[n]) });
+    });
+    return { head: head, people: people };
+  };
+  /* الحرف الاول للدائرة بلا صورة */
+  F.initial = function (name) { var s = str(name); return s ? s.charAt(0) : ''; };
 
   /* ── الفعاليات ─────────────────────────────────────────────────
      القاعدة: «قادمة» ما لم يمض يومها، و«تمّت» ما اقيمت. والتي مضى يومها ولم يؤكد رئيس الشعبة اقامتها
@@ -168,7 +194,7 @@
   /* ── النسخة المنشورة ───────────────────────────────────────────
      تبنى في جهاز رئيس الشعبة من وثيقته وترسل كما هي (face.js لا يعرف شكلها).
      ⚠ ما لا يظهر لا يرسل: فعالية مخفية او بانتظار التأكيد لا تدخل النسخة، والجدول لمن له جدول وحده.
-     in: { doc, self, roster, times, days, today, groups, recs (سجلات الفعاليات), meetings (عدد اجتماعات العام) } */
+     in: { doc, self, roster, staff (معلمو الشعبة للفريق — roster ان غاب), times, days, today, groups, recs (سجلات الفعاليات), meetings (عدد اجتماعات العام) } */
   F.snapshot = function (inp) {
     var d = inp.doc || {}, face = d.face || {}, sch = d.schedules || {}, periods = arr(inp.times).filter(function (t) { return !t.brk; }).length;
     var people = [];
@@ -192,9 +218,11 @@
     /* الشعار صورة (data:image) او معرف رمز من icons.js — لا SVG نصا يحقن في صفحة عامة */
     var c = d.crest || {}, crest = c.type === 'image' && /^data:image\//.test(c.data || '') ? { img: c.data }
       : c.type === 'icon' && c.id ? { icon: String(c.id) } : null;
+    var team = F.team(face, inp.staff || inp.roster, inp.self);
     return {
       v: 1,
-      dept: str(d.department), school: str(d.schoolName), head: str(inp.self),
+      dept: str(d.department), school: str(d.schoolName), head: team.head ? team.head.name : '',
+      theme: F.theme(face), team: team,
       year: str(d.year), term: str(d.term), crest: crest,
       days: arr(inp.days), times: arr(inp.times),
       people: people,

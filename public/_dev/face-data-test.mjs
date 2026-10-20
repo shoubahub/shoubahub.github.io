@@ -92,6 +92,22 @@ const snapW = F.snapshot({ doc: Object.assign({}, doc, { face: { week: { kind: '
 ok(snapW.week && snapW.week.photo === PH.file, 'معرف صورة الخانة في النسخة — فيلتقطه face.js ويفتح بابها');
 ok(snap.stats.meetings === 3, 'عدد الاجتماعات في الحصيلة');
 
+// ٤ب) لون الترويسة وفريق الشعبة (2026-10-20)
+ok(snap.theme === 'amber' && F.theme({ theme: 'navy' }) === 'navy' && F.theme({ theme: 'red' }) === 'amber', 'الترويسة عنبرية افتراضا، وكحلية باختيارها، ولا ثالث');
+ok(snap.team.head.name === 'محمد البراك' && snap.team.head.title === 'أ.' && snap.team.head.photo === '', 'رئيس الشعبة اول الفريق بلقب أ. افتراضا وبلا صورة');
+ok(snap.team.people.map(p => p.name).join('|') === 'فيصل|بدر', 'ثم معلموه كلهم (لا من له جدول وحده) بلا رئيس الشعبة', snap.team.people);
+const TP = { file: 'f' + 'd'.repeat(24), mime: 'image/jpeg' }, HP = { file: 'f' + 'e'.repeat(24), mime: 'image/jpeg' };
+const snapT = F.snapshot({ doc: Object.assign({}, doc, { face: { theme: 'navy', team: { title: 'د.', headPhoto: HP,
+  photos: { 'فيصل': TP, 'بدر': { file: TP.file, mime: 'application/pdf' } }, hide: ['سعود'] } } }),
+  self: 'محمد البراك', roster: [], staff: ['محمد البراك', 'فيصل', 'بدر', 'سعود'], times, days: REF.days, today: T });
+ok(snapT.theme === 'navy' && snapT.team.head.title === 'د.' && snapT.team.head.photo === HP.file, 'الكحلي واللقب وصورة الرئيس في النسخة');
+ok(snapT.team.people.map(p => p.name + ':' + p.photo).join('|') === 'فيصل:' + TP.file + '|بدر:', 'صورة المعلم معرفها وحده، وPDF لا ينشر', snapT.team.people);
+ok(!snapT.team.people.some(p => p.name === 'سعود') && !JSON.stringify(snapT.team).includes('سعود'), 'من اخفي لا يدخل النسخة اصلا');
+const snapN = F.snapshot({ doc: Object.assign({}, doc, { face: { team: { name: 'خالد', title: 'x' } } }), self: '', roster: [], staff: ['فيصل'], times, days: REF.days, today: T });
+ok(snapN.team.head.name === 'خالد' && snapN.team.head.title === 'أ.' && snapN.head === 'خالد', 'اسم الرئيس من الحقل ان لم يكن في الحساب، ولقب غريب يعود أ.');
+ok(F.snapshot({ doc, self: '', roster: [], times, days: REF.days, today: T }).team.head === null, 'بلا اسم للرئيس: لا بطاقة له');
+ok(F.initial('  محمد') === 'م' && F.initial('') === '', 'الحرف الاول للدائرة بلا صورة');
+
 // ٥) ما يراه الزائر: بساعته هو
 const v1 = F.visible(snap, T);
 ok(v1.soon.map(e => e.title).join('|') === 'ملتقى|زيارة الموجه' && v1.done.map(e => e.title).join('|') === 'لجنة', 'قادمة بالاقرب · تمّت', v1);

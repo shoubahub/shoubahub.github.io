@@ -22,6 +22,7 @@
      الانماط في face.css — لا هيكل هنا */
   #wkKinds{flex-wrap:wrap}
   #wkKinds .seg{flex:1 1 30%}
+  #thSegs{margin:0 var(--gap-side)}
 </style>
 </head>
 <body class="framed face-adm">
@@ -46,6 +47,16 @@
             <button type="button" class="ghost2" id="preview">عاين كما يراها الزائر</button>
           </div>
         </div>
+
+        <section>
+          <div class="sect"><div class="h">لون الترويسة</div></div>
+          <div class="segs sm" id="thSegs"></div>
+        </section>
+
+        <section>
+          <div class="sect"><div class="h">فريق الشعبة</div></div>
+          <div class="tbl" id="tmList"></div>
+        </section>
 
         <section>
           <div class="sect"><div class="h">خانة الأسبوع</div><div class="a" id="wkEdit">عدّل ›</div></div>
@@ -106,7 +117,7 @@
   function snapshot() {
     var d = S.data();
     return F.snapshot({
-      doc: d, self: S.self(), roster: S.roster(), times: S.periods(), days: S.days(), today: S.today(), groups: GROUPS,
+      doc: d, self: S.self(), roster: S.roster(), staff: S.staff(), times: S.periods(), days: S.days(), today: S.today(), groups: GROUPS,
       recs: S.recs('events'),
       meetings: S.recs('meetings').filter(function (r) { return (r.year || '') === (d.year || ''); }).length
     });
@@ -151,6 +162,91 @@
       btn.textContent = 'منشورة كما هي';
     }
     btn.disabled = BUSY || (ME.published && !diff);
+  }
+
+  /* ── لون الترويسة: عنبري (الافتراضي) او كحلي — ينشر مع الواجهة ── */
+  function paintTheme() {
+    var box = $('thSegs'), cur = F.theme(face());
+    box.innerHTML = '';
+    [['amber', 'عنبري'], ['navy', 'كحلي']].forEach(function (x) {
+      var b = el('button', 'seg' + (x[0] === cur ? ' on' : '')); b.type = 'button'; b.textContent = x[1];
+      b.addEventListener('click', function () {
+        if (x[0] === cur) return;
+        var f = face(); f.theme = x[0]; setFace(f);
+        S.toast('لون الترويسة ' + x[1] + ' — انشر ليظهر على الرابط');
+      });
+      box.appendChild(b);
+    });
+  }
+
+  /* ── فريق الشعبة: رئيس الشعبة ثم معلموه · صورة اختيارية لكل واحد، و«أخفه» لمن لا يريد الظهور ──
+     الصور ترفع بمسار المرفقات القائم (rec-files.js) الى خزانة الحساب، وتنشر عبر بوابة الواجهة وحدها */
+  function team() { var t = face().team; return t && typeof t === 'object' ? t : {}; }
+  function setTeam(t) { var f = face(); f.team = t; setFace(f); }
+  function headName() { return S.self() || String(team().name || '').trim(); }
+  function uploadPhoto(done, fail) {
+    var FL = window.ShoubaFiles;
+    if (!FL) return;
+    FL.pick(function (file) {
+      if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '')) { S.toast('صورة فقط — لا PDF.'); return; }
+      S.toast('تجهز الصورة وترفع إلى حسابك…');
+      FL.prepare(file).then(function (p) { return FL.upload('face-team', p); }).then(function (j) {
+        done({ file: j.id, mime: j.mime });
+      }).catch(function (e) { S.toast(e && e.user ? e.message : 'تعذر الرفع — أعد المحاولة'); });
+    });
+  }
+  function tAvatar(name, photo) {
+    var ph = F.photoOf(photo);
+    return ph ? '<img class="av" alt="" src="' + esc(ShoubaFiles.url(ph)) + '" />' : '<span class="av" aria-hidden="true">' + esc(F.initial(name)) + '</span>';
+  }
+  function paintTeam() {
+    var t = team(), box = $('tmList'), hide = t.hide || [], photos = t.photos || {}, hn = headName();
+    box.innerHTML = '';
+    function row(raw, name, sub, photo, off) {
+      var r = el('div', 'trow' + (off ? ' off' : ''));
+      r.innerHTML = tAvatar(raw, photo) + '<div class="nm"><b>' + esc(name) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
+      var ops = el('div', 'ops'); r.appendChild(ops);
+      r.op = function (label, cls, fn) { var b = el('button', 'op' + (cls ? ' ' + cls : '')); b.type = 'button'; b.textContent = label; b.addEventListener('click', fn); ops.appendChild(b); };
+      box.appendChild(r);
+      return r;
+    }
+    /* رئيس الشعبة */
+    var title = F.TITLES.indexOf(t.title) > -1 ? t.title : 'أ.';
+    var h = row(hn, hn ? title + ' ' + hn : 'رئيس الشعبة', hn ? 'رئيس الشعبة' : 'اكتب اسمه ليظهر', t.headPhoto, !hn);
+    if (F.photoOf(t.headPhoto)) h.op('احذف الصورة', 'warn', function () { var g = team(); delete g.headPhoto; setTeam(g); });
+    else h.op('أضف صورة', '', function () { uploadPhoto(function (p) { var g = team(); g.headPhoto = p; setTeam(g); }); });
+    h.op(S.self() ? 'اللقب' : 'الاسم واللقب', '', headSheet);
+    /* معلمو الشعبة */
+    S.staff().filter(function (n) { return n && n !== hn; }).forEach(function (n) {
+      var off = hide.indexOf(n) > -1, r = row(n, 'أ. ' + n, off ? 'مخفي عن الواجهة' : '', photos[n], off);
+      if (F.photoOf(photos[n])) r.op('احذف الصورة', 'warn', function () { var g = team(); g.photos = g.photos || {}; delete g.photos[n]; setTeam(g); });
+      else r.op('أضف صورة', '', function () { uploadPhoto(function (p) { var g = team(); (g.photos = g.photos || {})[n] = p; setTeam(g); }); });
+      r.op(off ? 'أظهره' : 'أخفه', '', function () {
+        var g = team(), hd = (g.hide || []).filter(function (x) { return x !== n; });
+        if (!off) hd.push(n);
+        g.hide = hd; setTeam(g);
+      });
+    });
+    box.appendChild(el('div', 'thint', 'الصورة اختيارية — وبلا صورة يظهر الحرف الأول من الاسم. ومن أخفيته لا يظهر في الواجهة.'));
+  }
+  function headSheet() {
+    var t = team(), title = F.TITLES.indexOf(t.title) > -1 ? t.title : 'أ.', n = el('div', 'wd');
+    n.innerHTML = (S.self() ? '' : '<div class="field" data-need="req"><label for="hdName">اسم رئيس الشعبة</label>'
+      + '<div class="paper"><input id="hdName" type="text" maxlength="60" /></div></div>')
+      + '<div class="field" data-need="req"><label>اللقب</label><div class="segs sm" id="hdTitles"></div></div>';
+    var segs = n.querySelector('#hdTitles');
+    F.TITLES.forEach(function (x) {
+      var b = el('button', 'seg' + (x === title ? ' on' : '')); b.type = 'button'; b.textContent = x;
+      b.addEventListener('click', function () { title = x; [].forEach.call(segs.children, function (c) { c.classList.toggle('on', c.textContent === x); }); });
+      segs.appendChild(b);
+    });
+    var inp = n.querySelector('#hdName');
+    if (inp) inp.value = t.name || '';
+    S.sheet.open('رئيس الشعبة', n, { onDone: function () {
+      var g = team();
+      if (inp) { var v = inp.value.trim(); if (!v) { S.toast('اكتب اسم رئيس الشعبة'); return false; } g.name = v; }
+      g.title = title; setTeam(g);
+    } });
   }
 
   /* ── خانة الاسبوع ── */
@@ -395,7 +491,7 @@
   $('wkEdit').addEventListener('click', weekSheet);
   $('evAdd').addEventListener('click', addSheet);
 
-  function paint() { paintPub(); paintWeek(); paintEvents(); }
+  function paint() { paintPub(); paintTheme(); paintTeam(); paintWeek(); paintEvents(); }
   paint();
 
   /* حال الواجهة من الخادم، وآخر نسخة منشورة — بها يعرف «فيها تعديلات لم تنشر» ولو نشر من جهاز آخر */

@@ -16,7 +16,7 @@
      تبويبان تحت الترويسة (#الشعبة · #الجدول): الشعبة للآن والفعاليات والحصيلة، والجدول الكامل في تبويبه.
      صفحة عرض واحدة طويلة كموقع الشعبة، للعرض وحده بلا حساب: لا تبويبات ولا شريط ولا اطار جهاز،
      ولا قطع المنصة (shell · components · frame) — tokens.css وface.css وحدهما.
-     الشعبة من اعلى: خانة الاسبوع · الآن في الشعبة · فعاليات اقيمت · فعاليات قادمة · حصيلة العام (اقيمت قبل القادمة — قرار المستخدم).
+     الشعبة من اعلى: فريق الشعبة · خانة الاسبوع · الآن في الشعبة · فعاليات اقيمت · فعاليات قادمة · حصيلة العام (اقيمت قبل القادمة — قرار المستخدم).
      وكل قسم فارغ يختفي بعنوانه. والحصة الجارية تحسب بساعة الزائر (face.js: المنشور بيانات لا صورة).
      ⚠ وعامل الخدمة يتركها (sw.js) فلا تقدم من مخزن جهاز نسخة قديمة.
      =========================================================================== -->
@@ -24,7 +24,7 @@
 <body class="face-pub">
 
 <div id="page" hidden>
-  <header class="fhead">
+  <header class="fhead" id="head">
     <div class="fp">
       <div class="crest" id="crest"></div>
       <div class="school" id="school"></div>
@@ -42,6 +42,8 @@
 
   <main class="fp fmain">
    <div class="fpane" id="paneS">
+    <div class="fteam" id="team" hidden></div>
+
     <div class="fweek" id="week" hidden>
       <img class="wide" id="wkWide" alt="" hidden />
       <div class="row">
@@ -141,12 +143,31 @@
     var s = SNAP;
     $('school').textContent = s.school || '';
     $('dept').textContent = s.dept || 'واجهة الشعبة';
-    $('hi').textContent = 'أهلا بكم في صفحة الشعبة' + (s.head ? ' — رئيس الشعبة ' + title(s.head) : '');
+    var hd = (s.team || {}).head;
+    $('hi').textContent = 'أهلا بكم في صفحة الشعبة' + (s.head ? ' — رئيس الشعبة ' + (hd && hd.title ? hd.title + ' ' + s.head : title(s.head)) : '');
+    /* لون الترويسة: عنبري افتراضا او كحلي (face-data.js) — ولون شريط المتصفح معه */
+    var navy = F.theme(s) === 'navy';
+    $('head').classList.toggle('navy', navy);
+    var tc = document.querySelector('meta[name="theme-color"]');
+    if (tc) tc.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue(navy ? '--shouba-navy' : '--shouba-amber').trim() || tc.getAttribute('content'));
     document.title = (s.dept || 'واجهة الشعبة') + (s.school ? ' · ' + s.school : '');
     var c = s.crest || {}, el = $('crest');
     if (c.img && /^data:image\//.test(c.img)) { var im = new Image(); im.alt = 'شعار المدرسة'; im.src = c.img; el.appendChild(im); }
     else if (c.icon && window.SHOUBA_ICONS) el.innerHTML = SHOUBA_ICONS.svg(c.icon, 34);
     else el.innerHTML = '<img src="identity/assets/logo-vec-color.svg" alt="شعبة" style="object-fit:contain;padding:8px" />';
+  }
+
+  /* ①ب فريق الشعبة: صف افقي يمرر داخله — رئيس الشعبة اولا بصورة اكبر، ثم معلموه. وبلا صورة دائرة رملية بالحرف الاول */
+  function avatar(p, cls) {
+    var ph = p.photo ? FILES + encodeURIComponent(p.photo) : '';
+    return ph ? '<img class="av ' + cls + '" alt="" src="' + ph + '" />'
+      : '<span class="av ' + cls + ' ini" aria-hidden="true">' + esc(F.initial(p.name)) + '</span>';
+  }
+  function paintTeam() {
+    var t = SNAP.team || {}, out = '';
+    if (t.head) out += '<div class="tm head">' + avatar(t.head, 'lg') + '<b>' + esc((t.head.title || 'أ.') + ' ' + t.head.name) + '</b><span>رئيس الشعبة</span></div>';
+    (t.people || []).forEach(function (p) { out += '<div class="tm">' + avatar(p, '') + '<b>' + esc(title(p.name)) + '</b></div>'; });
+    $('team').innerHTML = out; $('team').hidden = !out;
   }
 
   /* ② خانة الاسبوع */
@@ -325,7 +346,7 @@
     SNAP = snap || {};
     var g = clock().getDay(), days = SNAP.days || [];
     curDay = days[g <= 4 ? g : 0] || days[0];
-    paintHead(); paintDays(); paintAll(); route();
+    paintHead(); paintTeam(); paintDays(); paintAll(); route();
     $('page').hidden = false;
     /* الحصة الجارية تتبدل وهو ينظر — والخانة والفعاليات بتبدل اليوم */
     setInterval(function () { paintNow(); paintDay(); }, 30000);

@@ -155,6 +155,17 @@ await fetch(`${BASE}/api/face/publish`, { method: 'POST', headers: H(), body: JS
   { events: [], week: { kind: 'teacher', who: 'فيصل', text: '', to: '2099-01-01', photo: '' } }) }) });
 ok((await fetch(`${BASE}/api/pub/file/${wk.id}`)).status === 404, 'وحذفها من الخانة ثم النشر يغلقها في الحال');
 
+// صور فريق الشعبة (2026-10-20): تمر من بوابة face_files وحدها — المعرف في النسخة يفتح، واخفاء المعلم ثم النشر يغلق
+const tp = await put(), hp = await put();
+const pubTeam = people => fetch(`${BASE}/api/face/publish`, { method: 'POST', headers: H(), body: JSON.stringify({ data: Object.assign({}, snap,
+  { events: [], week: null, theme: 'navy', team: { head: { name: 'محمد البراك', title: 'أ.', photo: hp.id }, people } }) }) });
+await pubTeam([{ name: 'فيصل', photo: tp.id }]);
+ok((await fetch(`${BASE}/api/pub/file/${tp.id}`)).ok && (await fetch(`${BASE}/api/pub/file/${hp.id}`)).ok, 'صورة المعلم وصورة الرئيس تفتحان للزائر بلا حساب');
+await pubTeam([]);
+ok((await fetch(`${BASE}/api/pub/file/${tp.id}`)).status === 404 && (await fetch(`${BASE}/api/pub/file/${hp.id}`)).ok,
+  'واخفاء المعلم (او حذف صورته) ثم النشر يغلق صورته في الحال، وتبقى صورة الرئيس');
+ok((await fetch(`${BASE}/api/files/${tp.id}`, { headers: H() })).ok, 'والملف نفسه باق في خزانة صاحبه — البوابة وحدها اغلقت');
+
 // بلا FACE_BETA: كل شيء مغلق ولو بجلسة صاحب المنصة (خادم ثان على القاعدة نفسها)
 const PORT2 = PORT + 1, BASE2 = `http://127.0.0.1:${PORT2}`;
 const srv2 = spawn('node', ['server.js'], {

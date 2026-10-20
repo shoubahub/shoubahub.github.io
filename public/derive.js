@@ -181,7 +181,7 @@
         return 'conflict';
       });
     }).catch(function () { return 'none'; }).then(function (r) {
-      /* انتهت المراجعة مع الخادم (نجحت او لم تصل) — فتعلن «shouba:synced»، وبها تعرف الشاشة متى تكف عن «جارٍ التحميل…» */
+      /* انتهت المراجعة مع الخادم (نجحت او لم تصل) — فتعلن «shouba:synced»، وبها تعرف الشاشة متى تكف عن «جار التحميل…» */
       S.synced = true;
       try { document.dispatchEvent(new Event('shouba:synced')); } catch (e) {}
       return r;

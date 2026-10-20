@@ -46,7 +46,7 @@ ok(!w.fired.includes('shouba:data'), 'الخادم فارغ: لا اعلان', w
 const fa = fs.readFileSync(path.join(ROOT, 'face-admin.html'), 'utf8');
 ok(/addEventListener\('shouba:data',\s*paint\)/.test(fa), 'ادارة الواجهة تعيد الرسم عند «shouba:data»');
 
-// «shouba:synced» بعد انتهاء المراجعة في كل حال — وبه تكف ادارة الواجهة عن «جارٍ التحميل…» (2026-10-20)
+// «shouba:synced» بعد انتهاء المراجعة في كل حال — وبه تكف ادارة الواجهة عن «جار التحميل…» (2026-10-20)
 w = world(null, DOC);
 ok(!w.S.synced, 'قبل المراجعة: synced غير مضبوط');
 await w.S.connect();
@@ -60,9 +60,9 @@ ok(await w.S.connect() === 'none' && w.fired.includes('shouba:synced'), 'لا ا
 
 const fa2 = fa.replace(/\s+/g, ' ');
 ok(fa.includes("document.addEventListener('shouba:synced', paint)"), 'ادارة الواجهة تعيد الرسم عند «shouba:synced»');
-ok(/if \(loading\(\)\) \{ \$\('pubKick'\)\.textContent = 'جارٍ التحميل…'/.test(fa2), 'حال النشر: «جارٍ التحميل…» قبل «لا اتصال بالخادم»');
+ok(/if \(loading\(\)\) \{ \$\('pubKick'\)\.textContent = 'جار التحميل…'/.test(fa2), 'حال النشر: «جار التحميل…» قبل «لا اتصال بالخادم»');
 ok(fa2.indexOf("if (loading())") < fa2.indexOf("if (!ME) {"), 'فحص التحميل يسبق «لا اتصال»');
-ok(/if \(!list\.length && loading\(\)\) \{ box\.innerHTML = '<div class="empty">جارٍ التحميل…<\/div>'/.test(fa2), 'الفعاليات: سطر التحميل بدل «لا فعاليات بعد»');
+ok(/if \(!list\.length && loading\(\)\) \{ box\.innerHTML = '<div class="empty">جار التحميل…<\/div>'/.test(fa2), 'الفعاليات: سطر التحميل بدل «لا فعاليات بعد»');
 ok(/function loaded\(\) \{ LOAD = false; paint\(\); \}/.test(fa2) && (fa2.match(/loaded\(\)/g) || []).length >= 6, 'ينتهي التحميل في كل مخرج لطلب api/face/me');
 
 // الرأس يرسم مع paint() (اسم الشعبة وشعارها بعد وصول الوثيقة)، وزر الرابط المعطل يبدو معطلا (2026-10-20)

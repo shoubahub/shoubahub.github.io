@@ -25,6 +25,9 @@ app.use((req, res, next) => {
 const PROD = process.env.NODE_ENV === 'production' || !!process.env.RAILWAY_ENVIRONMENT;
 if (PROD) app.use(['/_dev', '/_legacy', '/_template.html'], (_req, res) => res.status(404).send('Not found'));
 
+/* صفحتا واجهة الشعبة خلف بوابة التجربة — قبل الملفات الساكنة · face.js (2026-10-20) */
+require('./face').pages(app, require('./auth').requireUser);
+
 /* وسوم المعاينة (واتساب…) تُحقن في كل صفحة HTML قبل الملفّات الساكنة — og.js */
 const og = require('./og');
 const PUBLIC = path.join(__dirname, 'public');

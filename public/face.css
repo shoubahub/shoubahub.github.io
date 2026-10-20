@@ -1,0 +1,118 @@
+/* ===================================================================
+   شعبة · واجهة الشعبة — انماط الصفحتين (2026-10-20)
+   صفحة الزائر (face.html · body.face-pub) من العينة المعتمدة public/_dev/face-sample.html،
+   وشاشة الادارة (face-admin.html · body.face-adm). على tokens/shell/components/frame كسائر المنصة،
+   ولا هيكل هنا (لا body ولا .screen) — ملف مستقل كي لا يمس components.css.
+   =================================================================== */
+
+/* ═══ صفحة الزائر ═══ */
+
+/* الترويسة العنبرية (معتمدة 2026-09-20) — وهي موضع العلامة، فالبطاقة الكحلية الواحدة لخانة الاسبوع */
+.face-pub .topbar{background:linear-gradient(180deg,#C8862A 0%,#A9701B 58%,#8A5A12 100%);
+  border-bottom:2px solid var(--shouba-navy)}
+.face-pub .topbar .tbcrest{box-shadow:0 0 0 2px var(--shouba-navy);background:rgba(244,241,234,.18)}
+.face-pub .topbar .tt span{color:rgba(244,241,234,.80)}
+
+.face-pub .pane{display:none}
+.face-pub .pane.on{display:flex}
+.face-pub .board{flex-direction:column;gap:20px;padding-top:14px}
+.face-pub .sect{margin-bottom:11px}
+
+/* خانة الاسبوع — البطاقة الكحلية */
+.face-pub .card-navy .ttl{white-space:pre-line}
+
+/* الحصيلة: رقم وتسميته */
+.nums{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0 var(--gap-side)}
+.nums .n{background:linear-gradient(180deg,var(--shouba-paper) 0%,#F4EDE0 100%);border-radius:16px;padding:12px 14px;
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.85), 0 2px 0 rgba(190,172,140,.45), 0 8px 16px rgba(120,98,66,.14)}
+.nums .n b{display:block;font-size:23px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num);line-height:1.1}
+.nums .n span{display:block;font-size:11.5px;font-weight:600;color:var(--shouba-label);margin-top:4px}
+
+/* منتقي الايام */
+.days{display:flex;gap:6px;padding:0 var(--gap-side);overflow-x:auto;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.day{flex:none;border:0;cursor:pointer;font-family:var(--font-ar);font-size:12.5px;font-weight:700;
+  color:var(--shouba-label);background:var(--shouba-sand);border-radius:999px;padding:7px 15px}
+.day.on{background:var(--shouba-navy);color:var(--shouba-cream)}
+
+/* شبكة اليوم: صف لكل حصة، وتحته من يعمل فيها (والفارغون لا يذكرون) */
+.prow{display:flex;gap:10px;padding:10px 13px;border-bottom:1px solid rgba(226,215,194,.75)}
+.prow:last-child{border-bottom:0}
+.prow.now{background:rgba(22,69,110,.10);box-shadow:inset 3px 0 0 var(--shouba-navy)}
+.prow .pn{flex:none;width:34px;text-align:center}
+.prow .pn b{display:block;font-size:14px;font-weight:700;color:var(--shouba-navy);font-family:var(--font-num);line-height:1.2}
+.prow .pn span{display:block;font-size:9.5px;font-weight:700;color:var(--shouba-hint)}
+.prow .pl{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.tline{display:flex;gap:7px;align-items:center;cursor:pointer;background:none;border:0;padding:0;font-family:var(--font-ar);text-align:right;min-width:0}
+.tline b{font-size:12.5px;font-weight:700;color:var(--shouba-navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tline small{font-size:11px;font-weight:600;color:var(--shouba-text-muted);white-space:nowrap}
+.tline .cl{margin-inline-start:auto;font-size:11px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num);flex:none}
+.prow .none{font-size:12px;font-weight:600;color:var(--shouba-hint)}
+.fnote{padding:0 var(--gap-side);font-size:11.5px;font-weight:600;color:var(--shouba-hint);line-height:1.8}
+
+/* جدول المعلم في لوحة سفلية */
+.wk{display:grid;grid-template-columns:auto repeat(var(--np,7),1fr);gap:3px;font-family:var(--font-num);font-size:10px}
+.wk div{background:rgba(120,98,66,.06);border-radius:5px;padding:6px 2px;text-align:center;color:var(--shouba-text-muted);font-weight:700}
+.wk .h{background:transparent;color:var(--shouba-label);padding:4px 2px}
+.wk .d{background:transparent;color:var(--shouba-label);font-family:var(--font-ar);font-size:10.5px;text-align:right;padding-inline-end:5px;white-space:nowrap}
+.wk .f{background:transparent;color:var(--shouba-hint)}
+.wk .c{background:rgba(22,69,110,.10);color:var(--shouba-navy)}
+
+/* الفعاليات */
+.ev{display:flex;gap:11px;padding:12px 13px;border-bottom:1px solid rgba(226,215,194,.75);width:100%;border-inline:0;border-top:0;
+  background:none;font-family:var(--font-ar);text-align:right}
+.ev:last-child{border-bottom:0}
+button.ev{cursor:pointer}
+.ev .th{flex:none;width:62px;height:62px;border-radius:13px;object-fit:cover;background:var(--shouba-sand)}
+.ev .tx{flex:1;min-width:0}
+.ev .tx b{display:block;font-size:13.5px;font-weight:700;color:var(--shouba-ink);line-height:1.5}
+.ev .tx .mt{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:5px;font-size:10.5px;font-weight:700;color:var(--shouba-label)}
+.ev .tx .mt em{font-style:normal;color:var(--shouba-amber-deep)}
+
+/* تفاصيل الفعالية في لوحة سفلية */
+.evd{display:flex;flex-direction:column;gap:12px}
+.evd .mt{font-size:12px;font-weight:700;color:var(--shouba-label);line-height:1.8}
+.evd .mt em{font-style:normal;color:var(--shouba-amber-deep)}
+.evd p{font-size:13.5px;font-weight:500;color:var(--shouba-ink);line-height:1.9;white-space:pre-line}
+.evd .shots{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.evd .shots img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;background:var(--shouba-sand)}
+
+/* الصفحة بلا نسخة (لم تنشر · سحبت · رابط خاطئ) */
+.face-pub .gone{margin:auto var(--gap-side);text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.face-pub .gone img{width:64px;height:auto}
+.face-pub .gone b{font-size:16px;font-weight:700;color:var(--shouba-navy)}
+.face-pub .gone span{font-size:12.5px;font-weight:600;color:var(--shouba-label);line-height:1.8}
+
+/* ═══ شاشة الادارة ═══ */
+.face-adm .wrap{display:flex;flex-direction:column;gap:22px;padding:16px 0 0}
+.face-adm .sect{margin-bottom:11px}
+.face-adm .card-soft .link{font-family:var(--font-num);font-size:12px;font-weight:600;color:var(--shouba-text-muted);
+  word-break:break-all;line-height:1.6}
+/* خانة الاسبوع: سطرها كما سيقرأ */
+.wkbox{padding:12px 13px;display:flex;flex-direction:column;gap:5px;cursor:pointer}
+.wkbox .k{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.wkbox b{font-size:13.5px;font-weight:700;color:var(--shouba-navy);line-height:1.6;white-space:pre-line}
+.wkbox small{font-size:11.5px;font-weight:600;color:var(--shouba-label);line-height:1.7}
+.wkbox small.off{color:var(--shouba-error)}
+/* سطر الفعالية وادواته */
+.erow{display:flex;flex-direction:column;gap:8px;padding:11px 13px;border-bottom:1px solid rgba(226,215,194,.75)}
+.erow:last-child{border-bottom:0}
+.erow .t{display:flex;gap:8px;align-items:flex-start}
+.erow .t b{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--shouba-ink);line-height:1.6}
+.erow .mt{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11px;font-weight:700;color:var(--shouba-label)}
+.erow .mt em{font-style:normal;color:var(--shouba-amber-deep)}
+.erow .ops{display:flex;gap:8px;flex-wrap:wrap}
+.erow .op{border:0;cursor:pointer;font-family:var(--font-ar);font-size:12px;font-weight:700;border-radius:999px;padding:7px 13px;min-height:34px;
+  color:var(--shouba-navy);background:rgba(22,69,110,.09)}
+.erow .op.warn{color:var(--shouba-error);background:rgba(183,68,58,.08)}
+.erow.off b{color:var(--shouba-label)}
+.grp{padding:7px 13px;background:rgba(120,98,66,.07);font-size:10.5px;font-weight:700;color:var(--shouba-label)}
+/* المعاينة: الصفحة كما يراها الزائر في طبقة فوق الشاشة */
+.pview{position:fixed;inset:0;z-index:100;background:var(--shouba-canvas);display:flex;flex-direction:column}
+.pview[hidden]{display:none}
+.pview iframe{flex:1;width:100%;border:0;background:var(--shouba-canvas)}
+.pview .pbar{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top)) var(--gap-side) 10px;
+  background:var(--shouba-navy);color:var(--shouba-cream);font-size:12.5px;font-weight:700}
+.pview .pbar button{border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;border-radius:999px;padding:8px 16px;
+  color:var(--shouba-navy);background:var(--shouba-cream)}
+.face-adm .wd{display:flex;flex-direction:column;gap:16px}

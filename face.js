@@ -167,4 +167,17 @@ function routes(app, requireUser) {
   });
 }
 
-module.exports = { routes, filesIn };
+/* ⑦ الصفحتان في public، فالملفات الساكنة تخدمهما لكل طارق — والبوابة قبلها (2026-10-20):
+   face-admin.html (ادارة الواجهة) وface.html مباشرة (معاينتها) لمستخدم التجربة وحده، وغيره ٤٠٤ كأن لا ملف.
+   والزائر لا يمر من هنا: صفحته /face/<الرمز> اعلاه.
+   ⚠ توصل قبل express.static ووسوم المعاينة في server.js — بعدها يكون الملف قد خرج. */
+function pages(app, requireUser) {
+  const none = res => res.status(404).type('text').send('Not found');
+  app.get(['/face.html', '/face-admin.html'], (req, res, next) => {
+    /* requireUser يرد ٤٠١ بلا جلسة — وهنا ٤٠٤ كسائر ما وراء البوابة */
+    const quiet = { status: () => ({ json: () => none(res) }) };
+    requireUser(req, quiet, () => (beta(req) ? next() : none(res)));
+  });
+}
+
+module.exports = { routes, pages, filesIn };

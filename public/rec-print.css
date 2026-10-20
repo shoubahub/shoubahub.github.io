@@ -67,7 +67,16 @@
 /* وبوضع print:'grid' (سجل الفعاليات 2026-09-20): الصور نفسها صفين في الصفحة، ولا تنقسم صورة بين صفحتين */
 .pp-grid{ display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin-top:2mm; }
 .pp-shot{ break-inside:avoid; display:flex; flex-direction:column; gap:1mm; }
-.pp-shot img{ width:100%; height:52mm; object-fit:cover; border:1px solid #000; }
+/* التوزيع بالعدد (2026-10-20): الاطار ثابت الارتفاع والصورة تصغر فيه ولا تقص (الطولية تظهر كاملة)،
+   والاطار نفسه بلا حد: الحد على الصورة فيلتف حولها لا حول فراغ بجانبها */
+.pp-shot .im{ height:60mm; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.pp-shot img{ max-width:100%; max-height:100%; object-fit:contain; display:block; border:1px solid #000; }
+.pp-shots.n1,.pp-shots.n2{ grid-template-columns:1fr; }
+.pp-shots.n1 .im{ height:130mm; }
+.pp-shots.n2 .im{ height:70mm; }
+.pp-shots.n3 .pp-shot:first-child{ grid-column:1 / -1; }
+.pp-shots.n3 .pp-shot:first-child .im{ height:76mm; }
+.pp-shots.n3 .im{ height:62mm; }
 .pp-shot .nm{ font-size:.86em; text-align:center; }
 /* (حذفت الاسطر المنقطة .pp-fill — قرار المستخدم 2026-09-13: «احذف الاسطر تماما») */
 /* ⑧ سطر التوقيعات (P.approval — 2026-09-13): اسفل كل نموذج، بلا اطار (قرار المستخدم: «حتى لا يأخذ مكان المحتوى»).

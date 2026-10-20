@@ -432,16 +432,20 @@
     /* print: 'grid' (2026-09-20) — الصور نفسها شبكة لا اسماء: سجل الفعاليات ورقته صورها، وقائمة
        «صورة · صورة» لا تقول شيئا. وPDF لا يرسم صورة فيبقى في السطر باسمه. */
     if (b.print === 'grid') {
-      var g = el('div', 'pp-grid'), FL = window.ShoubaFiles;
+      /* توزيعها على الصفحة بعددها (قرار المستخدم 2026-10-20: «الفعاليات لا تتعدى صورتين الى ٣»):
+         واحدة تملأ العرض · اثنتان فوق بعض · ثلاث: الاولى بالعرض وتحتها اثنتان · اربع فاكثر شبكة بعمودين.
+         الاطار بارتفاع ثابت (القياس قبل حمل الصور) والصورة تصغر فيه ولا تقص — كشواهد الملحق */
+      var g = el('div', 'pp-grid pp-shots n' + Math.min(items.length, 4)), FL = window.ShoubaFiles;
       items.forEach(function (it) {
         var cell = el('div', 'pp-shot');
         if (it.mime === 'application/pdf' || !FL) {
           cell.appendChild(el('div', 'nm', String(it.name || '').trim() || 'ملف PDF'));
         } else {
-          var img = document.createElement('img');
+          var img = document.createElement('img'), fr = el('div', 'im');
           img.src = FL.url(it.file);
           img.alt = String(it.name || '').trim() || 'صورة';
-          cell.appendChild(img);
+          fr.appendChild(img);
+          cell.appendChild(fr);
           var nm = String(it.name || '').trim();
           if (nm) cell.appendChild(el('div', 'nm', nm));
         }

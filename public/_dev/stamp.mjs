@@ -8,7 +8,8 @@ const ASSETS = ['components.css','shell.css','frame.css','components.js','derive
                 'refdata.js','icons.js','build.js','identity/tokens.css',
                 /* محرك السجلات (2026-09-11) — كانت خارج القائمة فتبقى على بصمتها القديمة */
                 'rec-templates.js','rec-engine.js','rec-form.js','rec-print.js','rec-print.css','rec-files.js',
-                'plan-data.js'];   /* جالب الخطط المعتمدة (2026-09-13، شريط الخطة) */
+                'plan-data.js',    /* جالب الخطط المعتمدة (2026-09-13، شريط الخطة) */
+                'face-data.js','face.css'];   /* واجهة الشعبة (2026-10-20) */
 
 const buildFile = `${DIR}/build.js`;
 let build = fs.readFileSync(buildFile, 'utf8');

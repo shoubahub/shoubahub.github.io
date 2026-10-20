@@ -54,7 +54,7 @@
 .ftabs a.on{background:var(--shouba-navy);color:var(--shouba-cream)}
 .fpane[hidden]{display:none}
 
-/* الآن في الشعبة: بطاقات افقية تمرر داخل صفها (لا الصفحة) — من في فصله الآن بحد كحلي، وتحتها رابط «الجدول كاملاً» */
+/* الآن في الشعبة: بطاقات افقية تمرر داخل صفها (لا الصفحة) — من في فصله الآن بحد كحلي، وتحتها رابط «الجدول كاملا» */
 .fsec > h2 .when{font-size:13px;font-weight:600;color:var(--shouba-label);margin-inline-start:6px}
 .nowrow{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 6px;margin:0 -2px;-webkit-overflow-scrolling:touch}
 .nowrow::-webkit-scrollbar{display:none}

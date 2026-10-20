@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=94" />
-<link rel="stylesheet" href="shell.css?v=94" />
-<link rel="stylesheet" href="components.css?v=94" />
-<link rel="stylesheet" href="frame.css?v=94" />
-<link rel="stylesheet" href="face.css?v=94" />
+<link rel="stylesheet" href="identity/tokens.css?v=96" />
+<link rel="stylesheet" href="shell.css?v=96" />
+<link rel="stylesheet" href="components.css?v=96" />
+<link rel="stylesheet" href="frame.css?v=96" />
+<link rel="stylesheet" href="face.css?v=96" />
 <style>
   /* ادارة واجهة الشعبة (2026-10-20، نطاق اعتمده المستخدم) — يفتحها الزر الاوسط عند من فعلت له الواجهة.
      خانة الاسبوع · فعاليات السجل (اظهار واخفاء لا يمس السجل) · فعاليات للواجهة وحدها · معاينة ونشر وسحب ونسخ الرابط.
@@ -59,7 +59,7 @@
         </section>
 
         <section>
-          <div class="sect"><div class="h">خانة الأسبوع</div><div class="a" id="wkEdit">عدّل ›</div></div>
+          <div class="sect"><div class="h">خانة الأسبوع</div><div class="a" id="wkEdit">عدل ›</div></div>
           <div class="tbl" id="wkBox"></div>
         </section>
 
@@ -88,15 +88,15 @@
   </div>
  </div></div>
 
-<script src="build.js?v=94"></script>
-<script src="refdata.js?v=94"></script>
-<script src="rec-templates.js?v=94"></script>
-<script src="rec-engine.js?v=94"></script>
-<script src="derive.js?v=94"></script>
-<script src="icons.js?v=94"></script>
-<script src="components.js?v=94"></script>
-<script src="rec-files.js?v=94"></script>
-<script src="face-data.js?v=94"></script>
+<script src="build.js?v=96"></script>
+<script src="refdata.js?v=96"></script>
+<script src="rec-templates.js?v=96"></script>
+<script src="rec-engine.js?v=96"></script>
+<script src="derive.js?v=96"></script>
+<script src="icons.js?v=96"></script>
+<script src="components.js?v=96"></script>
+<script src="rec-files.js?v=96"></script>
+<script src="face-data.js?v=96"></script>
 <script>
 (function () {
   var S = Shouba, F = ShoubaFace, R = window.SHOUBA_REF || {};
@@ -261,8 +261,8 @@
       box.innerHTML = '<div class="wkbox" role="button" tabindex="0"><div class="k"><span class="chip navy">' + esc(F.kindLabel(w.kind)) + '</span>'
         + (ph ? '<img class="wkthumb" alt="" src="' + esc(ShoubaFiles.url(ph)) + '" />' : '') + '</div>'
         + '<b>' + esc(main) + '</b>'
-        + (live ? '<small>تظهر حتى ' + (p ? esc(p.wd) + ' ' + num(p.day) + ' ' + esc(p.month) : '') + '، ثم تختفي وحدها إن لم تحدّثها.</small>'
-                : '<small class="off">انتهى أسبوعها فلا تظهر على الواجهة — حدّثها لتعود.</small>') + '</div>';
+        + (live ? '<small>تظهر حتى ' + (p ? esc(p.wd) + ' ' + num(p.day) + ' ' + esc(p.month) : '') + '، ثم تختفي وحدها إن لم تحدثها.</small>'
+                : '<small class="off">انتهى أسبوعها فلا تظهر على الواجهة — حدثها لتعود.</small>') + '</div>';
       box.firstChild.addEventListener('click', weekSheet);
     }
   }
@@ -328,13 +328,13 @@
       var box = n.querySelector('#txtBox'), lab = box.querySelector('label');
       box.setAttribute('data-need', t ? 'opt' : 'req');
       lab.textContent = t ? 'سبب اختياره' : kind === 'feat' ? 'الإنجاز' : 'العبارة';
-      txt.placeholder = t ? 'مثل: أتمّ خطة المنهج في موعدها' : kind === 'feat' ? 'اكتب إنجاز الشعبة هذا الأسبوع' : 'اكتب العبارة كما ستظهر';
+      txt.placeholder = t ? 'مثل: أتم خطة المنهج في موعدها' : kind === 'feat' ? 'اكتب إنجاز الشعبة هذا الأسبوع' : 'اكتب العبارة كما ستظهر';
       var old = lab.querySelector('.need'); if (old) old.remove();
       S.tagNeeds(n);
       var p = F.dateParts(F.weekEnd(S.today()));
       n.querySelector('#phBox').hidden = kind === 'quote';
       if (kind !== 'quote') paintPhoto();
-      n.querySelector('#wkHint').innerHTML = 'تظهر حتى ' + (p ? esc(p.wd) + ' ' + num(p.day) + ' ' + esc(p.month) : '') + '، ثم تختفي وحدها إن لم تحدّثها.';
+      n.querySelector('#wkHint').innerHTML = 'تظهر حتى ' + (p ? esc(p.wd) + ' ' + num(p.day) + ' ' + esc(p.month) : '') + '، ثم تختفي وحدها إن لم تحدثها.';
     }
     fit();
     S.bindDrop(n.querySelector('.sdrop'));
@@ -368,9 +368,9 @@
       return;
     }
     var GR = [
-      ['wait', 'مضى يومها — أكّد إقامتها لتظهر في «تمّت»', function (e) { return !e.hidden && e.status === 'wait'; }],
+      ['wait', 'مضى يومها — أكد إقامتها لتظهر في «تمت»', function (e) { return !e.hidden && e.status === 'wait'; }],
       ['soon', 'قادمة', function (e) { return !e.hidden && e.status === 'soon'; }],
-      ['done', 'تمّت', function (e) { return !e.hidden && e.status === 'done'; }],
+      ['done', 'تمت', function (e) { return !e.hidden && e.status === 'done'; }],
       ['hid', 'مخفية عن الواجهة', function (e) { return e.hidden; }]
     ];
     GR.forEach(function (g) {
@@ -388,7 +388,7 @@
       + '<div class="mt"><em>' + dateHtml(e.date) + '</em>' + (e.who.length ? '<span>' + esc(e.who.join('، ')) + '</span>' : '') + '</div>';
     var ops = el('div', 'ops');
     function op(label, cls, fn) { var b = el('button', 'op' + (cls ? ' ' + cls : '')); b.type = 'button'; b.textContent = label; b.addEventListener('click', fn); ops.appendChild(b); }
-    if (e.status === 'wait' && !e.hidden) op('أُقيمت', '', function () { confirmDone(e); });
+    if (e.status === 'wait' && !e.hidden) op('أقيمت', '', function () { confirmDone(e); });
     if (e.src === 'rec') op(e.hidden ? 'أظهرها في الواجهة' : 'أخفها من الواجهة', '', function () { toggleHide(e); });
     else op('احذفها', 'warn', function () { removeOwn(e); });
     r.appendChild(ops);
@@ -399,7 +399,7 @@
     if (e.src === 'rec') { f.done = (f.done || []).filter(function (x) { return x !== e.id; }); f.done.push(e.id); }
     else (f.own || []).forEach(function (o) { if (o.id === e.id) o.done = true; });
     setFace(f);
-    S.toast('أكدت إقامتها — تنتقل إلى «تمّت» حين تنشر', function () {
+    S.toast('أكدت إقامتها — تنتقل إلى «تمت» حين تنشر', function () {
       var g = face();
       if (e.src === 'rec') g.done = (g.done || []).filter(function (x) { return x !== e.id; });
       else (g.own || []).forEach(function (o) { if (o.id === e.id) o.done = false; });

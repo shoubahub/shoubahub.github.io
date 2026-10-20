@@ -111,7 +111,7 @@
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function num(n) { return '<span dir="ltr" class="num">' + esc(n) + '</span>'; }
-  function today() { return F.iso(new Date()); }
+  function today() { return F.iso(clock()); }          /* بساعة الصفحة — فمعاينة ?day تحتسب في صلاحية خانة الاسبوع والفعاليات */
   function title(name) { return 'أ. ' + name; }
   function dateHtml(iso) { var p = F.dateParts(iso); return p ? esc(p.wd) + ' ' + num(p.day) + ' ' + esc(p.month) : ''; }
   /* الفصل: رقمه معزول LTR ورمز مساره بعده بالعربية («12/1» ثم «د») — كما يقرأ في جدول المنصة */

@@ -274,6 +274,9 @@
     /* لوحة الاجراءات: فتح وتعديل (او عرض لعام سابق) · المعاينة والطباعة · النسخة الموقعة · حذف بتأكيد */
     function actions(r, s){
       var n = el('div', 'setlist'), id = encodeURIComponent(r.id), old = past(r), title = titleOf(s);
+      /* المؤنث (فعالية · خطة · بطاقة) يؤنث افعال اللوحة وضمائرها — S.recFem، كتأكيد الحذف (2026-10-20) */
+      var f = S.recFem(r);
+      function g(m, fm){ return f ? fm : m; }
       function row(t1, sub, go){
         var b = el('button', 'setitem');
         b.type = 'button';
@@ -281,23 +284,23 @@
         b.addEventListener('click', typeof go === 'function' ? go : function(){ location.href = go; });
         n.appendChild(b);
       }
-      row(old ? 'اعرضه' : 'افتحه وعدله', old ? 'من عام ' + r.year + ' — للاطلاع والطباعة' : 'يحفظ ما تغيره تلقائيا', 'record.html?id=' + id);
-      row('المعاينة والطباعة', (r.status || 'draft') === 'draft' ? 'يصير «مطبوعا» بعد أول طباعة' : 'طبع من قبل', 'record.html?id=' + id + '&pv=1');
+      row(old ? g('اعرضه', 'اعرضها') : g('افتحه وعدله', 'افتحها وعدلها'), old ? 'من عام ' + r.year + ' — للاطلاع والطباعة' : 'يحفظ ما تغيره تلقائيا', 'record.html?id=' + id);
+      row('المعاينة والطباعة', (r.status || 'draft') === 'draft' ? g('يصير «مطبوعا» بعد أول طباعة', 'تصير «مطبوعة» بعد أول طباعة') : g('طبع من قبل', 'طبعت من قبل'), 'record.html?id=' + id + '&pv=1');
       if (r.signed) {
-        row('النسخة الموقعة', (r.signed.mime === 'application/pdf' ? 'ملف PDF' : 'صورة') + (r.signed.at ? ' · أرفقت ' + dm(r.signed.at) : '') + ' — مرجعه الرسمي',
+        row('النسخة الموقعة', (r.signed.mime === 'application/pdf' ? 'ملف PDF' : 'صورة') + (r.signed.at ? ' · أرفقت ' + dm(r.signed.at) : '') + ' — ' + g('مرجعه', 'مرجعها') + ' الرسمي',
             function(){ view(r, s); });
         row('استبدل النسخة الموقعة', 'ترفع غيرها وتحذف هذه', function(){ attach(r); });
-        row('أزل النسخة الموقعة', 'يعود «مطبوعا»', function(){
-          ask('إزالة النسخة الموقعة', 'تزال النسخة الموقعة من «' + title + '» نهائيا، ويعود «مطبوعا».', 'أزلها', function(){
+        row('أزل النسخة الموقعة', g('يعود «مطبوعا»', 'تعود «مطبوعة»'), function(){
+          ask('إزالة النسخة الموقعة', 'تزال النسخة الموقعة من «' + title + '» نهائيا، ' + g('ويعود «مطبوعا».', 'وتعود «مطبوعة».'), 'أزلها', function(){
             var f = ShoubaRec.unsign(r); S.saveRec(r); ShoubaFiles.remove(f); render();
           });
         });
       } else {
-        row('أرفق النسخة الموقعة', 'صورة أو PDF — تصير مرجعه الرسمي', function(){ attach(r); });
+        row('أرفق النسخة الموقعة', 'صورة أو PDF — تصير ' + g('مرجعه', 'مرجعها') + ' الرسمي', function(){ attach(r); });
       }
       if (t.copy && !isNow(r)) row('انسخ إلى ' + (d.term || 'الفصل الحالي'), 'نسخة جديدة بعام الفصل الحالي — وتمسح حالات المتابعة والشواهد',
         function(){ S.sheet.close(); copyToNow(r); });
-      var del = el('button', 'btn-danger', S.recFem(r) ? 'احذفها' : 'احذفه');   /* المؤنث كتأكيده (S.recFem) */
+      var del = el('button', 'btn-danger', g('احذفه', 'احذفها'));
       del.type = 'button';
       /* الحذف: المصدر المشترك مع شاشة السجل — يحذفه وملفاته ويصرح باثره */
       del.addEventListener('click', function(){ S.askDeleteRec(r, title, render); });

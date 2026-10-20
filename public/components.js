@@ -596,6 +596,10 @@ Shouba.nextLabel = function (def) {
     return /ة$/.test((t && t.noun && t.noun.one) || '');
   };
   Shouba.askDeleteRec = function (rec, title, onDone) {
+    /* يسمي السجل نفسه لا نوع قالبه (رصد 2026-10-20: «ستحذف «فعالية»» لمسابقة المناظرة): ما لا رقم له
+       كالفعالية يسمى بعنوانه، والمرقم («محضر رقم ٣») يبقى برقمه كما يرسله صاحبه */
+    var sm = window.ShoubaRec ? window.ShoubaRec.summary(rec) : null;
+    if (sm && sm.no === '' && sm.title) title = sm.title;
     var files = window.ShoubaRec ? window.ShoubaRec.files(rec).length : 0;
     var open = Shouba.stillOpen ? Shouba.stillOpen(rec).length : 0, f = Shouba.recFem(rec);
     Shouba.ask('حذف ' + title, (f ? 'ستحذف «' + title + '» نهائيا من سجلاتك ولا تسترجع.' : 'سيحذف «' + title + '» نهائيا من سجلاتك ولا يسترجع.')

@@ -58,6 +58,21 @@
 .fsec > h2 .when{font-size:13px;font-weight:600;color:var(--shouba-label);margin-inline-start:6px}
 .nowrow{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 6px;margin:0 -2px;-webkit-overflow-scrolling:touch}
 .nowrow::-webkit-scrollbar{display:none}
+/* تلميح التمرير الافقي (2026-10-22، مواصفة المطور البصري): نص الصفحة يضع على الحاوية more-end ان بقي محتوى نحو نهاية القراءة (اليسار)
+   وmore-start ان مررت عن بدايتها (اليمين) — فيبهت طرفها بقناع ٢٨ بلا لون مضاف، ويظهر سهم دائري عند الطرف نفسه يمرر ٨٠٪ من العرض */
+.xwrap{position:relative}
+.nowrow.more-end{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 28px);mask-image:linear-gradient(to right,transparent 0,#000 28px)}
+.nowrow.more-start{-webkit-mask-image:linear-gradient(to left,transparent 0,#000 28px);mask-image:linear-gradient(to left,transparent 0,#000 28px)}
+.nowrow.more-start.more-end{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%);
+  mask-image:linear-gradient(to right,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%)}
+.xarr{position:absolute;top:50%;width:26px;height:26px;margin-top:-13px;padding:0;border-radius:999px;cursor:pointer;display:grid;place-items:center;
+  background:var(--shouba-raised);border:1px solid var(--shouba-line);box-shadow:var(--shadow-card);color:var(--shouba-navy);
+  opacity:0;pointer-events:none;transition:opacity 160ms}
+.xarr svg{width:12px;height:12px;display:block}
+.xarr.end{left:4px}
+.xarr.start{right:4px}
+.more-end ~ .xarr.end,.more-start ~ .xarr.start{opacity:1;pointer-events:auto}
+@media (prefers-reduced-motion: reduce){ .xarr{transition:none} }
 .ncard{flex:none;width:150px;border-radius:16px;background:var(--shouba-paper);border:2px solid transparent;padding:11px 12px;
   display:flex;flex-direction:column;gap:3px;text-align:right;font-family:var(--font-ar);cursor:pointer;color:var(--shouba-ink)}
 .ncard.in{border-color:var(--shouba-navy)}
@@ -70,22 +85,20 @@
 .ncard b{font-size:13.5px;font-weight:700;color:var(--shouba-navy);line-height:1.45}
 .ncard .m{font-size:11.5px;font-weight:600;color:var(--shouba-text-muted);line-height:1.6}
 
-/* فريق الشعبة: اول ما يرى تحت الترويسة وفوق التبويبين — صف افقي يمرر داخله، رئيس الشعبة اولا بصورة ٦٤ وتحته «رئيس الشعبة»، ثم معلموه بصورة ٥٢.
-   وبلا صورة: دائرة رملية بالحرف الاول كحليا */
-.fteam{display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;margin:16px -6px 0;padding:6px 6px 4px;-webkit-overflow-scrolling:touch;align-items:flex-start}
-.fteam::-webkit-scrollbar{display:none}
-.fteam .tm{flex:none;width:78px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
-.fteam .tm.head{width:92px}
+/* فريق الشعبة: اول ما يرى تحت الترويسة وفوق التبويبين — شبكة اربعة اعمدة تلتف بلا تمرير (2026-10-22)، رئيس الشعبة اولا بصورة ٦٤ وتحته «رئيس الشعبة»، ثم معلموه بصورة ٥٢.
+   والاسم سطران على الاكثر. وبلا صورة: دائرة رملية بالحرف الاول كحليا */
+.fteam{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 8px;margin:16px 0 0;padding:6px 0 4px;justify-items:center;align-items:start}
+.fteam .tm{width:100%;max-width:92px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
 .fteam .av{width:52px;height:52px;border-radius:999px;object-fit:cover;display:grid;place-items:center;background:var(--shouba-paper);border:1px solid var(--shouba-line);
   color:var(--shouba-navy);font-size:20px;font-weight:700;line-height:1}
 .fteam .av.lg{width:64px;height:64px;font-size:24px;box-shadow:0 0 0 2px var(--shouba-canvas),0 0 0 4px var(--shouba-navy)}
-.fteam b{font-size:12.5px;font-weight:700;color:var(--shouba-navy);line-height:1.45}
+.fteam b{font-size:12.5px;font-weight:700;color:var(--shouba-navy);line-height:1.45;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .fteam span{font-size:11px;font-weight:700;color:var(--shouba-label);margin-top:-4px}
 
-/* منتقي الايام في تبويب الجدول */
-.days{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px}
-.days::-webkit-scrollbar{display:none}
-.day{flex:none;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;border-radius:999px;padding:8px 16px;
+/* منتقي الايام في تبويب الجدول: تتقاسم الايام العرض بلا تمرير */
+.days{display:flex;gap:6px;margin-bottom:14px}
+.day{flex:1 1 0;min-width:0;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;border-radius:999px;padding:8px 16px;
   color:var(--shouba-text-muted);background:var(--shouba-sand)}
 .day.on{background:var(--shouba-navy);color:var(--shouba-cream)}
 

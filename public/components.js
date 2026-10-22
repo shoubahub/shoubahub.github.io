@@ -633,7 +633,7 @@ Shouba.nextLabel = function (def) {
     row('أضف موعدا', 'اختبار · اجتماع · فعالية — في أي يوم من عامك', function () {
       location.href = 'board.html?add=event';
     });
-    row('الإعدادات', 'مراجعة بيانات شعبتك وتصدير ملفها', function () {
+    row('الإعدادات', 'حسابك · مراجعة بيانات شعبتك وتصدير ملفها', function () {   /* «حسابك» أول القائمة (2026-10-22) */
       Shouba.settings();
     });
 

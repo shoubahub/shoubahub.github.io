@@ -54,6 +54,7 @@ async function run() {
     const a = await call('GET', '/api/account', A);
     ok(a.status === 200 && a.json.username === 'acc1' && a.json.displayName === 'محمد البراك', 'يعيد اسم المستخدم والاسم', a.json);
     ok(a.json.email === '' && a.json.emailVerified === false && a.json.pinChangedAt === null, 'بلا بريد ولا تغيير رقم سابق', a.json);
+    ok(!!a.json.lastLogin, 'التسجيل يملأ «آخر دخول»', a.json.lastLogin);
     ok(a.json.sessions === 2, 'يعد الجهازين الداخلين', a.json.sessions);
     ok(!('pin_hash' in a.json) && !('pinHash' in a.json), 'لا حقل بصمة في الجواب');
     ok(!JSON.stringify(a.json).includes(db.prepare("SELECT pin_hash FROM users WHERE username='acc1'").get().pin_hash), 'بصمة الرقم لا تظهر في الجواب');
@@ -92,10 +93,11 @@ async function run() {
     // حد المحاولات
     for (let i = 0; i < 5; i++) await call('POST', '/api/account/pin', A, { current: '999999', next: '444444' });
     ok((await call('POST', '/api/account/pin', A, { current: '333333', next: '444444' })).status === 429, 'خمس محاولات خاطئة توقف التغيير عشر دقائق');
+    ok((await login('acc1', '333333')).status === 200, 'وقفل تغيير الرقم لا يقفل الدخول — عداد مستقل');
 
     // الخروج من الأجهزة الأخرى، ثم الخروج
     const so = await call('POST', '/api/account/signout-others', A);
-    ok(so.status === 200 && so.json.closed === 1 && so.json.sessions === 1, 'يخرج الأجهزة الأخرى ويبقي هذا', so.json);
+    ok(so.status === 200 && so.json.closed === 2 && so.json.sessions === 1, 'يخرج الأجهزة الأخرى (اثنين) ويبقي هذا', so.json);
     ok((await call('GET', '/api/account', C)).status === 401, 'الجهاز الآخر خرج');
     await call('POST', '/api/logout', A);
     ok((await call('GET', '/api/account', A)).status === 401, 'تسجيل الخروج يغلق جلسة هذا الجهاز');

@@ -144,7 +144,8 @@ function routes(app) {
     if (db.prepare('SELECT 1 FROM users WHERE username = ?').get(u))
       return res.status(409).json({ error: 'اسم المستخدم مأخوذ' });
 
-    const info = db.prepare('INSERT INTO users (username,pin_hash,display_name) VALUES (?,?,?)')
+    /* التسجيل دخول أول — فيملأ «آخر دخول» من لحظته، لا «—» حتى يدخل ثانية (رصد معاينة ١١١) */
+    const info = db.prepare("INSERT INTO users (username,pin_hash,display_name,last_login) VALUES (?,?,?,datetime('now'))")
       .run(u, hashPin(p), String(displayName).trim());
     const token = openSession(info.lastInsertRowid);
     setCookie(res, token);
@@ -224,11 +225,15 @@ function routes(app) {
   app.post('/api/account/pin', requireUser, (req, res) => {
     const u = req.user;
     const cur = latin(req.body && req.body.current), next = latin(req.body && req.body.next);
-    if (blocked(u.username)) return res.status(429).json({ error: 'محاولات كثيرة — أعد بعد عشر دقائق' });
+    /* ⚠ عداد مستقل عن الدخول (قرار المستخدم 2026-10-22، رصد معاينة ١١١): كان المفتاح اسم المستخدم نفسه، فخمس
+       محاولات هنا تقفل الدخول على كل الأجهزة. الآن تقفل تغيير الرقم وحده، والدخول باق.
+       و«#» لا يقع في اسم مستخدم، فلا يلتبس المفتاح بحساب. */
+    const key = 'pin#' + u.id;
+    if (blocked(key)) return res.status(429).json({ error: 'محاولات كثيرة لتغيير الرقم — أعد بعد عشر دقائق' });
     /* ⚠ ٤٠٣ لا ٤٠١ (2026-10-22، رصد معاينة ١١١): ٤٠١ تعني في الواجهة «انتهت الجلسة» فتحول الى الدخول وتمحو النموذج
        — والجلسة هنا قائمة، والخطأ في الرقم وحده */
-    if (!verifyPin(cur, u.pin_hash)) { fail(u.username); return res.status(403).json({ error: 'الرقم السري الحالي غير صحيح' }); }
-    pass(u.username);
+    if (!verifyPin(cur, u.pin_hash)) { fail(key); return res.status(403).json({ error: 'الرقم السري الحالي غير صحيح' }); }
+    pass(key);
     if (!PIN_RE.test(next)) return res.status(400).json({ error: 'الرقم الجديد ستة أرقام' });
     if (next === cur) return res.status(400).json({ error: 'الرقم الجديد هو الحالي نفسه' });
     db.prepare("UPDATE users SET pin_hash = ?, pin_changed_at = datetime('now') WHERE id = ?").run(hashPin(next), u.id);

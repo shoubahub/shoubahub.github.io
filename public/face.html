@@ -70,7 +70,7 @@
     <!-- هذا الاسبوع في المنهج (2026-10-22، قرار المستخدم): المجدول في خطط التوجيه وحده — ويختفي كله ان لم يكن لاسبوع اليوم خطة.
          وشكله شكل «خطة المنهج» في اللوحة باحجامها (قرار المستخدم 2026-10-22): شريط الاسابيع المضغوط فوقه ثم سطر الاسبوع ثم الجدول -->
     <section class="fsec" id="planSec" hidden>
-      <h2>هذا الأسبوع في المنهج</h2>
+      <h2 id="planTitle">هذا الأسبوع في المنهج</h2>
       <div class="slices" id="planWks" role="group" aria-label="أسابيع الفصل"></div>
       <div class="planline" id="planLine"></div>
       <div class="tbl ptbl" id="plan"></div>
@@ -282,6 +282,8 @@
       c.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
       $('planWks').appendChild(c);
     });
+    /* العنوان يتبع الاسبوع المختار (معاينة السلوك 2026-10-22): اسبوع الزائر «هذا الأسبوع» وغيره «الأسبوع N» */
+    $('planTitle').textContent = +P.n === +now.n ? 'هذا الأسبوع في المنهج' : 'الأسبوع ' + P.n + ' في المنهج';
     $('planLine').innerHTML = 'الأسبوع <b>' + esc(P.n) + '</b> من ' + esc(total) + ' · ' + esc(weekRange(P.from, P.to)) + ' — حسب خطط التوجيه';
     if (!P.rows.length) {
       box.innerHTML = '<div class="tr ptr"><span class="ls none">لا دروس في الخطة لهذا الأسبوع</span></div>';

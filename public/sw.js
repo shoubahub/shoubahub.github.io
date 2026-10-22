@@ -3,7 +3,7 @@
    ② الأصول مبصومة بـ?v=رقم البناء، فالمخزن آمن ما دام الرقم واحدا.
    ③ ومع كل نشر يتبدل اسم المخزن فتمسح النسخة القديمة كاملة.
    ⚠ CACHE يحدث آليا بأداة الختم — لا يدويا. */
-var BUILD = 108;
+var BUILD = 109;
 var CACHE = 'shouba-v' + BUILD;
 
 var SHELL = [
@@ -69,10 +69,10 @@ self.addEventListener('fetch', function (e) {
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').indexOf('text/html') > -1) {
     e.respondWith(
       fetch(req).then(function (r) {
-        var copy = r.clone();
-        caches.open(CACHE).then(function (c) { c.put(req, copy); });
+        /* ⚠ الرد السليم وحده يحفظ (2026-10-22): رد 502 او 404 لحظة اعادة التشغيل او النشر كان يحفظ مكان الصفحة */
+        if (r.ok) { var copy = r.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); }); }
         return r;
-      }).catch(function () { return caches.match(req).then(function (m) { return m || caches.match('./board.html'); }); })
+      }).catch(function () { return caches.match(req).then(function (m) { return (m && m.ok ? m : null) || caches.match('./board.html'); }); })
     );
     return;
   }
@@ -80,9 +80,11 @@ self.addEventListener('fetch', function (e) {
   /* الأصول المبصومة: المخزن أولا — وتغير البصمة يجلب الجديد حتما */
   e.respondWith(
     caches.match(req).then(function (m) {
-      return m || fetch(req).then(function (r) {
-        var copy = r.clone();
-        caches.open(CACHE).then(function (c) { c.put(req, copy); });
+      /* ⚠ الرد السليم وحده يحفظ ويقدم (2026-10-22): كان رد 502 على ملف شكل يحفظ فتبقى الصفحة
+         بلا تنسيق حتى يتغير رقم البناء — ولو عاد الخادم سليما. وما حفظ قبل الاصلاح غير سليم يطلب من الشبكة */
+      if (m && m.ok) return m;
+      return fetch(req).then(function (r) {
+        if (r.ok) { var copy = r.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); }); }
         return r;
       });
     })

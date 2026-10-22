@@ -241,23 +241,24 @@
      ما في خطط التوجيه المعتمدة لكل مادة وصف تدرسه الشعبة — كشريط الخطة في اللوحة، لكن المجدول وحده:
      ⚠ لا شيء يكشف عملا لم ينجز او تأخر: لا نسبة ولا «يجب رفع الخطة» ولا «اختر خطته» (المادة بلا خطة لا تذكر)،
        ولا مقارنة بما قطع. النسخة ثابتة والاسابيع تتبدل: فتحمل اسابيع الفصل كلها بتواريخها، ويختار الزائر اسبوعه بساعته.
+     والاسابيع من الاول الى آخر اسبوع فيه دروس — ولو خلا اسبوع بينها — فهي شرائح شريط الاسابيع كشريط اللوحة (2026-10-22).
      planPack(calendar, pairs, lessonsOf): pairs من Shouba.planLinks().pairs · lessonsOf = Shouba.planLessons —
      يعيد { weeks:[{ n, from, to }], rows:[{ name, grade, w:{ n:[{ t, p }] } }] } او null ان لم يبق شيء */
   F.planPack = function (calendar, pairs, lessonsOf) {
-    var cal = arr(calendar).filter(function (w) { return w && w.n > 0 && w.from && w.to; }), used = {}, seen = {}, rows = [];
+    var cal = arr(calendar).filter(function (w) { return w && w.n > 0 && w.from && w.to; }), last = 0, seen = {}, rows = [];
     arr(pairs).forEach(function (p) {
       if (!p || !p.plan) return;
       var name = str(p.spec || p.subject), k = name + '|' + str(p.grade), w = {}, any = false;
       if (!name || seen[k]) return;
       cal.forEach(function (c) {
         var ls = arr(lessonsOf(p.plan, c.n)).map(function (l) { return { t: str(l.t), p: +l.p || 0 }; }).filter(function (l) { return l.t; });
-        if (ls.length) { w[c.n] = ls; used[c.n] = any = true; }
+        if (ls.length) { w[c.n] = ls; any = true; last = Math.max(last, c.n); }
       });
       if (!any) return;
       seen[k] = true;
       rows.push({ name: name, grade: str(p.grade), w: w });
     });
-    var weeks = cal.filter(function (c) { return used[c.n]; }).map(function (c) { return { n: c.n, from: c.from, to: c.to }; });
+    var weeks = cal.filter(function (c) { return c.n <= last; }).map(function (c) { return { n: c.n, from: c.from, to: c.to }; });
     return rows.length ? { weeks: weeks, rows: rows } : null;
   };
   /* عنوان الدرس للعرض (2026-10-22، معاينة السلوك): علامات المصدر من نص الخطة — ولا يمس ملف الخطط ولا اللوحة.
@@ -280,12 +281,19 @@
   F.planNow = function (plan, today) {
     if (!plan || !today) return null;
     var wk = arr(plan.weeks).filter(function (w) { return w && w.from <= today && today <= F.addDays(w.to, 2); })[0];
+    var P = wk ? F.planWeek(plan, wk.n) : null;
+    return P && P.rows.length ? P : null;
+  };
+  /* اسبوع يختاره الزائر من شريط الاسابيع (2026-10-22): { n, from, to, rows } — وrows قد تخلو (اسبوع بلا دروس)، او null
+     ان لم يكن الاسبوع في النسخة */
+  F.planWeek = function (plan, n) {
+    var wk = arr(plan && plan.weeks).filter(function (w) { return w && +w.n === +n; })[0];
     if (!wk) return null;
     var rows = arr(plan.rows).map(function (r) {
       var ls = arr((r.w || {})[wk.n]).map(function (l) { return { t: F.planTitle(l.t), p: +l.p || 0 }; }).filter(function (l) { return l.t; });
       return { name: r.name, grade: r.grade, lessons: ls, per: ls.reduce(function (a, l) { return a + (+l.p || 0); }, 0) };
     }).filter(function (r) { return r.lessons.length; });
-    return rows.length ? { n: wk.n, from: wk.from, to: wk.to, rows: rows } : null;
+    return { n: wk.n, from: wk.from, to: wk.to, rows: rows };
   };
 
   /* ── النسخة المنشورة ───────────────────────────────────────────

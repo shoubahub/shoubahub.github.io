@@ -71,6 +71,14 @@ ok(F.planNow(only, '2026-10-14') === null && F.planNow(only, '2026-09-29').rows.
 const part = { weeks: pack.weeks, rows: [only.rows[0], { name: 'ص', grade: 'العاشر', w: { 5: [{ t: 'د', p: 1 }] } }] };
 ok(F.planNow(part, '2026-10-14').rows.map(r => r.name).join() === 'ص', 'والمادة بلا دروس في الاسبوع لا تظهر فيه');
 
+// ٣ب) شريط الاسابيع (2026-10-22): اسابيع الفصل متصلة من الاول الى آخر اسبوع فيه دروس، والزائر يختار اسبوعا
+ok(pack.weeks.map(w => w.n).join() === Array.from({ length: pack.weeks.length }, (_, i) => i + 1).join(), 'الاسابيع متصلة من الاول', pack.weeks.map(w => w.n));
+ok(pack.weeks.length === Math.max(...pack.rows.flatMap(r => Object.keys(r.w).map(Number))), 'وتنتهي بآخر اسبوع فيه دروس');
+const W8 = F.planWeek(pack, 8);
+ok(W8 && W8.n === 8 && W8.from === '2026-11-01' && W8.rows.every(r => r.lessons.length), 'planWeek: الاسبوع المختار بتواريخه وسطوره ذات الدروس', W8);
+ok(F.planWeek(only, 5).rows.length === 0 && F.planWeek(only, 99) === null, 'اسبوع بلا دروس: سطور فارغة · واسبوع ليس في النسخة: null');
+ok(F.planWeek(JSON.parse(JSON.stringify(pack)), '8').n === 8, 'ويقبل رقم الاسبوع نصا');
+
 // ٤) في النسخة ومفتاح الاخفاء
 const snap = F.snapshot(Object.assign({}, base, { plan: pack }));
 ok(snap.plan === pack, 'النسخة تحمل القسم ظاهرا افتراضا');
@@ -119,8 +127,8 @@ ok(JSON.stringify(pack.rows[0].w[5]) === JSON.stringify(lw), 'وplanPack ينق�
 
 // ٦) فتح السطر: الملخص وحصصه يخفيان فلا يتكرران فوق القائمة (face.css)
 const css = read('face.css');
-ok(/\.prow\.open \.ls,\s*\.prow\.open \.pp\{visibility:hidden\}/.test(css), 'السطر المفتوح يخفي ملخصه وحصصه');
-ok(!/\.prow\.open \.(who|chev)\{[^}]*(visibility:hidden|display:none)/.test(css), 'والمادة والسهم باقيان');
+ok(/\.ptr\.open \.ls,\s*\.face-pub \.ptr\.open \.pp\{visibility:hidden\}/.test(css), 'السطر المفتوح يخفي ملخصه وحصصه');
+ok(!/\.ptr\.open \.(who|chev)\{[^}]*(visibility:hidden|display:none)/.test(css), 'والمادة والسهم باقيان');
 
 console.log(`\n${fail ? '✗' : '✓'} ${pass} سليم · ${fail} معيب`);
 process.exit(fail ? 1 : 0);

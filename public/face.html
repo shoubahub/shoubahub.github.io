@@ -67,10 +67,13 @@
       <a class="fall" id="toJ" href="#الجدول">الجدول كاملا ›</a>
     </section>
 
-    <!-- هذا الاسبوع في المنهج (2026-10-22، قرار المستخدم): المجدول في خطط التوجيه وحده — ويختفي كله ان لم يكن لاسبوع اليوم خطة -->
+    <!-- هذا الاسبوع في المنهج (2026-10-22، قرار المستخدم): المجدول في خطط التوجيه وحده — ويختفي كله ان لم يكن لاسبوع اليوم خطة.
+         وشكله شكل «خطة المنهج» في اللوحة باحجامها (قرار المستخدم 2026-10-22): شريط الاسابيع المضغوط فوقه ثم سطر الاسبوع ثم الجدول -->
     <section class="fsec" id="planSec" hidden>
-      <h2>هذا الأسبوع في المنهج<span class="when" id="planWhen"></span></h2>
-      <div class="fplan" id="plan"></div>
+      <h2>هذا الأسبوع في المنهج</h2>
+      <div class="slices" id="planWks" role="group" aria-label="أسابيع الفصل"></div>
+      <div class="planline" id="planLine"></div>
+      <div class="tbl ptbl" id="plan"></div>
     </section>
 
 
@@ -249,29 +252,50 @@
     $('nowSec').hidden = false;                            /* ظاهر دائما — لا يختفي ابدا */
   }
 
-  /* ③ب هذا الاسبوع في المنهج: سطر لكل مادة لها دروس في اسبوع الزائر (face-data.js planNow) — ولمسة السطر تفتح دروسه
-     بحصصها تحته وتغلقها. لا شيء غير المجدول: لا نسبة ولا «متأخر» ولا مادة بلا خطة */
-  var planOpen = {};
-  function rangeHtml(from, to) {
+  /* ③ب هذا الاسبوع في المنهج: كشريط «خطة المنهج» في اللوحة (board.html paintPlan) بشكله واحجامه — شريط اسابيع الفصل
+     المضغوط اعلاه، وسطر الاسبوع، وسطر لكل مادة لها دروس في الاسبوع المختار، ولمسة السطر تفتح دروسه بحصصها تحته وتغلقها.
+     الشريط يختار الاسبوع (اسبوع الزائر افتراضا): المختار عنبري وما قبله كحلي — موضع في الفصل لا انجاز.
+     لا شيء غير المجدول: لا نسبة ولا «متأخر» ولا مادة بلا خطة ولا رابط الى شاشة الخطة */
+  var planOpen = {}, planSel = 0;
+  /* «18 – 22 أكتوبر» — كـShouba.weekRange في اللوحة */
+  function weekRange(from, to) {
     var a = F.dateParts(from), b = F.dateParts(to);
-    if (!a || !b) return '';
-    return a.month === b.month ? num(a.day + '–' + b.day) + ' ' + esc(b.month) : num(a.day) + ' ' + esc(a.month) + ' – ' + num(b.day) + ' ' + esc(b.month);
+    if (!a) return '';
+    if (!b) return a.day + ' ' + a.month;
+    return a.day + (a.month !== b.month ? ' ' + a.month : '') + ' – ' + b.day + ' ' + b.month;
   }
   function paintPlan() {
-    var P = F.planNow(SNAP.plan, today()), box = $('plan');
-    $('planSec').hidden = !P;
-    box.innerHTML = '';
-    if (!P) return;
-    $('planWhen').innerHTML = ' · الأسبوع ' + num(P.n) + ' · ' + rangeHtml(P.from, P.to);
+    var now = F.planNow(SNAP.plan, today()), box = $('plan');
+    $('planSec').hidden = !now;
+    box.innerHTML = ''; $('planWks').innerHTML = '';
+    if (!now) return;
+    if (!planSel || !F.planWeek(SNAP.plan, planSel)) planSel = now.n;
+    var P = F.planWeek(SNAP.plan, planSel), weeks = (SNAP.plan.weeks || []).filter(Boolean);
+    var total = weeks.reduce(function (m, w) { return Math.max(m, +w.n || 0); }, 0);
+    weeks.forEach(function (w) {
+      var c = document.createElement('i');
+      c.className = +w.n < P.n ? 'done' : +w.n === P.n ? 'now' : '';
+      c.setAttribute('role', 'button'); c.tabIndex = 0;
+      c.setAttribute('aria-label', 'الأسبوع ' + w.n); c.setAttribute('aria-pressed', +w.n === P.n ? 'true' : 'false');
+      function pick() { if (planSel === +w.n) return; planSel = +w.n; paintPlan(); }
+      c.addEventListener('click', pick);
+      c.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+      $('planWks').appendChild(c);
+    });
+    $('planLine').innerHTML = 'الأسبوع <b>' + esc(P.n) + '</b> من ' + esc(total) + ' · ' + esc(weekRange(P.from, P.to)) + ' — حسب خطط التوجيه';
+    if (!P.rows.length) {
+      box.innerHTML = '<div class="tr ptr"><span class="ls none">لا دروس في الخطة لهذا الأسبوع</span></div>';
+      return;
+    }
     P.rows.forEach(function (r) {
       var key = r.name + '|' + r.grade, b = document.createElement('button'), wk = document.createElement('div');
-      b.type = 'button'; b.className = 'prow';
+      b.type = 'button'; b.className = 'tr ptr';
       b.innerHTML = '<span class="who"><b>' + esc(r.name) + '</b><small>' + esc(r.grade) + '</small></span>'
         + '<span class="ls">' + esc(r.lessons.map(function (l) { return l.t; }).join(' · ')) + '</span>'
-        + '<span class="pp">' + (r.per ? num(r.per) + ' ح' : '') + '</span><span class="chev" aria-hidden="true">‹</span>';
+        + '<span class="pp">' + (r.per ? esc(r.per) + ' ح' : '') + '</span><span class="chev" aria-hidden="true">‹</span>';
       wk.className = 'pwk';
       wk.innerHTML = r.lessons.map(function (l) {
-        return '<div class="l"><span>' + esc(l.t) + '</span><em>' + (l.p ? num(l.p) + ' ح' : '') + '</em></div>';
+        return '<div class="l"><span>' + esc(l.t) + '</span><em>' + (l.p ? esc(l.p) + ' ح' : '') + '</em></div>';
       }).join('');
       function sync() { var on = !!planOpen[key]; b.classList.toggle('open', on); wk.hidden = !on; b.setAttribute('aria-expanded', on ? 'true' : 'false'); }
       b.addEventListener('click', function () { planOpen[key] = !planOpen[key]; sync(); });

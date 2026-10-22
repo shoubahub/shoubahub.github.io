@@ -10,6 +10,7 @@
 | `blocks-sim.html?filled` · `?filled&print` | لبنات السجلات إدخالا وورقا من التعريف — و`&print` الورقة وحدها بمقاسها لفحص الطباعة |
 | `print-sample.html` | عينة الترويسة بثلاثة خطوط — مرجع قرار خط الورق «بلكس» (2026-09-12) |
 | `rec-test.mjs` | اختبار نواة محرك السجلات: `node public/_dev/rec-test.mjs` (واختبار المرفقات في الخادم: `node tests/files-test.js`) |
+| `face-plan-test.mjs` | «هذا الأسبوع في المنهج» في واجهة الشعبة: `node public/_dev/face-plan-test.mjs` |
 | `plain.mjs --dry` | فحص خلو الملفات من التشكيل (يجب ٠) |
 
 **⚠ عامل الخدمة يخدم JS قديما على localhost:** قبل التحقق ألغ تسجيله وامسح مخزنه من أدوات المتصفح.

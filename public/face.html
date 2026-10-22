@@ -16,7 +16,7 @@
      تبويبان تحت الترويسة (#الشعبة · #الجدول): الشعبة للآن والفعاليات والحصيلة، والجدول الكامل في تبويبه.
      صفحة عرض واحدة طويلة كموقع الشعبة، للعرض وحده بلا حساب: لا تبويبات ولا شريط ولا اطار جهاز،
      ولا قطع المنصة (shell · components · frame) — tokens.css وface.css وحدهما.
-     تحت الترويسة فريق الشعبة ثم خانة الاسبوع (في التبويبين). والشعبة من اعلى: الآن في الشعبة · فعاليات اقيمت · فعاليات قادمة · حصيلة العام (اقيمت قبل القادمة — قرار المستخدم).
+     تحت الترويسة فريق الشعبة ثم خانة الاسبوع (في التبويبين). والشعبة من اعلى: الآن في الشعبة · هذا الاسبوع في المنهج · فعاليات اقيمت · فعاليات قادمة · حصيلة العام (اقيمت قبل القادمة — قرار المستخدم).
      وكل قسم فارغ يختفي بعنوانه. والحصة الجارية تحسب بساعة الزائر (face.js: المنشور بيانات لا صورة).
      ⚠ وعامل الخدمة يتركها (sw.js) فلا تقدم من مخزن جهاز نسخة قديمة.
      =========================================================================== -->
@@ -65,6 +65,12 @@
       <div class="nowrow" id="nowRow"></div>
       <p class="nowmsg" id="nowMsg" hidden></p>
       <a class="fall" id="toJ" href="#الجدول">الجدول كاملا ›</a>
+    </section>
+
+    <!-- هذا الاسبوع في المنهج (2026-10-22، قرار المستخدم): المجدول في خطط التوجيه وحده — ويختفي كله ان لم يكن لاسبوع اليوم خطة -->
+    <section class="fsec" id="planSec" hidden>
+      <h2>هذا الأسبوع في المنهج<span class="when" id="planWhen"></span></h2>
+      <div class="fplan" id="plan"></div>
     </section>
 
 
@@ -243,6 +249,36 @@
     $('nowSec').hidden = false;                            /* ظاهر دائما — لا يختفي ابدا */
   }
 
+  /* ③ب هذا الاسبوع في المنهج: سطر لكل مادة لها دروس في اسبوع الزائر (face-data.js planNow) — ولمسة السطر تفتح دروسه
+     بحصصها تحته وتغلقها. لا شيء غير المجدول: لا نسبة ولا «متأخر» ولا مادة بلا خطة */
+  var planOpen = {};
+  function rangeHtml(from, to) {
+    var a = F.dateParts(from), b = F.dateParts(to);
+    if (!a || !b) return '';
+    return a.month === b.month ? num(a.day + '–' + b.day) + ' ' + esc(b.month) : num(a.day) + ' ' + esc(a.month) + ' – ' + num(b.day) + ' ' + esc(b.month);
+  }
+  function paintPlan() {
+    var P = F.planNow(SNAP.plan, today()), box = $('plan');
+    $('planSec').hidden = !P;
+    box.innerHTML = '';
+    if (!P) return;
+    $('planWhen').innerHTML = ' · الأسبوع ' + num(P.n) + ' · ' + rangeHtml(P.from, P.to);
+    P.rows.forEach(function (r) {
+      var key = r.name + '|' + r.grade, b = document.createElement('button'), wk = document.createElement('div');
+      b.type = 'button'; b.className = 'prow';
+      b.innerHTML = '<span class="who"><b>' + esc(r.name) + '</b><small>' + esc(r.grade) + '</small></span>'
+        + '<span class="ls">' + esc(r.lessons.map(function (l) { return l.t; }).join(' · ')) + '</span>'
+        + '<span class="pp">' + (r.per ? num(r.per) + ' ح' : '') + '</span><span class="chev" aria-hidden="true">‹</span>';
+      wk.className = 'pwk';
+      wk.innerHTML = r.lessons.map(function (l) {
+        return '<div class="l"><span>' + esc(l.t) + '</span><em>' + (l.p ? num(l.p) + ' ح' : '') + '</em></div>';
+      }).join('');
+      function sync() { var on = !!planOpen[key]; b.classList.toggle('open', on); wk.hidden = !on; b.setAttribute('aria-expanded', on ? 'true' : 'false'); }
+      b.addEventListener('click', function () { planOpen[key] = !planOpen[key]; sync(); });
+      box.appendChild(b); box.appendChild(wk); sync();
+    });
+  }
+
   /* ④ تبويب الجدول: يوم يختاره الزائر (اليوم افتراضا، وفي العطلة الاحد)، والجارية كحلية في اليوم الحالي */
   var curDay = null;
   function paintDays() {
@@ -345,7 +381,7 @@
     $(x[0]).setAttribute('href', location.pathname + location.search + '#' + encodeURIComponent(x[1]));
   });
 
-  function paintAll() { paintWeek(); paintNow(); paintDay(); paintStats(paintEvents()); }
+  function paintAll() { paintWeek(); paintNow(); paintPlan(); paintDay(); paintStats(paintEvents()); }
   function start(snap) {
     SNAP = snap || {};
     var g = clock().getDay(), days = SNAP.days || [];

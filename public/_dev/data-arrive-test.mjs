@@ -75,7 +75,7 @@ ok(/\$\('copy'\)\.disabled = !ME;/.test(fa), 'زر الرابط معطل ما د
 // ما تحت بطاقة النشر يخفى ما دام التحميل، وعند الفشل يبقى مخفيا على جهاز بلا وثيقة وحده (2026-10-20)
 ok(/function blank\(\) \{ return loading\(\) \|\| \(!ME && !Object\.keys\(S\.data\(\)\)\.length\); \}/.test(fa) && /var hide = blank\(\);/.test(fa) && /querySelectorAll\('#pubCard ~ section, #pubCard ~ \.pulls'\)\.forEach\(function \(el\) \{ el\.hidden = hide; \}\)/.test(fa), 'الاقسام تحت بطاقة النشر تخفى اثناء التحميل');
 ok(fa2.indexOf('paintEvents();') < fa2.indexOf('var hide = blank()') && fa2.indexOf('var hide = blank()') < fa2.indexOf('box.forEach(function (e, i)'), 'الاخفاء داخل paint() فيظهر الكل معا عند انتهاء التحميل');
-ok((fa.match(/<section hidden>/g) || []).length === 4 && fa.includes('<div class="pad pulls" hidden>'), 'تبدأ مخفية في الصفحة نفسها فلا تومض قبل تشغيل الشيفرة');
+ok((fa.match(/<section hidden>/g) || []).length === 5 && fa.includes('<div class="pad pulls" hidden>'), 'تبدأ مخفية في الصفحة نفسها فلا تومض قبل تشغيل الشيفرة');
 {
   // محاكاة القاعدة نفسها
   const rule = (LOAD, FRESH, synced, ME, docKeys) => (LOAD || (FRESH && !synced)) || (!ME && !docKeys);

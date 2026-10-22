@@ -38,7 +38,7 @@ const settle = async () => { for (let i = 0; i < 10; i++) await tick(); };
 
 /* doc: للجهاز وثيقة · me: جواب api/face/me · pub: جواب api/face/<الرمز> — 'ok' | 503 | 'down' | 'hang' */
 function world({ doc, me, pub = 'ok', published = false }) {
-  const els = {}, secs = [1, 2, 3, 4, 5].map(() => ({ hidden: true })), on = {}, log = [];
+  const els = {}, secs = [1, 2, 3, 4, 5, 6].map(() => ({ hidden: true })), on = {}, log = [];
   const $ = id => els[id] || (els[id] = { id, textContent: '', innerHTML: '', disabled: false, hidden: id === 'pview', src: '',
     addEventListener(t, f) { (this.on = this.on || {})[t] = f; } });
   const local = doc ? { department: 'الرياضيات', face: { events: [{ id: 'e1', title: 'يوم مفتوح' }] } } : {};
@@ -60,7 +60,7 @@ function world({ doc, me, pub = 'ok', published = false }) {
       addEventListener: (t, f) => { on[t] = f; }
     },
     changed: () => false, link: () => '', num: x => x, pubSel: () => [], snapshot: () => ({}),
-    paintHead() {}, paintTheme() {}, paintTeam() {}, paintWeek() {}, paintEvents() {},
+    paintHead() {}, paintTheme() {}, paintPlan() {}, paintTeam() {}, paintWeek() {}, paintEvents() {},
     /* كل رسم يسجل: هل «عاين» معطل، وهل الاقسام مخفية — ليقارنا */
     __log: () => log.push({ dis: $('preview').disabled, hide: secs[0].hidden })
   };

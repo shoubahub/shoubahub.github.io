@@ -18,6 +18,7 @@
      theme: 'amber' | 'navy'          لون الترويسة · العنبري افتراضا
      team: { title, name, headPhoto, photos: { اسم: { file, mime } }, hide: [اسم] }
                                       فريق الشعبة · title لقب رئيس الشعبة (أ. افتراضا) · name اسمه ان لم يكن في الحساب
+     plan: false                      «هذا الاسبوع في المنهج» مخفي عن الواجهة · ظاهر افتراضا (2026-10-22)
    =================================================================== */
 (function (root) {
   var F = root.ShoubaFace = {};
@@ -236,10 +237,47 @@
     return { cls: str(p[0]), subject: str(p[1]) };
   };
 
+  /* ── هذا الاسبوع في المنهج (2026-10-22، قرار المستخدم) ──────────────
+     ما في خطط التوجيه المعتمدة لكل مادة وصف تدرسه الشعبة — كشريط الخطة في اللوحة، لكن المجدول وحده:
+     ⚠ لا شيء يكشف عملا لم ينجز او تأخر: لا نسبة ولا «يجب رفع الخطة» ولا «اختر خطته» (المادة بلا خطة لا تذكر)،
+       ولا مقارنة بما قطع. النسخة ثابتة والاسابيع تتبدل: فتحمل اسابيع الفصل كلها بتواريخها، ويختار الزائر اسبوعه بساعته.
+     planPack(calendar, pairs, lessonsOf): pairs من Shouba.planLinks().pairs · lessonsOf = Shouba.planLessons —
+     يعيد { weeks:[{ n, from, to }], rows:[{ name, grade, w:{ n:[{ t, p }] } }] } او null ان لم يبق شيء */
+  F.planPack = function (calendar, pairs, lessonsOf) {
+    var cal = arr(calendar).filter(function (w) { return w && w.n > 0 && w.from && w.to; }), used = {}, seen = {}, rows = [];
+    arr(pairs).forEach(function (p) {
+      if (!p || !p.plan) return;
+      var name = str(p.spec || p.subject), k = name + '|' + str(p.grade), w = {}, any = false;
+      if (!name || seen[k]) return;
+      cal.forEach(function (c) {
+        var ls = arr(lessonsOf(p.plan, c.n)).map(function (l) { return { t: str(l.t), p: +l.p || 0 }; }).filter(function (l) { return l.t; });
+        if (ls.length) { w[c.n] = ls; used[c.n] = any = true; }
+      });
+      if (!any) return;
+      seen[k] = true;
+      rows.push({ name: name, grade: str(p.grade), w: w });
+    });
+    var weeks = cal.filter(function (c) { return used[c.n]; }).map(function (c) { return { n: c.n, from: c.from, to: c.to }; });
+    return rows.length ? { weeks: weeks, rows: rows } : null;
+  };
+  /* اسبوع الزائر: من احده الى سبته (الجمعة والسبت للاسبوع الذي مضى، كاللوحة). وقبل الفصل وبعده وفي عطلة ليست في
+     التقويم: لا اسبوع — فيختفي القسم كله بلا نص. ويعيد { n, from, to, rows:[{ name, grade, lessons, per }] } */
+  F.planNow = function (plan, today) {
+    if (!plan || !today) return null;
+    var wk = arr(plan.weeks).filter(function (w) { return w && w.from <= today && today <= F.addDays(w.to, 2); })[0];
+    if (!wk) return null;
+    var rows = arr(plan.rows).map(function (r) {
+      var ls = arr((r.w || {})[wk.n]);
+      return { name: r.name, grade: r.grade, lessons: ls, per: ls.reduce(function (a, l) { return a + (+l.p || 0); }, 0) };
+    }).filter(function (r) { return r.lessons.length; });
+    return rows.length ? { n: wk.n, from: wk.from, to: wk.to, rows: rows } : null;
+  };
+
   /* ── النسخة المنشورة ───────────────────────────────────────────
      تبنى في جهاز رئيس الشعبة من وثيقته وترسل كما هي (face.js لا يعرف شكلها).
      ⚠ ما لا يظهر لا يرسل: فعالية سجل لم تختر للواجهة او ناقصة او بانتظار التأكيد لا تدخل النسخة، والجدول لمن له جدول وحده.
-     in: { doc, self, roster, staff (معلمو الشعبة للفريق — roster ان غاب), times, days, today, groups, recs (سجلات الفعاليات), meetings (عدد اجتماعات العام) } */
+     in: { doc, self, roster, staff (معلمو الشعبة للفريق — roster ان غاب), times, days, today, groups, recs (سجلات الفعاليات), meetings (عدد اجتماعات العام),
+           plan (من planPack — يسقط ان اخفاه رئيس الشعبة: face.plan === false) } */
   F.snapshot = function (inp) {
     var d = inp.doc || {}, face = d.face || {}, sch = d.schedules || {}, periods = arr(inp.times).filter(function (t) { return !t.brk; }).length;
     var people = [];
@@ -271,6 +309,7 @@
       people: people,
       week: w ? { kind: w.kind, text: str(w.text), who: str(w.who), to: w.to, photo: F.weekPhoto(w) } : null,
       events: events,
+      plan: face.plan !== false && inp.plan && arr(inp.plan.rows).length ? inp.plan : null,
       stats: { meetings: +inp.meetings || 0 }
     };
   };

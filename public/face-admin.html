@@ -23,7 +23,8 @@
      الانماط في face.css — لا هيكل هنا */
   #wkKinds{flex-wrap:wrap}
   #wkKinds .seg{flex:1 1 30%}
-  #thSegs{margin:0 var(--gap-side)}
+  #thSegs,#plSegs{margin:0 var(--gap-side)}
+  #plHint{padding:8px var(--gap-side) 0}
 </style>
 </head>
 <body class="framed face-adm">
@@ -57,6 +58,12 @@
         <section hidden>
           <div class="sect"><div class="h">فريق الشعبة</div></div>
           <div class="tbl" id="tmList"></div>
+        </section>
+
+        <section hidden>
+          <div class="sect"><div class="h">خطة الأسبوع في الواجهة</div></div>
+          <div class="segs sm" id="plSegs"></div>
+          <div class="thint" id="plHint"></div>
         </section>
 
         <section hidden>
@@ -100,6 +107,7 @@
 <script src="icons.js?v=113"></script>
 <script src="components.js?v=113"></script>
 <script src="rec-files.js?v=113"></script>
+<script src="plan-data.js?v=113"></script>
 <script src="face-data.js?v=113"></script>
 <script>
 (function () {
@@ -125,9 +133,17 @@
   function face() { var f = S.data().face; return f && typeof f === 'object' ? JSON.parse(JSON.stringify(f)) : {}; }
   function setFace(f) { S.save({ face: f }); paint(); }
 
+  /* هذا الاسبوع في المنهج (2026-10-22): دروس كل مادة لها خطة معتمدة، لاسابيع الفصل كلها (face-data.js planPack).
+     ⚠ والخطط لم تجلب بعد على هذا الجهاز (لا نسخة محفوظة): يبقى ما نشر منها — فلا يمحوها نشر قبل وصولها */
+  function planPack() {
+    var data = window.ShoubaPlans ? ShoubaPlans.get(S.data().stage) : null;
+    if (!data) return PUB ? PUB.plan || null : null;
+    return F.planPack(data.calendar, S.planLinks(data).pairs, S.planLessons);
+  }
   function snapshot(f) {
     var d = S.data();
     return F.snapshot({
+      plan: planPack(),
       doc: f ? Object.assign({}, d, { face: f }) : d, self: S.self(), roster: S.roster(), staff: S.staff(), times: S.periods(), days: S.days(), today: S.today(), groups: GROUPS,
       recs: S.recs('events'),
       meetings: S.recs('meetings').filter(function (r) { return (r.year || '') === (d.year || ''); }).length
@@ -210,6 +226,26 @@
       });
       box.appendChild(b);
     });
+  }
+
+  /* ── خطة الاسبوع في الواجهة: ظاهرة (الافتراضي) او مخفية — ينشر مع الواجهة ── */
+  function paintPlan() {
+    var box = $('plSegs'), on = face().plan !== false, pk = planPack();
+    box.innerHTML = '';
+    [[true, 'ظاهرة'], [false, 'مخفية']].forEach(function (x) {
+      var b = el('button', 'seg' + (x[0] === on ? ' on' : '')); b.type = 'button'; b.textContent = x[1];
+      b.addEventListener('click', function () {
+        if (x[0] === on) return;
+        var f = face();
+        if (x[0]) delete f.plan; else f.plan = false;
+        setFace(f);
+        S.toast((x[0] ? 'خطة الأسبوع ظاهرة' : 'خطة الأسبوع مخفية') + ' — انشر ليظهر على الرابط');
+      });
+      box.appendChild(b);
+    });
+    $('plHint').textContent = !on ? 'لا تظهر على الواجهة.'
+      : pk ? 'دروس الأسبوع لكل مادة لها خطة معتمدة، كما في خطط التوجيه.'
+      : 'لا خطط معتمدة لمواد الشعبة بعد، فلا يظهر القسم.';
   }
 
   /* ── فريق الشعبة: رئيس الشعبة ثم معلموه · صورة اختيارية لكل واحد، و«أخفه» لمن لا يريد الظهور ──
@@ -557,7 +593,7 @@
   function paint() {
     var box = [document.scrollingElement || document.documentElement, document.querySelector('.screen')].filter(Boolean),
         ys = box.map(function (e) { return e.scrollTop; });          /* الجوال تمرر الصفحة، وفي اطار الجهاز تمرر .screen */
-    paintHead(); paintPub(); paintTheme(); paintTeam(); paintWeek(); paintEvents();
+    paintHead(); paintPub(); paintTheme(); paintPlan(); paintTeam(); paintWeek(); paintEvents();
     /* ما تحت بطاقة النشر يخفى ما دام التحميل، فلا تظهر قيم افتراضية كاذبة يلمسها المستخدم (عنبري محدد · «اكتب اسمه» · خانة فارغة)،
        ويظهر كله معا حين ينتهي. فان فشل الطلب: يبقى مخفيا على جهاز بلا وثيقة، ويظهر على جهاز عنده وثيقته فيعمل بما عنده (المطور البصري 2026-10-20) */
     var hide = blank();
@@ -568,6 +604,11 @@
   /* وصلت الوثيقة من الخادم بعد الرسم الاول (جهاز بلا نسخة) — يعاد الرسم، واللوحة المفتوحة لا تمس */
   document.addEventListener('shouba:data', paint);
   document.addEventListener('shouba:synced', paint);
+  /* الخطط من الخادم (plan-data.js): المحفوظة فورا، وتحدث في الخلفية فيعاد الرسم */
+  function loadPlans() { if (window.ShoubaPlans && S.data().stage) ShoubaPlans.load(S.data().stage); }
+  if (window.ShoubaPlans) ShoubaPlans.onChange(paint);
+  loadPlans();
+  document.addEventListener('shouba:data', loadPlans);
 
   /* حال الواجهة من الخادم، وآخر نسخة منشورة — بها يعرف «فيها تعديلات لم تنشر» ولو نشر من جهاز آخر */
   function loaded() { LOAD = false; paint(); }

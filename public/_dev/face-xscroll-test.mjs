@@ -46,7 +46,8 @@ ok(html.includes("behavior: still ? 'auto' : 'smooth'") && html.includes("prefer
   'اللمسة تمرر ٨٠٪ بنعومة، وفوريا مع تقليل الحركة');
 ok(html.includes("addEventListener('scroll', fn, { passive: true })") && html.includes('new ResizeObserver(fn)') && /\$\('nowSec'\)\.hidden = false;[^\n]*\n\s*xhint\(\$\('nowRow'\)\);/.test(html),
   'يحدث مع التمرير وتغير المقاس وبعد كل رسم لـ«الآن»');
-ok(!/components\.css|xarr|more-end/.test(fs.readFileSync(path.join(ROOT, 'components.css'), 'utf8')), 'لا شيء في components.css');
+/* components.css فيه منذ بناء 119 تنبيه المنصة ([data-xscroll].more-end) — والواجهة لا تحمله، فالمعتبر ألا يتسرب اليه صنف الواجهة */
+ok(!/\.xarr|\.nowrow/.test(fs.readFileSync(path.join(ROOT, 'components.css'), 'utf8')) && !/components\.css/.test(html), 'الواجهة لا تحمل components.css، ولا شيء من صنفيها فيه');
 
 // ٤) حساب الصنفين في RTL (scrollLeft صفر عند البداية وسالب نحو النهاية)
 const src = html.match(/function xhint\(el\) \{[\s\S]*?\n  \}/)[0];

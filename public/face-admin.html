@@ -228,18 +228,18 @@
     });
   }
 
-  /* ── هذا الاسبوع في المنهج: ظاهرة (الافتراضي) او مخفية — ينشر مع الواجهة ── */
+  /* ── هذا الاسبوع في المنهج: ظاهر (الافتراضي) او مخفي — ينشر مع الواجهة ── */
   function paintPlan() {
     var box = $('plSegs'), on = face().plan !== false, pk = planPack();
     box.innerHTML = '';
-    [[true, 'ظاهرة'], [false, 'مخفية']].forEach(function (x) {
+    [[true, 'ظاهر'], [false, 'مخفي']].forEach(function (x) {
       var b = el('button', 'seg' + (x[0] === on ? ' on' : '')); b.type = 'button'; b.textContent = x[1];
       b.addEventListener('click', function () {
         if (x[0] === on) return;
         var f = face();
         if (x[0]) delete f.plan; else f.plan = false;
         setFace(f);
-        S.toast((x[0] ? 'خطة الأسبوع ظاهرة' : 'خطة الأسبوع مخفية') + ' — انشر ليسري على الرابط');
+        S.toast((x[0] ? 'القسم ظاهر' : 'القسم مخفي') + ' — انشر ليسري على الرابط');
       });
       box.appendChild(b);
     });

@@ -131,13 +131,13 @@
 .prow .who b{font-size:13px;font-weight:700;color:var(--shouba-navy);line-height:1.4}
 .prow .who small{font-size:11px;font-weight:600;color:var(--shouba-label);line-height:1.4}
 .prow .ls{flex:1;min-width:0;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.prow .pp{flex:none;font-size:11.5px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+.prow .pp{flex:none;font-size:11.5px;font-weight:700;color:var(--shouba-label);font-family:var(--font-num)}
 .prow .chev{flex:none;color:var(--shouba-hint);font-size:14px;font-weight:700;transition:transform .2s}
 .prow.open .chev{transform:rotate(-90deg)}
 .pwk{display:flex;flex-direction:column;gap:6px;margin:0 10px 10px;padding:10px 12px;border-radius:12px;background:var(--shouba-sand)}
 .pwk .l{display:flex;gap:8px;align-items:flex-start;font-size:13px;font-weight:600;color:var(--shouba-ink);line-height:1.7}
 .pwk .l span{flex:1;min-width:0}
-.pwk .l em{flex:none;font-style:normal;font-size:11.5px;font-weight:700;color:var(--shouba-amber-deep);font-family:var(--font-num)}
+.pwk .l em{flex:none;font-style:normal;font-size:11.5px;font-weight:700;color:var(--shouba-label);font-family:var(--font-num)}
 @media (prefers-reduced-motion: reduce){ .prow .chev{transition:none} }
 
 /* ④ فعاليات قادمة: بطاقة ورقية كبطاقات الارقام، وكتلة التاريخ على جانبه */

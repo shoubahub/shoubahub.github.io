@@ -895,14 +895,18 @@ body.solo .tsel{display:none}
    الاستعمال: <div class="xsw"><div class="…" data-xscroll>…</div></div> — والسكربت في components.js يضبط
    more-start / more-end على الحاوية ويرسم السهمين في الغلاف. data-xscroll="end": جهة النهاية وحدها.
    عمود ثابت في البداية (كعمود الاسماء في الجدول الكامل): عرضه scroll-padding-inline-start على الحاوية، فيقاس منه تنبيه
-   البداية — التلاشي والسهم عند حد العمود لا فوقه، والعمود بلا قناع (--xs-si يضبطه السكربت، 2026-10-22 رصد معاينة ١١٩). */
+   البداية — التلاشي والسهم عند حد العمود لا فوقه، والعمود بلا قناع (--xs-si يضبطه السكربت، 2026-10-22 رصد معاينة ١١٩).
+   التلاشي 56px: شفاف تماماً في أول 30px (السهم وإزاحته) ثم يتدرج — فلا يقع تحت السهم إلا خلفية ولا يغطي نصاً
+   (2026-10-22، المطوّر البصري بعد رصد أ. محمد على النسخة 0.33.6). */
 .xsw{position:relative}
-[data-xscroll].more-end{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 28px);mask-image:linear-gradient(to right,transparent 0,#000 28px)}
-[data-xscroll].more-start{-webkit-mask-image:linear-gradient(to left,#000 var(--xs-si,0px),transparent var(--xs-si,0px),#000 calc(var(--xs-si,0px) + 28px));
-  mask-image:linear-gradient(to left,#000 var(--xs-si,0px),transparent var(--xs-si,0px),#000 calc(var(--xs-si,0px) + 28px))}
+[data-xscroll].more-end{-webkit-mask-image:linear-gradient(to right,transparent 0,transparent 30px,#000 56px);mask-image:linear-gradient(to right,transparent 0,transparent 30px,#000 56px)}
+[data-xscroll].more-start{-webkit-mask-image:linear-gradient(to left,#000 var(--xs-si,0px),transparent var(--xs-si,0px),transparent calc(var(--xs-si,0px) + 30px),#000 calc(var(--xs-si,0px) + 56px));
+  mask-image:linear-gradient(to left,#000 var(--xs-si,0px),transparent var(--xs-si,0px),transparent calc(var(--xs-si,0px) + 30px),#000 calc(var(--xs-si,0px) + 56px))}
 [data-xscroll].more-start.more-end{
-  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 28px,#000 calc(100% - var(--xs-si,0px) - 28px),transparent calc(100% - var(--xs-si,0px)),#000 calc(100% - var(--xs-si,0px)));
-  mask-image:linear-gradient(to right,transparent 0,#000 28px,#000 calc(100% - var(--xs-si,0px) - 28px),transparent calc(100% - var(--xs-si,0px)),#000 calc(100% - var(--xs-si,0px)))}
+  -webkit-mask-image:linear-gradient(to right,transparent 0,transparent 30px,#000 56px,#000 calc(100% - var(--xs-si,0px) - 56px),transparent calc(100% - var(--xs-si,0px) - 30px),transparent calc(100% - var(--xs-si,0px)),#000 calc(100% - var(--xs-si,0px)));
+  mask-image:linear-gradient(to right,transparent 0,transparent 30px,#000 56px,#000 calc(100% - var(--xs-si,0px) - 56px),transparent calc(100% - var(--xs-si,0px) - 30px),transparent calc(100% - var(--xs-si,0px)),#000 calc(100% - var(--xs-si,0px)))}
+/* data-xscroll-fade="off": بلا تلاشٍ — حاوية تملأ عرضها بوحدة كاملة (يوم الجدول الكامل)، فالتلاشي يخفي أول خاناتها وآخرها */
+[data-xscroll][data-xscroll-fade="off"][class]{-webkit-mask-image:none;mask-image:none}
 .xsarr{position:absolute;top:50%;z-index:3;width:26px;height:26px;margin-top:-13px;padding:0;border-radius:999px;cursor:pointer;
   display:grid;place-items:center;background:var(--shouba-raised);border:1px solid var(--shouba-line);
   box-shadow:0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16);

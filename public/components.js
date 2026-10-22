@@ -1358,6 +1358,10 @@ Shouba.nextLabel = function (def) {
       el.classList.toggle('more-end', end); el.classList.toggle('more-start', start);
       /* السهم على حافة الحاوية نفسها بازاحة 4 للداخل — والحاوية قد تكون ذات هامش داخل غلافها */
       var l = el.offsetLeft, r = wrap.clientWidth - l - el.offsetWidth, mid = el.offsetTop + el.offsetHeight / 2;
+      /* data-xscroll-row="محدد": السهمان على صف ذلك العنصر لا وسط الحاوية — في الجدول الكامل صف عنوان اليوم، فلا يغطيان
+         خانة؛ ووسط الجدول خانات اليوم نفسه تبدأ عند الحد مباشرة (2026-10-22، بعد رصد أ. محمد على النسخة 0.33.6) */
+      var row = el.getAttribute('data-xscroll-row') && el.querySelector(el.getAttribute('data-xscroll-row'));
+      if (row) { var rb = row.getBoundingClientRect(); mid = rb.top - wrap.getBoundingClientRect().top + rb.height / 2; }
       /* عمود ثابت في البداية = scroll-padding-inline-start: تنبيه البداية عند حده (عمود الاسماء، 2026-10-22) */
       var si = parseFloat(getComputedStyle(el).scrollPaddingInlineStart) || 0;
       el.style.setProperty('--xs-si', si + 'px');

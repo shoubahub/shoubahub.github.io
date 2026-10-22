@@ -15,9 +15,12 @@ const buildFile = `${DIR}/build.js`;
 let build = fs.readFileSync(buildFile, 'utf8');
 const cur  = +(build.match(/SHOUBA_BUILD\s*=\s*(\d+)/) || [0, 0])[1];
 const next = process.argv[2] ? +process.argv[2] : cur + 1;
-/* الوسيط الثاني (اختياري) يرفع الترقيم الدلالي معه: node stamp.mjs 9 0.2 */
-const ver  = process.argv[3];
+/* الوسيط الثاني (اختياري) يضع الترقيم الدلالي: node stamp.mjs 9 0.2 — ميزة جديدة ترفع الأوسط
+   ⚠ وبلا وسيط ثان يرفع الأخير (0.31.0 ← 0.31.1): كل ختم يغير النسخة، لأنها الرقم الظاهر للمستخدم
+     في الرأس (قرار المستخدم 2026-10-22: بقيت 0.31.0 من بناء 111 إلى 115 فلم يميز بينها) */
 const curV = (build.match(/SHOUBA_VERSION\s*=\s*'([^']+)'/) || [0, '?'])[1];
+const ver  = process.argv[3] || (/^\d+\.\d+\.\d+$/.test(curV)
+  ? curV.replace(/\d+$/, n => String(+n + 1)) : undefined);
 
 build = build.replace(/SHOUBA_BUILD\s*=\s*\d+/, 'SHOUBA_BUILD   = ' + next);
 if (ver) build = build.replace(/SHOUBA_VERSION\s*=\s*'[^']*'/, `SHOUBA_VERSION = '${ver}'`);

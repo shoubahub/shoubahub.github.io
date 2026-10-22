@@ -100,7 +100,12 @@
         return r.json().catch(function(){ return {}; }).then(function(j){ return { ok: r.ok, status: r.status, j: j }; });
       });
   }
-  function say(m, text, good){ m.textContent = text || ''; m.classList.toggle('ok', !!good); }
+  /* كل رسالة تنتهي بنقطة كسائر رسائل الصفحة — ورسائل الخادم بلا نقطة (المطوّر البصري 2026-10-22) */
+  function say(m, text, good){
+    var t = String(text || '').trim();
+    if (t && !/[.!؟?…]$/.test(t)) t += '.';
+    m.textContent = t; m.classList.toggle('ok', !!good);
+  }
   function field(label, input, hint){
     var f = el('div', 'field'); f.setAttribute('data-need', 'opt');
     var l = el('label'); l.htmlFor = input.id;
@@ -185,28 +190,31 @@
     var pCur = pinInput('pCur', 'ستة أرقام', 'current-password'),
         pNew = pinInput('pNew', 'ستة أرقام', 'new-password'),
         pRep = pinInput('pRep', 'ستة أرقام', 'new-password');
-    pinBox.appendChild(field('الرقم الحالي', pCur));
-    pinBox.appendChild(field('الرقم الجديد', pNew));
+    /* كل خطأ تحت الحقل الذي يخصه (قاعدة القرب، المطوّر البصري 2026-10-22): الحالي · الجديد · التطابق */
+    var curF = field('الرقم الحالي', pCur), newF = field('الرقم الجديد', pNew);
+    pinBox.appendChild(curF);
+    pinBox.appendChild(newF);
     var repF = field('أعد الرقم الجديد', pRep, 'بعد التغيير تخرج أجهزتك الأخرى، فتدخل منها بالرقم الجديد.');
     pinBox.appendChild(repF);
-    var pinMsg = repF.msg;
+    function pinSay(f, text){ [curF, newF, repF].forEach(function(x){ say(x.msg, ''); }); if (f) say(f.msg, text); }
     var pinGo = el('button', 'btn-ghost', 'احفظ الرقم الجديد'); pinGo.type = 'button';
     pinBox.appendChild(pinGo);
     wrap.appendChild(pinBox);
     openPin.addEventListener('click', function(){ openPin.hidden = true; pinBox.hidden = false; pCur.focus(); });
     pinGo.addEventListener('click', function(){
       var c = latin(pCur.value), n = latin(pNew.value), r2 = latin(pRep.value);
-      if (!/^\d{6}$/.test(c)) return say(pinMsg, 'اكتب رقمك الحالي — ستة أرقام.');
-      if (!/^\d{6}$/.test(n)) return say(pinMsg, 'الرقم الجديد ستة أرقام.');
-      if (n !== r2) return say(pinMsg, 'الرقمان الجديدان غير متطابقين.');
-      pinGo.disabled = true; say(pinMsg, '');
+      if (!/^\d{6}$/.test(c)) return pinSay(curF, 'اكتب رقمك الحالي — ستة أرقام.');
+      if (!/^\d{6}$/.test(n)) return pinSay(newF, 'الرقم الجديد ستة أرقام.');
+      if (n !== r2) return pinSay(repF, 'الرقمان الجديدان غير متطابقين.');
+      pinGo.disabled = true; pinSay(null);
       api('POST', 'api/account/pin', { current: c, next: n }).then(function(r){
         pinGo.disabled = false;
-        if (!r.ok) { say(pinMsg, r.j.error || 'تعذر التغيير'); return; }
+        /* ٤٠٣ الرقم الحالي خاطئ، و٤٢٩ محاولات كثيرة — كلاهما يخص «الرقم الحالي»؛ و٤٠٠ يخص الجديد */
+        if (!r.ok) { pinSay(r.status === 400 ? newF : curF, r.j.error || 'تعذر التغيير'); return; }
         A = r.j; pCur.value = pNew.value = pRep.value = '';
         pinBox.hidden = true; openPin.hidden = false; paintPinLead(); paintDevices();
         S.toast(r.j.closed ? 'تغير رقمك السري، وخرجت أجهزتك الأخرى' : 'تغير رقمك السري');
-      }).catch(function(e){ pinGo.disabled = false; if (e.message !== 'auth') say(pinMsg, 'لا اتصال — لم يتغير الرقم.'); });
+      }).catch(function(e){ pinGo.disabled = false; if (e.message !== 'auth') pinSay(repF, 'لا اتصال — لم يتغير الرقم.'); });
     });
 
     /* ④ الأجهزة */

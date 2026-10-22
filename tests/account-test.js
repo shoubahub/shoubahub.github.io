@@ -75,7 +75,9 @@ async function run() {
     ok(em3.status === 200 && em3.json.email === '', 'فارغا يحذف البريد', em3.json);
 
     // الرقم السري
-    ok((await call('POST', '/api/account/pin', A, { current: '000000', next: '333333' })).status === 401, 'رقم حالي خاطئ يرفض');
+    const wrong = await call('POST', '/api/account/pin', A, { current: '000000', next: '333333' });
+    ok(wrong.status === 403 && /الحالي غير صحيح/.test(wrong.json.error), 'رقم حالي خاطئ يرفض بـ٤٠٣ لا ٤٠١ — فلا تحسبه الواجهة انتهاء جلسة', wrong);
+    ok((await call('GET', '/api/account', A)).status === 200, 'والجلسة باقية بعد الرقم الخاطئ');
     ok((await call('POST', '/api/account/pin', A, { current: '111111', next: '12' })).status === 400, 'رقم جديد ليس ستة أرقام يرفض');
     ok((await call('POST', '/api/account/pin', A, { current: '111111', next: '111111' })).status === 400, 'الجديد هو الحالي يرفض');
     const pc = await call('POST', '/api/account/pin', A, { current: '١١١١١١', next: '٣٣٣٣٣٣' });

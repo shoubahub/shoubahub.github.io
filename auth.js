@@ -225,7 +225,9 @@ function routes(app) {
     const u = req.user;
     const cur = latin(req.body && req.body.current), next = latin(req.body && req.body.next);
     if (blocked(u.username)) return res.status(429).json({ error: 'محاولات كثيرة — أعد بعد عشر دقائق' });
-    if (!verifyPin(cur, u.pin_hash)) { fail(u.username); return res.status(401).json({ error: 'الرقم السري الحالي غير صحيح' }); }
+    /* ⚠ ٤٠٣ لا ٤٠١ (2026-10-22، رصد معاينة ١١١): ٤٠١ تعني في الواجهة «انتهت الجلسة» فتحول الى الدخول وتمحو النموذج
+       — والجلسة هنا قائمة، والخطأ في الرقم وحده */
+    if (!verifyPin(cur, u.pin_hash)) { fail(u.username); return res.status(403).json({ error: 'الرقم السري الحالي غير صحيح' }); }
     pass(u.username);
     if (!PIN_RE.test(next)) return res.status(400).json({ error: 'الرقم الجديد ستة أرقام' });
     if (next === cur) return res.status(400).json({ error: 'الرقم الجديد هو الحالي نفسه' });

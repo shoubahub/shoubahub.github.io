@@ -62,7 +62,11 @@
    <div class="fpane" id="paneS">
     <section class="fsec" id="nowSec">
       <h2>الآن في الشعبة<span class="when" id="nowWhen"></span></h2>
-      <div class="nowrow" id="nowRow"></div>
+      <div class="xwrap">
+        <div class="nowrow" id="nowRow"></div>
+        <button type="button" class="xarr start" data-dir="start" aria-label="المزيد"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5"/></svg></button>
+        <button type="button" class="xarr end" data-dir="end" aria-label="المزيد"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5"/></svg></button>
+      </div>
       <p class="nowmsg" id="nowMsg" hidden></p>
       <a class="fall" id="toJ" href="#الجدول">الجدول كاملا ›</a>
     </section>
@@ -250,7 +254,28 @@
     $('nowRow').innerHTML = out; $('nowRow').hidden = !out;
     $('nowMsg').innerHTML = msg; $('nowMsg').hidden = !msg;
     $('nowSec').hidden = false;                            /* ظاهر دائما — لا يختفي ابدا */
+    xhint($('nowRow'));
   }
+
+  /* تلميح التمرير الافقي: more-end ان بقي محتوى نحو نهاية القراءة (اليسار)، وmore-start ان مرر عن بدايته —
+     scrollLeft في RTL صفر عند البداية وسالب نحو النهاية، فيقاس بقيمته المطلقة */
+  function xhint(el) {
+    var x = Math.abs(el.scrollLeft);
+    el.classList.toggle('more-start', x > 2);
+    el.classList.toggle('more-end', x + el.clientWidth < el.scrollWidth - 2);
+  }
+  function xscroll(el) {
+    var fn = function () { xhint(el); };
+    el.addEventListener('scroll', fn, { passive: true });
+    if (window.ResizeObserver) new ResizeObserver(fn).observe(el);
+    el.parentNode.addEventListener('click', function (e) {
+      var b = e.target.closest('.xarr'); if (!b) return;
+      var d = el.clientWidth * 0.8, still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      el.scrollBy({ left: b.getAttribute('data-dir') === 'end' ? -d : d, behavior: still ? 'auto' : 'smooth' });
+    });
+    fn();
+  }
+  xscroll($('nowRow'));
 
   /* ③ب هذا الاسبوع في المنهج: كشريط «خطة المنهج» في اللوحة (board.html paintPlan) بشكله واحجامه — شريط اسابيع الفصل
      المضغوط اعلاه، وسطر الاسبوع، وسطر لكل مادة لها دروس في الاسبوع المختار، ولمسة السطر تفتح دروسه بحصصها تحته وتغلقها.

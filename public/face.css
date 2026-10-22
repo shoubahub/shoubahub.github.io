@@ -128,7 +128,8 @@
 .face-pub .slices{display:flex;gap:3px}
 .face-pub .slices i{flex:1;height:9px;border-radius:3px;background:#E2D7C2;position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .face-pub .slices i::after{content:"";position:absolute;inset:-10px -1.5px}
-.face-pub .slices i.done{background:var(--shouba-navy)}
+/* الاسابيع السابقة للمختار بلون المسار لا الكحلي: الواجهة لا تعرض تقدماً منجزاً (قرار المطوّر البصري 2026-10-22) */
+.face-pub .slices i.past{background:var(--shouba-track)}
 .face-pub .slices i.now{background:var(--shouba-amber)}
 .face-pub .planline{font-size:12px;color:var(--shouba-text-muted);font-weight:600}
 .face-pub .planline b{color:var(--shouba-navy)}

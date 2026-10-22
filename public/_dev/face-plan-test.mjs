@@ -159,5 +159,11 @@ const css = read('face.css');
 ok(/\.ptr\.open \.ls,\s*\.face-pub \.ptr\.open \.pp\{visibility:hidden\}/.test(css), 'السطر المفتوح يخفي ملخصه وحصصه');
 ok(!/\.ptr\.open \.(who|chev)\{[^}]*(visibility:hidden|display:none)/.test(css), 'والمادة والسهم باقيان');
 
+// ٧) شريط الاسابيع في الواجهة بلا دلالة انجاز: السابقة «past» بلون المسار، والقادمة باهتة كما هي، والمختار كهرماني (قرار المطوّر البصري 2026-10-22)
+ok(fh.includes("c.className = +w.n < P.n ? 'past' : +w.n === P.n ? 'now' : '';") && !/className = [^;]*'done'/.test(fh), 'face.html: الاسابيع السابقة صنفها past لا done');
+ok(/\.face-pub \.slices i\.past\{background:var\(--shouba-track\)\}/.test(css) && !/\.face-pub \.slices i\.done/.test(css), 'face.css: past بلون المسار ولا قاعدة done في الواجهة');
+ok(/\.face-pub \.slices i\{[^}]*background:#E2D7C2/.test(css) && /\.face-pub \.slices i\.now\{background:var\(--shouba-amber\)\}/.test(css), 'والقادمة باهتة كما هي والمختار كهرماني');
+ok(/\.slices i\.done\{background:var\(--shouba-navy\)\}/.test(read('components.css')), 'وقاعدة اللوحة (components.css) لم تمس');
+
 console.log(`\n${fail ? '✗' : '✓'} ${pass} سليم · ${fail} معيب`);
 process.exit(fail ? 1 : 0);

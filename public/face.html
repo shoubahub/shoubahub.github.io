@@ -274,7 +274,7 @@
     var total = weeks.reduce(function (m, w) { return Math.max(m, +w.n || 0); }, 0);
     weeks.forEach(function (w) {
       var c = document.createElement('i');
-      c.className = +w.n < P.n ? 'done' : +w.n === P.n ? 'now' : '';
+      c.className = +w.n < P.n ? 'past' : +w.n === P.n ? 'now' : '';
       c.setAttribute('role', 'button'); c.tabIndex = 0;
       c.setAttribute('aria-label', 'الأسبوع ' + w.n); c.setAttribute('aria-pressed', +w.n === P.n ? 'true' : 'false');
       function pick() { if (planSel === +w.n) return; planSel = +w.n; paintPlan(); }

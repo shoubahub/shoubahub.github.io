@@ -1320,6 +1320,44 @@ Shouba.nextLabel = function (def) {
     });
   }
 
-  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); faceTab(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); bindResume(); }
-  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); faceTab(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); bindResume(); });
+  /* ═══ تنبيه السحب الأفقي (2026-10-22، مواصفة المطوّر البصري xscroll-spec ج) ═══
+     الحاوية [data-xscroll] داخل غلاف .xsw: more-start اذا مرر عن البداية، more-end اذا بقي في جهة النهاية (اليسار في RTL).
+     ⚠ scrollLeft في RTL سالب في المتصفحات الحديثة — فالحساب بقيمته المطلقة.
+     يحدث عند التمرير، وتغير المقاس (ResizeObserver)، وتعبئة المحتوى (MutationObserver) — فالشرائط ترسم بعد التحميل. */
+  var CHEV = { end: 'M7.5 2.5 L3.5 6 L7.5 9.5', start: 'M4.5 2.5 L8.5 6 L4.5 9.5' };
+  Shouba.xscroll = function (el) {
+    if (!el || el._xs) return;
+    var wrap = el.parentNode, endOnly = el.getAttribute('data-xscroll') === 'end', arr = {};
+    var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    ['end', 'start'].forEach(function (side) {
+      if (side === 'start' && endOnly) return;
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'xsarr'; b.setAttribute('aria-label', 'المزيد'); b.tabIndex = -1;
+      b.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="' + CHEV[side]
+        + '" stroke="#16456E" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      /* النهاية يسارا: التمرير اليها يخفض scrollLeft */
+      b.addEventListener('click', function () {
+        el.scrollBy({ left: (side === 'end' ? -1 : 1) * el.clientWidth * 0.8, behavior: still ? 'auto' : 'smooth' });
+      });
+      wrap.appendChild(b); arr[side] = b;
+    });
+    function update() {
+      var x = Math.abs(el.scrollLeft), end = x + el.clientWidth < el.scrollWidth - 2, start = !endOnly && x > 2;
+      el.classList.toggle('more-end', end); el.classList.toggle('more-start', start);
+      /* السهم على حافة الحاوية نفسها بازاحة 4 للداخل — والحاوية قد تكون ذات هامش داخل غلافها */
+      var l = el.offsetLeft, r = wrap.clientWidth - l - el.offsetWidth, mid = el.offsetTop + el.offsetHeight / 2;
+      arr.end.style.left = (l + 4) + 'px'; arr.end.style.top = mid + 'px'; arr.end.classList.toggle('on', end);
+      if (arr.start) { arr.start.style.right = (r + 4) + 'px'; arr.start.style.top = mid + 'px'; arr.start.classList.toggle('on', start); }
+    }
+    el._xs = update;
+    el.addEventListener('scroll', update, { passive: true });
+    if (window.ResizeObserver) { var ro = new ResizeObserver(update); ro.observe(el); if (el.firstElementChild) ro.observe(el.firstElementChild); }
+    if (window.MutationObserver) new MutationObserver(function () { requestAnimationFrame(update); }).observe(el, { childList: true, subtree: true });
+    window.addEventListener('resize', update);
+    update();
+  };
+  function bindXScroll() { [].forEach.call(document.querySelectorAll('[data-xscroll]'), Shouba.xscroll); }
+
+  if (document.readyState !== 'loading') { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); faceTab(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); bindResume(); bindXScroll(); }
+  else document.addEventListener('DOMContentLoaded', function () { init(); bindSoon(); serviceWorker(); standaloneNote(); versionTag(); keyboardInset(); bindHome(); bindBack(); bindTabs(); faceTab(); bindFeedback(); bindInstall(); updateBanner(); connectServer(); bindResume(); bindXScroll(); });
 })();

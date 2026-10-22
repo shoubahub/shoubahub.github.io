@@ -889,3 +889,19 @@ body.solo .tsel{display:none}
 .pm-jd .at{font-size:15px;font-weight:700;color:var(--shouba-navy);line-height:1.6}
 .pm-jd .wh{font-size:12px;font-weight:600;color:var(--shouba-label);line-height:1.7}
 .pm-jd .hint{font-size:11.5px;font-weight:600;color:var(--shouba-hint)}
+
+/* ═══ تنبيه السحب الأفقي (2026-10-22، مواصفة المطوّر البصري xscroll-spec ج، اعتمدها المستخدم) ═══
+   شريط يسحب افقيا لا يظهر ان خلفه محتوى — فتلاش عند الحافة وسهم صغير ما دام خلفها شيء، ويختفيان عند النهاية.
+   الاستعمال: <div class="xsw"><div class="…" data-xscroll>…</div></div> — والسكربت في components.js يضبط
+   more-start / more-end على الحاوية ويرسم السهمين في الغلاف. data-xscroll="end": جهة النهاية وحدها (عمود ثابت في البداية). */
+.xsw{position:relative}
+[data-xscroll].more-end{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 28px);mask-image:linear-gradient(to right,transparent 0,#000 28px)}
+[data-xscroll].more-start{-webkit-mask-image:linear-gradient(to left,transparent 0,#000 28px);mask-image:linear-gradient(to left,transparent 0,#000 28px)}
+[data-xscroll].more-start.more-end{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%);
+  mask-image:linear-gradient(to right,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%)}
+.xsarr{position:absolute;top:50%;z-index:3;width:26px;height:26px;margin-top:-13px;padding:0;border-radius:999px;cursor:pointer;
+  display:grid;place-items:center;background:var(--shouba-raised);border:1px solid var(--shouba-line);
+  box-shadow:0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16);
+  opacity:0;pointer-events:none;transition:opacity 160ms ease}
+.xsarr.on{opacity:1;pointer-events:auto}
+@media (prefers-reduced-motion: reduce){ .xsarr{transition:none} }

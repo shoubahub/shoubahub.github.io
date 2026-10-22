@@ -188,6 +188,8 @@
     });
   };
   S.online = function () { return online; };
+  /* تعديلات على الجهاز لم تبلغ الخادم — يسأل عنها «تسجيل الخروج» قبل أن يغلق الجلسة (2026-10-22) */
+  S.pending = function () { return !!S.conflict || isDirty(); };
 
   /* حسم الخلاف باختيار صاحبه — والنسخة المتروكة تحفظ على الجهاز احتياطا */
   S.resolve = function (keep) {

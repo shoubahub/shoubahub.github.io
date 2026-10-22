@@ -179,6 +179,66 @@ function routes(app) {
     res.json({ username: u.username, displayName: u.display_name, owner: ownerKey(u) });
   });
 
+  /* ── معلومات الحساب (2026-10-22، طلب المستخدم) ─────────
+     صفحة «حسابك» في الإعدادات — منفصلة عن بيانات الشعبة: لا تقرأ وثيقتها ولا تكتبها.
+     ⚠ كل المسارات لصاحب الجلسة وحده، ولا معرف حساب في الطلب: فلا يبلغ أحد حساب غيره.
+     ⚠ الاسم هنا اسم الحساب (يراه رئيس المنصة في لوحة الادارة)، والاسم على المطبوعات
+       في وثيقة الشعبة («مراجعة بيانات شعبتك») — فتعديل أحدهما لا يمس الآخر. */
+  const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/;
+  function sessionsOf(userId) {
+    return db.prepare("SELECT COUNT(*) AS c FROM sessions WHERE user_id = ? AND expires_at > datetime('now')").get(userId).c;
+  }
+  function account(u) {
+    return { username: u.username, displayName: u.display_name, email: u.email || '',
+             emailVerified: !!u.email_verified, createdAt: u.created_at, lastLogin: u.last_login,
+             pinChangedAt: u.pin_changed_at || null, sessions: sessionsOf(u.id) };
+  }
+  /* يغلق جلسات الحساب كلها الا جلسة هذا الجهاز */
+  function closeOthers(req) {
+    return db.prepare('DELETE FROM sessions WHERE user_id = ? AND token_hash != ?')
+      .run(req.user.id, sha(readCookie(req) || '')).changes;
+  }
+
+  app.get('/api/account', requireUser, (req, res) => res.json(account(req.user)));
+
+  app.put('/api/account/name', requireUser, (req, res) => {
+    const name = String((req.body && req.body.displayName) || '').trim().replace(/\s+/g, ' ');
+    if (name.length < 3) return res.status(400).json({ error: 'اكتب اسمك الكامل' });
+    if (name.length > 60) return res.status(400).json({ error: 'الاسم طويل — الحد ٦٠ حرفا' });
+    db.prepare('UPDATE users SET display_name = ? WHERE id = ?').run(name, req.user.id);
+    res.json(account(db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id)));
+  });
+
+  /* البريد: فارغا يحذف. ⚠ تغييره يعيده «غير مؤكد» دائما — والتأكيد نفسه لم يبن بعد */
+  app.put('/api/account/email', requireUser, (req, res) => {
+    const email = latin(req.body && req.body.email).toLowerCase();
+    if (email && (email.length > 254 || !EMAIL_RE.test(email)))
+      return res.status(400).json({ error: 'البريد غير صحيح — مثل name@example.com' });
+    if (email !== (req.user.email || ''))
+      db.prepare('UPDATE users SET email = ?, email_verified = 0 WHERE id = ?').run(email || null, req.user.id);
+    res.json(account(db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id)));
+  });
+
+  /* تغيير الرقم السري: الحالي أولا، وحد المحاولات نفسه الذي في الدخول — فجلسة مفتوحة على جهاز
+     منسي لا تخمن بها الأرقام. ⚠ وبعده تغلق جلسات الأجهزة الأخرى: من عرف الرقم القديم لا يبقى داخلا */
+  app.post('/api/account/pin', requireUser, (req, res) => {
+    const u = req.user;
+    const cur = latin(req.body && req.body.current), next = latin(req.body && req.body.next);
+    if (blocked(u.username)) return res.status(429).json({ error: 'محاولات كثيرة — أعد بعد عشر دقائق' });
+    if (!verifyPin(cur, u.pin_hash)) { fail(u.username); return res.status(401).json({ error: 'الرقم السري الحالي غير صحيح' }); }
+    pass(u.username);
+    if (!PIN_RE.test(next)) return res.status(400).json({ error: 'الرقم الجديد ستة أرقام' });
+    if (next === cur) return res.status(400).json({ error: 'الرقم الجديد هو الحالي نفسه' });
+    db.prepare("UPDATE users SET pin_hash = ?, pin_changed_at = datetime('now') WHERE id = ?").run(hashPin(next), u.id);
+    const closed = closeOthers(req);
+    res.json(Object.assign(account(db.prepare('SELECT * FROM users WHERE id = ?').get(u.id)), { closed }));
+  });
+
+  app.post('/api/account/signout-others', requireUser, (req, res) => {
+    const closed = closeOthers(req);
+    res.json(Object.assign(account(req.user), { closed }));
+  });
+
   /* ── وثيقة الشعبة ───────────────────────────────── */
   /* ⚠ «user» في الجواب: النسخة المحلية تربط بصاحبها، فمن دخل بحساب آخر
      على الجهاز نفسه لا يرى بيانات من قبله ولا يعرض عليه «خلاف» معها. */

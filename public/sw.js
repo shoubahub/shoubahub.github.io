@@ -17,6 +17,7 @@ var SHELL = [
   './icons.js?v=' + BUILD, './components.js?v=' + BUILD,
   /* محرك السجلات (2026-09-11): شاشاته وملفاته — فتفتح بلا إنترنت كسائر المنصة */
   './records.html', './record.html', './archive.html', './print-settings.html', './rec-items.html',
+  './account.html',  /* حسابك (2026-10-22) — يفتح بلا إنترنت ويقول ان معلوماته تحتاج الخادم */
   './bundle.html',   /* ملف الفصل (2026-09-13) */
   './visits.html',   /* جدول الزيارات الصفية من تقارير الزيارة (2026-09-14) */
   './rec-templates.js?v=' + BUILD, './rec-engine.js?v=' + BUILD, './rec-form.js?v=' + BUILD,

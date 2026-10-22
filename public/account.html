@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شعبة · حسابك</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1B5183" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="شعبة" />
+<link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="identity/tokens.css?v=110" />
+<link rel="stylesheet" href="shell.css?v=110" />
+<link rel="stylesheet" href="components.css?v=110" />
+<link rel="stylesheet" href="frame.css?v=110" />
+<style>
+  /* حسابك (2026-10-22، طلب المستخدم): معلومات الحساب منفصلة عن بيانات الشعبة — الدخول والأمان وحدهما.
+     لا تقرأ وثيقة الشعبة ولا تكتبها؛ كل ما هنا من الخادم (api/account). لا هيكل هنا — كله موروث من shell.css */
+  .wrap{display:flex;flex-direction:column;gap:22px;padding:16px var(--gap-side) 0}
+  .part{font-size:14px;font-weight:700;color:var(--shouba-navy);margin-bottom:-8px}
+  /* بطاقة الوصف: ما لا يعدل — اسم المستخدم وتاريخا الانشاء وآخر دخول */
+  .facts{background:var(--shouba-paper-grad);border-radius:var(--r-card);padding:6px 16px;box-shadow:0 1px 4px rgba(40,30,15,.10)}
+  .facts .r{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0}
+  .facts .r + .r{border-top:1px solid rgba(40,30,15,.08)}
+  .facts .k{font-size:13px;font-weight:600;color:var(--shouba-label)}
+  .facts .v{font-size:14px;font-weight:700;color:var(--shouba-navy)}
+  .lbl{display:flex;align-items:center;gap:8px}
+  .tagx{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(22,69,110,.09);color:var(--shouba-navy)}
+  .msg{font-size:12.5px;font-weight:600;min-height:18px;color:var(--shouba-error);line-height:1.7}
+  .msg.ok{color:var(--shouba-navy)}
+  .msg:empty{display:none}
+  /* رسالة الحقل تلتصق به — تحته مباشرة بمسافة 6 كالإرشاد، وقبله (قاعدة القرب · المطوّر البصري 2026-10-22) */
+  .field .msg{margin-top:-2px;min-height:0}
+  .lead2{font-size:13px;font-weight:500;color:var(--shouba-text-muted);line-height:1.8;margin:0}
+  .lead2 b{color:var(--shouba-navy);font-weight:700}
+  .pinbox{display:flex;flex-direction:column;gap:22px}
+</style>
+</head>
+<body class="framed">
+ <div class="device"><div class="viewport">
+  <div class="topbar">
+    <div class="tbcrest" id="tbCrest"></div>
+    <div class="tt">
+      <b>حسابك</b>
+      <span>الدخول والأمان — منفصل عن بيانات شعبتك</span>
+    </div>
+    <div class="iconbtn" data-home title="اللوحة"></div>
+  </div>
+
+  <div class="screen has-topbar has-foot">
+    <div class="content">
+      <div class="wrap" id="wrap">
+        <div class="msg" id="loadMsg">جار التحميل…</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <!-- «تم» لا «احفظ»: كل بند يحفظ وحده لحظة تعديله، والزر يعود (قاعدة الادخال 2026-09-13) -->
+    <button class="cta" id="ok">تم</button>
+  </div>
+ </div></div>
+
+<script src="build.js?v=110"></script>
+<script src="refdata.js?v=110"></script>
+<script src="derive.js?v=110"></script>
+<script src="icons.js?v=110"></script>
+<script src="components.js?v=110"></script>
+<script>
+  var S = Shouba, d = S.data();
+  var MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+  (function paintTopCrest(){
+    var el = document.getElementById('tbCrest'), c = d.crest;
+    if (c && c.type === 'image') el.innerHTML = '<img src="' + c.data + '" alt="شعار المدرسة" />';
+    else if (c && c.type === 'icon' && window.SHOUBA_ICONS) el.innerHTML = SHOUBA_ICONS.svg(c.id, 22);
+    else el.innerHTML = '<img src="identity/assets/logo-vec-dark.svg" alt="شعبة" style="object-fit:contain;padding:5px" />';
+  })();
+
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  /* الأرقام معزولة LTR بخطها (قاعدة LAYOUT) */
+  function num(t){ var s = el('span', 'num', t); s.setAttribute('dir', 'ltr'); return s; }
+  /* وقت الخادم UTC بصيغة SQLite «YYYY-MM-DD HH:MM:SS» ⟵ «٢٢ أكتوبر 2026» بتوقيت الجهاز */
+  function day(t){
+    if (!t) return null;
+    var x = new Date(String(t).replace(' ', 'T') + 'Z');
+    if (isNaN(x)) return null;
+    var f = document.createDocumentFragment();
+    f.appendChild(num(String(x.getDate()))); f.appendChild(document.createTextNode(' ' + MONTHS[x.getMonth()] + ' '));
+    f.appendChild(num(String(x.getFullYear())));
+    return f;
+  }
+  function api(method, url, body){
+    return fetch(url, { method: method, credentials: 'same-origin', cache: 'no-store',
+      headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined })
+      .then(function(r){
+        if (r.status === 401) { S.signIn(); throw new Error('auth'); }
+        return r.json().catch(function(){ return {}; }).then(function(j){ return { ok: r.ok, status: r.status, j: j }; });
+      });
+  }
+  function say(m, text, good){ m.textContent = text || ''; m.classList.toggle('ok', !!good); }
+  function field(label, input, hint){
+    var f = el('div', 'field'); f.setAttribute('data-need', 'opt');
+    var l = el('label'); l.htmlFor = input.id;
+    if (typeof label === 'string') l.textContent = label; else l.appendChild(label);
+    f.appendChild(l);
+    var p = el('div', 'paper'); p.appendChild(input); f.appendChild(p);
+    f.msg = el('div', 'msg'); f.appendChild(f.msg);
+    if (hint) f.appendChild(el('div', 'hint', hint));
+    return f;
+  }
+  function pinInput(id, ph, ac){
+    var i = el('input'); i.id = id; i.type = 'password'; i.inputMode = 'numeric'; i.pattern = '[0-9]*';
+    i.maxLength = 6; i.placeholder = ph; i.autocomplete = ac;
+    return i;
+  }
+  /* الرقم رقم بأي لوحة كتب — ٠١٢٣ تصير 0123 (كما في الدخول) */
+  function latin(s){ return String(s || '').replace(/[٠-٩]/g, function(c){ return c.charCodeAt(0) - 0x0660; }).replace(/[۰-۹]/g, function(c){ return c.charCodeAt(0) - 0x06F0; }).trim(); }
+
+  var wrap = document.getElementById('wrap'), A = null;
+
+  function draw(){
+    wrap.textContent = '';
+
+    /* ① بيانات الحساب */
+    wrap.appendChild(el('div', 'part', 'بيانات الحساب'));
+    var facts = el('div', 'facts');
+    function fact(k, v){
+      var r = el('div', 'r'); r.appendChild(el('span', 'k', k));
+      var b = el('span', 'v'); if (v) b.appendChild(v); else b.textContent = '—';
+      r.appendChild(b); facts.appendChild(r);
+    }
+    fact('اسم المستخدم', num(A.username));
+    fact('تاريخ الإنشاء', day(A.createdAt));
+    fact('آخر دخول', day(A.lastLogin));
+    wrap.appendChild(facts);
+
+    var nameIn = el('input'); nameIn.id = 'acName'; nameIn.type = 'text'; nameIn.maxLength = 60; nameIn.value = A.displayName || '';
+    var nameF = field('اسمك في الحساب', nameIn, 'يظهر في لوحة إدارة المنصة. والاسم على مطبوعاتك من «مراجعة بيانات شعبتك».');
+    var nameMsg = nameF.msg;
+    wrap.appendChild(nameF);
+    nameIn.addEventListener('change', function(){
+      var v = nameIn.value.trim();
+      if (v === A.displayName) return say(nameMsg, '');
+      api('PUT', 'api/account/name', { displayName: v }).then(function(r){
+        if (!r.ok) { say(nameMsg, r.j.error || 'تعذر الحفظ'); return; }
+        A = r.j; nameIn.value = A.displayName; say(nameMsg, 'الاسم محفوظ.', true);
+      }).catch(function(e){ if (e.message !== 'auth') say(nameMsg, 'لا اتصال — لم يحفظ.'); });
+    });
+
+    /* ② البريد الإلكتروني — يحفظ الآن «غير مؤكد»، والاستعادة به لاحقا */
+    var mailIn = el('input'); mailIn.id = 'acMail'; mailIn.type = 'email'; mailIn.maxLength = 254;
+    mailIn.placeholder = 'name@example.com'; mailIn.autocomplete = 'email'; mailIn.dir = 'ltr';
+    mailIn.setAttribute('autocapitalize', 'none'); mailIn.spellcheck = false; mailIn.value = A.email || '';
+    var mailLbl = el('span', 'lbl'); mailLbl.appendChild(document.createTextNode('البريد الإلكتروني'));
+    var mailTag = el('span', 'tagx', 'غير مؤكد'); mailTag.hidden = !A.email || A.emailVerified;
+    mailLbl.appendChild(mailTag);
+    var mailF = field(mailLbl, mailIn, 'اختياري. يحفظ الآن، ويستعمل لاحقا لاستعادة رقمك السري إن نسيته.');
+    var mailMsg = mailF.msg;
+    wrap.appendChild(mailF);
+    mailIn.addEventListener('change', function(){
+      api('PUT', 'api/account/email', { email: mailIn.value.trim() }).then(function(r){
+        if (!r.ok) { say(mailMsg, r.j.error || 'تعذر الحفظ'); return; }
+        A = r.j; mailIn.value = A.email; mailTag.hidden = !A.email || A.emailVerified;
+        say(mailMsg, A.email ? 'البريد محفوظ.' : 'لا بريد في حسابك الآن.', true);
+      }).catch(function(e){ if (e.message !== 'auth') say(mailMsg, 'لا اتصال — لم يحفظ.'); });
+    });
+
+    /* ③ الرقم السري */
+    wrap.appendChild(el('div', 'part', 'الرقم السري'));
+    var pinLead = el('p', 'lead2');
+    function paintPinLead(){
+      pinLead.textContent = '';
+      var t = day(A.pinChangedAt);
+      if (t) { pinLead.appendChild(document.createTextNode('آخر تغيير: ')); pinLead.appendChild(t); }
+      else pinLead.textContent = 'لم يتغير منذ إنشاء الحساب.';
+    }
+    paintPinLead();
+    wrap.appendChild(pinLead);
+    var openPin = el('button', 'btn-ghost', 'تغيير الرقم السري'); openPin.type = 'button';
+    wrap.appendChild(openPin);
+    var pinBox = el('div', 'pinbox'); pinBox.hidden = true;
+    var pCur = pinInput('pCur', 'ستة أرقام', 'current-password'),
+        pNew = pinInput('pNew', 'ستة أرقام', 'new-password'),
+        pRep = pinInput('pRep', 'ستة أرقام', 'new-password');
+    pinBox.appendChild(field('الرقم الحالي', pCur));
+    pinBox.appendChild(field('الرقم الجديد', pNew));
+    var repF = field('أعد الرقم الجديد', pRep, 'بعد التغيير تخرج أجهزتك الأخرى، فتدخل منها بالرقم الجديد.');
+    pinBox.appendChild(repF);
+    var pinMsg = repF.msg;
+    var pinGo = el('button', 'btn-ghost', 'احفظ الرقم الجديد'); pinGo.type = 'button';
+    pinBox.appendChild(pinGo);
+    wrap.appendChild(pinBox);
+    openPin.addEventListener('click', function(){ openPin.hidden = true; pinBox.hidden = false; pCur.focus(); });
+    pinGo.addEventListener('click', function(){
+      var c = latin(pCur.value), n = latin(pNew.value), r2 = latin(pRep.value);
+      if (!/^\d{6}$/.test(c)) return say(pinMsg, 'اكتب رقمك الحالي — ستة أرقام.');
+      if (!/^\d{6}$/.test(n)) return say(pinMsg, 'الرقم الجديد ستة أرقام.');
+      if (n !== r2) return say(pinMsg, 'الرقمان الجديدان غير متطابقين.');
+      pinGo.disabled = true; say(pinMsg, '');
+      api('POST', 'api/account/pin', { current: c, next: n }).then(function(r){
+        pinGo.disabled = false;
+        if (!r.ok) { say(pinMsg, r.j.error || 'تعذر التغيير'); return; }
+        A = r.j; pCur.value = pNew.value = pRep.value = '';
+        pinBox.hidden = true; openPin.hidden = false; paintPinLead(); paintDevices();
+        S.toast(r.j.closed ? 'تغير رقمك السري، وخرجت أجهزتك الأخرى' : 'تغير رقمك السري');
+      }).catch(function(e){ pinGo.disabled = false; if (e.message !== 'auth') say(pinMsg, 'لا اتصال — لم يتغير الرقم.'); });
+    });
+
+    /* ④ الأجهزة */
+    wrap.appendChild(el('div', 'part', 'أجهزتك'));
+    var devLead = el('p', 'lead2');
+    wrap.appendChild(devLead);
+    var others = el('button', 'btn-ghost', 'اخرج من الأجهزة الأخرى'); others.type = 'button';
+    var out = el('button', 'btn-ghost', 'تسجيل الخروج من هذا الجهاز'); out.type = 'button';
+    var devMsg = el('div', 'msg');
+    wrap.appendChild(others); wrap.appendChild(out); wrap.appendChild(devMsg);
+    function paintDevices(){
+      devLead.textContent = '';
+      if (A.sessions > 1) {
+        devLead.appendChild(document.createTextNode('الأجهزة المفتوح عليها حسابك الآن: '));
+        devLead.appendChild(num(String(A.sessions)));
+        devLead.appendChild(document.createTextNode('، منها هذا الجهاز.'));
+      } else devLead.textContent = 'حسابك مفتوح على هذا الجهاز وحده.';
+      others.hidden = !(A.sessions > 1);
+    }
+    paintDevices();
+    others.addEventListener('click', function(){
+      others.disabled = true;
+      api('POST', 'api/account/signout-others').then(function(r){
+        others.disabled = false;
+        if (!r.ok) { say(devMsg, r.j.error || 'تعذر الخروج'); return; }
+        A = r.j; paintDevices(); say(devMsg, '');
+        S.toast('خرجت أجهزتك الأخرى');
+      }).catch(function(e){ others.disabled = false; if (e.message !== 'auth') say(devMsg, 'لا اتصال — لم تخرج الأجهزة.'); });
+    });
+    out.addEventListener('click', signOut);
+  }
+
+  /* تسجيل الخروج: يرسل ما لم يرسل من تعديلات أولا، فإن تعذر سأل قبل الخروج —
+     ⚠ ما يبقى على الجهاز يرتفع حين يدخل صاحبه من جديد؛ ولو دخل منه حساب آخر طوي (derive.js) */
+  function signOut(){
+    var bye = function(){
+      fetch('api/logout', { method: 'POST', credentials: 'same-origin' })
+        .catch(function(){}).then(function(){ location.replace('login.html'); });
+    };
+    if (!S.pending()) return bye();
+    S.flush().then(function(res){
+      if (res === 'ok') return bye();
+      var n = el('div', 'stack');
+      n.appendChild(el('div', 'warnbox', 'لم تصل آخر تعديلاتك إلى الخادم بعد. تبقى على هذا الجهاز، وترسل حين تدخل منه بحسابك من جديد.'));
+      var go = el('button', 'btn-ghost', 'اخرج على أي حال'); go.type = 'button';
+      go.addEventListener('click', bye);
+      n.appendChild(go);
+      S.sheet.open('قبل أن تخرج', n);
+    });
+  }
+
+  api('GET', 'api/account').then(function(r){
+    if (!r.ok) { say(document.getElementById('loadMsg'), r.j.error || 'تعذر التحميل'); return; }
+    A = r.j; draw();
+  }).catch(function(e){ if (e.message !== 'auth') say(document.getElementById('loadMsg'), 'لا اتصال — معلومات الحساب تحتاج الخادم.'); });
+
+  document.getElementById('ok').addEventListener('click', function(){
+    var ret = new URLSearchParams(location.search).get('ret') || '';
+    location.href = /^(?!index\.|login\.)[a-z0-9\-]+\.html(\?[^#<>"'\s]*)?$/i.test(ret) ? ret : 'board.html';
+  });
+</script>
+</body>
+</html>

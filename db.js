@@ -72,6 +72,13 @@ db.exec(`
 const shoubaCols = db.prepare('PRAGMA table_info(shouba)').all().map(c => c.name);
 if (!shoubaCols.includes('rev')) db.exec('ALTER TABLE shouba ADD COLUMN rev INTEGER NOT NULL DEFAULT 1');
 
+/* معلومات الحساب (2026-10-22، طلب المستخدم): البريد يحفظ الآن «غير مؤكد»، وتأكيده واستعادة الرقم به مرحلة لاحقة
+   (تحتاج خدمة ارسال بريد). وتاريخ آخر تغيير للرقم السري. عمودان يضافان للقواعد القائمة ولا يمس صف */
+const userCols = db.prepare('PRAGMA table_info(users)').all().map(c => c.name);
+if (!userCols.includes('email')) db.exec('ALTER TABLE users ADD COLUMN email TEXT');
+if (!userCols.includes('email_verified')) db.exec('ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0');
+if (!userCols.includes('pin_changed_at')) db.exec('ALTER TABLE users ADD COLUMN pin_changed_at TEXT');
+
 /* رمز الدعوة: بلا رمزٍ صحيح لا يُنشأ حساب مهما عُرف الرابط */
 function invite() {
   const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('invite');

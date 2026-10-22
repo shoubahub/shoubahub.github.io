@@ -36,6 +36,10 @@
   .lead2{font-size:13px;font-weight:500;color:var(--shouba-text-muted);line-height:1.8;margin:0}
   .lead2 b{color:var(--shouba-navy);font-weight:700}
   .pinbox{display:flex;flex-direction:column;gap:22px}
+  .pinacts{display:flex;gap:12px}
+  .pinacts > .btn-ghost{flex:1}
+  /* التمرير الآلي يقف تحت الرأس الثابت بفسحة 12 لا خلفه — --tbh ارتفاع الرأس يقاس في السكربت (المطوّر البصري 2026-10-22) */
+  .wrap > *, .pinbox .field{scroll-margin-top:calc(var(--tbh, 72px) + 12px)}
 </style>
 </head>
 <body class="framed">
@@ -174,7 +178,8 @@
     });
 
     /* ③ الرقم السري */
-    wrap.appendChild(el('div', 'part', 'الرقم السري'));
+    var pinPart = el('div', 'part', 'الرقم السري');
+    wrap.appendChild(pinPart);
     var pinLead = el('p', 'lead2');
     function paintPinLead(){
       pinLead.textContent = '';
@@ -196,11 +201,28 @@
     pinBox.appendChild(newF);
     var repF = field('أعد الرقم الجديد', pRep, 'بعد التغيير تخرج أجهزتك الأخرى، فتدخل منها بالرقم الجديد.');
     pinBox.appendChild(repF);
-    function pinSay(f, text){ [curF, newF, repF].forEach(function(x){ say(x.msg, ''); }); if (f) say(f.msg, text); }
+    /* ⚠ الحقل الخاطئ ورسالته يمرران الى وسط الشاشة — فلا يختفيان خلف «تم» الثابت (رصد معاينة ١١١) */
+    function pinSay(f, text){
+      [curF, newF, repF].forEach(function(x){ say(x.msg, ''); });
+      if (f) { say(f.msg, text); f.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+    }
+    /* حفظ وإلغاء متجاوران — فما فتح يغلق (رصد معاينة ١١١) */
+    var pinActs = el('div', 'pinacts');
     var pinGo = el('button', 'btn-ghost', 'احفظ الرقم الجديد'); pinGo.type = 'button';
-    pinBox.appendChild(pinGo);
+    var pinNo = el('button', 'btn-ghost', 'إلغاء'); pinNo.type = 'button';
+    pinActs.appendChild(pinGo); pinActs.appendChild(pinNo);
+    pinBox.appendChild(pinActs);
+    function closePin(){ pCur.value = pNew.value = pRep.value = ''; pinSay(null); pinBox.hidden = true; openPin.hidden = false; }
+    pinNo.addEventListener('click', closePin);
     wrap.appendChild(pinBox);
-    openPin.addEventListener('click', function(){ openPin.hidden = true; pinBox.hidden = false; pCur.focus(); });
+    /* الفتح يمرر الى الحقول — كانت تفتح أسفل الشاشة خلف «تم» فلا ترى (رصد معاينة ١١١) */
+    openPin.addEventListener('click', function(){
+      openPin.hidden = true; pinBox.hidden = false;
+      var tb = document.querySelector('.topbar');
+      if (tb) document.documentElement.style.setProperty('--tbh', Math.ceil(tb.getBoundingClientRect().bottom) + 'px');
+      pinPart.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      pCur.focus({ preventScroll: true });
+    });
     pinGo.addEventListener('click', function(){
       var c = latin(pCur.value), n = latin(pNew.value), r2 = latin(pRep.value);
       if (!/^\d{6}$/.test(c)) return pinSay(curF, 'اكتب رقمك الحالي — ستة أرقام.');
@@ -211,8 +233,7 @@
         pinGo.disabled = false;
         /* ٤٠٣ الرقم الحالي خاطئ، و٤٢٩ محاولات كثيرة — كلاهما يخص «الرقم الحالي»؛ و٤٠٠ يخص الجديد */
         if (!r.ok) { pinSay(r.status === 400 ? newF : curF, r.j.error || 'تعذر التغيير'); return; }
-        A = r.j; pCur.value = pNew.value = pRep.value = '';
-        pinBox.hidden = true; openPin.hidden = false; paintPinLead(); paintDevices();
+        A = r.j; closePin(); paintPinLead(); paintDevices();
         S.toast(r.j.closed ? 'تغير رقمك السري، وخرجت أجهزتك الأخرى' : 'تغير رقمك السري');
       }).catch(function(e){ pinGo.disabled = false; if (e.message !== 'auth') pinSay(repF, 'لا اتصال — لم يتغير الرقم.'); });
     });

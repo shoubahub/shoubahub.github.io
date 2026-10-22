@@ -291,11 +291,11 @@
       var key = r.name + '|' + r.grade, b = document.createElement('button'), wk = document.createElement('div');
       b.type = 'button'; b.className = 'tr ptr';
       b.innerHTML = '<span class="who"><b>' + esc(r.name) + '</b><small>' + esc(r.grade) + '</small></span>'
-        + '<span class="ls">' + esc(r.lessons.map(function (l) { return l.t; }).join(' · ')) + '</span>'
+        + '<span class="ls">' + esc(r.lessons.map(function (l) { return F.planTitle(l.t); }).join(' · ')) + '</span>'
         + '<span class="pp">' + (r.per ? esc(r.per) + ' ح' : '') + '</span><span class="chev" aria-hidden="true">‹</span>';
       wk.className = 'pwk';
       wk.innerHTML = r.lessons.map(function (l) {
-        return '<div class="l"><span>' + esc(l.t) + '</span><em>' + (l.p ? esc(l.p) + ' ح' : '') + '</em></div>';
+        return '<div class="l"><span>' + esc(F.planTitle(l.t)) + '</span><em>' + (l.p ? esc(l.p) + ' ح' : '') + '</em></div>';
       }).join('');
       function sync() { var on = !!planOpen[key]; b.classList.toggle('open', on); wk.hidden = !on; b.setAttribute('aria-expanded', on ? 'true' : 'false'); }
       b.addEventListener('click', function () { planOpen[key] = !planOpen[key]; sync(); });

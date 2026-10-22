@@ -309,7 +309,8 @@
     });
     /* العنوان يتبع الاسبوع المختار (معاينة السلوك 2026-10-22): اسبوع الزائر «هذا الأسبوع» وغيره «الأسبوع N» */
     $('planTitle').textContent = +P.n === +now.n ? 'هذا الأسبوع في المنهج' : 'الأسبوع ' + P.n + ' في المنهج';
-    $('planLine').innerHTML = 'الأسبوع <b>' + esc(P.n) + '</b> من ' + esc(total) + ' · ' + esc(weekRange(P.from, P.to)) + ' — حسب خطط التوجيه';
+    /* سطر الاسبوع (المطوّر البصري 2026-10-22): غير اسبوع الزائر بلا «الأسبوع» — العنوان يذكره */
+    $('planLine').innerHTML = (+P.n === +now.n ? 'الأسبوع ' : '') + '<b>' + esc(P.n) + '</b> من ' + esc(total) + ' · ' + esc(weekRange(P.from, P.to)) + ' — حسب خطط التوجيه';
     if (!P.rows.length) {
       box.innerHTML = '<div class="tr ptr"><span class="ls none">لا دروس في الخطة لهذا الأسبوع</span></div>';
       return;

@@ -154,6 +154,24 @@ ok(/<h2 id="planTitle">هذا الأسبوع في المنهج<\/h2>/.test(fh)
   && fh.includes("$('planTitle').textContent = +P.n === +now.n ? 'هذا الأسبوع في المنهج' : 'الأسبوع ' + P.n + ' في المنهج';"),
   'face.html: عنوان القسم يتبع الاسبوع المختار');
 
+// سطر الاسبوع (المطوّر البصري 2026-10-22): اسبوع الزائر «الأسبوع N من M · …» كاملا، وغيره «N من M · …» (العنوان يذكر الاسبوع)
+ok(fh.includes("$('planLine').innerHTML = (+P.n === +now.n ? 'الأسبوع ' : '') + '<b>' + esc(P.n) + '</b> من ' + esc(total) + ' · ' + esc(weekRange(P.from, P.to)) + ' — حسب خطط التوجيه';"),
+  'face.html: سطر الاسبوع بلا «الأسبوع» لغير اسبوع الزائر، ولاحقته كما هي');
+{
+  const m = fh.match(/function weekRange[\s\S]*?\n  \}\n/)[0];
+  const line = (sel, nowN) => {
+    const box = {};
+    const ctx = { F, esc: x => String(x), now: { n: nowN }, P: F.planWeek(pack, sel), total: pack.weeks.length, $: () => box };
+    vm.createContext(ctx);
+    vm.runInContext(m + fh.match(/\$\('planLine'\)\.innerHTML = [^\n]*/)[0], ctx);
+    return box.innerHTML.replace(/<\/?b>/g, '');
+  };
+  const N = pack.weeks.length;
+  ok(line(5, 5) === 'الأسبوع 5 من ' + N + ' · 11 – 15 أكتوبر — حسب خطط التوجيه', 'اسبوع الزائر: السطر كاملا', line(5, 5));
+  ok(line(8, 5) === '8 من ' + N + ' · 1 – 5 نوفمبر — حسب خطط التوجيه', 'اسبوع آخر: «8 من M · 1 – 5 نوفمبر» بلا «الأسبوع»', line(8, 5));
+  ok(line(3, 5).startsWith('3 من ') && !line(3, 5).includes('الأسبوع'), 'وكذا اسبوع سابق', line(3, 5));
+}
+
 // ٦) فتح السطر: الملخص وحصصه يخفيان فلا يتكرران فوق القائمة (face.css)
 const css = read('face.css');
 ok(/\.ptr\.open \.ls,\s*\.face-pub \.ptr\.open \.pp\{visibility:hidden\}/.test(css), 'السطر المفتوح يخفي ملخصه وحصصه');

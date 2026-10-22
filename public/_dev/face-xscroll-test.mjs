@@ -33,9 +33,10 @@ ok(fb.includes('-webkit-line-clamp:2') && fb.includes('display:-webkit-box') && 
 ok(/overflow-x:auto/.test(rule('.nowrow')), '«الآن» يبقى يمرر افقيا');
 ok(rule('.xwrap') === 'position:relative', 'غلاف نسبي يحمل السهمين');
 const me = rule('.nowrow.more-end'), ms = rule('.nowrow.more-start');
-ok(me.includes('mask-image:linear-gradient(to right,transparent 0,#000 28px)') && me.includes('-webkit-mask-image'), 'more-end: يبهت الطرف الايسر ٢٨', me);
-ok(ms.includes('mask-image:linear-gradient(to left,transparent 0,#000 28px)') && ms.includes('-webkit-mask-image'), 'more-start: يبهت الطرف الايمن ٢٨', ms);
-ok(/\.nowrow\.more-start\.more-end\{[^}]*28px,#000 calc\(100% - 28px\),transparent 100%/.test(css), 'وبالصنفين معا: الطرفان');
+ok(me.includes('-webkit-mask-image:linear-gradient(to right,transparent 0,transparent 30px,#000 56px);mask-image:linear-gradient(to right,transparent 0,transparent 30px,#000 56px)') && me.includes('-webkit-mask-image'), 'more-end: الطرف الايسر شفاف ٣٠ ثم يبهت حتى ٥٦', me);
+ok(ms.includes('-webkit-mask-image:linear-gradient(to left,transparent 0,transparent 30px,#000 56px);mask-image:linear-gradient(to left,transparent 0,transparent 30px,#000 56px)') && ms.includes('-webkit-mask-image'), 'more-start: الطرف الايمن شفاف ٣٠ ثم يبهت حتى ٥٦', ms);
+const both = 'linear-gradient(to right,transparent 0,transparent 30px,#000 56px,#000 calc(100% - 56px),transparent calc(100% - 30px),transparent 100%)';
+ok(rule('.nowrow.more-start.more-end') === '-webkit-mask-image:' + both + ';\n  mask-image:' + both, 'وبالصنفين معا: الطرفان بالقيم نفسها', rule('.nowrow.more-start.more-end'));
 const xa = rule('.xarr');
 ok(['width:26px', 'height:26px', 'background:var(--shouba-raised)', 'border:1px solid var(--shouba-line)', 'box-shadow:var(--shadow-card)',
   'color:var(--shouba-navy)', 'opacity:0', 'transition:opacity 160ms', 'top:50%'].every(x => xa.includes(x)), 'السهم: ٢٦ بالقيم المعتمدة', xa);

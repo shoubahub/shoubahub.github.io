@@ -61,7 +61,7 @@
         </section>
 
         <section hidden>
-          <div class="sect"><div class="h">خطة الأسبوع في الواجهة</div></div>
+          <div class="sect"><div class="h">هذا الأسبوع في المنهج</div></div>
           <div class="segs sm" id="plSegs"></div>
           <div class="thint" id="plHint"></div>
         </section>
@@ -228,7 +228,7 @@
     });
   }
 
-  /* ── خطة الاسبوع في الواجهة: ظاهرة (الافتراضي) او مخفية — ينشر مع الواجهة ── */
+  /* ── هذا الاسبوع في المنهج: ظاهرة (الافتراضي) او مخفية — ينشر مع الواجهة ── */
   function paintPlan() {
     var box = $('plSegs'), on = face().plan !== false, pk = planPack();
     box.innerHTML = '';
@@ -239,11 +239,11 @@
         var f = face();
         if (x[0]) delete f.plan; else f.plan = false;
         setFace(f);
-        S.toast((x[0] ? 'خطة الأسبوع ظاهرة' : 'خطة الأسبوع مخفية') + ' — انشر ليظهر على الرابط');
+        S.toast((x[0] ? 'خطة الأسبوع ظاهرة' : 'خطة الأسبوع مخفية') + ' — انشر ليسري على الرابط');
       });
       box.appendChild(b);
     });
-    $('plHint').textContent = !on ? 'لا تظهر على الواجهة.'
+    $('plHint').textContent = !on ? 'لا يظهر على الواجهة.'
       : pk ? 'دروس الأسبوع لكل مادة لها خطة معتمدة، كما في خطط التوجيه.'
       : 'لا خطط معتمدة لمواد الشعبة بعد، فلا يظهر القسم.';
   }

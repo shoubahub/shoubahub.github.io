@@ -260,6 +260,19 @@
     var weeks = cal.filter(function (c) { return used[c.n]; }).map(function (c) { return { n: c.n, from: c.from, to: c.to }; });
     return rows.length ? { weeks: weeks, rows: rows } : null;
   };
+  /* عنوان الدرس للعرض (2026-10-22، معاينة السلوك): علامات المصدر من نص الخطة — ولا يمس ملف الخطط ولا اللوحة.
+     لكل مقطع (المقاطع بـ « · »): تحذف النجمة والنقطة في اوله وآخره، ورقم الترقيم في اوله «4-» «4 -» «4)» «4.» يصير «4. »
+     (ورقم يليه رقم كـ«2-1» «6-2)» ترقيم درس فيبقى)، والقوس المقلوب حول رقم وحده «)3-2(» يعدل «(3-2)»، والمسافات تضم.
+     وما سوى ذلك من تشوه النسخ يبقى كما هو. والمقطع الفارغ بعدها يسقط */
+  var MARK = '*•●▪◦○■□►✓';
+  function cleanSeg(s) {
+    s = str(s).replace(/\s+/g, ' ');
+    s = s.replace(new RegExp('^[' + MARK + '\\s]+|[' + MARK + '\\s]+$', 'g'), '');
+    s = s.replace(/^([0-9٠-٩]+)\s*[-–).]\s*(?=[^0-9٠-٩\s\-–).])/, '$1. ');
+    s = s.replace(/\)\s*([0-9٠-٩]+(?:\s*[-–]\s*[0-9٠-٩]+)*)\s*\(/g, function (m, d, i) { return (i && !/\s/.test(s[i - 1]) ? ' ' : '') + '(' + d + ')'; });
+    return s;
+  }
+  F.planTitle = function (t) { return str(t).split(' · ').map(cleanSeg).filter(Boolean).join(' · '); };
   /* اسبوع الزائر: من احده الى سبته (الجمعة والسبت للاسبوع الذي مضى، كاللوحة). وقبل الفصل وبعده وفي عطلة ليست في
      التقويم: لا اسبوع — فيختفي القسم كله بلا نص. ويعيد { n, from, to, rows:[{ name, grade, lessons, per }] } */
   F.planNow = function (plan, today) {
@@ -267,7 +280,7 @@
     var wk = arr(plan.weeks).filter(function (w) { return w && w.from <= today && today <= F.addDays(w.to, 2); })[0];
     if (!wk) return null;
     var rows = arr(plan.rows).map(function (r) {
-      var ls = arr((r.w || {})[wk.n]);
+      var ls = arr((r.w || {})[wk.n]).map(function (l) { return { t: F.planTitle(l.t), p: +l.p || 0 }; }).filter(function (l) { return l.t; });
       return { name: r.name, grade: r.grade, lessons: ls, per: ls.reduce(function (a, l) { return a + (+l.p || 0); }, 0) };
     }).filter(function (r) { return r.lessons.length; });
     return rows.length ? { n: wk.n, from: wk.from, to: wk.to, rows: rows } : null;

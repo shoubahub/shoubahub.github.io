@@ -1335,9 +1335,21 @@ Shouba.nextLabel = function (def) {
       b.type = 'button'; b.className = 'xsarr'; b.setAttribute('aria-label', 'المزيد'); b.tabIndex = -1;
       b.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="' + CHEV[side]
         + '" stroke="#16456E" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      /* النهاية يسارا: التمرير اليها يخفض scrollLeft */
+      /* النهاية يسارا: التمرير اليها يخفض scrollLeft.
+         ⚠ حاوية بنقاط التقاط (data-xscroll-snap="محدد"): الخطوة الى النقطة التالية بالضبط لا ٨٠٪ — اعمدة الجدول الكامل
+           غير متساوية (269 ثم 274)، فكانت الخطوة الثابتة يعيدها scroll-snap الى اليوم نفسه (رصد معاينة ١٢٢، 2026-10-22) */
       b.addEventListener('click', function () {
-        el.scrollBy({ left: (side === 'end' ? -1 : 1) * el.clientWidth * 0.8, behavior: still ? 'auto' : 'smooth' });
+        var dir = side === 'end' ? -1 : 1, dx = dir * el.clientWidth * 0.8, snap = el.getAttribute('data-xscroll-snap');
+        if (snap) {
+          /* خط الالتقاط: حافة البداية (اليمين) بعد العمود الثابت. d<0 = نقطة في جهة النهاية، d>0 = في جهة البداية */
+          var line = el.getBoundingClientRect().right - (parseFloat(getComputedStyle(el).scrollPaddingInlineStart) || 0), best = null;
+          [].forEach.call(el.querySelectorAll(snap), function (h) {
+            var d = h.getBoundingClientRect().right - line;
+            if (dir < 0 ? d < -2 && (best === null || d > best) : d > 2 && (best === null || d < best)) best = d;
+          });
+          if (best !== null) dx = best;
+        }
+        el.scrollBy({ left: dx, behavior: still ? 'auto' : 'smooth' });
       });
       wrap.appendChild(b); arr[side] = b;
     });

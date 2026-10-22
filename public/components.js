@@ -1346,8 +1346,11 @@ Shouba.nextLabel = function (def) {
       el.classList.toggle('more-end', end); el.classList.toggle('more-start', start);
       /* السهم على حافة الحاوية نفسها بازاحة 4 للداخل — والحاوية قد تكون ذات هامش داخل غلافها */
       var l = el.offsetLeft, r = wrap.clientWidth - l - el.offsetWidth, mid = el.offsetTop + el.offsetHeight / 2;
+      /* عمود ثابت في البداية = scroll-padding-inline-start: تنبيه البداية عند حده (عمود الاسماء، 2026-10-22) */
+      var si = parseFloat(getComputedStyle(el).scrollPaddingInlineStart) || 0;
+      el.style.setProperty('--xs-si', si + 'px');
       arr.end.style.left = (l + 4) + 'px'; arr.end.style.top = mid + 'px'; arr.end.classList.toggle('on', end);
-      if (arr.start) { arr.start.style.right = (r + 4) + 'px'; arr.start.style.top = mid + 'px'; arr.start.classList.toggle('on', start); }
+      if (arr.start) { arr.start.style.right = (r + si + 4) + 'px'; arr.start.style.top = mid + 'px'; arr.start.classList.toggle('on', start); }
     }
     el._xs = update;
     el.addEventListener('scroll', update, { passive: true });

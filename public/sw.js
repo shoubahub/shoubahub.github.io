@@ -91,3 +91,32 @@ self.addEventListener('fetch', function (e) {
     })
   );
 });
+
+/* ═══ إشعارات الجوال (2026-11-05، طلب المستخدم: «تظهر على الهاتف ولو دون فتح الموقع») ═══
+   الخادم يرسل { title, body, tag, url } (push.js)، وعامل الخدمة يظهرها والمنصة مغلقة.
+   ⚠ كل إشعار يصل يظهر لا محالة: سفاري يلغي الاشتراك إن وصل إشعار لم يعرض. */
+self.addEventListener('push', function (e) {
+  var m = {};
+  try { m = e.data ? e.data.json() : {}; } catch (x) { m = { body: e.data ? e.data.text() : '' }; }
+  e.waitUntil(self.registration.showNotification(m.title || 'شعبة', {
+    body: m.body || '',
+    tag: m.tag || undefined,
+    lang: 'ar', dir: 'rtl',
+    icon: 'identity/assets/app-icon-approved.png',
+    data: { url: m.url || 'board.html' }
+  }));
+});
+
+/* لمس الإشعار: نافذة المنصة المفتوحة تنتقل إلى الشاشة المعنية، وإلا تفتح نافذة جديدة */
+self.addEventListener('notificationclick', function (e) {
+  e.notification.close();
+  var url = new URL((e.notification.data && e.notification.data.url) || 'board.html', self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
+    for (var i = 0; i < list.length; i++) {
+      var w = list[i];
+      if (w.url.indexOf(self.registration.scope) === 0 && 'focus' in w)
+        return w.focus().then(function (f) { return (f || w).navigate ? (f || w).navigate(url) : null; }).catch(function () {});
+    }
+    return self.clients.openWindow ? self.clients.openWindow(url) : null;
+  }));
+});

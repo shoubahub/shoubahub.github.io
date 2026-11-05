@@ -56,6 +56,11 @@ require('./plans').routes(app, require('./auth').requireAdmin, require('./auth')
 /* واجهة الشعبة المنشورة: رابط عام بلا حساب، وبوابة الصور المنشورة · face.js (2026-09-20) */
 require('./face').routes(app, require('./auth').requireUser);
 
+/* إشعارات الجوال: الاشتراك، والفحص كل دقيقة، وإشعار البناء الجديد · push.js (2026-11-05) */
+const push = require('./push');
+push.routes(app, require('./auth').requireUser);
+push.start(PUBLIC);
+
 app.get('/health', (_req, res) => res.json({ ok: true, stage: 'server' }));
 
 // SPA fallback — أي مسار غير معروف يعيد index.html

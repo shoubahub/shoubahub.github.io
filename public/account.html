@@ -238,7 +238,15 @@
       }).catch(function(e){ pinGo.disabled = false; if (e.message !== 'auth') pinSay(repF, 'لا اتصال — لم يتغير الرقم.'); });
     });
 
-    /* ④ الأجهزة */
+    /* ④ إشعارات الجوال (2026-11-05، طلب المستخدم: «تظهر على الهاتف ولو دون فتح الموقع») — push.js وsw.js.
+       لكل جهاز اشتراكه: التفعيل هنا يخص هذا الجهاز وحده */
+    wrap.appendChild(el('div', 'part', 'إشعارات الجوال'));
+    var ntLead = el('p', 'lead2'), ntBtn = el('button', 'btn-ghost'), ntMsg = el('div', 'msg');
+    ntBtn.type = 'button'; ntBtn.hidden = true;
+    wrap.appendChild(ntLead); wrap.appendChild(ntBtn); wrap.appendChild(ntMsg);
+    paintNotify(ntLead, ntBtn, ntMsg);
+
+    /* ⑤ الأجهزة */
     wrap.appendChild(el('div', 'part', 'أجهزتك'));
     var devLead = el('p', 'lead2');
     wrap.appendChild(devLead);
@@ -266,6 +274,78 @@
       }).catch(function(e){ others.disabled = false; if (e.message !== 'auth') say(devMsg, 'لا اتصال — لم تخرج الأجهزة.'); });
     });
     out.addEventListener('click', signOut);
+  }
+
+  /* ── إشعارات الجوال: حال هذا الجهاز وزره ──────────────
+     ⚠ آيفون لا يعطي الإشعارات إلا للمنصة المضافة إلى الشاشة الرئيسية (iOS 16.4 فأحدث) — ففي سفاري
+       يظهر الإرشاد بدل الزر. وطلب الإذن داخل الضغطة نفسها: المتصفح يرفضه بلا فعل من المستخدم */
+  function paintNotify(lead, btn, msg){
+    var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    var can = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    var WHAT = ['تحديثات المنصة، ومواعيدك قبلها بربع ساعة، وملخص يومك الساعة ', '7:00', '.'];
+    function text(pre){
+      lead.textContent = '';
+      lead.appendChild(document.createTextNode(pre + WHAT[0])); lead.appendChild(num(WHAT[1]));
+      lead.appendChild(document.createTextNode(WHAT[2]));
+    }
+    if (!can) {
+      lead.textContent = ios && !standalone
+        ? 'على آيفون تصل الإشعارات إلى المنصة المضافة إلى الشاشة الرئيسية وحدها: افتحها في سفاري، والمس زر المشاركة، ثم «إضافة إلى الشاشة الرئيسية». ثم افتحها من أيقونتها وارجع إلى هنا.'
+        : 'هذا المتصفح لا يدعم الإشعارات. افتح المنصة في متصفح محدّث.';
+      return;
+    }
+    function blocked(){
+      lead.textContent = 'الإشعارات ممنوعة لهذه المنصة في إعدادات جهازك. اسمح بها من الإعدادات، ثم ارجع إلى هنا.';
+      btn.hidden = true;
+    }
+    function show(on){
+      text(on ? 'مفعّلة على هذا الجهاز: ' : 'تصلك على هذا الجهاز والمنصة مغلقة: ');
+      btn.textContent = on ? 'أوقف الإشعارات على هذا الجهاز' : 'فعّل الإشعارات على هذا الجهاز';
+      btn.hidden = false; btn.disabled = false; btn.dataset.on = on ? '1' : '';
+    }
+    function u8(b64){
+      var s = (b64 + '===='.slice((b64.length % 4) || 4)).replace(/-/g, '+').replace(/_/g, '/'), raw = atob(s), out = new Uint8Array(raw.length);
+      for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+      return out;
+    }
+    var reg = null;
+    navigator.serviceWorker.ready.then(function(r){
+      reg = r;
+      return r.pushManager.getSubscription();
+    }).then(function(sub){
+      if (Notification.permission === 'denied') return blocked();
+      /* جهاز مشترك من قبل: يؤكد اشتراكه عند الخادم بلا إشعار ترحيب — فلو فقده الخادم عاد */
+      if (sub && Notification.permission === 'granted') api('POST', 'api/push/subscribe', { subscription: sub.toJSON(), quiet: true }).catch(function(){});
+      show(!!sub && Notification.permission === 'granted');
+    }).catch(function(){ show(false); });
+
+    btn.addEventListener('click', function(){
+      say(msg, ''); btn.disabled = true;
+      if (btn.dataset.on) {
+        reg.pushManager.getSubscription().then(function(sub){
+          if (!sub) return;
+          var ep = sub.endpoint;
+          return sub.unsubscribe().then(function(){ return api('POST', 'api/push/unsubscribe', { endpoint: ep }); });
+        }).then(function(){ show(false); S.toast('أوقفت الإشعارات على هذا الجهاز'); })
+          .catch(function(e){ btn.disabled = false; if (e.message !== 'auth') say(msg, 'تعذر الإيقاف — أعد المحاولة.'); });
+        return;
+      }
+      Notification.requestPermission().then(function(p){
+        if (p !== 'granted') { btn.disabled = false; if (p === 'denied') blocked(); return; }
+        return api('GET', 'api/push/key').then(function(r){
+          if (!r.ok || !r.j.key) throw new Error('key');
+          return reg.pushManager.getSubscription().then(function(old){
+            return old || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: u8(r.j.key) });
+          });
+        }).then(function(sub){
+          return api('POST', 'api/push/subscribe', { subscription: sub.toJSON() });
+        }).then(function(r){
+          if (!r.ok) throw new Error('save');
+          show(true); S.toast('فُعّلت الإشعارات على هذا الجهاز');
+        });
+      }).catch(function(e){ btn.disabled = false; if (e.message !== 'auth') say(msg, 'تعذر التفعيل — تأكد من الاتصال وأعد المحاولة.'); });
+    });
   }
 
   /* تسجيل الخروج: يرسل ما لم يرسل من تعديلات أولا، فإن تعذر سأل قبل الخروج —

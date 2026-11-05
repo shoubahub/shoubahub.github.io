@@ -318,6 +318,7 @@ function routes(app) {
     db.prepare('DELETE FROM shouba WHERE user_id = ?').run(id);
     db.prepare('DELETE FROM feedback WHERE user_id = ?').run(id);
     files.dropFor(id);                      /* ومرفقاته — لا يبقى ملف بلا صاحب */
+    require('./push').dropFor(id);          /* واشتراكات أجهزته في الإشعارات (2026-11-05) */
     return db.prepare('DELETE FROM users WHERE id = ?').run(id).changes;
   });
   app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {

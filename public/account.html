@@ -284,14 +284,16 @@
     var standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
     var can = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
     var WHAT = ['تحديثات المنصة، ومواعيدك قبلها بربع ساعة، وملخص يومك الساعة ', '7:00', '.'];
-    function text(pre){
+    function text(pre, on){
       lead.textContent = '';
+      /* «مفعّلة» عريضة بلون النجاح (المطوّر البصري 2026-11-05) */
+      if (on) { var b = el('b', null, 'مفعّلة'); b.style.color = 'var(--shouba-success)'; lead.appendChild(b); }
       lead.appendChild(document.createTextNode(pre + WHAT[0])); lead.appendChild(num(WHAT[1]));
       lead.appendChild(document.createTextNode(WHAT[2]));
     }
     if (!can) {
       lead.textContent = ios && !standalone
-        ? 'على آيفون تصل الإشعارات إلى المنصة المضافة إلى الشاشة الرئيسية وحدها: افتحها في سفاري، والمس زر المشاركة، ثم «إضافة إلى الشاشة الرئيسية». ثم افتحها من أيقونتها وارجع إلى هنا.'
+        ? 'على آيفون تصل الإشعارات إلى المنصة المضافة إلى الشاشة الرئيسية وحدها: افتحها في سفاري، والمس زر المشاركة، ثم «إضافة إلى الشاشة الرئيسية»، وافتحها من أيقونتها وارجع إلى هنا.'
         : 'هذا المتصفح لا يدعم الإشعارات. افتح المنصة في متصفح محدّث.';
       return;
     }
@@ -300,7 +302,7 @@
       btn.hidden = true;
     }
     function show(on){
-      text(on ? 'مفعّلة على هذا الجهاز: ' : 'تصلك على هذا الجهاز والمنصة مغلقة: ');
+      text(on ? ' على هذا الجهاز: ' : 'تصلك على هذا الجهاز والمنصة مغلقة: ', on);
       btn.textContent = on ? 'أوقف الإشعارات على هذا الجهاز' : 'فعّل الإشعارات على هذا الجهاز';
       btn.hidden = false; btn.disabled = false; btn.dataset.on = on ? '1' : '';
     }

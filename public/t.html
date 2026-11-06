@@ -81,7 +81,14 @@
   document.head.appendChild(mf);
 
   api('GET', API).then(function(r){
-    if (!r.ok) { say(loadMsg, r.j.error || 'هذا الرابط لم يعد يعمل.'); return; }
+    /* الرابط الباطل او المبطل ليس خطأ من المعلم — فلا لون خطأ: عنوان ونص بعناصر الصفحة (المطوّر البصري 2026-11-06) */
+    if (r.status === 404) {
+      loadMsg.remove();
+      wrap.appendChild(el('div', 'part', 'هذا الرابط لم يعد يعمل'));
+      wrap.appendChild(el('p', 'lead2', 'اطلب من رئيس الشعبة رابطاً جديداً.'));
+      return;
+    }
+    if (!r.ok) { say(loadMsg, 'تعذر الوصول إلى الخادم — أعد فتح الصفحة بعد قليل.'); return; }
     P = r.j; loadMsg.remove(); paint();
   }).catch(function(){ say(loadMsg, 'لا اتصال — افتح الصفحة حين تتصل بالإنترنت.'); });
 

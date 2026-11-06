@@ -9,8 +9,8 @@
 <title>واجهة الشعبة</title>
 <meta name="theme-color" content="#E8A33D" /><!-- --shouba-amber: أعلى تدرج الترويسة -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=127" />
-<link rel="stylesheet" href="face.css?v=127" />
+<link rel="stylesheet" href="identity/tokens.css?v=128" />
+<link rel="stylesheet" href="face.css?v=128" />
 <!-- ===========================================================================
      واجهة الشعبة — صفحة الزائر (2026-10-20، الاتجاه المعتمد بعد «أنسب للعمل وليست للعرض»)
      تبويبان تحت الترويسة (#الشعبة · #الجدول): الشعبة للآن والفعاليات والحصيلة، والجدول الكامل في تبويبه.
@@ -127,8 +127,8 @@
   <button type="button" class="close" id="shClose">أغلق</button>
 </div>
 
-<script src="icons.js?v=127"></script>
-<script src="face-data.js?v=127"></script>
+<script src="icons.js?v=128"></script>
+<script src="face-data.js?v=128"></script>
 <script>
 (function () {
   var F = window.ShoubaFace, SNAP = null, FILES = 'api/pub/file/', DONE = [];
@@ -404,10 +404,16 @@
     var r = e.target.closest('.per.fold, .per.open'); if (!r) return;
     var i = +r.getAttribute('data-i'); dayOpen[i] = !dayOpen[i]; paintDay();
   });
-  /* العداد يتجدد كل ثانية كاللوحة — نصه وحده، بلا اعادة رسم */
+  /* العداد يتجدد كل ثانية كاللوحة — نصه وحده، بلا اعادة رسم. فاذا انتهت الحصة (او بدأت التالية) يعاد رسم الجدول في الثانية نفسها،
+     فلا يبقى «الآن · باقي 0:00» حتى رسم الثلاثين ثانية (رصد معاينة السلوك على بناء 127) */
   setInterval(function () {
-    var el = SNAP && $('today').querySelector('.per.now .state'), r = el && el.closest('.per'), t = r && (SNAP.times || [])[+r.getAttribute('data-i')];
-    if (t) el.textContent = leftTxt(t);
+    if (!SNAP || $('paneJ').hidden) return;
+    var d = clock(), m = d.getHours() * 60 + d.getMinutes(), times = SNAP.times || [], live = '';
+    if (F.now(times, SNAP.days, d).day === curDay) times.forEach(function (t, i) { if (!live && m >= hm(t.from) && m < hm(t.to)) live = String(i); });
+    var el = $('today').querySelector('.per.now .state'), r = el && el.closest('.per');
+    var shown = r ? r.getAttribute('data-i') : '';
+    if (live !== shown && (live || shown)) { paintDay(); return; }
+    if (el && times[+shown]) el.textContent = leftTxt(times[+shown]);
   }, 1000);
   $('days').addEventListener('click', function (e) {
     var b = e.target.closest('.day'); if (!b) return;

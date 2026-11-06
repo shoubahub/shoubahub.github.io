@@ -7,7 +7,9 @@
      ② تنبيهات الجدول: قبل الحصة بخمس دقائق، وعند بدايتها، وقبل نهايتها بخمس.
         والمعلم يطفئ من صفحته ما لا يريد منها (تصله الثلاثة ابتداء).
      ③ رسالة حرة يرسلها رئيس الشعبة من «المعلمون»: للكل أو لمن يختار — ولا تطفأ.
-     (مواعيد التسليم: المرحلة الثانية.)
+     ④ مواعيد التسليم (المرحلة الثانية، 2026-11-06): يضيفها رئيس الشعبة من «المعلمون» بعنوان وتاريخ، للكل أو لمن
+        يختار — في وثيقة الشعبة (deadlines). تنبيهان 7:00: آخر يوم دراسي قبل الموعد، ويوم الموعد. ومن أشّر له
+        «سُلّم» لا يصله ما بقي. ويرى المعلم مواعيده القادمة في «إشعاراتي».
 
    ⚠ الرابط هو المفتاح: من عرفه فعّل إشعارات ذلك المعلم — فلا يخرج منه إلا
      اسمه وقسمه وحصصه. وإبطاله يحذف أجهزته كلها، ويصدر رابطا غيره.
@@ -162,6 +164,51 @@ function due(data, name, prefs, c, token) {
   return out;
 }
 
+/* ── مواعيد التسليم (المرحلة الثانية) ───────────────────
+   في وثيقة الشعبة: deadlines = [{ id, title, date: YYYY-MM-DD, to: [أسماء], done: [من سلّم] }]
+   ⚠ التنبيه 7:00 — ومن فاته (موعد أضيف بعدها، او خادم كان متوقفا) يلحقه يومه حتى 20:00، لا بعدها */
+const DL_FROM = 7 * 60, DL_TO = 20 * 60;
+const WEEK = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
+function utc(iso) { const p = iso.split('-').map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2])); }
+function addDays(iso, n) { const d = utc(iso); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function dowOf(iso) { return utc(iso).getUTCDay(); }
+/* يوم التنبيه الأول: اليوم السابق للموعد، فإن كان عطلة (الجمعة والسبت) فآخر يوم دراسي قبله (قرار المستخدم 17:36) */
+function alertDay(iso) { let p = addDays(iso, -1); while (dowOf(p) > 4) p = addDays(p, -1); return p; }
+function dayMonth(iso) { const p = iso.split('-'); return (+p[2]) + ' ' + (ref().months[+p[1] - 1] || ''); }
+/* «اليوم» · «غداً» · «الأحد 15 نوفمبر» */
+function whenText(iso, today) {
+  if (iso === today) return 'اليوم';
+  if (iso === addDays(today, 1)) return 'غداً';
+  return WEEK[dowOf(iso)] + ' ' + dayMonth(iso);
+}
+function deadlinesOf(data, name) {
+  return (data && Array.isArray(data.deadlines) ? data.deadlines : []).filter(d => d && typeof d.id === 'string'
+    && String(d.title || '').trim() && ISO_RE.test(String(d.date || ''))
+    && Array.isArray(d.to) && d.to.indexOf(name) > -1 && !(Array.isArray(d.done) && d.done.indexOf(name) > -1));
+}
+/* ما يستحق الإرسال الآن من مواعيد المعلم — دالة خالصة */
+function dueDeadlines(data, name, c, token) {
+  const out = [];
+  if (!data || teachersOf(data).indexOf(name) === -1) return out;
+  if (c.min < DL_FROM || c.min >= DL_TO) return out;
+  const url = '/t/' + (token || '') + '#' + encodeURIComponent('إشعاراتي');
+  deadlinesOf(data, name).forEach(d => {
+    const title = String(d.title).trim(), m = { body: title, tag: 'dl' + d.id, url, ttl: 12 * 3600, urgency: 'high' };
+    if (c.date === alertDay(d.date))
+      out.push({ key: 'dl:' + d.id + ':pre:' + d.date,
+        msg: Object.assign({ title: (d.date === addDays(c.date, 1) ? 'غداً' : WEEK[dowOf(d.date)]) + ' موعد تسليم' }, m) });
+    if (c.date === d.date)
+      out.push({ key: 'dl:' + d.id + ':day:' + d.date, msg: Object.assign({ title: 'اليوم موعد تسليم' }, m) });
+  });
+  return out;
+}
+/* مواعيده القادمة لصفحته: ما لم يسلّمه، من اليوم فصاعدا، بالأقرب */
+function upcoming(data, name, today) {
+  return deadlinesOf(data, name).filter(d => d.date >= today).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+    .map(d => ({ title: String(d.title).trim(), date: d.date, when: whenText(d.date, today) }));
+}
+
 /* ── الفحص كل دقيقة ──────────────────────────────────── */
 function tick(now) {
   const c = push.clock(now);
@@ -170,10 +217,12 @@ function tick(now) {
   rows.forEach(r => {
     const L = live(r.token);
     if (!L) return;
-    due(L.data, L.row.name, prefsOf(L.row), c, L.row.token).forEach(j => jobs.push(once(L.row.token, j.key, j.msg)));
+    due(L.data, L.row.name, prefsOf(L.row), c, L.row.token).concat(dueDeadlines(L.data, L.row.name, c, L.row.token))
+      .forEach(j => jobs.push(once(L.row.token, j.key, j.msg)));
   });
   return Promise.all(jobs);
 }
+/* ⚠ مفتاح تنبيه الموعد يحمل تاريخه، ولا يعود يومه بعد مضيه — فثلاثة أيام تكفي هنا ايضا */
 function sweep() { db.prepare("DELETE FROM teacher_sent WHERE sent_at < datetime('now','-3 days')").run(); }
 
 /* ── المسارات ───────────────────────────────────────── */
@@ -239,7 +288,8 @@ function routes(app, requireUser) {
   app.get('/api/t/:token', (req, res) => {
     const L = T(req, res); if (!L) return;
     res.json({ name: L.row.name, department: L.data.department || '', school: L.data.school || '',
-      prefs: prefsOf(L.row), key: push.keys().publicKey, devices: subsOf(L.row.token).length });
+      prefs: prefsOf(L.row), key: push.keys().publicKey, devices: subsOf(L.row.token).length,
+      deadlines: upcoming(L.data, L.row.name, push.clock().date) });
   });
   /* الواجهة المنشورة لصاحب الرابط — كما تقرؤها /api/face/<الرمز> بلا زيادة */
   app.get('/api/t/:token/face', (req, res) => {
@@ -324,4 +374,4 @@ function start() {
   sweep();
 }
 
-module.exports = { routes, pages, start, tick, due, prefsOf, periodsOf };
+module.exports = { routes, pages, start, tick, due, dueDeadlines, upcoming, alertDay, prefsOf, periodsOf };

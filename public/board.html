@@ -961,6 +961,15 @@
         + (x.late ? 'موعده ' + (MN[x.month - 1] || '') + ' ولم يؤشر' : x.st === 'doing' ? 'جار — موعده هذا الشهر' : 'موعده هذا الشهر'),
       href:'record.html?id=' + encodeURIComponent(x.rec) + '&focus=' + encodeURIComponent(x.row) });
   });
+  /* مواعيد التسليم (2026-11-06، قرار المستخدم 17:37: «مع اضافته للوحة الرئيسية في بحاجة الى اجراء اذا قرب الموعد او
+     بيومه كتوقيت المعلم»): من يوم تنبيه المعلم الأول، ويبقى بعد مضيه حتى يؤشّر تسليم الجميع — والسطر يفتح الموعد */
+  (Shouba.deadlinesDue ? Shouba.deadlinesDue() : []).forEach(function(x){
+    var p = x.dl.date.split('-'), got = x.total - x.pending.length;
+    items.push({ ini:String(+p[2]), title:x.dl.title,
+      badge:x.state === 'late' ? 'متأخر' : x.state === 'today' ? 'اليوم' : 'قريب',
+      text:'موعد تسليم ' + Shouba.dayMonth(x.dl.date) + ' · سلّم ' + got + ' من ' + x.total,
+      href:'teachers.html?dl=' + encodeURIComponent(x.dl.id) });
+  });
   /* ⚠ حذف بند «دروس سابقة لم تؤشر» (2026-09-05): اتهام بلا دليل — لا باب تأشير
      أصلا، فكان كل معلم متأخرا بحكم البناء. يعود يوم يصير للإنجاز مصدر حقيقي
      (تأشير ما قطعه المعلم في سجل «ما قطع من المنهج» — الخطوة هـ من شريط الخطة). وحذفت Shouba.behindPlan القديمة

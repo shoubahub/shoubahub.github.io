@@ -40,6 +40,21 @@
 
   /* يبني القسم في wrap ببيانات P (جواب api/t/<الرمز>) */
   function mount(wrap, P){
+    /* مواعيد التسليم القادمة (2026-11-06، قرار المستخدم 17:38): ما لم يسلّمه، بالأقرب — قبل الإشعارات لأنها تتغير وهي ثابتة */
+    var dl = P.deadlines || [];
+    wrap.appendChild(el('div', 'part', 'مواعيد التسليم'));
+    if (!dl.length) wrap.appendChild(el('p', 'lead2', 'لا مواعيد تسليم قادمة.'));
+    else {
+      var dls = el('div', 'stack');
+      dl.forEach(function(d){
+        var r = el('div', 'pick due');
+        r.innerHTML = '<div class="tx"><b></b><small></small></div>';
+        r.querySelector('b').textContent = d.title;
+        r.querySelector('small').textContent = d.when;
+        dls.appendChild(r);
+      });
+      wrap.appendChild(dls);
+    }
     wrap.appendChild(el('div', 'part', 'إشعارات الجوال'));
     var lead = el('p', 'lead2'), btn = el('button', 'btn-ghost'), msg = el('div', 'msg');
     btn.type = 'button'; btn.hidden = true;
@@ -97,8 +112,8 @@
     function show(on){
       lead.textContent = '';
       if (on) { var b = el('b', null, 'مفعّلة'); b.style.color = 'var(--shouba-success)'; lead.appendChild(b); }
-      lead.appendChild(document.createTextNode(on ? ' على هذا الجهاز: تنبيهات حصصك، ورسائل رئيس الشعبة.'
-                                                  : 'تصلك على هذا الجهاز ولو كانت الصفحة مغلقة: تنبيهات حصصك، ورسائل رئيس الشعبة.'));
+      lead.appendChild(document.createTextNode(on ? ' على هذا الجهاز: تنبيهات حصصك ومواعيد التسليم، ورسائل رئيس الشعبة.'
+                                                  : 'تصلك على هذا الجهاز ولو كانت الصفحة مغلقة: تنبيهات حصصك ومواعيد التسليم، ورسائل رئيس الشعبة.'));
       btn.textContent = on ? 'أوقف الإشعارات على هذا الجهاز' : 'فعّل الإشعارات على هذا الجهاز';
       btn.hidden = false; btn.disabled = false; btn.dataset.on = on ? '1' : '';
       prefsShown(on);

@@ -50,6 +50,7 @@
         <div class="vlist" id="list"></div>
         <div class="addrow"><button class="cta" id="add2">أضف معلما</button></div>
         <div class="addrow" id="sendRow" hidden><button class="btn-ghost" id="send">أرسل إشعاراً</button></div>
+        <div class="addrow" id="dlRow" hidden><button class="btn-ghost" id="dlBtn">مواعيد التسليم</button></div>
         <div class="note" id="note"></div>
       </div>
     </div>
@@ -164,7 +165,25 @@
       headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined })
       .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); });
   }
-  tapi('GET', 'api/tpush/links').then(function(r){ if (r.ok) document.getElementById('sendRow').hidden = false; }).catch(function(){});
+  tapi('GET', 'api/tpush/links').then(function(r){
+    if (!r.ok) return;
+    document.getElementById('sendRow').hidden = false;
+    document.getElementById('dlRow').hidden = false;
+  }).catch(function(){});
+  /* بطاقة اختيار (.pick) — للوحة الإرسال ولمواعيد التسليم */
+  function pickRow(title, small, on){
+    var row = document.createElement('div'); row.className = 'pick';
+    row.setAttribute('role', 'checkbox'); row.tabIndex = 0;
+    row.innerHTML = '<span class="mark">' + CHK + '</span><div class="tx"><b></b><small></small></div>';
+    row.querySelector('b').textContent = title;
+    var sm = row.querySelector('small'); sm.textContent = small; if (on) sm.className = 'on';
+    return row;
+  }
+  function set(row, on){ row.classList.toggle('on', on); row.setAttribute('aria-checked', on ? 'true' : 'false'); }
+  function bind(row, tap){
+    row.addEventListener('click', tap);
+    row.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } });
+  }
 
   function sendSheet(){
     tapi('GET', 'api/tpush/links').then(function(r){
@@ -191,15 +210,6 @@
       mb.addEventListener('input', function(){ go.disabled = !mb.value.trim(); if (mb.value.trim()) mw.textContent = ''; });
       var all = true, chosen = {};
       function say(t, good){ mw.textContent = t || ''; mw.classList.toggle('ok', !!good); }
-      function pickRow(title, small, on){
-        var row = document.createElement('div'); row.className = 'pick';
-        row.setAttribute('role', 'checkbox'); row.tabIndex = 0;
-        row.innerHTML = '<span class="mark">' + CHK + '</span><div class="tx"><b></b><small></small></div>';
-        row.querySelector('b').textContent = title;
-        var sm = row.querySelector('small'); sm.textContent = small; if (on) sm.className = 'on';
-        return row;
-      }
-      function set(row, on){ row.classList.toggle('on', on); row.setAttribute('aria-checked', on ? 'true' : 'false'); }
       var rows = [];
       var allRow = pickRow('كل المعلمين', ready.length
         ? 'فعّلها منهم ' + Shouba.count(ready.length,{one:'معلم',two:'معلمان',few:'معلمين',many:'معلما'})
@@ -212,10 +222,6 @@
       function paintTo(){
         set(allRow, all);
         rows.forEach(function(row){ set(row, !all && !!chosen[row.dataset.t]); });
-      }
-      function bind(row, tap){
-        row.addEventListener('click', tap);
-        row.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } });
       }
       bind(allRow, function(){ all = true; chosen = {}; paintTo(); });
       rows.forEach(function(row){ bind(row, function(){
@@ -249,6 +255,148 @@
     }).catch(function(){ Shouba.toast('لا اتصال — الإرسال يحتاج الإنترنت'); });
   }
   document.getElementById('send').addEventListener('click', sendSheet);
+
+  /* مواعيد التسليم (2026-11-06، طلب المستخدم: «ان اضيف له موعد بحيث استلم منه مشروع فينبهه تلقائيا بقرب الموعد او
+     وصول الموعد») — derive.js يحفظها في الوثيقة، وtpush.js ينبه منها المعلم 7:00 في آخر يوم دراسي قبل الموعد ويومه.
+     القائمة هنا (قرار المستخدم 17:37): كل موعد يفتح بأسماء معلميه، وأمام كل اسم «سُلّم» — ومن أشّر له لا يصله ما بقي */
+  var WEEK = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  function whenText(iso){
+    var t = Shouba.todayIso(), p = iso.split('-'), dt = new Date(+p[0], +p[1] - 1, +p[2]);
+    var tm = new Date(); tm.setDate(tm.getDate() + 1);
+    if (iso === t) return 'اليوم';
+    if (iso === Shouba.todayIso(tm)) return 'غداً';
+    return WEEK[dt.getDay()] + ' ' + Shouba.dayMonth(iso);
+  }
+  function tally(dl){
+    var all = Shouba.deadlineTeachers(dl).length, got = all - Shouba.deadlinePending(dl).length;
+    return got === all ? 'سلّم الجميع' : 'سلّم ' + got + ' من ' + all;
+  }
+
+  /* سطور القائمة المفتوحة: «رجوع» من الموعد يعيدها كما تركت، فيتجدد عدّ من سلّم فيها مع كل تأشير */
+  var listRows = [];
+  function repaintList(){
+    listRows.forEach(function(x){ var dl = Shouba.deadline(x.id); if (dl) x.small.textContent = whenText(dl.date) + ' · ' + tally(dl); });
+  }
+  function dlList(){
+    listRows = [];
+    var n = document.createElement('div'); n.className = 'sendform';
+    var list = Shouba.deadlines(), box = document.createElement('div'); box.className = 'vlist'; box.style.padding = '0';
+    if (!list.length) {
+      var e = document.createElement('div'); e.className = 'soon-note';
+      e.textContent = 'أضف موعداً ينتظر فيه تسليماً من معلميك، فيُنبَّه كلٌّ منهم صباح اليوم السابق له وصباح يومه، حتى تؤشّر أنه سلّم.';
+      n.appendChild(e);
+    }
+    list.forEach(function(dl){
+      var b = document.createElement('button'); b.className = 'titem';
+      b.innerHTML = '<span class="ini"></span><div class="tx"><b></b><small></small></div><span class="chev">‹</span>';
+      b.querySelector('.ini').textContent = (+dl.date.split('-')[2]);
+      b.querySelector('b').textContent = dl.title;
+      b.querySelector('small').textContent = whenText(dl.date) + ' · ' + tally(dl);
+      listRows.push({ id: dl.id, small: b.querySelector('small') });
+      b.addEventListener('click', function(){ dlSheet(dl.id, true); });
+      box.appendChild(b);
+    });
+    if (list.length) n.appendChild(box);
+    var add = document.createElement('button'); add.type = 'button'; add.className = 'cta'; add.textContent = 'أضف موعد تسليم';
+    add.addEventListener('click', function(){ dlForm(null); });
+    n.appendChild(add);
+    Shouba.sheet.open('مواعيد التسليم', n);
+  }
+
+  /* الموعد: من سلّم ومن لم يسلّم — والضغطة على الاسم تؤشّر «سُلّم» او ترفعه */
+  function dlSheet(id, step){
+    var dl = Shouba.deadline(id);
+    if (!dl) { Shouba.toast('هذا الموعد محذوف'); return; }
+    var n = document.createElement('div'); n.className = 'sendform';
+    var head = document.createElement('div'); head.className = 'soon-note';
+    function paintHead(){ head.textContent = 'موعده ' + whenText(dl.date) + ' · ' + tally(Shouba.deadline(id) || dl); }
+    paintHead(); n.appendChild(head);
+    var st = document.createElement('div'); st.className = 'field';
+    st.innerHTML = '<label>من سلّم</label>';
+    var stack = document.createElement('div'); stack.className = 'stack'; st.appendChild(stack); n.appendChild(st);
+    Shouba.deadlineTeachers(dl).forEach(function(t){
+      var row = pickRow('أ. ' + Shouba.shortName(t), '', false), sm = row.querySelector('small');
+      function paint(){
+        var on = (Shouba.deadline(id).done || []).indexOf(t) > -1;
+        set(row, on); sm.textContent = on ? 'سلّم' : 'لم يسلّم'; sm.className = on ? 'on' : '';
+      }
+      bind(row, function(){
+        var on = (Shouba.deadline(id).done || []).indexOf(t) === -1;
+        Shouba.setDelivered(id, t, on); paint(); paintHead(); repaintList();
+      });
+      paint(); stack.appendChild(row);
+    });
+    var ed = document.createElement('button'); ed.type = 'button'; ed.className = 'btn-ghost'; ed.textContent = 'عدّل الموعد';
+    ed.addEventListener('click', function(){ dlForm(Shouba.deadline(id)); });
+    var rm = document.createElement('button'); rm.type = 'button'; rm.className = 'btn-ghost'; rm.textContent = 'احذف الموعد';
+    /* الحذف يغلق، و«تراجع» في الإشعار يعيده بحقوله (قاعدة الادخال 2026-09-13) */
+    rm.addEventListener('click', function(){
+      var copy = JSON.parse(JSON.stringify(Shouba.deadline(id)));
+      Shouba.removeDeadline(id); Shouba.sheet.close();
+      Shouba.toast('حذف الموعد: ' + copy.title, function(){ Shouba.data().deadlines.push(copy); Shouba.save(); });
+    });
+    var acts = document.createElement('div'); acts.className = 'stack';
+    acts.appendChild(ed); acts.appendChild(rm); n.appendChild(acts);
+    Shouba.sheet.open(dl.title, n, { step: !!step });
+  }
+
+  /* إضافة موعد او تعديله: عنوان وتاريخ ومن يسلّمه (قرار المستخدم 17:38: عنوان وتاريخ فقط) */
+  function dlForm(dl){
+    var teachers = Shouba.teachers();
+    var n = document.createElement('div'); n.className = 'sendform';
+    n.innerHTML = '<div class="field" data-need="req"><label for="dt">العنوان</label>'
+      + '<div class="paper"><input id="dt" type="text" maxlength="60" placeholder="ما الذي يسلّمه؟" /></div></div>'
+      + '<div class="field" data-need="req"><label for="dd">تاريخ التسليم</label>'
+      + '<div class="paper"><input id="dd" type="date" /></div></div>'
+      + '<div class="field"><label>من يسلّمه</label><div class="stack" id="to"></div></div>';
+    var go = document.createElement('button'); go.type = 'button'; go.className = 'cta'; go.textContent = dl ? 'احفظ' : 'أضف';
+    n.appendChild(go);
+    Shouba.sheet.open(dl ? 'تعديل الموعد' : 'موعد تسليم جديد', n,
+      { step: true, onDone: function(){ return inp.value.trim() ? submit() : true; } });
+    var inp = n.querySelector('#dt'), dd = n.querySelector('#dd'), to = n.querySelector('#to');
+    dd.min = Shouba.todayIso();
+    if (dl) { inp.value = dl.title; dd.value = dl.date; }
+    var all = !dl || teachers.every(function(t){ return dl.to.indexOf(t) > -1; }), chosen = {};
+    if (!all) dl.to.forEach(function(t){ chosen[t] = true; });
+    var allRow = pickRow('كل المعلمين', Shouba.count(teachers.length,{one:'معلم',two:'معلمان',few:'معلمين',many:'معلما'})), rows = [];
+    to.appendChild(allRow);
+    teachers.forEach(function(t){
+      var row = pickRow('أ. ' + Shouba.shortName(t), Shouba.subjectsOfTeacher(t).map(function(s){ return s.name; }).join(' · '));
+      row.dataset.t = t; rows.push(row); to.appendChild(row);
+    });
+    function paintTo(){ set(allRow, all); rows.forEach(function(row){ set(row, !all && !!chosen[row.dataset.t]); }); }
+    bind(allRow, function(){ all = true; chosen = {}; paintTo(); });
+    rows.forEach(function(row){ bind(row, function(){
+      var t = row.dataset.t;
+      if (all) { all = false; chosen = {}; }
+      chosen[t] = !chosen[t];
+      if (!Object.keys(chosen).some(function(k){ return chosen[k]; })) all = true;
+      paintTo();
+    }); });
+    paintTo();
+    if (!dl) setTimeout(function(){ inp.focus(); }, 80);
+
+    function submit(){
+      var v = inp.value.trim().replace(/\s+/g, ' ');
+      /* لا اهمال صامت ولا حفظ صامت (قاعدة الادخال 2026-09-13) */
+      if (v.length < 2) { Shouba.toast('اكتب عنوان الموعد — حرفان على الأقل.'); inp.focus(); return false; }
+      if (!dd.value) { Shouba.toast('اختر تاريخ التسليم.'); return false; }
+      if (!teachers.length) { Shouba.toast('أضف معلمي شعبتك أولاً.'); return false; }
+      var list = all ? teachers.slice() : teachers.filter(function(t){ return chosen[t]; });
+      var x = dl ? JSON.parse(JSON.stringify(dl)) : { done: [] };
+      x.title = v; x.date = dd.value; x.to = list;
+      x = Shouba.saveDeadline(x);
+      Shouba.sheet.close();
+      Shouba.toast((dl ? 'حُفظ الموعد: ' : 'أضيف موعد التسليم: ') + v + ' — ' + whenText(x.date));
+      if (dl) dlSheet(x.id); else dlList();
+      return true;
+    }
+    go.addEventListener('click', submit);
+  }
+  document.getElementById('dlBtn').addEventListener('click', dlList);
+  /* ?dl=<المعرف> ⟵ قادم من «بحاجة إلى إجراء» في اللوحة: يفتح الموعد مباشرة */
+  var dlq = new URLSearchParams(location.search).get('dl');
+  if (dlq) dlSheet(dlq);
 
   document.getElementById('add2').addEventListener('click', addSheet);
   document.getElementById('add').addEventListener('click', Shouba.quickAdd);

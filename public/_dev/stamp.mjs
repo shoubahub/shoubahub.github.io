@@ -15,7 +15,7 @@ const ASSETS = ['components.css','shell.css','frame.css','components.js','derive
    طلب المستخدم 2026-11-06: «نبذة بسيطة عم ماذا تم اضافته في الاشعار». بلا نبذة يبقى الإشعار على نصه */
 const args = process.argv.slice(2);
 const ni = args.indexOf('--note');
-const note = ni > -1 ? String(args.splice(ni, 2)[1] || '').replace(/\s+/g, ' ').trim().slice(0, 120) : '';
+const note = ni > -1 ? String(args.splice(ni, 2)[1] || '').replace(/\s+/g, ' ').trim().slice(0, 60) : '';
 process.argv = process.argv.slice(0, 2).concat(args);
 
 const buildFile = `${DIR}/build.js`;

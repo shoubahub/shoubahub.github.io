@@ -189,7 +189,7 @@ function readBuild(pub) {
   try {
     const v = JSON.parse(fs.readFileSync(path.join(pub, 'version.json'), 'utf8')), build = +v.build;
     /* النبذة (2026-11-06): سطر يكتب عند الختم (stamp.mjs --note) — بلا نقطة في آخره، فالإشعار يضعها */
-    const note = String(v.note || '').replace(/\s+/g, ' ').trim().replace(/[.。]+$/, '').slice(0, 120);
+    const note = String(v.note || '').replace(/\s+/g, ' ').trim().replace(/[.。]+$/, '').slice(0, 60);
     const m = /SHOUBA_VERSION\s*=\s*'([^']+)'/.exec(fs.readFileSync(path.join(pub, 'build.js'), 'utf8'));
     return build > 0 ? { build, version: m ? m[1] : '', note } : null;
   } catch (e) { return null; }

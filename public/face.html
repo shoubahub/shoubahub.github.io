@@ -544,7 +544,17 @@
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) { if (j && j.data) start(j.data); else gone(); })
       .catch(gone);
-    window.TNotify.load().then(function (r) { if (r.ok) window.TNotify.mount($('notify'), r.j); }).catch(function () {});
+    /* ⚠ لا لوحة فارغة (رصد معاينة السلوك، النسخة 0.38.0 · بناء 133): ما تقوله t.html في الحالات نفسها وبعناصرها */
+    var N = window.TNotify, say = function (t) { $('notify').appendChild(N.el('div', 'msg', t)); };
+    N.load().then(function (r) {
+      if (r.ok) return N.mount($('notify'), r.j);
+      if (r.status === 404) {
+        $('notify').appendChild(N.el('div', 'part', 'هذا الرابط لم يعد يعمل'));
+        $('notify').appendChild(N.el('p', 'lead2', 'اطلب من رئيس الشعبة رابطاً جديداً.'));
+        return;
+      }
+      say('تعذر الوصول إلى الخادم — أعد فتح الصفحة بعد قليل.');
+    }).catch(function () { say('لا اتصال — افتح الصفحة حين تتصل بالإنترنت.'); });
     return;
   }
   var m = location.pathname.match(/\/face\/([0-9a-f]{10})\/?$/);

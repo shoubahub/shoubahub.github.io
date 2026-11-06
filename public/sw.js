@@ -3,7 +3,7 @@
    ② الأصول مبصومة بـ?v=رقم البناء، فالمخزن آمن ما دام الرقم واحدا.
    ③ ومع كل نشر يتبدل اسم المخزن فتمسح النسخة القديمة كاملة.
    ⚠ CACHE يحدث آليا بأداة الختم — لا يدويا. */
-var BUILD = 128;
+var BUILD = 129;
 var CACHE = 'shouba-v' + BUILD;
 
 var SHELL = [
@@ -59,6 +59,9 @@ self.addEventListener('fetch', function (e) {
   /* ⚠ واجهة الشعبة لا تمر بالمخزن (2026-10-20): صفحة الزائر /face/<الرمز> وface.html وشاشة ادارتها
      واصولهما — فلا يقدم لزائر (ولا لرئيس الشعبة يعاين) نسخة قديمة من مخزن جهازه */
   if (/\/face(\/|\.html|-admin\.html|\.css|-data\.js)/.test(url.pathname)) return;
+
+  /* صفحة المعلم /t/<الرمز> لا تمر بمخزن المنصة (2026-11-06، tpush.js): لها عاملها بمجال /t/ */
+  if (url.pathname.indexOf('/t/') === 0) return;
 
   /* version.json من الشبكة دائما — به يعرف أن ثمة نسخة أحدث */
   if (url.pathname.endsWith('version.json')) {

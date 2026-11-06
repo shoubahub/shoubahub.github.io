@@ -180,4 +180,4 @@ function pages(app, requireUser) {
   });
 }
 
-module.exports = { routes, pages, filesIn };
+module.exports = { routes, pages, filesIn, beta };

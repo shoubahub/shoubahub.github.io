@@ -29,6 +29,9 @@
   .msg.ok{color:var(--shouba-navy)}
   .msg:empty{display:none}
   .pick .tx small.on{color:var(--shouba-success);font-weight:700}
+  /* «احذف الموعد»: زر الخطر بأسلوب «إزالة المعلم من شعبتك» (teacher.html) — المطوّر البصري 2026-11-06 */
+  .dlrm{width:100%;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;
+    color:var(--shouba-error);background:rgba(183,68,58,.08);border-radius:14px;padding:13px}
 </style>
 </head>
 <body class="framed">
@@ -328,7 +331,7 @@
     });
     var ed = document.createElement('button'); ed.type = 'button'; ed.className = 'btn-ghost'; ed.textContent = 'عدّل الموعد';
     ed.addEventListener('click', function(){ dlForm(Shouba.deadline(id)); });
-    var rm = document.createElement('button'); rm.type = 'button'; rm.className = 'btn-ghost'; rm.textContent = 'احذف الموعد';
+    var rm = document.createElement('button'); rm.type = 'button'; rm.className = 'dlrm'; rm.textContent = 'احذف الموعد';
     /* الحذف يغلق، و«تراجع» في الإشعار يعيده بحقوله (قاعدة الادخال 2026-09-13) */
     rm.addEventListener('click', function(){
       var copy = JSON.parse(JSON.stringify(Shouba.deadline(id)));
@@ -349,10 +352,10 @@
       + '<div class="field" data-need="req"><label for="dd">تاريخ التسليم</label>'
       + '<div class="paper"><input id="dd" type="date" /></div></div>'
       + '<div class="field"><label>من يسلّمه</label><div class="stack" id="to"></div></div>';
-    var go = document.createElement('button'); go.type = 'button'; go.className = 'cta'; go.textContent = dl ? 'احفظ' : 'أضف';
-    n.appendChild(go);
+    /* «تم» هو الفعل نفسه: «أضف الموعد» او «احفظ التعديل» بالعنبري، معطلا حتى يكتمل العنوان والتاريخ ومن يسلّمه
+       (المطوّر البصري 2026-11-06) — و«رجوع» بجانبه محايد */
     Shouba.sheet.open(dl ? 'تعديل الموعد' : 'موعد تسليم جديد', n,
-      { step: true, onDone: function(){ return inp.value.trim() ? submit() : true; } });
+      { step: true, doneLabel: dl ? 'احفظ التعديل' : 'أضف الموعد', onDone: function(){ return submit(); } });
     var inp = n.querySelector('#dt'), dd = n.querySelector('#dd'), to = n.querySelector('#to');
     dd.min = Shouba.todayIso();
     if (dl) { inp.value = dl.title; dd.value = dl.date; }
@@ -364,7 +367,12 @@
       var row = pickRow('أ. ' + Shouba.shortName(t), Shouba.subjectsOfTeacher(t).map(function(s){ return s.name; }).join(' · '));
       row.dataset.t = t; rows.push(row); to.appendChild(row);
     });
-    function paintTo(){ set(allRow, all); rows.forEach(function(row){ set(row, !all && !!chosen[row.dataset.t]); }); }
+    function ready(){
+      Shouba.sheet.doneOff(inp.value.trim().length < 2 || !dd.value || !teachers.length
+        || (!all && !Object.keys(chosen).some(function(k){ return chosen[k]; })));
+    }
+    function paintTo(){ set(allRow, all); rows.forEach(function(row){ set(row, !all && !!chosen[row.dataset.t]); }); ready(); }
+    inp.addEventListener('input', ready); dd.addEventListener('input', ready); dd.addEventListener('change', ready);
     bind(allRow, function(){ all = true; chosen = {}; paintTo(); });
     rows.forEach(function(row){ bind(row, function(){
       var t = row.dataset.t;
@@ -391,7 +399,6 @@
       if (dl) dlSheet(x.id); else dlList();
       return true;
     }
-    go.addEventListener('click', submit);
   }
   document.getElementById('dlBtn').addEventListener('click', dlList);
   /* ?dl=<المعرف> ⟵ قادم من «بحاجة إلى إجراء» في اللوحة: يفتح الموعد مباشرة */

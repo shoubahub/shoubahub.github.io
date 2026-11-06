@@ -470,4 +470,5 @@
 .fnotify .pick .tx{flex:1;display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:right}
 .fnotify .pick .tx b{font-size:15px;font-weight:700;color:var(--shouba-navy)}
 .fnotify .pick .tx small{font-size:11.5px;color:var(--shouba-hint)}
-.fnotify .pick.due{cursor:default}      /* موعد تسليم للعرض (المرحلة الثانية): بطاقة بلا اختيار */
+/* موعد تسليم للعرض (المرحلة الثانية): بطاقة مسطحة بلا اختيار ولا ظل ضغط (المطوّر البصري) */
+.fnotify .pick.due{cursor:default;background:var(--shouba-paper);border:1px solid var(--shouba-line);box-shadow:none}

@@ -149,10 +149,10 @@ Shouba.nextLabel = function (def) {
   /* «تم»: ان كان للخطوة عمل يتمه (onDone — نموذج اضافة كتب فيه) نفذ، فلا يضيع ما كتب؛ وان رده (false: ادخال
      ناقص، ورسالته تظهر) بقيت اللوحة مفتوحة */
   function done() { var f = current && current.onDone; if (f && f() === false) return; close(); }
-  function show(title, nodes, step, onDone, noDone) {
+  function show(title, nodes, step, onDone, noDone, doneLabel) {
     ensure();
     if (step && isOpen() && current) stack.push(current); else stack = [];
-    current = { title: title || '', nodes: nodes, onDone: onDone || null, noDone: !!noDone };
+    current = { title: title || '', nodes: nodes, onDone: onDone || null, noDone: !!noDone, doneLabel: doneLabel || '' };
     paint();
     if (!hist) {
       try {
@@ -170,6 +170,10 @@ Shouba.nextLabel = function (def) {
        ويعود «رجوع» بالخروج منها، لان كل خطوة تعيد حسابه هنا */
     backBtn.classList.toggle('on', stack.length > 0 && !current.noDone);
     doneBtn.hidden = current.noDone;
+    /* doneLabel: «تم» يصير فعل اللوحة نفسه بالعنبري («أضف الموعد») — والخطوة تعطله حتى يكتمل ادخالها (doneOff) */
+    doneBtn.textContent = current.doneLabel || 'تم';
+    doneBtn.classList.toggle('cta', !!current.doneLabel);
+    doneBtn.disabled = !!current.doneOff;
     list.scrollTop = 0;
     document.body.style.overflow = 'hidden';
     backdrop.classList.add('open');
@@ -285,13 +289,15 @@ Shouba.nextLabel = function (def) {
   /* لوحة سفلية عامة لأي محتوى (شبكة رموز مثلا) — تعيد استعمال نفس العنصر.
      opt.step: خطوة تالية في اللوحة نفسها، و«رجوع» اسفلها يعيد السابقة (انظر اعلاه).
      opt.onDone: ما يتمه «تم» (نموذج اضافة: يضيف ان كتب فيه) — يعيد false ليبقي اللوحة
-     opt.noDone: بلا «تم» — للتأكيد (Shouba.ask) وحده: «تم» تحت فعل خطر يقرأ موافقة وهو يغلق فقط (2026-10-20) */
+     opt.noDone: بلا «تم» — للتأكيد (Shouba.ask) وحده: «تم» تحت فعل خطر يقرأ موافقة وهو يغلق فقط (2026-10-20)
+     opt.doneLabel: «تم» زر عنبري باسم الفعل (مواعيد التسليم 2026-11-06، المطوّر البصري) — وsheet.doneOff(true) يعطله */
   Shouba.sheet = {
     open: function (title, node, opt) {
-      show(title, [node], !!(opt && opt.step), opt && opt.onDone, opt && opt.noDone);
+      show(title, [node], !!(opt && opt.step), opt && opt.onDone, opt && opt.noDone, opt && opt.doneLabel);
       Shouba.tagNeeds(node);
     },
     back: function () { back(); },
+    doneOff: function (off) { if (!current) return; current.doneOff = !!off; if (doneBtn) doneBtn.disabled = !!off; },
     isOpen: isOpen,
     close: function () { close(); }
   };

@@ -63,6 +63,9 @@
   #evday{flex-wrap:wrap}
   #evday .seg{flex:1 1 28%}
   .todo{padding:0 var(--gap-side);display:flex;flex-direction:column;gap:7px}
+  /* شارات مواعيد التسليم (المطوّر البصري 2026-11-06): «متأخر» بلون الخطأ · «اليوم» بالعنبري · «قريب» محايدة */
+  .titem .chip.late{color:var(--shouba-error);background:rgba(183,68,58,.08)}
+  .titem .chip.soon{color:var(--shouba-label);background:var(--shouba-raised-lo)}
   .calopt{display:flex;align-items:flex-start;gap:10px;padding:10px 2px 14px;cursor:pointer}
   .calopt input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:var(--shouba-navy)}
   .calopt span{font-size:13px;font-weight:600;color:var(--shouba-ink);line-height:1.5}
@@ -967,6 +970,7 @@
     var p = x.dl.date.split('-'), got = x.total - x.pending.length;
     items.push({ ini:String(+p[2]), title:x.dl.title,
       badge:x.state === 'late' ? 'متأخر' : x.state === 'today' ? 'اليوم' : 'قريب',
+      chip:x.state === 'late' ? 'late' : x.state === 'today' ? '' : 'soon',
       text:'موعد تسليم ' + Shouba.dayMonth(x.dl.date) + ' · سلّم ' + got + ' من ' + x.total,
       href:'teachers.html?dl=' + encodeURIComponent(x.dl.id) });
   });
@@ -993,6 +997,7 @@
       el.querySelector('b').textContent = it.title;
       el.querySelector('small').textContent = it.text;
       el.querySelector('.chip').textContent = it.badge;
+      if (it.chip) el.querySelector('.chip').classList.add(it.chip);
       function go(){ location.href = it.href; }
       el.addEventListener('click', go);
       el.addEventListener('keydown', function(e){

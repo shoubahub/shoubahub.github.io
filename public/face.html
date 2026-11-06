@@ -132,6 +132,8 @@
 <script>
 (function () {
   var F = window.ShoubaFace, SNAP = null, FILES = 'api/pub/file/', DONE = [];
+  /* سهما التلميح كما في صف «الآن» — ينسخان من الصفحة لمعرض كل بطاقة */
+  var XARR = [].map.call(document.querySelectorAll('#nowSec .xarr'), function (b) { return b.outerHTML; }).join('');
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -264,13 +266,14 @@
     el.classList.toggle('more-start', x > 2);
     el.classList.toggle('more-end', x + el.clientWidth < el.scrollWidth - 2);
   }
-  function xscroll(el) {
+  /* step: كم من العرض يمرر السهم — ٨٠٪ للصفوف، وصورة كاملة (1) لمعرض البطاقة */
+  function xscroll(el, step) {
     var fn = function () { xhint(el); };
     el.addEventListener('scroll', fn, { passive: true });
     if (window.ResizeObserver) new ResizeObserver(fn).observe(el);
     el.parentNode.addEventListener('click', function (e) {
       var b = e.target.closest('.xarr'); if (!b) return;
-      var d = el.clientWidth * 0.8, still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var d = el.clientWidth * (step || 0.8), still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
       el.scrollBy({ left: b.getAttribute('data-dir') === 'end' ? -d : d, behavior: still ? 'auto' : 'smooth' });
     });
     fn();
@@ -389,25 +392,37 @@
     }).join('');
     $('soonSec').hidden = !v.soon.length;
     DONE = v.done;
-    $('done').innerHTML = v.done.map(function (e, k) {
+    /* الصور (2026-11-06، طلب المستخدم): اكثر من صورة تقلب بالسحب عليها — صورة كاملة لكل سحبة، وعداد «١ / ٣» على زاويتها
+       ونقاط اسفلها وسهم الطرف (كتلميح «الآن») تدل على ان خلفها المزيد */
+    $('done').innerHTML = v.done.map(function (e) {
       var ph = e.photos || [];
-      return '<article class="dcard">'
-        + (ph.length ? '<img loading="lazy" alt="" src="' + FILES + encodeURIComponent(ph[0]) + '" />' : '')
+      function img(id, i) { return '<img loading="' + (i ? 'lazy' : 'eager') + '" alt="" src="' + FILES + encodeURIComponent(id) + '" />'; }
+      var media = !ph.length ? '' : ph.length === 1 ? img(ph[0], 0)
+        : '<div class="gal xwrap"><div class="gtrack" aria-label="صور الفعالية — اسحب لترى ' + ph.length + '">' + ph.map(img).join('') + '</div>'
+          + XARR + '<span class="gcount" dir="ltr">1 / ' + ph.length + '</span>'
+          + '<span class="gdots">' + ph.map(function (_, i) { return '<i' + (i ? '' : ' class="on"') + '></i>'; }).join('') + '</span></div>';
+      return '<article class="dcard">' + media
         + '<div class="bd"><span class="dt">' + dateHtml(e.date) + '</span><b>' + esc(e.title) + '</b>'
         + (e.about ? '<p>' + esc(e.about) + '</p>' : '')
-        + (ph.length > 1 ? '<button type="button" class="more" data-e="' + k + '">صورها (' + num(ph.length) + ')</button>' : '')
         + '</div></article>';
     }).join('');
+    [].forEach.call($('done').querySelectorAll('.gtrack'), gallery);
     $('doneSec').hidden = !v.done.length;
     return v;
   }
-  $('done').addEventListener('click', function (e) {
-    var b = e.target.closest('.more'); if (!b) return;
-    var ev = DONE[+b.getAttribute('data-e')]; if (!ev) return;
-    openSheet(ev.title, '<div class="shots">' + ev.photos.map(function (id) {
-      return '<img loading="lazy" alt="" src="' + FILES + encodeURIComponent(id) + '" />';
-    }).join('') + '</div>');
-  });
+  /* معرض البطاقة: الصورة الحالية من موضع التمرير (RTL: scrollLeft سالب نحو النهاية) — تحدث العداد والنقاط وتلميح الطرف */
+  function gallery(el) {
+    var wrap = el.parentNode, dots = wrap.querySelectorAll('.gdots i'), cnt = wrap.querySelector('.gcount');
+    function at() {
+      var i = Math.round(Math.abs(el.scrollLeft) / (el.clientWidth || 1));
+      i = Math.max(0, Math.min(dots.length - 1, i));
+      cnt.textContent = (i + 1) + ' / ' + dots.length;
+      [].forEach.call(dots, function (d, k) { d.classList.toggle('on', k === i); });
+    }
+    el.addEventListener('scroll', at, { passive: true });
+    xscroll(el, 1);
+    at();
+  }
 
   /* ⑦ حصيلة العام — ما كان صفرا لا يظهر */
   function paintStats(v) {

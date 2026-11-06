@@ -9,6 +9,7 @@
   --shouba-sand: #EDE5D8;        /* ألواح الأقسام */
   --shouba-canvas: #EFE6D6;      /* خلفية شاشات الهاتف */
   --shouba-line: #E2D7C2;        /* حدود رقيقة */
+  --shouba-scrim: rgba(14,30,52,.62); /* طبقة فوق الصور للعدّاد والنقاط · 2026-11-06 */
   --shouba-text-muted: #5F5648;
   --shouba-label: #6E6352;       /* عناوين صغيرة متباعدة الأحرف */
   --shouba-hint: #726653;

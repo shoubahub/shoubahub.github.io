@@ -443,3 +443,30 @@
   color:var(--shouba-navy);background:var(--shouba-sand)}
 .trow .op.warn{color:var(--shouba-error)}
 .thint{padding:9px 13px;font-size:11.5px;font-weight:600;color:var(--shouba-label);line-height:1.7}
+
+/* ⑨ «إشعاراتي» (2026-11-06، رابط المعلم الخاص · t-notify.js): قسم صفحة المعلم نفسه داخل تبويبه — عناصره
+   (.part · .lead2 · .btn-ghost · .msg · .pick) منقولة من components.css و t.html كما هي، مقصورة على .fnotify
+   (الواجهة لا تحمل components.css) */
+.fnotify{display:flex;flex-direction:column;gap:22px}
+.fnotify .part{font-size:14px;font-weight:700;color:var(--shouba-navy);margin-bottom:-8px}
+.fnotify .lead2{font-size:13px;font-weight:500;color:var(--shouba-text-muted);line-height:1.8;margin:0}
+.fnotify .lead2 b{color:var(--shouba-navy);font-weight:700}
+.fnotify .msg{font-size:12.5px;font-weight:600;min-height:18px;color:var(--shouba-error);line-height:1.7}
+.fnotify .msg.ok{color:var(--shouba-navy)}
+.fnotify .msg:empty{display:none}
+.fnotify .num{font-family:var(--font-num)}
+.fnotify [hidden]{display:none !important}
+.fnotify .btn-ghost{background:var(--shouba-raised);border-radius:var(--r-btn);padding:15px;border:0;cursor:pointer;width:100%;
+  font-family:var(--font-ar);font-size:15px;font-weight:700;color:var(--shouba-text-muted);position:relative;overflow:hidden;
+  box-shadow:inset 0 1.2px 0 rgba(255,255,255,.9), 0 2px 0 rgba(190,172,140,.5), 0 6px 12px rgba(120,98,66,.16)}
+.fnotify .btn-ghost::before{content:"";position:absolute;left:-42px;bottom:-16px;width:225px;height:78px;pointer-events:none;
+  background:url('identity/assets/el-echo.svg') no-repeat center/contain;filter:brightness(.2);opacity:.11}
+.fnotify .stack{display:flex;flex-direction:column;gap:9px}
+.fnotify .pick{background:var(--shouba-paper-grad);border-radius:20px;padding:15px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2)}
+.fnotify .pick.on{box-shadow:inset 0 1.5px 0 rgba(255,255,255,.9), 0 3px 0 rgba(190,172,140,.5), 0 8px 16px rgba(120,98,66,.2), 0 0 0 2px var(--shouba-navy)}
+.fnotify .pick .mark{width:22px;height:22px;border-radius:999px;flex:none;display:grid;place-items:center;border:2px solid rgba(120,98,66,.3)}
+.fnotify .pick.on .mark{background:var(--shouba-navy);border-color:var(--shouba-navy)}
+.fnotify .pick .tx{flex:1;display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:right}
+.fnotify .pick .tx b{font-size:15px;font-weight:700;color:var(--shouba-navy)}
+.fnotify .pick .tx small{font-size:11.5px;color:var(--shouba-hint)}

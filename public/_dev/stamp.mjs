@@ -9,7 +9,8 @@ const ASSETS = ['components.css','shell.css','frame.css','components.js','derive
                 /* محرك السجلات (2026-09-11) — كانت خارج القائمة فتبقى على بصمتها القديمة */
                 'rec-templates.js','rec-engine.js','rec-form.js','rec-print.js','rec-print.css','rec-files.js',
                 'plan-data.js',    /* جالب الخطط المعتمدة (2026-09-13، شريط الخطة) */
-                'face-data.js','face.css'];   /* واجهة الشعبة (2026-10-20) */
+                'face-data.js','face.css',   /* واجهة الشعبة (2026-10-20) */
+                't-notify.js'];   /* إشعارات المعلم: صفحته وتبويب «إشعاراتي» (2026-11-06) */
 
 /* --note: نبذة سطر واحد عما في البناء، تحفظ في version.json فيضعها الخادم في إشعار التحديث (push.js) —
    طلب المستخدم 2026-11-06: «نبذة بسيطة عم ماذا تم اضافته في الاشعار». بلا نبذة يبقى الإشعار على نصه */

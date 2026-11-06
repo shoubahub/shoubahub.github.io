@@ -98,6 +98,11 @@ function live(token) {
   if (teachersOf(data).indexOf(row.name) === -1) return null;
   return { row, data };
 }
+/* واجهة الشعبة المنشورة (face.js) — ويعمل هذا الملف بلا جدولها ان لم ينشأ بعد */
+function faceOf(userId) {
+  try { const r = db.prepare("SELECT data, at FROM face WHERE user_id = ? AND data <> ''").get(userId); return r || null; }
+  catch (e) { return null; }
+}
 function dropLink(token) {
   db.prepare('DELETE FROM teacher_subs WHERE token = ?').run(token);
   db.prepare('DELETE FROM teacher_sent WHERE token = ?').run(token);
@@ -236,6 +241,14 @@ function routes(app, requireUser) {
     res.json({ name: L.row.name, department: L.data.department || '', school: L.data.school || '',
       prefs: prefsOf(L.row), key: push.keys().publicKey, devices: subsOf(L.row.token).length });
   });
+  /* الواجهة المنشورة لصاحب الرابط — كما تقرؤها /api/face/<الرمز> بلا زيادة */
+  app.get('/api/t/:token/face', (req, res) => {
+    const L = T(req, res); if (!L) return;
+    const f = faceOf(L.row.user_id);
+    if (!f) return res.status(404).json({ error: 'لا واجهة منشورة' });
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.end(JSON.stringify({ at: f.at, data: JSON.parse(f.data) }));
+  });
   app.post('/api/t/:token/subscribe', (req, res) => {
     const L = T(req, res); if (!L) return;
     const s = cleanSub(req.body && req.body.subscription);
@@ -291,7 +304,11 @@ function routes(app, requireUser) {
      بعناصرها لا بصفحة بيضاء (رصد معاينة السلوك، النسخة 0.37.0 · بناء 129) */
   app.get('/t/:token', (req, res) => {
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-    res.status(live(req.params.token) ? 200 : 404).sendFile(path.join(__dirname, 'public', 't.html'));
+    const L = live(req.params.token);
+    /* رابط واحد للمعلم (قرار المستخدم 2026-11-06: «الا يمكن دمجهم برابط واحد؟»): الواجهة المنشورة ومعها
+       تبويب «إشعاراتي» — وما لم تنشر الواجهة فصفحة الإشعارات وحدها */
+    const page = L && faceOf(L.row.user_id) ? 'face.html' : 't.html';
+    res.status(L ? 200 : 404).sendFile(path.join(__dirname, 'public', page));
   });
 }
 

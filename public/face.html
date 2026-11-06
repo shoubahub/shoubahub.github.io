@@ -9,8 +9,8 @@
 <title>واجهة الشعبة</title>
 <meta name="theme-color" content="#E8A33D" /><!-- --shouba-amber: أعلى تدرج الترويسة -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=133" />
-<link rel="stylesheet" href="face.css?v=133" />
+<link rel="stylesheet" href="identity/tokens.css?v=134" />
+<link rel="stylesheet" href="face.css?v=134" />
 <!-- ===========================================================================
      واجهة الشعبة — صفحة الزائر (2026-10-20، الاتجاه المعتمد بعد «أنسب للعمل وليست للعرض»)
      تبويبان تحت الترويسة (#الشعبة · #الجدول): الشعبة للآن والفعاليات والحصيلة، والجدول الكامل في تبويبه.
@@ -133,9 +133,9 @@
   <button type="button" class="close" id="shClose">أغلق</button>
 </div>
 
-<script src="icons.js?v=133"></script>
-<script src="face-data.js?v=133"></script>
-<script src="t-notify.js?v=133"></script>
+<script src="icons.js?v=134"></script>
+<script src="face-data.js?v=134"></script>
+<script src="t-notify.js?v=134"></script>
 <script>
 (function () {
   var F = window.ShoubaFace, SNAP = null, FILES = 'api/pub/file/', DONE = [];
@@ -544,7 +544,20 @@
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) { if (j && j.data) start(j.data); else gone(); })
       .catch(gone);
-    window.TNotify.load().then(function (r) { if (r.ok) window.TNotify.mount($('notify'), r.j); }).catch(function () {});
+    /* ⚠ لا لوحة فارغة (رصد معاينة السلوك، النسخة 0.38.0 · بناء 133): ما تقوله t.html في الحالات نفسها وبعناصرها */
+    var N = window.TNotify, say = function (t) {
+      $('notify').appendChild(N.el('div', 'part', 'إشعارات الجوال'));   /* عنوان القسم فوق الرسالة كحالاته الاخرى (المطوّر البصري) */
+      $('notify').appendChild(N.el('div', 'msg', t));
+    };
+    N.load().then(function (r) {
+      if (r.ok) return N.mount($('notify'), r.j);
+      if (r.status === 404) {
+        $('notify').appendChild(N.el('div', 'part', 'هذا الرابط لم يعد يعمل'));
+        $('notify').appendChild(N.el('p', 'lead2', 'اطلب من رئيس الشعبة رابطاً جديداً.'));
+        return;
+      }
+      say('تعذر الوصول إلى الخادم. أعد فتح الصفحة بعد قليل.');
+    }).catch(function () { say('لا اتصال بالإنترنت. افتح الصفحة حين تتصل.'); });
     return;
   }
   var m = location.pathname.match(/\/face\/([0-9a-f]{10})\/?$/);

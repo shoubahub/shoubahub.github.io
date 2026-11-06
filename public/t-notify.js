@@ -117,7 +117,10 @@
       /* جهاز مشترك من قبل: يؤكد اشتراكه عند الخادم بلا إشعار ترحيب — فإن رده لأن غيره صار المفعل، فهو مقفل */
       mine = sub.endpoint; show(true);
       api('POST', API + '/subscribe', { subscription: sub.toJSON(), quiet: true })
-        .then(function(r){ if (r.status === 409) { mine = ''; locked(); } }).catch(function(){});
+        .then(function(r){
+          /* مقفل على جهاز آخر: يلغى اشتراك هذا الجهاز كما في مسار التفعيل، فلا تبقى بقية معلقة (معاينة السلوك، بناء 132) */
+          if (r.status === 409) { mine = ''; sub.unsubscribe().catch(function(){}); locked(); }
+        }).catch(function(){});
     }).catch(function(){ show(false); });
 
     btn.addEventListener('click', function(){

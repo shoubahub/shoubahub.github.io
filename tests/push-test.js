@@ -150,6 +150,11 @@ async function run() {
     const n = await push.announce(pub);
     ok(n === 2 && sent.every(x => x.m.title === 'تحديث جديد لشعبة' && /النسخة 0\.34\.0 · بناء 125/.test(x.m.body)), 'بناء جديد: إشعار بالنسخة والبناء لكل جهاز', sent);
     ok(await push.announce(pub) === 0, 'ولا يتكرر مع إعادة التشغيل');
+    // النبذة (2026-11-06)
+    fs.writeFileSync(path.join(pub, 'version.json'), JSON.stringify({ build: 126, note: 'صور الفعاليات ومعرضها بالسحب.' }));
+    sent.length = 0;
+    await push.announce(pub);
+    ok(sent.length === 2 && sent[0].m.body === 'النسخة 0.34.0 · بناء 126: صور الفعاليات ومعرضها بالسحب.', 'النبذة في نص الإشعار بنقطة واحدة', sent[0] && sent[0].m.body);
 
     // ── الإيقاف والحذف
     await call('POST', '/api/push/unsubscribe', B, { endpoint: SUB(1).endpoint });

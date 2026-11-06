@@ -187,9 +187,11 @@ function sweep() { db.prepare("DELETE FROM push_sent WHERE sent_at < datetime('n
    ⚠ الحجز بشرط في جملة واحدة (value < build): نسختان من الخادم لحظة النشر لا ترسلان معا */
 function readBuild(pub) {
   try {
-    const build = +JSON.parse(fs.readFileSync(path.join(pub, 'version.json'), 'utf8')).build;
+    const v = JSON.parse(fs.readFileSync(path.join(pub, 'version.json'), 'utf8')), build = +v.build;
+    /* النبذة (2026-11-06): سطر يكتب عند الختم (stamp.mjs --note) — بلا نقطة في آخره، فالإشعار يضعها */
+    const note = String(v.note || '').replace(/\s+/g, ' ').trim().replace(/[.。]+$/, '').slice(0, 120);
     const m = /SHOUBA_VERSION\s*=\s*'([^']+)'/.exec(fs.readFileSync(path.join(pub, 'build.js'), 'utf8'));
-    return build > 0 ? { build, version: m ? m[1] : '' } : null;
+    return build > 0 ? { build, version: m ? m[1] : '', note } : null;
   } catch (e) { return null; }
 }
 function announce(pub) {
@@ -199,7 +201,8 @@ function announce(pub) {
   const won = db.prepare("UPDATE settings SET value = ? WHERE key = 'push_build' AND CAST(value AS INTEGER) < ?").run(String(b.build), b.build).changes;
   if (!won) return Promise.resolve(0);
   const msg = { title: 'تحديث جديد لشعبة',
-    body: (b.version ? 'النسخة ' + b.version + ' · ' : '') + 'بناء ' + b.build + '. المسه لفتح المنصة عليه.',
+    body: (b.version ? 'النسخة ' + b.version + ' · ' : '') + 'بناء ' + b.build
+      + (b.note ? ': ' + b.note + '.' : '. المسه لفتح المنصة عليه.'),
     tag: 'update', url: 'board.html', ttl: 3 * 86400 };
   const rows = db.prepare('SELECT * FROM push_subs').all();
   return Promise.all(rows.map(r => deliver(r, msg))).then(a => a.filter(Boolean).length);

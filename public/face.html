@@ -101,7 +101,7 @@
    <div class="fpane" id="paneJ" hidden>
     <section class="fsec">
       <div class="days" id="days"></div>
-      <div class="today" id="today"></div>
+      <div class="tbl" id="today"></div>
       <p class="fnote" id="todayNote">لمسة على الحصة تعرض جدول أسبوع معلمها.</p>
     </section>
    </div>
@@ -341,26 +341,77 @@
       return '<button type="button" class="day' + (d === curDay ? ' on' : '') + '" data-d="' + esc(d) + '">' + esc(d) + '</button>';
     }).join('');
   }
-  function paintDay() {
-    var st = F.now(SNAP.times, SNAP.days, clock()), out = '';
-    periods().forEach(function (t, i) {
-      (SNAP.people || []).forEach(function (p, k) {
-        var v = ((p.wk || {})[curDay] || [])[i];
-        if (!v) return;
-        var s = F.slot(v), now = st.state === 'period' && st.day === curDay && st.n === t.n;
-        out += '<button type="button" class="cell' + (now ? ' now' : '') + '" data-k="' + k + '">'
-          + '<span class="p">' + (now ? 'الآن · ' : '') + 'الحصة ' + num(t.n) + '</span>'
-          + '<b>' + esc(title(p.name)) + '</b>'
-          + '<span class="m">' + [s.subject ? esc(s.subject) : '', clsHtml(s.cls)].filter(Boolean).join(' · ') + '</span></button>';
-      });
-    });
-    $('today').innerHTML = out || '';
-    $('today').hidden = !out;
-    $('todayNote').textContent = out ? 'لمسة على الحصة تعرض جدول أسبوع معلمها.' : 'لا حصص للشعبة في هذا اليوم.';
+  /* ⑧ الجدول (2026-11-06، طلب المستخدم: «ننقل الجدول الموجود بلوحتي … كما هو بكل محتوياته وتنسيقاته وتوقيتاته»):
+     كجدول حصص اليوم في اللوحة (board.html paintTable) بأنماطه منقولة الى face.css — صف لكل حصة وفرصة بوقت بدئها،
+     والجارية مظللة وعليها «باقي mm:ss»، والماضية «انتهت»، وشارة بسطرين لكل من يدرس (اسمه الاخير بلونه الثابت · مادته وفصله)
+     وعدد المتفرغين. ويوم الزائر يطوى كاللوحة (الجارية والتالية) وزر «افرد الجدول كاملا» يفتح الباقي؛ وبقية الايام مفرودة.
+     وشريط الايام فوقه لان الزائر يرى غير يومه، ولمسة الشارة تعرض جدول اسبوع معلمها */
+  var ORD = ['الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة', 'الثامنة'], dayAll = false, dayOpen = {};
+  function lastName(n) { var p = String(n || '').trim().split(' ').filter(Boolean); return p[p.length - 1] || n; }
+  function count(n, f) { return n === 1 ? f[0] : n === 2 ? f[1] : (n >= 3 && n <= 10) ? num(n) + ' ' + f[2] : num(n) + ' ' + f[3]; }
+  function hm(t) { var p = String(t || '').split(':'); return (+p[0] || 0) * 60 + (+p[1] || 0); }
+  function leftTxt(t) {
+    var d = clock(), sec = hm(t.to) * 60 - (d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds());
+    if (sec < 0) sec = 0;
+    var mm = Math.floor(sec / 60), ss = sec % 60;
+    return 'باقي ' + mm + ':' + (ss < 10 ? '0' : '') + ss;
   }
+  function paintDay() {
+    var times = SNAP.times || [], people = SNAP.people || [], d = clock(), m = d.getHours() * 60 + d.getMinutes();
+    var mine = F.now(times, SNAP.days, d).day === curDay;          /* يوم الزائر — فله الجارية والماضية والطي */
+    var cur = -1, next = -1;
+    if (mine) times.forEach(function (t, i) {
+      if (cur < 0 && m >= hm(t.from) && m < hm(t.to)) cur = i;
+      if (next < 0 && m < hm(t.from)) next = i;
+    });
+    var ended = mine && cur < 0 && next < 0, shown = {};
+    if (mine && cur > -1) { shown[cur] = 1; if (next > -1) shown[next] = 1; }
+    else if (mine && !ended) { shown[next] = 1; if (times[next + 1]) shown[next + 1] = 1; }
+    var fold = mine && !dayAll, html = '', pIdx = -1, any = false;
+    times.forEach(function (t, i) {
+      var brk = !!t.brk;
+      if (!brk) pIdx++;
+      var busy = brk ? [] : people.map(function (p, k) { return { p: p, k: k, v: ((p.wk || {})[curDay] || [])[pIdx] }; }).filter(function (x) { return x.v; });
+      if (busy.length) any = true;
+      if (fold && !shown[i]) return;
+      var now = i === cur, past = mine && m >= hm(t.to), open = !mine || now || (dayAll && !past) || dayOpen[i];
+      var st = now ? leftTxt(t) : past ? 'انتهت' : '';
+      var head = '<div class="top"><span class="ttl">' + (brk ? esc(t.label || 'فرصة') : 'الحصة ' + (ORD[pIdx] || num(pIdx + 1))) + '</span>'
+        + '<span class="tm"><span class="hh">' + num(t.from) + '</span>' + (now ? '<em>الآن</em>' : '') + '</span>'
+        + '<span class="state' + (st ? '' : ' is-empty') + '">' + st + '</span>';
+      var cls = 'per' + (brk ? ' brk' : '') + (now ? ' now' : '') + (past ? ' past' : '') + (open ? '' : ' fold') + (dayOpen[i] ? ' open' : '');
+      if (brk) { html += '<div class="' + cls + '" data-i="' + i + '">' + head + '</div></div>'; return; }
+      var free = people.length - busy.length;
+      html += '<div class="' + cls + '" data-i="' + i + '">' + head + '<span class="cnt">' + num(busy.length) + ' يدرسون</span></div><div class="pairs">'
+        + busy.map(function (x) {
+          var sl = F.slot(x.v), c = String(sl.cls || '').match(/^(.*?)(?:\s+([عد]))?$/) || [];
+          return '<span class="ch t' + (x.k % 8) + '" role="button" tabindex="0" data-k="' + x.k + '" aria-label="جدول أسبوع ' + esc(title(x.p.name)) + '">'
+            + '<span class="nm">' + esc(lastName(x.p.name)) + '</span><span class="l2"><span class="sub">' + esc(sl.subject) + '</span>'
+            + '<span class="cl">' + num(c[1] || '') + (c[2] ? ' <i>' + esc(c[2]) + '</i>' : '') + '</span></span></span>';
+        }).join('')
+        + (free > 0 ? '<span class="freechip">' + count(free, ['متفرغ', 'متفرغان', 'متفرغون', 'متفرغا']) + '</span>' : '')
+        + '</div></div>';
+    });
+    if (ended && !dayAll) html = '<div class="empty">انتهى دوام اليوم — افرد الجدول لمراجعته.</div>';
+    if (mine && any) html += '<button type="button" class="tblmore" id="tblMore">' + (dayAll ? 'اطو الجدول' : 'افرد الجدول كاملا') + '</button>';
+    $('today').innerHTML = any ? html : '';
+    $('today').hidden = !any;
+    $('todayNote').textContent = any ? 'لمسة على اسم المعلم تعرض جدول أسبوعه.' : 'لا حصص للشعبة في هذا اليوم.';
+  }
+  $('today').addEventListener('click', function (e) {
+    if (e.target.closest('#tblMore')) { dayAll = !dayAll; dayOpen = {}; paintDay(); return; }
+    if (e.target.closest('[data-k]')) return;                       /* الشارة لجدول المعلم (weekOf) */
+    var r = e.target.closest('.per.fold, .per.open'); if (!r) return;
+    var i = +r.getAttribute('data-i'); dayOpen[i] = !dayOpen[i]; paintDay();
+  });
+  /* العداد يتجدد كل ثانية كاللوحة — نصه وحده، بلا اعادة رسم */
+  setInterval(function () {
+    var el = SNAP && $('today').querySelector('.per.now .state'), r = el && el.closest('.per'), t = r && (SNAP.times || [])[+r.getAttribute('data-i')];
+    if (t) el.textContent = leftTxt(t);
+  }, 1000);
   $('days').addEventListener('click', function (e) {
     var b = e.target.closest('.day'); if (!b) return;
-    curDay = b.getAttribute('data-d'); paintDays(); paintDay();
+    curDay = b.getAttribute('data-d'); dayOpen = {}; paintDays(); paintDay();
   });
   function weekOf(e) {
     var b = e.target.closest('[data-k]'); if (!b) return;

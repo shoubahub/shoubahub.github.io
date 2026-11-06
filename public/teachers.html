@@ -41,6 +41,7 @@
       <div class="wrap">
         <div class="vlist" id="list"></div>
         <div class="addrow"><button class="cta" id="add2">أضف معلما</button></div>
+        <div class="addrow" id="sendRow" hidden><button class="btn-ghost" id="send">أرسل إشعاراً</button></div>
         <div class="note" id="note"></div>
       </div>
     </div>
@@ -145,6 +146,96 @@
     btn.addEventListener('click', submit);
     inp.addEventListener('keydown', function(e){ if(e.key === 'Enter') submit(); });
   }
+
+  /* أرسل إشعاراً (2026-11-06، طلب المستخدم: «او ان ارسل لهم انا ما اشاء كبداية فعالية او تذكير بتسليم او تهنئة») — tpush.js.
+     رسالة حرة للكل او لمن تختار، تصل من فعّل الاشعارات برابطه (ملف المعلم ⟵ رابط إشعاراته)، ولا يطفئها المعلم.
+     والبوابة سؤال الخادم نفسه (/api/tpush/links: ٢٠٠ مفعلة · ٤٠٤ لا) — فمن خارج التجربة لا يرى الزر */
+  var CHK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.4 L4.6 9 L10 3" stroke="#F4F1EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function tapi(method, url, body){
+    return fetch(url, { method: method, credentials: 'same-origin', cache: 'no-store',
+      headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); });
+  }
+  tapi('GET', 'api/tpush/links').then(function(r){ if (r.ok) document.getElementById('sendRow').hidden = false; }).catch(function(){});
+
+  function sendSheet(){
+    tapi('GET', 'api/tpush/links').then(function(r){
+      if (!r.ok) { Shouba.toast('تعذر الوصول إلى الخادم'); return; }
+      var dev = {};
+      (r.j.links || []).forEach(function(l){ dev[l.name] = l.devices; });
+      var teachers = Shouba.teachers(), ready = teachers.filter(function(t){ return dev[t] > 0; });
+
+      var n = document.createElement('div'); n.className = 'stack';
+      n.innerHTML = '<div class="field" data-need="opt"><label for="mt">العنوان</label>'
+        + '<div class="paper"><input id="mt" type="text" maxlength="60" placeholder="رسالة من رئيس الشعبة" /></div></div>'
+        + '<div class="field" data-need="req"><label for="mb">نص الرسالة</label>'
+        + '<div class="paper"><textarea id="mb" rows="3" maxlength="300" placeholder="اكتب ما تريد إرساله"></textarea></div>'
+        + '<div class="hint" id="mw"></div></div>'
+        + '<div class="field"><label>إلى</label><div class="stack" id="to"></div></div>';
+      var go = document.createElement('button'); go.type = 'button'; go.className = 'cta'; go.textContent = 'أرسل';
+      n.appendChild(go);
+      Shouba.sheet.open('أرسل إشعاراً', n, { onDone: function(){ return n.querySelector('#mb').value.trim() ? send() : true; } });
+
+      var mb = n.querySelector('#mb'), mt = n.querySelector('#mt'), mw = n.querySelector('#mw'), to = n.querySelector('#to');
+      var all = true, chosen = {};
+      function sub(t){ return dev[t] > 0 ? 'فعّل الإشعارات' : 'لم يفعّل الإشعارات بعد'; }
+      function pickRow(title, small){
+        var row = document.createElement('div'); row.className = 'pick';
+        row.setAttribute('role', 'checkbox'); row.tabIndex = 0;
+        row.innerHTML = '<span class="mark">' + CHK + '</span><div class="tx"><b></b><small></small></div>';
+        row.querySelector('b').textContent = title; row.querySelector('small').textContent = small;
+        return row;
+      }
+      function set(row, on){ row.classList.toggle('on', on); row.setAttribute('aria-checked', on ? 'true' : 'false'); }
+      var rows = [];
+      var allRow = pickRow('كل المعلمين', ready.length
+        ? 'فعّل الإشعارات منهم ' + Shouba.count(ready.length,{one:'معلم',two:'معلمان',few:'معلمين',many:'معلما'})
+        : 'لم يفعّل أحد منهم الإشعارات بعد');
+      to.appendChild(allRow);
+      teachers.forEach(function(t){
+        var row = pickRow('أ. ' + Shouba.shortName(t), sub(t));
+        row.dataset.t = t; rows.push(row); to.appendChild(row);
+      });
+      function paintTo(){
+        set(allRow, all);
+        rows.forEach(function(row){ set(row, !all && !!chosen[row.dataset.t]); });
+      }
+      function bind(row, tap){
+        row.addEventListener('click', tap);
+        row.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tap(); } });
+      }
+      bind(allRow, function(){ all = true; chosen = {}; paintTo(); });
+      rows.forEach(function(row){ bind(row, function(){
+        var t = row.dataset.t;
+        if (all) { all = false; chosen = {}; }
+        chosen[t] = !chosen[t];
+        if (!Object.keys(chosen).some(function(k){ return chosen[k]; })) all = true;
+        paintTo();
+      }); });
+      paintTo();
+
+      function send(){
+        var body = mb.value.trim();
+        if (!body) { mw.textContent = 'اكتب نص الرسالة.'; mb.focus(); return false; }
+        var list = all ? 'all' : Object.keys(chosen).filter(function(k){ return chosen[k]; });
+        go.disabled = true;
+        Promise.resolve(Shouba.pending() ? Shouba.flush() : 'ok').then(function(){
+          return tapi('POST', 'api/tpush/send', { to: list, title: mt.value.trim(), body: body });
+        }).then(function(x){
+          go.disabled = false;
+          if (!x.ok) { mw.textContent = x.j.error || 'تعذر الإرسال.'; return; }
+          if (!x.j.teachers) { mw.textContent = x.j.subscribed ? 'تعذر الوصول إلى أجهزتهم — أعد المحاولة بعد قليل.'
+                                                     : 'لم يفعّل أحد ممن اخترت الإشعارات بعد، فلم تصل الرسالة إلى أحد.'; return; }
+          Shouba.sheet.close();
+          Shouba.toast('وصلت الرسالة إلى ' + Shouba.count(x.j.teachers,{one:'معلم',two:'معلمين',few:'معلمين',many:'معلما'})
+            + (x.j.teachers < x.j.chosen ? ' من ' + x.j.chosen : ''));
+        }).catch(function(){ go.disabled = false; mw.textContent = 'لا اتصال — لم ترسل الرسالة.'; });
+        return false;
+      }
+      go.addEventListener('click', send);
+    }).catch(function(){ Shouba.toast('لا اتصال — الإرسال يحتاج الإنترنت'); });
+  }
+  document.getElementById('send').addEventListener('click', sendSheet);
 
   document.getElementById('add2').addEventListener('click', addSheet);
   document.getElementById('add').addEventListener('click', Shouba.quickAdd);

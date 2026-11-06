@@ -129,6 +129,86 @@
         load ? Shouba.count(load,{one:'حصة',two:'حصتان',few:'حصص',many:'حصة'}) : 'لم يدخل',
         false, function(){ location.href = 'schedule.html?t=' + encodeURIComponent(T); });
 
+  /* ②ب رابط إشعاراته (2026-11-06، طلب المستخدم: «رابط لمعلمي الشعبة يتيح من خلاله اشعارات الجدول») — tpush.js.
+     رابط خاص به بلا حساب: يفعّل منه على هاتفه تنبيهات حصصه ورسائلك. والبوابة سؤال الخادم نفسه
+     (/api/tpush/links: ٢٠٠ مفعلة · ٤٠٤ لا) — فمن خارج التجربة لا يرى البند اصلا.
+     ⚠ يوضع البند في مكانه بعد «جدوله» ولو وصل جواب الخادم متاخرا */
+  var linkSlot = document.createElement('div'); linkSlot.style.display = 'contents';
+  entries.appendChild(linkSlot);
+  (function teacherLink(){
+    var L = null;
+    function tapi(method, url, body){
+      return fetch(url, { method: method, credentials: 'same-origin', cache: 'no-store',
+        headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined })
+        .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); });
+    }
+    function urlOf(){ return location.origin + '/t/' + L.token; }
+    function valText(){ return !L ? 'لم ينشأ' : L.devices ? 'مفعّل على ' + Shouba.count(L.devices,{one:'جهاز',two:'جهازين',few:'أجهزة',many:'جهازا'}) : 'لم يفعّله بعد'; }
+    function paintEntry(){
+      linkSlot.innerHTML = '';
+      var keep = entries; entries = linkSlot;
+      entry('رابط إشعاراته', valText(), false, openSheet);
+      entries = keep;
+    }
+    tapi('GET', 'api/tpush/links').then(function(r){
+      if (!r.ok) return;
+      L = (r.j.links || []).filter(function(x){ return x.name === T; })[0] || null;
+      paintEntry();
+    }).catch(function(){});
+
+    function openSheet(){
+      var n = document.createElement('div'); n.className = 'stack';
+      var note = document.createElement('div'); note.className = 'soon-note';
+      n.appendChild(note);
+      if (!L) {
+        note.textContent = 'رابط خاص بأ. ' + Shouba.shortName(T) + '، يفتحه على هاتفه ويفعّل منه إشعارات حصصه ورسائلك، بلا حساب.';
+        var mk = document.createElement('button'); mk.type = 'button'; mk.className = 'cta'; mk.textContent = 'أنشئ رابطه';
+        mk.addEventListener('click', function(){ make(false, mk); });
+        n.appendChild(mk);
+        Shouba.sheet.open('رابط إشعارات أ. ' + Shouba.shortName(T), n);
+        return;
+      }
+      note.textContent = L.devices
+        ? 'فعّل أ. ' + Shouba.shortName(T) + ' الإشعارات على ' + Shouba.count(L.devices,{one:'جهاز',two:'جهازين',few:'أجهزة',many:'جهازا'}) + '.'
+        : 'أرسل الرابط إلى أ. ' + Shouba.shortName(T) + ' ليفتحه على هاتفه ويفعّل الإشعارات منه.';
+      var box = document.createElement('div'); box.className = 'paper';
+      var inp = document.createElement('input'); inp.readOnly = true; inp.value = urlOf(); inp.dir = 'ltr';
+      inp.style.fontFamily = 'var(--font-num)'; inp.style.fontSize = '13.5px';
+      box.appendChild(inp); n.appendChild(box);
+      var cp = document.createElement('button'); cp.type = 'button'; cp.className = 'cta'; cp.textContent = 'انسخ الرابط';
+      cp.addEventListener('click', function(){
+        var done = function(){ Shouba.toast('نسخ رابط أ. ' + Shouba.shortName(T)); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(urlOf()).then(done, function(){ inp.select(); });
+        else { inp.select(); try { document.execCommand('copy'); done(); } catch (e) {} }
+      });
+      n.appendChild(cp);
+      if (navigator.share) {
+        var sh = document.createElement('button'); sh.type = 'button'; sh.className = 'btn-ghost'; sh.textContent = 'أرسله';
+        sh.addEventListener('click', function(){ navigator.share({ title: 'إشعارات شعبة', url: urlOf() }).catch(function(){}); });
+        n.appendChild(sh);
+      }
+      var rn = document.createElement('button'); rn.type = 'button'; rn.className = 'btn-ghost'; rn.textContent = 'أبطل الرابط وأصدر غيره';
+      rn.addEventListener('click', function(){
+        Shouba.ask('إبطال الرابط', 'يتوقف الرابط الحالي، وتتوقف الإشعارات على كل جهاز فعّلها منه، ويصدر رابط جديد ترسله إليه.',
+          'أبطله وأصدر غيره', function(){ make(true); });
+      });
+      n.appendChild(rn);
+      Shouba.sheet.open('رابط إشعارات أ. ' + Shouba.shortName(T), n);
+    }
+    /* الخادم يعرف المعلم من وثيقة الشعبة عنده — فما لم يصله بعد يرسل اولا */
+    function make(renew, btn){
+      if (btn) btn.disabled = true;
+      Promise.resolve(Shouba.pending() ? Shouba.flush() : 'ok').then(function(){
+        return tapi('POST', 'api/tpush/link', { name: T, renew: !!renew });
+      }).then(function(r){
+        if (btn) btn.disabled = false;
+        if (!r.ok) { Shouba.toast(r.j.error || 'تعذر إنشاء الرابط'); return; }
+        L = r.j; paintEntry(); openSheet();
+        if (renew) Shouba.toast('أصدر رابط جديد، والقديم لا يعمل');
+      }).catch(function(){ if (btn) btn.disabled = false; Shouba.toast('لا اتصال — لم ينشأ الرابط'); });
+    }
+  })();
+
   /* ③ سجلاته في ملفه (المجموعة أ، 2026-09-14): بطاقة متابعته · ملاحظاته التربوية · إنجازاته — تفتح سجله في فصله او
      عامه، وجديدا باسمه ان لم يكن. و«اطبع ملفه» يجمعها وسائر سجلاته بغلاف «سجل متابعة معلم» (نماذج التوجيه ص٤) */
   function recEntry(tplId, title){

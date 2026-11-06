@@ -60,6 +60,9 @@ self.addEventListener('fetch', function (e) {
      واصولهما — فلا يقدم لزائر (ولا لرئيس الشعبة يعاين) نسخة قديمة من مخزن جهازه */
   if (/\/face(\/|\.html|-admin\.html|\.css|-data\.js)/.test(url.pathname)) return;
 
+  /* صفحة المعلم /t/<الرمز> لا تمر بمخزن المنصة (2026-11-06، tpush.js): لها عاملها بمجال /t/ */
+  if (url.pathname.indexOf('/t/') === 0) return;
+
   /* version.json من الشبكة دائما — به يعرف أن ثمة نسخة أحدث */
   if (url.pathname.endsWith('version.json')) {
     e.respondWith(fetch(req).catch(function () { return caches.match(req); }));

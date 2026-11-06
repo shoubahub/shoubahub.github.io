@@ -253,6 +253,7 @@ function start(pub) {
     .catch(e => console.error('إشعار التحديث:', e.message)); }, 60 * 1000).unref();
 }
 
-module.exports = { routes, start, tick, due, clock, announce, selfName,
+module.exports = { routes, start, tick, due, clock, announce, selfName, keys, schoolDay, mins, ORD,
+  send: (sub, body, opts) => sender(sub, body, opts),   /* إشعارات المعلمين (tpush.js) تمر بالمرسل نفسه — فيبدله الفحص مرة */
   dropFor: id => { db.prepare('DELETE FROM push_subs WHERE user_id = ?').run(id); db.prepare('DELETE FROM push_sent WHERE user_id = ?').run(id); },
   _setSender: f => { sender = f; } };

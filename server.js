@@ -61,6 +61,11 @@ const push = require('./push');
 push.routes(app, require('./auth').requireUser);
 push.start(PUBLIC);
 
+/* إشعارات معلمي الشعبة: رابط لكل معلم، وتنبيهات حصصه، ورسائل رئيس الشعبة · tpush.js (2026-11-06) */
+const tpush = require('./tpush');
+tpush.routes(app, require('./auth').requireUser);
+tpush.start();
+
 app.get('/health', (_req, res) => res.json({ ok: true, stage: 'server' }));
 
 // SPA fallback — أي مسار غير معروف يعيد index.html

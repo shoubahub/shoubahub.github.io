@@ -308,7 +308,17 @@ function routes(app, requireUser) {
     /* رابط واحد للمعلم (قرار المستخدم 2026-11-06: «الا يمكن دمجهم برابط واحد؟»): الواجهة المنشورة ومعها
        تبويب «إشعاراتي» — وما لم تنشر الواجهة فصفحة الإشعارات وحدها */
     const page = L && faceOf(L.row.user_id) ? 'face.html' : 't.html';
-    res.status(L ? 200 : 404).sendFile(path.join(__dirname, 'public', page));
+    if (!L) return res.status(404).sendFile(path.join(__dirname, 'public', page));
+    /* ⚠ ملف التطبيق ووسوم آيفون في الصفحة نفسها لا بالسكربت (2026-11-06، رصد المستخدم: «اضفت الرابط للشاشة الرئيسية
+       … ولم يفعل الاشعارات»): face.html لا وسوم فيها، وسفاري قد يقرأ الصفحة قبل السكربت فيضيفها اختصارا لا تطبيقا */
+    const tags = '<link rel="manifest" href="/t/' + L.row.token + '/manifest.webmanifest" />'
+      + '<meta name="apple-mobile-web-app-capable" content="yes" /><meta name="mobile-web-app-capable" content="yes" />'
+      + '<meta name="apple-mobile-web-app-title" content="شعبة" />'
+      + '<link rel="apple-touch-icon" href="/identity/assets/app-icon-approved.png" />';
+    const html = fs.readFileSync(path.join(__dirname, 'public', page), 'utf8')
+      .replace(/<link rel="manifest"[^>]*>|<meta name="apple-mobile-web-app-(capable|title)"[^>]*>|<link rel="apple-touch-icon"[^>]*>/g, '')
+      .replace(/<head>/i, '<head>' + tags);
+    res.type('html').send(html);
   });
 }
 

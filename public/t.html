@@ -30,7 +30,8 @@
   .lead2 b{color:var(--shouba-navy);font-weight:700}
   .num{font-family:var(--font-num)}
   [hidden]{display:none !important}
-  .pick.due{cursor:default}      /* موعد تسليم للعرض: بطاقة بلا اختيار */
+  /* موعد تسليم للعرض: بطاقة مسطحة بلا اختيار ولا ظل ضغط (المطوّر البصري 2026-11-06) */
+  .pick.due{cursor:default;background:var(--shouba-paper);border:1px solid var(--shouba-line);box-shadow:none}
 </style>
 </head>
 <body class="framed">

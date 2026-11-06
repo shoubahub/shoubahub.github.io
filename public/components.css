@@ -162,6 +162,9 @@
 .sheet .sh-done{color:var(--shouba-navy);background:rgba(22,69,110,.09)}
 .sheet .sh-back{display:none;color:var(--shouba-label);background:rgba(120,98,66,.08)}
 .sheet .sh-back.on{display:block}
+/* «تم» باسم الفعل (opt.doneLabel): زر عنبري كـ.cta، معطل حتى يكتمل الادخال */
+.sheet .sh-done.cta{background:var(--shouba-cta);color:var(--shouba-on-amber);font-size:15px}
+.sheet .sh-done.cta[disabled]{background:linear-gradient(180deg,var(--shouba-off-hi) 0%,var(--shouba-off-lo) 100%);color:var(--shouba-off-text)}
 /* سطر التاكيد العابر (Shouba.toast) — تحت الرأس، فوق اللوحة السفلية */
 .toast{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top) + 66px);z-index:120;width:calc(100% - 32px);max-width:400px;margin:0 auto;
   display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:14px;background:var(--shouba-navy);color:#fff;

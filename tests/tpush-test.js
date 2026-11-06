@@ -125,6 +125,17 @@ async function run() {
     ok(r.status === 404 && /إشعاراتي/.test(r.raw) && /tokens\.css/.test(r.raw), 'والرابط المبطل: الصفحة نفسها بهويتها وردها ٤٠٤');
     ok((await call('GET', '/t.html')).status === 404 && (await call('GET', '/t-sw.js')).status === 404, 'ولا تفتح الصفحة ولا عاملها مباشرة');
     ok((await call('GET', '/teacher.html')).status === 200, 'وسائر الملفات الساكنة تخدم كما هي');
+    ok((await call('GET', '/api/t/' + tok + '/face')).status === 404, 'بلا واجهة منشورة: لا نسخة');
+    db.prepare("INSERT INTO face (user_id, slug, data, at, rev) VALUES (?,?,?,?,1)").run(uid, 'abcdef0123', JSON.stringify({ dept: 'المواد الفلسفية' }), '2026-11-06T10:00:00Z');
+    r = await call('GET', '/t/' + tok);
+    ok(r.status === 200 && /واجهة الشعبة/.test(r.raw) && /tabN/.test(r.raw), 'والواجهة منشورة: رابطه يفتح الواجهة بتبويب «إشعاراتي»');
+    r = await call('GET', '/api/t/' + tok + '/face');
+    ok(r.status === 200 && r.json.data.dept === 'المواد الفلسفية', 'ويقرأ الواجهة المنشورة من رابطه', r.json);
+    db.prepare("UPDATE face SET data = '' WHERE user_id = ?").run(uid);
+    ok(/إشعاراتي/.test((await call('GET', '/t/' + tok)).raw) && !/tabN/.test((await call('GET', '/t/' + tok)).raw), 'وإن سُحب النشر عاد إلى صفحة الإشعارات وحدها');
+    db.prepare("UPDATE face SET data = ? WHERE user_id = ?").run(JSON.stringify({ dept: 'x' }), uid);
+    ok((await call('GET', '/api/t/0000000000000000/face')).status === 404, 'ولا واجهة لرابط باطل');
+    db.prepare("UPDATE face SET data = '' WHERE user_id = ?").run(uid);
     r = await call('GET', '/t/' + tok + '/manifest.webmanifest');
     ok(r.status === 200 && r.json.start_url === '/t/' + tok && r.json.scope === '/t/', 'ملف التطبيق يفتح على رابطه هو', r.json);
     r = await call('GET', '/t/sw.js');

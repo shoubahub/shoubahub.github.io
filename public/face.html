@@ -55,6 +55,8 @@
     <div class="seg2">
       <a href="#الشعبة" id="tabS" class="on">الشعبة</a>
       <a href="#الجدول" id="tabJ">الجدول</a>
+      <!-- «إشعاراتي» على رابط المعلم الخاص وحده (/t/<الرمز>، 2026-11-06 · tpush.js) — والرابط العام بلا هذا التبويب -->
+      <a href="#إشعاراتي" id="tabN" hidden>إشعاراتي</a>
     </div>
   </nav>
 
@@ -106,6 +108,10 @@
     </section>
    </div>
 
+   <div class="fpane" id="paneN" hidden>
+    <section class="fsec fnotify" id="notify"></section>
+   </div>
+
     <footer class="ffoot">
       <img src="identity/assets/logo-vec-color.svg" alt="شعبة" />
       <span>صفحة منشورة من منصة شعبة</span>
@@ -129,9 +135,11 @@
 
 <script src="icons.js?v=132"></script>
 <script src="face-data.js?v=132"></script>
+<script src="t-notify.js"></script>
 <script>
 (function () {
   var F = window.ShoubaFace, SNAP = null, FILES = 'api/pub/file/', DONE = [];
+  var TOKEN = (/^\/t\/[0-9a-f]{16}\/?$/.test(location.pathname) && window.TNotify) ? window.TNotify.token : '';
   /* سهما التلميح كما في صف «الآن» — ينسخان من الصفحة لمعرض كل بطاقة */
   var XARR = [].map.call(document.querySelectorAll('#nowSec .xarr'), function (b) { return b.outerHTML; }).join('');
 
@@ -494,14 +502,15 @@
   function route() {
     var h = '';
     try { h = decodeURIComponent(location.hash.slice(1)); } catch (e) {}
-    var j = h === 'الجدول';
-    $('paneS').hidden = j; $('paneJ').hidden = !j;
-    $('tabS').classList.toggle('on', !j); $('tabJ').classList.toggle('on', j);
-    $('tabS').setAttribute('aria-current', j ? 'false' : 'page'); $('tabJ').setAttribute('aria-current', j ? 'page' : 'false');
+    var n = TOKEN && h === 'إشعاراتي', j = !n && h === 'الجدول', s = !n && !j;
+    $('paneS').hidden = !s; $('paneJ').hidden = !j; $('paneN').hidden = !n;
+    $('tabS').classList.toggle('on', s); $('tabJ').classList.toggle('on', j); $('tabN').classList.toggle('on', n);
+    $('tabS').setAttribute('aria-current', s ? 'page' : 'false'); $('tabJ').setAttribute('aria-current', j ? 'page' : 'false');
+    $('tabN').setAttribute('aria-current', n ? 'page' : 'false');
   }
   window.addEventListener('hashchange', route);
   /* ⚠ <base href="../"> يجعل «#الجدول» رابطا الى جذر المنصة — فيكتب الرابط كاملا بمسار الصفحة نفسها */
-  [['tabS', 'الشعبة'], ['tabJ', 'الجدول'], ['toJ', 'الجدول']].forEach(function (x) {
+  [['tabS', 'الشعبة'], ['tabJ', 'الجدول'], ['toJ', 'الجدول'], ['tabN', 'إشعاراتي']].forEach(function (x) {
     $(x[0]).setAttribute('href', location.pathname + location.search + '#' + encodeURIComponent(x[1]));
   });
 
@@ -525,6 +534,17 @@
     try { snap = window.parent.FACE_PREVIEW; } catch (e) {}
     FILES = 'api/files/';
     if (snap) start(JSON.parse(JSON.stringify(snap))); else gone();
+    return;
+  }
+  /* رابط المعلم الخاص /t/<الرمز> (2026-11-06، قرار المستخدم: «الا يمكن دمجهم برابط واحد؟»): الواجهة نفسها
+     من api/t/<الرمز>/face، ومعها تبويب «إشعاراتي» يبنيه t-notify.js بعناصر صفحة المعلم */
+  if (TOKEN) {
+    $('tabN').hidden = false;
+    fetch('api/t/' + TOKEN + '/face', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { if (j && j.data) start(j.data); else gone(); })
+      .catch(gone);
+    window.TNotify.load().then(function (r) { if (r.ok) window.TNotify.mount($('notify'), r.j); }).catch(function () {});
     return;
   }
   var m = location.pathname.match(/\/face\/([0-9a-f]{10})\/?$/);

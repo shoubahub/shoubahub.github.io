@@ -136,29 +136,33 @@ async function run() {
     ok(r.status === 200 && sent.length === 1 && sent[0].m.title === 'تفعّلت إشعارات شعبة', 'التفعيل يرسل إشعار ترحيب', sent);
     await call('POST', '/api/t/' + tok + '/subscribe', null, { subscription: SUB(1), quiet: true });
     ok(sent.length === 1, 'والتأكيد الصامت لا يكرره');
-    await call('POST', '/api/t/' + tok + '/subscribe', null, { subscription: SUB(2), quiet: true });
+    r = await call('POST', '/api/t/' + tok + '/subscribe', null, { subscription: SUB(2) });
+    ok(r.status === 409 && r.json.locked && !db.prepare('SELECT 1 FROM teacher_subs WHERE endpoint = ?').get(SUB(2).endpoint),
+      'الرابط لجهاز واحد: جهاز ثان لا يفعّل به', r.json);
+    ok((await call('GET', '/api/t/' + tok)).json.devices === 1, 'والصفحة تعرف أنه مفعّل على جهاز');
+    ok((await call('PUT', '/api/t/' + tok + '/prefs', null, { start: false })).status === 409, 'ولا يغيّر اختياره من غير جهازه');
     await call('POST', '/api/t/' + tokS + '/subscribe', null, { subscription: SUB(3), quiet: true });
     r = await call('GET', '/api/tpush/links', A);
-    ok(r.json.links.find(l => l.name === 'أحمد الفهد').devices === 2, 'رئيس الشعبة يرى عدد أجهزته', r.json);
+    ok(r.json.links.find(l => l.name === 'أحمد الفهد').devices === 1, 'رئيس الشعبة يرى عدد أجهزته', r.json);
 
     // ── الفحص الدوري
     sent.length = 0;
     await tpush.tick(at(TUE, '07:50'));
-    ok(sent.length === 2 && sent.every(x => /t-[12]$/.test(x.to) && x.m.title === 'حصتك الأولى بعد 5 دقائق'), 'التنبيه يصل جهازيه هو وحده', sent);
+    ok(sent.length === 1 && /t-1$/.test(sent[0].to) && sent[0].m.title === 'حصتك الأولى بعد 5 دقائق', 'التنبيه يصل جهازه هو وحده', sent);
     await tpush.tick(at(TUE, '07:51'));
-    ok(sent.length === 2, 'ولا يتكرر في الدقيقة التالية');
+    ok(sent.length === 1, 'ولا يتكرر في الدقيقة التالية');
     await tpush.tick(at(TUE, '08:40'));
-    ok(sent.length === 3 && /t-3$/.test(sent[2].to) && /الثانية/.test(sent[2].m.title), 'وزميله يصله تنبيه حصته', sent.slice(2));
+    ok(sent.length === 2 && /t-3$/.test(sent[1].to) && /الثانية/.test(sent[1].m.title), 'وزميله يصله تنبيه حصته', sent.slice(1));
 
     // ── اختياره من صفحته
-    r = await call('PUT', '/api/t/' + tok + '/prefs', null, { start: false });
+    r = await call('PUT', '/api/t/' + tok + '/prefs', null, { start: false, endpoint: SUB(1).endpoint });
     ok(r.status === 200 && r.json.prefs.start === false && r.json.prefs.pre === true, 'يطفئ «عند البداية» من صفحته', r.json);
     sent.length = 0;
     await tpush.tick(at(TUE, '07:55'));
     ok(sent.length === 0, 'فلا يصله عند البداية');
     await tpush.tick(at(TUE, '08:35'));
-    ok(sent.length === 2 && /نهاية/.test(sent[0].m.title), 'ويبقى ما لم يطفئه', sent);
-    await call('PUT', '/api/t/' + tok + '/prefs', null, { start: true });
+    ok(sent.length === 1 && /نهاية/.test(sent[0].m.title), 'ويبقى ما لم يطفئه', sent);
+    await call('PUT', '/api/t/' + tok + '/prefs', null, { start: true, endpoint: SUB(1).endpoint });
 
     // ── الرسالة الحرة
     ok((await call('POST', '/api/tpush/send', A, { to: 'all', body: '' })).status === 400, 'لا رسالة بلا نص');
@@ -166,21 +170,25 @@ async function run() {
     ok((await call('POST', '/api/tpush/send', B, { to: 'all', body: 'x' })).status === 404, 'ومن خارج التجربة لا يرسل');
     sent.length = 0;
     r = await call('POST', '/api/tpush/send', A, { to: 'all', title: '', body: 'تهنئة بنجاح الفعالية' });
-    ok(r.status === 200 && r.json.teachers === 2 && r.json.devices === 3 && sent.length === 3
+    ok(r.status === 200 && r.json.teachers === 2 && r.json.devices === 2 && sent.length === 2
       && sent.every(x => x.m.title === 'رسالة من رئيس الشعبة' && x.m.body === 'تهنئة بنجاح الفعالية'), 'للكل: تصل كل الأجهزة', { r: r.json, sent });
     sent.length = 0;
     r = await call('POST', '/api/tpush/send', A, { to: ['سالم العلي'], title: 'تذكير', body: 'سلّم الخطة غداً' });
     ok(r.json.teachers === 1 && sent.length === 1 && /t-3$/.test(sent[0].to) && sent[0].m.title === 'تذكير', 'لمن تختار: تصله وحده', sent);
-    await call('PUT', '/api/t/' + tokS + '/prefs', null, { pre: false, start: false, end: false });
+    await call('PUT', '/api/t/' + tokS + '/prefs', null, { pre: false, start: false, end: false, endpoint: SUB(3).endpoint });
     sent.length = 0;
     await call('POST', '/api/tpush/send', A, { to: ['سالم العلي'], body: 'رسالة' });
     ok(sent.length === 1, 'والرسالة الحرة تصل ولو أطفأ تنبيهات الحصص');
 
     // ── جهاز ألغى اشتراكه ⟵ يحذف
-    reject = { 'https://push.example.com/t-2': 410 };
+    reject = { 'https://push.example.com/t-1': 410 };
     await call('POST', '/api/tpush/send', A, { to: ['أحمد الفهد'], body: 'x' });
-    ok(!db.prepare('SELECT 1 FROM teacher_subs WHERE endpoint = ?').get(SUB(2).endpoint), 'الجهاز الذي رد ٤١٠ يحذف اشتراكه');
+    ok(!db.prepare('SELECT 1 FROM teacher_subs WHERE endpoint = ?').get(SUB(1).endpoint), 'الجهاز الذي رد ٤١٠ يحذف اشتراكه');
     reject = null;
+    r = await call('POST', '/api/t/' + tok + '/subscribe', null, { subscription: SUB(2), quiet: true });
+    ok(r.status === 200, 'وبعد خلو الرابط يفعّل به جهاز آخر');
+    await call('POST', '/api/t/' + tok + '/unsubscribe', null, { endpoint: SUB(2).endpoint });
+    await call('POST', '/api/t/' + tok + '/subscribe', null, { subscription: SUB(1), quiet: true });
 
     // ── الإيقاف من صفحته
     await call('POST', '/api/t/' + tok + '/unsubscribe', null, { endpoint: SUB(1).endpoint });

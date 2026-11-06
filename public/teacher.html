@@ -170,7 +170,7 @@
       }
       note.textContent = L.devices
         ? 'فعّل أ. ' + Shouba.shortName(T) + ' الإشعارات على ' + Shouba.count(L.devices,{one:'جهاز',two:'جهازين',few:'أجهزة',many:'جهازا'}) + '.'
-        : 'أرسل الرابط إلى أ. ' + Shouba.shortName(T) + ' ليفتحه على هاتفه ويفعّل الإشعارات منه.';
+        : 'أرسل الرابط إلى أ. ' + Shouba.shortName(T) + ' ليفتحه على هاتفه ويفعّل الإشعارات منه. والرابط يعمل على جهاز واحد.';
       var box = document.createElement('div'); box.className = 'paper';
       var inp = document.createElement('input'); inp.readOnly = true; inp.value = urlOf(); inp.dir = 'ltr';
       inp.style.fontFamily = 'var(--font-num)'; inp.style.fontSize = '13.5px';

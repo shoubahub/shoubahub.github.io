@@ -234,13 +234,18 @@ function routes(app, requireUser) {
   app.get('/api/t/:token', (req, res) => {
     const L = T(req, res); if (!L) return;
     res.json({ name: L.row.name, department: L.data.department || '', school: L.data.school || '',
-      prefs: prefsOf(L.row), key: push.keys().publicKey });
+      prefs: prefsOf(L.row), key: push.keys().publicKey, devices: subsOf(L.row.token).length });
   });
   app.post('/api/t/:token/subscribe', (req, res) => {
     const L = T(req, res); if (!L) return;
     const s = cleanSub(req.body && req.body.subscription);
     if (!s) return res.status(400).json({ error: 'اشتراك غير صالح' });
     const was = db.prepare('SELECT token FROM teacher_subs WHERE endpoint = ?').get(s.endpoint);
+    /* ⚠ الرابط لجهاز واحد (قرار المستخدم 2026-11-06: «كيف نضمن ان من لديه الرابط هو معلمي بالشعبة؟»):
+       ما دام جهاز مفعلا عليه فلا يفعل غيره — فمن نسخ الرابط بعد تفعيله لم ينتفع به. ومن احتاج جهازا آخر
+       اوقف الاول من صفحته، او اصدر له رئيس الشعبة رابطا جديدا */
+    const other = db.prepare('SELECT 1 FROM teacher_subs WHERE token = ? AND endpoint <> ?').get(L.row.token, s.endpoint);
+    if (other) return res.status(409).json({ error: 'هذا الرابط مفعّل على جهاز آخر', locked: true });
     db.prepare(`INSERT INTO teacher_subs (endpoint,token,p256dh,auth) VALUES (?,?,?,?)
                 ON CONFLICT(endpoint) DO UPDATE SET token=excluded.token, p256dh=excluded.p256dh, auth=excluded.auth`)
       .run(s.endpoint, L.row.token, s.p256dh, s.auth);
@@ -258,6 +263,9 @@ function routes(app, requireUser) {
   });
   app.put('/api/t/:token/prefs', (req, res) => {
     const L = T(req, res); if (!L) return;
+    /* الاختيار للجهاز المفعل وحده — لا لمن فتح الرابط من غيره */
+    if (!db.prepare('SELECT 1 FROM teacher_subs WHERE token = ? AND endpoint = ?').get(L.row.token, String((req.body && req.body.endpoint) || '')))
+      return res.status(409).json({ error: 'فعّل الإشعارات على هذا الجهاز أولاً', locked: true });
     const cur = prefsOf(L.row), b = req.body || {};
     KINDS.forEach(k => { if (k in b) cur[k] = !!b[k]; });
     const p = {}; KINDS.forEach(k => { p[k] = cur[k] ? 1 : 0; });

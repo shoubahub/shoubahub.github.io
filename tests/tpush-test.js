@@ -92,6 +92,32 @@ async function run() {
     d = tpush.due(MID, 'أحمد الفهد', ALL, push.clock(at(TUE, '07:35')), 'x');
     ok(d.length === 1 && /من 07:40 إلى 08:25/.test(d[0].msg.body) && due('07:35').length === 0, 'الأوقات بمرحلة الشعبة', d);
 
+    // ── مواعيد التسليم (المرحلة الثانية): دالة خالصة
+    const DLS = Object.assign({}, DATA, { deadlines: [
+      { id: 'd1', title: 'تسليم مشروع الوحدة الثانية', date: '2026-11-11', to: ['أحمد الفهد', 'سالم العلي'], done: [] },
+      { id: 'd2', title: 'خطة العلاج', date: '2026-11-15', to: ['أحمد الفهد'], done: [] },
+      { id: 'd3', title: 'تقرير الزيارة', date: '2026-11-11', to: ['أحمد الفهد'], done: ['أحمد الفهد'] },
+      { id: 'd4', title: 'ليس له', date: '2026-11-11', to: ['سالم العلي'], done: [] }
+    ] });
+    const dd = (date, hm, data) => tpush.dueDeadlines(data || DLS, 'أحمد الفهد', push.clock(at(date, hm)), 'tok');
+    ok(dd(TUE, '06:59').length === 0, 'الموعد: لا تنبيه قبل 7:00');
+    d = dd(TUE, '07:00');
+    ok(d.length === 1 && d[0].key === 'dl:d1:pre:2026-11-11' && d[0].msg.title === 'غداً موعد تسليم'
+      && d[0].msg.body === 'تسليم مشروع الوحدة الثانية', 'الموعد: صباح اليوم السابق «غداً موعد تسليم»', d);
+    ok(d[0].msg.url === '/t/tok#' + encodeURIComponent('إشعاراتي'), 'والإشعار يفتح «إشعاراتي»');
+    ok(dd(TUE, '15:00').length === 1 && dd(TUE, '20:00').length === 0, 'ومن فاته 7:00 يلحقه يومه حتى 20:00 لا بعدها');
+    d = dd('2026-11-11', '07:00');
+    ok(d.length === 1 && d[0].key === 'dl:d1:day:2026-11-11' && d[0].msg.title === 'اليوم موعد تسليم', 'الموعد: صباح يومه «اليوم موعد تسليم»', d);
+    d = dd('2026-11-12', '07:00');
+    ok(d.length === 1 && d[0].key === 'dl:d2:pre:2026-11-15' && d[0].msg.title === 'الأحد موعد تسليم', 'موعد الأحد: ينبه الخميس قبله باسم اليوم', d);
+    ok(dd('2026-11-14', '07:00').length === 0, 'ولا ينبه يوم السبت');
+    ok(tpush.alertDay('2026-11-15') === '2026-11-12' && tpush.alertDay('2026-11-11') === '2026-11-10', 'يوم التنبيه الأول: آخر يوم دراسي قبله');
+    ok(dd(TUE, '07:00', Object.assign({}, DLS, { teachers: ['سالم العلي'] })).length === 0, 'ومن أزيل من الشعبة لا ينبه بمواعيده');
+    const up = tpush.upcoming(DLS, 'أحمد الفهد', TUE);
+    ok(up.length === 2 && up[0].title === 'تسليم مشروع الوحدة الثانية' && up[0].when === 'غداً' && up[1].when === 'الأحد 15 نوفمبر',
+      'مواعيده القادمة: ما لم يسلّمه بالأقرب', up);
+    ok(tpush.upcoming(DLS, 'أحمد الفهد', '2026-11-12').length === 1, 'وما مضى لا يظهر في القادمة');
+
     // ── حسابان: head1 في التجربة، head2 خارجها
     const inv = require('../db').invite();
     const A = (await call('POST', '/api/register', null, { username: 'head1', pin: '111111', displayName: 'محمد البراك', inviteCode: inv })).cookie;
@@ -211,6 +237,28 @@ async function run() {
     ok(r.json.token !== tok && r.json.devices === 0, 'الإبطال يصدر رابطا جديدا بلا أجهزة', r.json);
     ok((await call('GET', '/api/t/' + tok)).status === 404, 'والرابط القديم لا يعمل');
     ok(!db.prepare('SELECT 1 FROM teacher_subs WHERE token = ?').get(tok), 'وأجهزته القديمة حذفت');
+
+    // ── مواعيد التسليم: من الوثيقة إلى جهازه، و«سُلّم» يوقفها
+    const tok2 = (await call('POST', '/api/tpush/link', A, { name: 'أحمد الفهد' })).json.token;
+    await call('POST', '/api/t/' + tok2 + '/subscribe', null, { subscription: SUB(7), quiet: true });
+    db.prepare('UPDATE shouba SET data = ? WHERE user_id = ?').run(JSON.stringify(DLS), uid);
+    r = await call('GET', '/api/t/' + tok2);
+    ok(r.json.deadlines && r.json.deadlines.length >= 1 && r.json.deadlines.every(x => x.title && x.date && x.when && !x.to && !x.done),
+      'صفحته تعطي مواعيده القادمة بعنوانها وتاريخها وحدهما', r.json.deadlines);
+    sent.length = 0;
+    const his = () => sent.filter(x => /t-7$/.test(x.to));
+    await tpush.tick(at(TUE, '07:00'));
+    ok(his().length === 1 && his()[0].m.title === 'غداً موعد تسليم' && his()[0].m.body === 'تسليم مشروع الوحدة الثانية',
+      'الفحص يرسل تنبيه الموعد إلى جهازه', sent);
+    ok(sent.filter(x => /t-3$/.test(x.to)).map(x => x.m.body).sort().join('|') === 'تسليم مشروع الوحدة الثانية|ليس له',
+      'وزميله تصله مواعيده هو', sent);
+    await tpush.tick(at(TUE, '07:01'));
+    ok(his().length === 1, 'ولا يتكرر');
+    const DONE = JSON.parse(JSON.stringify(DLS)); DONE.deadlines[0].done = ['أحمد الفهد'];
+    db.prepare('UPDATE shouba SET data = ? WHERE user_id = ?').run(JSON.stringify(DONE), uid);
+    await tpush.tick(at('2026-11-11', '07:00'));
+    ok(his().length === 1 && sent.some(x => /t-3$/.test(x.to) && x.m.title === 'اليوم موعد تسليم' && x.m.body === 'تسليم مشروع الوحدة الثانية'),
+      'ومن أُشّر له «سُلّم» لا يصله تنبيه يوم الموعد، ويصل من لم يسلّم', sent);
 
     // ── من أزيل من الشعبة سكت رابطه
     db.prepare('UPDATE shouba SET data = ? WHERE user_id = ?').run(JSON.stringify(Object.assign({}, DATA, { teachers: ['أحمد الفهد'] })), uid);

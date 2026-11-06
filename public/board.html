@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=134" />
-<link rel="stylesheet" href="shell.css?v=134" />
-<link rel="stylesheet" href="components.css?v=134" />
-<link rel="stylesheet" href="frame.css?v=134" />
+<link rel="stylesheet" href="identity/tokens.css?v=135" />
+<link rel="stylesheet" href="shell.css?v=135" />
+<link rel="stylesheet" href="components.css?v=135" />
+<link rel="stylesheet" href="frame.css?v=135" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -63,6 +63,9 @@
   #evday{flex-wrap:wrap}
   #evday .seg{flex:1 1 28%}
   .todo{padding:0 var(--gap-side);display:flex;flex-direction:column;gap:7px}
+  /* شارات مواعيد التسليم (المطوّر البصري 2026-11-06): «متأخر» بلون الخطأ · «اليوم» بالعنبري · «قريب» محايدة */
+  .titem .chip.late{color:var(--shouba-error);background:rgba(183,68,58,.08)}
+  .titem .chip.soon{color:var(--shouba-label);background:var(--shouba-raised-lo)}
   .calopt{display:flex;align-items:flex-start;gap:10px;padding:10px 2px 14px;cursor:pointer}
   .calopt input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:var(--shouba-navy)}
   .calopt span{font-size:13px;font-weight:600;color:var(--shouba-ink);line-height:1.5}
@@ -186,14 +189,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=134"></script>
-<script src="refdata.js?v=134"></script>
-<script src="rec-templates.js?v=134"></script>
-<script src="rec-engine.js?v=134"></script>
-<script src="derive.js?v=134"></script>
-<script src="plan-data.js?v=134"></script>
-<script src="icons.js?v=134"></script>
-<script src="components.js?v=134"></script>
+<script src="build.js?v=135"></script>
+<script src="refdata.js?v=135"></script>
+<script src="rec-templates.js?v=135"></script>
+<script src="rec-engine.js?v=135"></script>
+<script src="derive.js?v=135"></script>
+<script src="plan-data.js?v=135"></script>
+<script src="icons.js?v=135"></script>
+<script src="components.js?v=135"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -961,6 +964,16 @@
         + (x.late ? 'موعده ' + (MN[x.month - 1] || '') + ' ولم يؤشر' : x.st === 'doing' ? 'جار — موعده هذا الشهر' : 'موعده هذا الشهر'),
       href:'record.html?id=' + encodeURIComponent(x.rec) + '&focus=' + encodeURIComponent(x.row) });
   });
+  /* مواعيد التسليم (2026-11-06، قرار المستخدم 17:37: «مع اضافته للوحة الرئيسية في بحاجة الى اجراء اذا قرب الموعد او
+     بيومه كتوقيت المعلم»): من يوم تنبيه المعلم الأول، ويبقى بعد مضيه حتى يؤشّر تسليم الجميع — والسطر يفتح الموعد */
+  (Shouba.deadlinesDue ? Shouba.deadlinesDue() : []).forEach(function(x){
+    var p = x.dl.date.split('-'), got = x.total - x.pending.length;
+    items.push({ ini:String(+p[2]), title:x.dl.title,
+      badge:x.state === 'late' ? 'متأخر' : x.state === 'today' ? 'اليوم' : 'قريب',
+      chip:x.state === 'late' ? 'late' : x.state === 'today' ? '' : 'soon',
+      text:'موعد تسليم ' + Shouba.dayMonth(x.dl.date) + ' · سلّم ' + got + ' من ' + x.total,
+      href:'teachers.html?dl=' + encodeURIComponent(x.dl.id) });
+  });
   /* ⚠ حذف بند «دروس سابقة لم تؤشر» (2026-09-05): اتهام بلا دليل — لا باب تأشير
      أصلا، فكان كل معلم متأخرا بحكم البناء. يعود يوم يصير للإنجاز مصدر حقيقي
      (تأشير ما قطعه المعلم في سجل «ما قطع من المنهج» — الخطوة هـ من شريط الخطة). وحذفت Shouba.behindPlan القديمة
@@ -984,6 +997,7 @@
       el.querySelector('b').textContent = it.title;
       el.querySelector('small').textContent = it.text;
       el.querySelector('.chip').textContent = it.badge;
+      if (it.chip) el.querySelector('.chip').classList.add(it.chip);
       function go(){ location.href = it.href; }
       el.addEventListener('click', go);
       el.addEventListener('keydown', function(e){

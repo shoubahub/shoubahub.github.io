@@ -672,6 +672,72 @@
     S.save();
   };
 
+  /* ── مواعيد التسليم (2026-11-06، طلب المستخدم: «ان اضيف له موعد بحيث استلم منه مشروع فينبهه تلقائيا») ──────
+     { id, title, date: YYYY-MM-DD, to: [أسماء المعلمين], done: [من سلّم] } — في الوثيقة فيقرؤها الخادم (tpush.js)
+     فينبه المعلم 7:00 في آخر يوم دراسي قبل الموعد ويوم الموعد، ما لم يؤشر له «سُلّم».
+     ⚠ «كل المعلمين» تحفظ بأسمائهم يوم الإضافة: من أضيف بعدها لا يدخل في موعد سابق */
+  function isoOf(dt) {
+    var p = function (x) { return (x < 10 ? '0' : '') + x; };
+    return dt.getFullYear() + '-' + p(dt.getMonth() + 1) + '-' + p(dt.getDate());
+  }
+  function dateOf(iso) { var p = String(iso).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  S.todayIso = function (today) { return isoOf(today ? new Date(today) : new Date()); };
+  /* يوم التنبيه الأول: اليوم السابق، فإن كان عطلة فآخر يوم دراسي قبله — كما في الخادم */
+  S.deadlineAlertDay = function (iso) {
+    var d = dateOf(iso);
+    do { d.setDate(d.getDate() - 1); } while (d.getDay() > 4);
+    return isoOf(d);
+  };
+  S.deadlines = function () {
+    return (S.data().deadlines || []).filter(function (x) { return x && x.id && x.date; })
+      .sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+  };
+  S.deadline = function (id) { return S.deadlines().filter(function (x) { return x.id === id; })[0] || null; };
+  /* معلمو الموعد ممن بقي في الشعبة — ومن أزيل لا يعد */
+  S.deadlineTeachers = function (dl) {
+    var all = S.teachers();
+    return (dl.to || []).filter(function (t) { return all.indexOf(t) > -1; });
+  };
+  S.deadlinePending = function (dl) {
+    var done = dl.done || [];
+    return S.deadlineTeachers(dl).filter(function (t) { return done.indexOf(t) === -1; });
+  };
+  S.saveDeadline = function (dl) {
+    var d = S.data();
+    d.deadlines = d.deadlines || [];
+    if (!dl.id) { dl.id = 'd' + Date.now(); d.deadlines.push(dl); }
+    else d.deadlines = d.deadlines.map(function (x) { return x.id === dl.id ? dl : x; });
+    dl.done = (dl.done || []).filter(function (t) { return dl.to.indexOf(t) > -1; });
+    S.save();
+    return dl;
+  };
+  S.removeDeadline = function (id) {
+    var d = S.data();
+    d.deadlines = (d.deadlines || []).filter(function (x) { return x.id !== id; });
+    S.save();
+  };
+  S.setDelivered = function (id, name, on) {
+    var d = S.data();
+    (d.deadlines || []).forEach(function (x) {
+      if (x.id !== id) return;
+      var done = (x.done || []).filter(function (t) { return t !== name; });
+      if (on) done.push(name);
+      x.done = done;
+    });
+    S.save();
+  };
+  /* لقسم «بحاجة إلى إجراء» في اللوحة (قرار المستخدم 17:37): من يوم التنبيه الأول، ويبقى بعد مضيه حتى يسلّم الجميع.
+     state: 'soon' قبل يومه · 'today' يومه · 'late' بعده */
+  S.deadlinesDue = function (today) {
+    var t = S.todayIso(today);
+    return S.deadlines().map(function (dl) {
+      var pending = S.deadlinePending(dl);
+      if (!pending.length || t < S.deadlineAlertDay(dl.date)) return null;
+      return { dl: dl, pending: pending, total: S.deadlineTeachers(dl).length,
+               state: t < dl.date ? 'soon' : t === dl.date ? 'today' : 'late' };
+    }).filter(Boolean);
+  };
+
   /* (حذفت 2026-09-13 planSubjects وplanProgress وbehindPlan: كانت على نموذج قديم لم يملأ قط — d.plan وd.progress
      — فبقي قسم اللوحة «قيد الاعداد». البديل: خطط التوزيع المعتمدة ادناه (planLinks)، وما قطعه المعلم في سجل
      «ما قطع من المنهج» — الخطوة هـ — مصدر الانجاز الحق، فلا حكم بتأخر بلا تأشير) */

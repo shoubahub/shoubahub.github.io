@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=134" />
-<link rel="stylesheet" href="shell.css?v=134" />
-<link rel="stylesheet" href="components.css?v=134" />
-<link rel="stylesheet" href="frame.css?v=134" />
+<link rel="stylesheet" href="identity/tokens.css?v=135" />
+<link rel="stylesheet" href="shell.css?v=135" />
+<link rel="stylesheet" href="components.css?v=135" />
+<link rel="stylesheet" href="frame.css?v=135" />
 <style>
   .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
   .rm{padding:0 var(--gap-side)}
@@ -67,13 +67,13 @@
   </div>
  </div></div>
 
-<script src="build.js?v=134"></script>
-<script src="refdata.js?v=134"></script>
-<script src="rec-templates.js?v=134"></script>
-<script src="rec-engine.js?v=134"></script>
-<script src="derive.js?v=134"></script>
-<script src="icons.js?v=134"></script>
-<script src="components.js?v=134"></script>
+<script src="build.js?v=135"></script>
+<script src="refdata.js?v=135"></script>
+<script src="rec-templates.js?v=135"></script>
+<script src="rec-engine.js?v=135"></script>
+<script src="derive.js?v=135"></script>
+<script src="icons.js?v=135"></script>
+<script src="components.js?v=135"></script>
 <script>
   var d = Shouba.data();
   /* الاسم من الرابط ينظف كالبيانات: رابط قديم مشكول يبقى يجد معلمه (2026-09-11) */
@@ -207,6 +207,28 @@
         if (renew) Shouba.toast('أصدر رابط جديد، والقديم لا يعمل');
       }).catch(function(){ if (btn) btn.disabled = false; Shouba.toast('لا اتصال — لم ينشأ الرابط'); });
     }
+  })();
+
+  /* ②ج مواعيد التسليم (2026-11-06، قرار المستخدم 17:32: «تظهر مواعيد كل معلم في ملفه») — للعرض، والتأشير
+     في «المعلمون» ⟵ «مواعيد التسليم» (قرار 17:37). يظهر البند ما دام له موعد */
+  (function(){
+    var mine = Shouba.deadlines ? Shouba.deadlines().filter(function(x){ return (x.to || []).indexOf(T) > -1; }) : [];
+    if (!mine.length) return;
+    var open = mine.filter(function(x){ return (x.done || []).indexOf(T) === -1; }).length;
+    entry('مواعيد التسليم', open ? 'لم يسلّم ' + open + ' من ' + mine.length : 'سلّمها كلها', false, function(){
+      var n = document.createElement('div'); n.className = 'vlist'; n.style.padding = '0';
+      mine.forEach(function(x){
+        var on = (x.done || []).indexOf(T) > -1;
+        var r = document.createElement('div'); r.className = 'subrow';
+        r.innerHTML = '<b></b><span class="cls"></span><span class="pc"></span>';
+        r.querySelector('b').textContent = x.title;
+        r.querySelector('.cls').textContent = Shouba.dayMonth(x.date);
+        r.querySelector('.pc').textContent = on ? 'سلّم' : 'لم يسلّم';
+        if (on) r.querySelector('.pc').style.color = 'var(--shouba-success)';
+        n.appendChild(r);
+      });
+      Shouba.sheet.open('مواعيد أ. ' + Shouba.shortName(T), n);
+    });
   })();
 
   /* ③ سجلاته في ملفه (المجموعة أ، 2026-09-14): بطاقة متابعته · ملاحظاته التربوية · إنجازاته — تفتح سجله في فصله او

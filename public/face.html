@@ -404,10 +404,16 @@
     var r = e.target.closest('.per.fold, .per.open'); if (!r) return;
     var i = +r.getAttribute('data-i'); dayOpen[i] = !dayOpen[i]; paintDay();
   });
-  /* العداد يتجدد كل ثانية كاللوحة — نصه وحده، بلا اعادة رسم */
+  /* العداد يتجدد كل ثانية كاللوحة — نصه وحده، بلا اعادة رسم. فاذا انتهت الحصة (او بدأت التالية) يعاد رسم الجدول في الثانية نفسها،
+     فلا يبقى «الآن · باقي 0:00» حتى رسم الثلاثين ثانية (رصد معاينة السلوك على بناء 127) */
   setInterval(function () {
-    var el = SNAP && $('today').querySelector('.per.now .state'), r = el && el.closest('.per'), t = r && (SNAP.times || [])[+r.getAttribute('data-i')];
-    if (t) el.textContent = leftTxt(t);
+    if (!SNAP || $('paneJ').hidden) return;
+    var d = clock(), m = d.getHours() * 60 + d.getMinutes(), times = SNAP.times || [], live = '';
+    if (F.now(times, SNAP.days, d).day === curDay) times.forEach(function (t, i) { if (!live && m >= hm(t.from) && m < hm(t.to)) live = String(i); });
+    var el = $('today').querySelector('.per.now .state'), r = el && el.closest('.per');
+    var shown = r ? r.getAttribute('data-i') : '';
+    if (live !== shown && (live || shown)) { paintDay(); return; }
+    if (el && times[+shown]) el.textContent = leftTxt(times[+shown]);
   }, 1000);
   $('days').addEventListener('click', function (e) {
     var b = e.target.closest('.day'); if (!b) return;

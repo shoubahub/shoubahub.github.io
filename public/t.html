@@ -13,10 +13,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=131" />
-<link rel="stylesheet" href="shell.css?v=131" />
-<link rel="stylesheet" href="components.css?v=131" />
-<link rel="stylesheet" href="frame.css?v=131" />
+<link rel="stylesheet" href="identity/tokens.css?v=132" />
+<link rel="stylesheet" href="shell.css?v=132" />
+<link rel="stylesheet" href="components.css?v=132" />
+<link rel="stylesheet" href="frame.css?v=132" />
 <style>
   /* صفحة المعلم (2026-11-06، طلب المستخدم: «رابط لمعلمي الشعبة يتيح من خلاله اشعارات الجدول») — tpush.js.
      يفتحها المعلم برابطه الخاص بلا حساب: لا تقرأ وثيقة الشعبة ولا مخزن الجهاز، وكل ما فيها من api/t/<الرمز>.
@@ -117,7 +117,7 @@
       function set(on){ r.classList.toggle('on', on); r.setAttribute('aria-checked', on ? 'true' : 'false'); }
       set(!!P.prefs[o.k]);
       function tap(){
-        var next = !P.prefs[o.k], body = {}; body[o.k] = next;
+        var next = !P.prefs[o.k], body = { endpoint: mine }; body[o.k] = next;
         set(next); say(pmsg, '');
         api('PUT', API + '/prefs', body).then(function(x){
           if (!x.ok) throw new Error('save');
@@ -146,6 +146,11 @@
       lead.textContent = 'الإشعارات ممنوعة لهذه الصفحة في إعدادات جهازك. اسمح بها من الإعدادات، ثم ارجع إلى هنا.';
       btn.hidden = true; prefsShown(false);
     }
+    /* الرابط لجهاز واحد (2026-11-06): مفعل على غير هذا الجهاز ⟵ لا زر، بل ارشاد الى رابط جديد */
+    function locked(){
+      lead.textContent = 'الإشعارات مفعّلة بهذا الرابط على جهاز آخر، والرابط لجهاز واحد. اطلب من رئيس الشعبة رابطاً جديداً لهذا الجهاز.';
+      btn.hidden = true; prefsShown(false);
+    }
     function show(on){
       lead.textContent = '';
       if (on) { var b = el('b', null, 'مفعّلة'); b.style.color = 'var(--shouba-success)'; lead.appendChild(b); }
@@ -156,7 +161,7 @@
       prefsShown(on);
     }
 
-    var reg = null;
+    var reg = null, mine = '';
     navigator.serviceWorker.register('/t/sw.js', { scope: '/t/' }).then(function(){
       return navigator.serviceWorker.getRegistration('/t/');
     }).then(function(r){
@@ -164,9 +169,12 @@
       return r.pushManager.getSubscription();
     }).then(function(sub){
       if (Notification.permission === 'denied') return blocked();
-      /* جهاز مشترك من قبل: يؤكد اشتراكه عند الخادم بلا إشعار ترحيب */
-      if (sub && Notification.permission === 'granted') api('POST', API + '/subscribe', { subscription: sub.toJSON(), quiet: true }).catch(function(){});
-      show(!!sub && Notification.permission === 'granted');
+      var on = !!sub && Notification.permission === 'granted';
+      if (!on) return P.devices ? locked() : show(false);
+      /* جهاز مشترك من قبل: يؤكد اشتراكه عند الخادم بلا إشعار ترحيب — فإن رده لأن غيره صار المفعل، فهو مقفل */
+      mine = sub.endpoint; show(true);
+      api('POST', API + '/subscribe', { subscription: sub.toJSON(), quiet: true })
+        .then(function(r){ if (r.status === 409) { mine = ''; locked(); } }).catch(function(){});
     }).catch(function(){ show(false); });
 
     btn.addEventListener('click', function(){
@@ -176,7 +184,7 @@
           if (!sub) return;
           var ep = sub.endpoint;
           return sub.unsubscribe().then(function(){ return api('POST', API + '/unsubscribe', { endpoint: ep }); });
-        }).then(function(){ show(false); say(msg, 'أوقفت الإشعارات على هذا الجهاز.', true); })
+        }).then(function(){ mine = ''; show(false); say(msg, 'أوقفت الإشعارات على هذا الجهاز.', true); })
           .catch(function(){ btn.disabled = false; say(msg, 'تعذر الإيقاف — أعد المحاولة.'); });
         return;
       }
@@ -185,9 +193,14 @@
         return reg.pushManager.getSubscription().then(function(old){
           return old || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: u8(P.key) });
         }).then(function(sub){
-          return api('POST', API + '/subscribe', { subscription: sub.toJSON() });
+          return api('POST', API + '/subscribe', { subscription: sub.toJSON() }).then(function(r){
+            /* مقفل على جهاز آخر: يلغى اشتراك هذا الجهاز فلا يبقى معلقا */
+            if (r.status === 409) return sub.unsubscribe().catch(function(){}).then(function(){ locked(); return null; });
+            if (!r.ok) throw new Error('save');
+            mine = sub.endpoint; return r;
+          });
         }).then(function(r){
-          if (!r.ok) throw new Error('save');
+          if (!r) return;
           show(true); say(msg, 'فُعّلت الإشعارات على هذا الجهاز.', true);
         });
       }).catch(function(){ btn.disabled = false; say(msg, 'تعذر التفعيل — تأكد من الاتصال وأعد المحاولة.'); });

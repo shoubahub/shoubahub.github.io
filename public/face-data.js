@@ -128,7 +128,9 @@
     };
   };
   function fromOwn(o, show) {
-    return { id: o.id, src: 'own', title: str(o.title), date: str(o.date), who: [], about: str(o.note), photos: [],
+    /* صورها (2026-11-06، طلب المستخدم): { file, mime } كصور السجل — الصور وحدها، لا PDF */
+    return { id: o.id, src: 'own', title: str(o.title), date: str(o.date), who: [], about: str(o.note),
+      photos: arr(o.photos).map(F.photoOf).filter(Boolean),
       created: F.localDay(o.created), done: !!o.done, hidden: show.indexOf(o.id) < 0 };
   }
 

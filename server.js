@@ -27,6 +27,8 @@ if (PROD) app.use(['/_dev', '/_legacy', '/_template.html'], (_req, res) => res.s
 
 /* صفحتا واجهة الشعبة خلف بوابة التجربة — قبل الملفات الساكنة · face.js (2026-10-20) */
 require('./face').pages(app, require('./auth').requireUser);
+/* صفحة المعلم وعاملها لا يفتحان مباشرة — طريقهما /t/ · tpush.js (2026-11-06) */
+require('./tpush').pages(app);
 
 /* وسوم المعاينة (واتساب…) تُحقن في كل صفحة HTML قبل الملفّات الساكنة — og.js */
 const og = require('./og');
@@ -60,6 +62,11 @@ require('./face').routes(app, require('./auth').requireUser);
 const push = require('./push');
 push.routes(app, require('./auth').requireUser);
 push.start(PUBLIC);
+
+/* إشعارات معلمي الشعبة: رابط لكل معلم، وتنبيهات حصصه، ورسائل رئيس الشعبة · tpush.js (2026-11-06) */
+const tpush = require('./tpush');
+tpush.routes(app, require('./auth').requireUser);
+tpush.start();
 
 app.get('/health', (_req, res) => res.json({ ok: true, stage: 'server' }));
 

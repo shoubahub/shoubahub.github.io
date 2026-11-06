@@ -136,6 +136,22 @@ const snap2 = F.snapshot({ doc: Object.assign({}, doc, { face: f2 }), roster: []
 ok(snap2.events.map(e => e.title).join('|') === 'مخفية|لم تختر|لم تنشر', 'والنسخة منه وحده', snap2.events.map(e => e.title));
 ok(F.setShown({}, []).show.length === 0 && !('hide' in F.setShown({}, [])), 'سحب الواجهة كلها: show فارغة');
 
+// ٤ج) صور فعالية الواجهة (2026-11-06، طلب المستخدم): { file, mime } كصور السجل، الصور وحدها
+{
+  const P1 = { file: 'f' + '1'.repeat(24), mime: 'image/jpeg' }, P2 = { file: 'f' + '2'.repeat(24), mime: 'image/png' };
+  const fo = { show: ['w9'], own: [{ id: 'w9', title: 'يوم مفتوح', date: '2026-10-12', note: '', created: '2026-10-01', done: true,
+    photos: [P1, { file: 'f' + '3'.repeat(24), mime: 'application/pdf' }, P2, null, { mime: 'image/jpeg' }] }] };
+  const w9 = F.events(fo, [], T, groups)[0];
+  ok(w9.photos.join() === [P1.file, P2.file].join(), 'فعالية الواجهة تحمل صورها بترتيبها — لا PDF ولا تالف', w9.photos);
+  ok(F.events({ own: [{ id: 'w8', title: 'x', date: '2026-10-12', created: '2026-10-01' }] }, [], T, groups)[0].photos.length === 0,
+    'وبلا صور: قائمة فارغة كما كانت');
+  const sw = F.snapshot({ doc: { face: fo }, roster: [], times, days: REF.days, today: T, groups, recs: [] });
+  const ev = (sw.events || []).filter(e => e.id === 'w9')[0];
+  ok(ev && ev.photos.join() === [P1.file, P2.file].join(), 'وتدخل النسخة المنشورة بمعرفاتها — فيفتح الخادم بابها', ev);
+  const w9b = F.events({ show: ['w9'], own: [Object.assign({}, fo.own[0], { photos: [P1] })] }, [], T, groups)[0];
+  ok(F.isPub(w9b, sw) && F.stale(w9b, sw), 'وحذف صورة بعد النشر: «عدلت بعد النشر»');
+}
+
 // ٤د) المطابقة بالمعرف (2026-10-20، معاينة السلوك): ما عدل عنوانه او تاريخه بعد نشره يبقى منشورا، ويعرف انه عدل
 ok(snap.events.every(e => e.id && (e.src === 'rec' || e.src === 'own')), 'النسخة تحمل معرف الفعالية ومصدرها', snap.events);
 ok(snap.events.every(e => F.isPub(byId(e.id), snap) && !F.stale(byId(e.id), snap)), 'ما نشر للتو: منشور، ولا تعديل بعده');

@@ -279,14 +279,18 @@ function routes(app, requireUser) {
       background_color: '#EFE6D6', theme_color: '#16456E',
       icons: [{ src: '/identity/assets/app-icon-approved.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }] }));
   });
+  /* ⚠ الرابط الباطل او المبطل: الصفحة نفسها بهويتها ورده ٤٠٤ — وهي تسأل api/t/<الرمز> فتقول «لم يعد يعمل»
+     بعناصرها لا بصفحة بيضاء (رصد معاينة السلوك، النسخة 0.37.0 · بناء 129) */
   app.get('/t/:token', (req, res) => {
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-    if (!live(req.params.token)) return res.status(404).type('html').send('<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8">'
-      + '<meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">'
-      + '<title>شعبة</title><body style="font-family:system-ui;padding:40px 20px;text-align:center;line-height:1.8">'
-      + 'هذا الرابط لم يعد يعمل.<br>اطلب من رئيس الشعبة رابطا جديدا.</body></html>');
-    res.sendFile(path.join(__dirname, 'public', 't.html'));
+    res.status(live(req.params.token) ? 200 : 404).sendFile(path.join(__dirname, 'public', 't.html'));
   });
+}
+
+/* الملفان في public فتخدمهما الملفات الساكنة لكل طارق — وطريقهما /t/<الرمز> و/t/sw.js وحدهما،
+   فمباشرة ٤٠٤ كـface.html. ⚠ توصل قبل express.static في server.js */
+function pages(app) {
+  app.get(['/t.html', '/t-sw.js'], (_req, res) => res.status(404).type('text').send('Not found'));
 }
 
 function start() {
@@ -295,4 +299,4 @@ function start() {
   sweep();
 }
 
-module.exports = { routes, start, tick, due, prefsOf, periodsOf };
+module.exports = { routes, pages, start, tick, due, prefsOf, periodsOf };

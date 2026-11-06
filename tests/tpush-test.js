@@ -30,6 +30,8 @@ const ALL = { pre: true, start: true, end: true };
 const app = express();
 app.use(express.json());
 auth.routes(app);
+tpush.pages(app);
+app.use(express.static(path.join(__dirname, '..', 'public')));
 tpush.routes(app, auth.requireUser);
 const srv = app.listen(0, run);
 function call(method, url, cookie, body) {
@@ -120,7 +122,9 @@ async function run() {
     r = await call('GET', '/t/' + tok);
     ok(r.status === 200 && /text\/html/.test(r.type) && /إشعاراتي/.test(r.raw), 'الصفحة تفتح برابطه');
     r = await call('GET', '/t/0000000000000000');
-    ok(r.status === 404 && /لم يعد يعمل/.test(r.raw), 'والرابط المبطل يقول ذلك صراحة');
+    ok(r.status === 404 && /إشعاراتي/.test(r.raw) && /tokens\.css/.test(r.raw), 'والرابط المبطل: الصفحة نفسها بهويتها وردها ٤٠٤');
+    ok((await call('GET', '/t.html')).status === 404 && (await call('GET', '/t-sw.js')).status === 404, 'ولا تفتح الصفحة ولا عاملها مباشرة');
+    ok((await call('GET', '/teacher.html')).status === 200, 'وسائر الملفات الساكنة تخدم كما هي');
     r = await call('GET', '/t/' + tok + '/manifest.webmanifest');
     ok(r.status === 200 && r.json.start_url === '/t/' + tok && r.json.scope === '/t/', 'ملف التطبيق يفتح على رابطه هو', r.json);
     r = await call('GET', '/t/sw.js');

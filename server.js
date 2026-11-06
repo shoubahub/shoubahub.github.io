@@ -27,6 +27,8 @@ if (PROD) app.use(['/_dev', '/_legacy', '/_template.html'], (_req, res) => res.s
 
 /* صفحتا واجهة الشعبة خلف بوابة التجربة — قبل الملفات الساكنة · face.js (2026-10-20) */
 require('./face').pages(app, require('./auth').requireUser);
+/* صفحة المعلم وعاملها لا يفتحان مباشرة — طريقهما /t/ · tpush.js (2026-11-06) */
+require('./tpush').pages(app);
 
 /* وسوم المعاينة (واتساب…) تُحقن في كل صفحة HTML قبل الملفّات الساكنة — og.js */
 const og = require('./og');

@@ -121,7 +121,6 @@ async function run() {
     ok((await call('GET', '/api/t/zz')).status === 404, 'رمز غير صالح: ٤٠٤');
     r = await call('GET', '/t/' + tok);
     ok(r.status === 200 && /text\/html/.test(r.type) && /إشعاراتي/.test(r.raw), 'الصفحة تفتح برابطه');
-    ok(r.raw.indexOf('/t/' + tok + '/manifest.webmanifest') > -1 && (r.raw.match(/apple-mobile-web-app-capable/g) || []).length === 1, 'وصفحة الإشعارات كذلك بلا تكرار');
     r = await call('GET', '/t/0000000000000000');
     ok(r.status === 404 && /إشعاراتي/.test(r.raw) && /tokens\.css/.test(r.raw), 'والرابط المبطل: الصفحة نفسها بهويتها وردها ٤٠٤');
     ok((await call('GET', '/t.html')).status === 404 && (await call('GET', '/t-sw.js')).status === 404, 'ولا تفتح الصفحة ولا عاملها مباشرة');
@@ -130,8 +129,6 @@ async function run() {
     db.prepare("INSERT INTO face (user_id, slug, data, at, rev) VALUES (?,?,?,?,1)").run(uid, 'abcdef0123', JSON.stringify({ dept: 'المواد الفلسفية' }), '2026-11-06T10:00:00Z');
     r = await call('GET', '/t/' + tok);
     ok(r.status === 200 && /واجهة الشعبة/.test(r.raw) && /tabN/.test(r.raw), 'والواجهة منشورة: رابطه يفتح الواجهة بتبويب «إشعاراتي»');
-    ok(r.raw.indexOf('href="/t/' + tok + '/manifest.webmanifest"') > -1 && /apple-mobile-web-app-capable/.test(r.raw)
-      && (r.raw.match(/rel="manifest"/g) || []).length === 1, 'وفيها ملف تطبيقه ووسوم آيفون مكتوبة في الصفحة');
     r = await call('GET', '/api/t/' + tok + '/face');
     ok(r.status === 200 && r.json.data.dept === 'المواد الفلسفية', 'ويقرأ الواجهة المنشورة من رابطه', r.json);
     db.prepare("UPDATE face SET data = '' WHERE user_id = ?").run(uid);

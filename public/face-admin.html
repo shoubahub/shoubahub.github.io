@@ -464,7 +464,7 @@
       + '<div class="mt">' + (miss.length ? '' : '<span class="st' + (on ? ' on' : '') + '">' + (on ? 'منشورة' : 'غير منشورة') + '</span>')
       + (e.date ? '<em>' + (miss.length ? '' : DOT) + dateHtml(e.date) + '</em>' : '<em class="miss">بلا تاريخ</em>')
       + (e.who.length ? '<span>' + DOT + esc(e.who.join('، ')) + '</span>' : '') + '</div>'
-      + (old ? '<div class="stale">عدلت بعد النشر — انشرها لتحديثها</div>' : '');
+      + (old ? '<div class="stale">عُدّلت بعد النشر، فانشرها لتحديثها.</div>' : '');
     var ops = el('div', 'ops');
     function op(label, cls, fn) { var b = el('button', 'op' + (cls ? ' ' + cls : '')); b.type = 'button'; b.textContent = label; b.addEventListener('click', fn); ops.appendChild(b); }
     /* الناقصة لا تحدد ولا تنشر حتى تكمل: بابها السجل وحده */
@@ -480,7 +480,12 @@
       });
       ck.appendChild(box); r.appendChild(ck);
       if (e.status === 'wait') op('أقيمت', '', function () { confirmDone(e); });
-      if (e.src === 'own') op(e.photos.length ? 'الصور (' + e.photos.length + ')' : 'أضف صورا', '', function () { photosSheet(e); });
+      /* تعديل الفعالية وسحبها من سطرها (2026-11-06، سؤال المستخدم: «لماذا لا يمكنني سحب أو تعديل الفعالية المنشورة؟»):
+         فعالية الواجهة تعدل هنا، وفعالية السجل في السجل — و«اسحبها» للمنشورة وحدها بلا تحديد */
+      if (e.src === 'own') op('عدّلها', '', function () { addSheet(e); });
+      else op('عدّلها في السجل', '', function () { location.href = 'record.html?id=' + encodeURIComponent(e.id); });
+      if (e.src === 'own') op(e.photos.length ? 'الصور (' + e.photos.length + ')' : 'أضف صوراً', '', function () { photosSheet(e); });
+      if (on) op('اسحبها', '', function () { send(false, [e.id]); });
       if (e.src === 'own') op('احذفها', 'warn', function () { removeOwn(e); });
     }
     if (ops.children.length) body.appendChild(ops);
@@ -561,7 +566,10 @@
       if (F.isPub(e, pubNow())) S.toast('حفظت الصور — انشرها لتظهر على الرابط');
     } });
   }
-  function addSheet() {
+  /* e: فعالية الواجهة للتعديل (بقيمها) — وبلاها فعالية جديدة */
+  function addSheet(e) {
+    var o = e ? (face().own || []).filter(function (x) { return x.id === e.id; })[0] : null;
+    if (e && !o) return;
     var n = el('div', 'wd');
     n.innerHTML = '<div class="field" data-need="req"><label for="evT">عنوان الفعالية</label>'
       + '<div class="paper"><input id="evT" type="text" maxlength="80" placeholder="مثل: ملتقى الفلسفة في حياتنا" /></div></div>'
@@ -569,13 +577,27 @@
       + '<div class="field" data-need="opt"><label for="evN">نبذة</label><div class="paper"><textarea id="evN" maxlength="300" rows="3"></textarea></div>'
       + '<div class="hint">للواجهة وحدها — لا تحفظ في سجل الفعاليات ولا تطبع.</div></div>'
       + '<div class="field" data-need="opt"><label>صور الفعالية</label><div id="evPh"></div></div>';
-    var shots = [], busy = ownPhotos(n.querySelector('#evPh'), shots);
-    S.sheet.open('فعالية للواجهة', n, { onDone: function () {
+    if (o) { n.querySelector('#evT').value = o.title || ''; n.querySelector('#evD').value = o.date || ''; n.querySelector('#evN').value = o.note || ''; }
+    var shots = o ? (o.photos || []).filter(function (p) { return F.photoOf(p); }).slice() : [], busy = ownPhotos(n.querySelector('#evPh'), shots);
+    /* التعديل (المطوّر البصري 2026-11-06): «تم» يصير «احفظ التعديل» بالعنبري، معطلا حتى يكتمل المطلوب — كمواعيد التسليم */
+    function ready() { return !!n.querySelector('#evT').value.trim() && /^\d{4}-\d{2}-\d{2}$/.test(n.querySelector('#evD').value); }
+    if (o) n.addEventListener('input', function () { S.sheet.doneOff(!ready()); });
+    S.sheet.open(o ? 'عدّل الفعالية' : 'فعالية للواجهة', n, { doneLabel: o ? 'احفظ التعديل' : '', onDone: function () {
       if (busy()) { S.toast('انتظر حتى ترفع الصورة'); return false; }
       var t = n.querySelector('#evT').value.trim(), dt = n.querySelector('#evD').value;
       if (!t) { S.toast('اكتب عنوان الفعالية'); return false; }
       if (!/^\d{4}-\d{2}-\d{2}$/.test(dt)) { S.toast('اختر تاريخها'); return false; }
       var f = face();
+      if (o) {
+        (f.own || []).forEach(function (x) {
+          if (x.id !== o.id) return;
+          x.title = t; x.date = dt; x.note = n.querySelector('#evN').value.trim();
+          if (shots.length) x.photos = shots; else delete x.photos;
+        });
+        setFace(f);
+        S.toast(F.isPub(e, pubNow()) ? 'حفظ التعديل — انشرها ليظهر على الرابط' : 'حفظ التعديل');
+        return;
+      }
       (f.own = f.own || []).push({ id: 'w' + Date.now().toString(36), title: t, date: dt, note: n.querySelector('#evN').value.trim(),
         created: S.today(), done: false, photos: shots.length ? shots : undefined });
       setFace(f);
@@ -591,18 +613,18 @@
   }
   /* النشر والسحب كلاهما نشر للصفحة كلها (الفريق والخانة واللون كما هي الآن) بمجموعة فعاليات جديدة:
      انشر = المنشور ∪ المحدد · اسحب = المنشور − المحدد. وshow لا تحفظ الا بعد قبول الخادم — فتبقى ما على الرابط */
-  function send(add) {
+  function send(add, only) {
     if (BUSY || !ME) return;
-    var ids = add ? SEL : pubSel();                 /* اسحب: المنشور من المحدد وحده — فما لم ينشر لا يعيد النشر ولا يرفع الرقم */
+    var ids = only || (add ? SEL : pubSel());                 /* اسحب: المنشور من المحدد وحده — فما لم ينشر لا يعيد النشر ولا يرفع الرقم */
     if (!add && !ids.length) return;
     var n = ids.length, f = F.setShown(face(), F.nextShown(evList(), pubNow(), ids, add)), snap = snapshot(f);
     BUSY = true; paintPub();
     api('POST', 'api/face/publish', { data: snap }).then(function (j) {
       BUSY = false;
       if (!j.ok) { S.toast(j.error || (add ? 'تعذر النشر — حاول بعد قليل' : 'تعذر السحب — حاول بعد قليل')); paintPub(); return; }
-      ME.published = true; ME.at = j.at; ME.rev = j.rev; PUB = snap; SEL = [];
+      ME.published = true; ME.at = j.at; ME.rev = j.rev; PUB = snap; SEL = only ? SEL.filter(function (x) { return only.indexOf(x) < 0; }) : [];
       setFace(f);
-      S.toast(!n ? 'نشرت — الرابط يعرضها الآن' : add ? 'نشرت المحددة — الرابط يعرضها الآن' : 'سحبت المحددة من الرابط');
+      S.toast(!n ? 'نشرت — الرابط يعرضها الآن' : add ? 'نشرت المحددة — الرابط يعرضها الآن' : only ? 'سحبت من الرابط' : 'سحبت المحددة من الرابط');
     }, function () { BUSY = false; paintPub(); S.toast(add ? 'لا اتصال بالخادم — لم تنشر' : 'لا اتصال بالخادم — لم تسحب'); });
   }
   $('publish').addEventListener('click', function () { send(true); });
@@ -640,7 +662,7 @@
   $('pclose').addEventListener('click', function () { $('pview').hidden = true; $('pframe').src = 'about:blank'; });
 
   $('wkEdit').addEventListener('click', weekSheet);
-  $('evAdd').addEventListener('click', addSheet);
+  $('evAdd').addEventListener('click', function () { addSheet(); });
 
   /* اعادة الرسم تبني القوائم من جديد — فيحفظ موضع التمرير ويعاد ان تحرك، فلا تقفز الشاشة بعد «انشر» (معاينة السلوك 2026-10-20) */
   function paint() {

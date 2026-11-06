@@ -286,6 +286,14 @@
 .wkph{display:flex;gap:12px;align-items:center}
 .wkph img{flex:none;width:72px;height:72px;border-radius:14px;object-fit:cover;background:var(--shouba-sand)}
 .wkph .btn-ghost,.wkph .btn-danger{width:auto;flex:1;padding:12px 14px;font-size:14px}
+/* صور فعالية الواجهة (2026-11-06): مصغرات بحجم صورة الخانة، وزر حذف على زاويتها */
+.evph{display:flex;flex-wrap:wrap;gap:12px 8px;align-items:center}
+.evph .ph{position:relative;flex:none}
+.evph img{display:block;width:72px;height:72px;border-radius:14px;object-fit:cover;background:var(--shouba-sand)}
+.evph .rm{position:absolute;top:4px;inset-inline-start:4px;width:24px;height:24px;border-radius:50%;border:1px solid var(--shouba-line);background:var(--shouba-raised);color:var(--shouba-navy);font-size:15px;line-height:1;padding:0;display:grid;place-items:center;cursor:pointer}
+.evph .rm::after{content:'';position:absolute;inset:-6px}
+.evph .btn-ghost{width:auto;flex:1 1 120px;padding:12px 14px;font-size:14px}
+.evph+.hint{margin-top:6px}
 .wkthumb{width:44px;height:44px;border-radius:12px;object-fit:cover;background:var(--shouba-sand)}
 .face-adm .wd{display:flex;flex-direction:column;gap:30px}   /* بين الحقول ٣٠ — والتسمية ٨ والارشاد ٦ من components.css */
 /* شاشة الادارة: لون الترويسة وفريق الشعبة */

@@ -480,6 +480,7 @@
       });
       ck.appendChild(box); r.appendChild(ck);
       if (e.status === 'wait') op('أقيمت', '', function () { confirmDone(e); });
+      if (e.src === 'own') op(e.photos.length ? 'الصور (' + e.photos.length + ')' : 'أضف صورا', '', function () { photosSheet(e); });
       if (e.src === 'own') op('احذفها', 'warn', function () { removeOwn(e); });
     }
     if (ops.children.length) body.appendChild(ops);
@@ -511,20 +512,72 @@
     setFace(f);
     S.toast('حذفت «' + e.title + '»', function () { var g = face(); (g.own = g.own || []).push(was); setFace(g); });
   }
+  /* صور فعالية الواجهة (2026-11-06، طلب المستخدم): حتى ستّ صور، ترفع بمسار المرفقات القائم الى خزانة الحساب
+     وتنشر عبر بوابة الواجهة وحدها — الاولى على البطاقة، وكلها عند لمسها. list تعدل في مكانها */
+  var OWN_MAX = 6;
+  function ownPhotos(box, list) {
+    var FL = window.ShoubaFiles, busy = false;
+    function paint(msg) {
+      box.innerHTML = '';
+      var g = el('div', 'evph');
+      list.forEach(function (p, i) {
+        var c = el('div', 'ph'), im = el('img'); im.alt = ''; im.src = FL.url(p.file); c.appendChild(im);
+        var rm = el('button', 'rm'); rm.type = 'button'; rm.textContent = '×'; rm.setAttribute('aria-label', 'احذف الصورة ' + (i + 1));
+        rm.addEventListener('click', function () { list.splice(i, 1); paint(); });
+        c.appendChild(rm); g.appendChild(c);
+      });
+      if (list.length < OWN_MAX) {
+        var add = el('button', 'btn-ghost'); add.type = 'button'; add.textContent = list.length ? 'أضف صورة أخرى' : 'أضف صورة';
+        add.disabled = busy; add.addEventListener('click', pick); g.appendChild(add);
+      }
+      box.appendChild(g);
+      var h = el('div', 'hint');
+      h.textContent = msg || (list.length ? 'الأولى تظهر على بطاقتها، وكلها عند لمسها.' : 'اختيارية — حتى ستّ صور، الواحدة حتى ٤ ميغابايت.');
+      box.appendChild(h);
+    }
+    function pick() {
+      if (!FL || busy) return;
+      FL.pick(function (file) {
+        if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '')) { paint('صورة فقط — لا PDF.'); return; }
+        busy = true; paint('تجهز الصورة وترفع إلى حسابك…');
+        FL.prepare(file).then(function (p) { return FL.upload('face-own', p); }).then(function (j) {
+          busy = false; list.push({ file: j.id, mime: j.mime }); paint();
+        }).catch(function (e) { busy = false; paint(e && e.user ? e.message : 'تعذر الرفع — أعد المحاولة'); });
+      });
+    }
+    paint();
+    return function () { return busy; };
+  }
+  function photosSheet(e) {
+    var o = (face().own || []).filter(function (x) { return x.id === e.id; })[0]; if (!o) return;
+    var list = (o.photos || []).filter(function (p) { return F.photoOf(p); }).slice(), n = el('div', 'wd');
+    n.innerHTML = '<div class="field" data-need="opt"><label>صور الفعالية</label><div id="evPh"></div></div>';
+    var busy = ownPhotos(n.querySelector('#evPh'), list);
+    S.sheet.open(e.title, n, { onDone: function () {
+      if (busy()) { S.toast('انتظر حتى ترفع الصورة'); return false; }
+      var f = face();
+      (f.own || []).forEach(function (x) { if (x.id === e.id) { if (list.length) x.photos = list; else delete x.photos; } });
+      setFace(f);
+      if (F.isPub(e, pubNow())) S.toast('حفظت الصور — انشرها لتظهر على الرابط');
+    } });
+  }
   function addSheet() {
     var n = el('div', 'wd');
     n.innerHTML = '<div class="field" data-need="req"><label for="evT">عنوان الفعالية</label>'
       + '<div class="paper"><input id="evT" type="text" maxlength="80" placeholder="مثل: ملتقى الفلسفة في حياتنا" /></div></div>'
       + '<div class="field" data-need="req"><label for="evD">تاريخها</label><div class="paper"><input id="evD" type="date" value="' + S.today() + '" /></div></div>'
       + '<div class="field" data-need="opt"><label for="evN">نبذة</label><div class="paper"><textarea id="evN" maxlength="300" rows="3"></textarea></div>'
-      + '<div class="hint">للواجهة وحدها — لا تحفظ في سجل الفعاليات ولا تطبع.</div></div>';
+      + '<div class="hint">للواجهة وحدها — لا تحفظ في سجل الفعاليات ولا تطبع.</div></div>'
+      + '<div class="field" data-need="opt"><label>صور الفعالية</label><div id="evPh"></div></div>';
+    var shots = [], busy = ownPhotos(n.querySelector('#evPh'), shots);
     S.sheet.open('فعالية للواجهة', n, { onDone: function () {
+      if (busy()) { S.toast('انتظر حتى ترفع الصورة'); return false; }
       var t = n.querySelector('#evT').value.trim(), dt = n.querySelector('#evD').value;
       if (!t) { S.toast('اكتب عنوان الفعالية'); return false; }
       if (!/^\d{4}-\d{2}-\d{2}$/.test(dt)) { S.toast('اختر تاريخها'); return false; }
       var f = face();
       (f.own = f.own || []).push({ id: 'w' + Date.now().toString(36), title: t, date: dt, note: n.querySelector('#evN').value.trim(),
-        created: S.today(), done: false });
+        created: S.today(), done: false, photos: shots.length ? shots : undefined });
       setFace(f);
       S.toast('أضيفت إلى القائمة غير منشورة — حددها وانشرها لتظهر على الرابط');
     } });

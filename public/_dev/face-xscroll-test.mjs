@@ -43,8 +43,15 @@ ok(['width:26px', 'height:26px', 'background:var(--shouba-raised)', 'border:1px 
 ok(rule('.xarr svg').includes('width:12px') && rule('.xarr.end') === 'left:4px' && rule('.xarr.start') === 'right:4px', 'سهم ١٢ عند الطرف بازاحة ٤');
 ok(css.includes('.more-end ~ .xarr.end,.more-start ~ .xarr.start{opacity:1;pointer-events:auto}'), 'السهم يظهر مع صنفه وحده');
 ok((html.match(/class="xarr (start|end)" data-dir="\1" aria-label="المزيد"/g) || []).length === 2, 'سهمان بـ aria-label="المزيد"');
-ok(html.includes("behavior: still ? 'auto' : 'smooth'") && html.includes("prefers-reduced-motion: reduce") && html.includes('el.clientWidth * 0.8'),
+ok(html.includes("behavior: still ? 'auto' : 'smooth'") && html.includes("prefers-reduced-motion: reduce") && html.includes('el.clientWidth * (step || 0.8)'),
   'اللمسة تمرر ٨٠٪ بنعومة، وفوريا مع تقليل الحركة');
+// معرض صور البطاقة (2026-11-06، طلب المستخدم): سحب صورة كاملة، وعداد ونقاط وسهم الطرف
+ok(/\.gtrack\{[^}]*scroll-snap-type:x mandatory/.test(css) && /\.gtrack img\{flex:0 0 100%;scroll-snap-align:start/.test(css), 'المعرض: صورة كاملة لكل سحبة');
+ok(html.includes("ph.length === 1 ? img(ph[0], 0)") && html.includes('class="gal xwrap"'), 'صورة واحدة بلا معرض، واكثر منها في معرض');
+ok(html.includes('class="gcount" dir="ltr">1 / ') && html.includes('class="gdots"') && html.includes('+ XARR +'), 'والمعرض بعداد ونقاط وسهمي الطرف');
+ok(html.includes('xscroll(el, 1)') && html.includes('Math.round(Math.abs(el.scrollLeft) / (el.clientWidth || 1))'), 'سهم المعرض يمرر صورة كاملة، والحالية من موضع التمرير بـ RTL');
+ok(!/class="more"|صورها \(/.test(html), 'لا زر «صورها» بعد — السحب يغني عنه');
+
 ok(html.includes("addEventListener('scroll', fn, { passive: true })") && html.includes('new ResizeObserver(fn)') && /\$\('nowSec'\)\.hidden = false;[^\n]*\n\s*xhint\(\$\('nowRow'\)\);/.test(html),
   'يحدث مع التمرير وتغير المقاس وبعد كل رسم لـ«الآن»');
 /* components.css فيه منذ بناء 119 تنبيه المنصة ([data-xscroll].more-end) — والواجهة لا تحمله، فالمعتبر ألا يتسرب اليه صنف الواجهة */

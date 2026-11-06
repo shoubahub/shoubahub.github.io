@@ -84,6 +84,8 @@ async function run() {
       'وصورة خانة الاسبوع في اعدادات الواجهة مشار اليها — فلا تحذفها المصالحة وهي منشورة');
     const tm = files.refsOf({ recs: [], face: { team: { headPhoto: { file: 'fheadph', mime: 'image/jpeg' }, photos: { 'فيصل': { file: 'ftchph', mime: 'image/jpeg' } } } } });
     ok(tm.has('fheadph') && tm.has('ftchph'), 'وصور فريق الشعبة (الرئيس والمعلمين) مشار اليها كصورة الخانة — فلا تحذفها المصالحة');
+    ok(files.refsOf({ recs: [], face: { own: [{ id: 'w1', photos: [{ file: 'fownph1', mime: 'image/jpeg' }, { file: 'fownph2', mime: 'image/png' }] }] } }).has('fownph2'),
+      'وصور فعاليات الواجهة الخاصة مشار اليها — فلا تحذفها المصالحة');
     ok(files.reconcile(1, { recs: [] }) === 0, 'المصالحة لا تحذف ما رفع لتوه (المهلة) ولو لم يشر اليه سجل بعد');
     db.prepare("UPDATE files SET created_at = datetime('now','-2 hours') WHERE user_id = 1").run();
     ok(files.reconcile(1, doc) === 1, 'بعد المهلة: يحذف غير المشار اليه وحده (PDF سجل حذف)');

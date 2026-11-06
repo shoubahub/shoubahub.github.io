@@ -191,8 +191,18 @@
 .dcard .dt{font-size:11.5px;font-weight:700;color:var(--shouba-label)}
 .dcard b{font-size:16px;font-weight:700;color:var(--shouba-ink);line-height:1.5}
 .dcard p{margin:0;font-size:13px;font-weight:500;color:var(--shouba-text-muted);line-height:1.8;white-space:pre-line}
-.dcard .more{border:0;background:none;padding:0;margin-top:4px;align-self:flex-start;cursor:pointer;font-family:var(--font-ar);
-  font-size:12.5px;font-weight:700;color:var(--shouba-link)}
+/* معرض البطاقة (2026-11-06، طلب المستخدم): اكثر من صورة تقلب بالسحب، صورة كاملة لكل سحبة —
+   العداد على الزاوية والنقاط اسفل الصورة وسهم الطرف تدل على ان خلفها المزيد */
+.gal{position:relative}
+.gtrack{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.gtrack::-webkit-scrollbar{display:none}
+.gtrack img{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always}
+.gcount{position:absolute;top:10px;left:10px;padding:3px 9px;border-radius:999px;background:var(--shouba-scrim);color:#fff;
+  font-family:var(--font-num);font-size:12px;font-weight:700;line-height:1.5;pointer-events:none}
+.gdots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;background:var(--shouba-scrim);pointer-events:none}
+.gdots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55);transition:width 160ms,background 160ms}
+.gdots i.on{width:18px;border-radius:4px;background:#fff}
+@media (prefers-reduced-motion: reduce){ .gdots i{transition:none} }
 
 /* ⑥ حصيلة العام */
 .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -286,6 +296,14 @@
 .wkph{display:flex;gap:12px;align-items:center}
 .wkph img{flex:none;width:72px;height:72px;border-radius:14px;object-fit:cover;background:var(--shouba-sand)}
 .wkph .btn-ghost,.wkph .btn-danger{width:auto;flex:1;padding:12px 14px;font-size:14px}
+/* صور فعالية الواجهة (2026-11-06): مصغرات بحجم صورة الخانة، وزر حذف على زاويتها */
+.evph{display:flex;flex-wrap:wrap;gap:12px 8px;align-items:center}
+.evph .ph{position:relative;flex:none}
+.evph img{display:block;width:72px;height:72px;border-radius:14px;object-fit:cover;background:var(--shouba-sand)}
+.evph .rm{position:absolute;top:4px;inset-inline-start:4px;width:24px;height:24px;border-radius:50%;border:1px solid var(--shouba-line);background:var(--shouba-raised);color:var(--shouba-navy);font-size:15px;line-height:1;padding:0;display:grid;place-items:center;cursor:pointer}
+.evph .rm::after{content:'';position:absolute;inset:-6px}
+.evph .btn-ghost{width:auto;flex:1 1 120px;padding:12px 14px;font-size:14px}
+.evph+.hint{margin-top:6px}
 .wkthumb{width:44px;height:44px;border-radius:12px;object-fit:cover;background:var(--shouba-sand)}
 .face-adm .wd{display:flex;flex-direction:column;gap:30px}   /* بين الحقول ٣٠ — والتسمية ٨ والارشاد ٦ من components.css */
 /* شاشة الادارة: لون الترويسة وفريق الشعبة */

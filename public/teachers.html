@@ -21,6 +21,14 @@
   .addrow{padding:0 var(--gap-side)}
   .addrow .cta{width:100%}
   .note{padding:0 var(--gap-side);font-size:12px;font-weight:600;color:var(--shouba-hint);line-height:1.8}
+  /* لوحة «أرسل إشعاراً» (2026-11-06): الحقول بمسافة 30 المعتمدة، و«أرسل» ثابت أسفلها — الفعل الوحيد، بلا «تم» (المطوّر البصري) */
+  .sendform{display:flex;flex-direction:column;gap:30px}
+  .sendfoot{position:sticky;bottom:-6px;margin:-18px -3px -6px;padding:12px 3px 6px;display:flex;flex-direction:column;gap:8px;
+    background:var(--shouba-paper)}
+  .msg{font-size:12.5px;font-weight:600;color:var(--shouba-error);line-height:1.7;text-align:center}
+  .msg.ok{color:var(--shouba-navy)}
+  .msg:empty{display:none}
+  .pick .tx small.on{color:var(--shouba-success);font-weight:700}
 </style>
 </head>
 <body class="framed">
@@ -165,35 +173,40 @@
       (r.j.links || []).forEach(function(l){ dev[l.name] = l.devices; });
       var teachers = Shouba.teachers(), ready = teachers.filter(function(t){ return dev[t] > 0; });
 
-      var n = document.createElement('div'); n.className = 'stack';
+      var n = document.createElement('div'); n.className = 'sendform';
       n.innerHTML = '<div class="field" data-need="opt"><label for="mt">العنوان</label>'
         + '<div class="paper"><input id="mt" type="text" maxlength="60" placeholder="رسالة من رئيس الشعبة" /></div></div>'
         + '<div class="field" data-need="req"><label for="mb">نص الرسالة</label>'
         + '<div class="paper"><textarea id="mb" rows="3" maxlength="300" placeholder="اكتب ما تريد إرساله"></textarea></div>'
-        + '<div class="hint" id="mw"></div></div>'
+        + '</div>'
         + '<div class="field"><label>إلى</label><div class="stack" id="to"></div></div>';
-      var go = document.createElement('button'); go.type = 'button'; go.className = 'cta'; go.textContent = 'أرسل';
-      n.appendChild(go);
-      Shouba.sheet.open('أرسل إشعاراً', n, { onDone: function(){ return n.querySelector('#mb').value.trim() ? send() : true; } });
+      var foot = document.createElement('div'); foot.className = 'sendfoot';
+      var mw = document.createElement('div'); mw.className = 'msg';
+      var go = document.createElement('button'); go.type = 'button'; go.className = 'cta'; go.textContent = 'أرسل'; go.disabled = true;
+      foot.appendChild(mw); foot.appendChild(go); n.appendChild(foot);
+      /* «أرسل» الفعل الوحيد: لا «تم» تحته، وتغلق اللوحة بلسانها او بالسحب */
+      Shouba.sheet.open('أرسل إشعاراً', n, { noDone: true });
 
-      var mb = n.querySelector('#mb'), mt = n.querySelector('#mt'), mw = n.querySelector('#mw'), to = n.querySelector('#to');
+      var mb = n.querySelector('#mb'), mt = n.querySelector('#mt'), to = n.querySelector('#to');
+      mb.addEventListener('input', function(){ go.disabled = !mb.value.trim(); if (mb.value.trim()) mw.textContent = ''; });
       var all = true, chosen = {};
-      function sub(t){ return dev[t] > 0 ? 'فعّل الإشعارات' : 'لم يفعّل الإشعارات بعد'; }
-      function pickRow(title, small){
+      function say(t, good){ mw.textContent = t || ''; mw.classList.toggle('ok', !!good); }
+      function pickRow(title, small, on){
         var row = document.createElement('div'); row.className = 'pick';
         row.setAttribute('role', 'checkbox'); row.tabIndex = 0;
         row.innerHTML = '<span class="mark">' + CHK + '</span><div class="tx"><b></b><small></small></div>';
-        row.querySelector('b').textContent = title; row.querySelector('small').textContent = small;
+        row.querySelector('b').textContent = title;
+        var sm = row.querySelector('small'); sm.textContent = small; if (on) sm.className = 'on';
         return row;
       }
       function set(row, on){ row.classList.toggle('on', on); row.setAttribute('aria-checked', on ? 'true' : 'false'); }
       var rows = [];
       var allRow = pickRow('كل المعلمين', ready.length
-        ? 'فعّل الإشعارات منهم ' + Shouba.count(ready.length,{one:'معلم',two:'معلمان',few:'معلمين',many:'معلما'})
-        : 'لم يفعّل أحد منهم الإشعارات بعد');
+        ? 'فعّلها منهم ' + Shouba.count(ready.length,{one:'معلم',two:'معلمان',few:'معلمين',many:'معلما'})
+        : 'لم يفعّلها أحد منهم بعد');
       to.appendChild(allRow);
       teachers.forEach(function(t){
-        var row = pickRow('أ. ' + Shouba.shortName(t), sub(t));
+        var row = pickRow('أ. ' + Shouba.shortName(t), dev[t] > 0 ? 'الإشعارات مفعّلة' : 'لم يفعّلها بعد', dev[t] > 0);
         row.dataset.t = t; rows.push(row); to.appendChild(row);
       });
       function paintTo(){
@@ -216,21 +229,21 @@
 
       function send(){
         var body = mb.value.trim();
-        if (!body) { mw.textContent = 'اكتب نص الرسالة.'; mb.focus(); return false; }
+        if (!body) { mb.focus(); return; }
         var list = all ? 'all' : Object.keys(chosen).filter(function(k){ return chosen[k]; });
         go.disabled = true;
         Promise.resolve(Shouba.pending() ? Shouba.flush() : 'ok').then(function(){
           return tapi('POST', 'api/tpush/send', { to: list, title: mt.value.trim(), body: body });
         }).then(function(x){
           go.disabled = false;
-          if (!x.ok) { mw.textContent = x.j.error || 'تعذر الإرسال.'; return; }
-          if (!x.j.teachers) { mw.textContent = x.j.subscribed ? 'تعذر الوصول إلى أجهزتهم — أعد المحاولة بعد قليل.'
-                                                     : 'لم يفعّل أحد ممن اخترت الإشعارات بعد، فلم تصل الرسالة إلى أحد.'; return; }
-          Shouba.sheet.close();
-          Shouba.toast('وصلت الرسالة إلى ' + Shouba.count(x.j.teachers,{one:'معلم',two:'معلمين',few:'معلمين',many:'معلما'})
-            + (x.j.teachers < x.j.chosen ? ' من ' + x.j.chosen : ''));
-        }).catch(function(){ go.disabled = false; mw.textContent = 'لا اتصال — لم ترسل الرسالة.'; });
-        return false;
+          if (!x.ok) { say(x.j.error || 'تعذر الإرسال.'); return; }
+          if (!x.j.teachers) { say(x.j.subscribed ? 'تعذر الوصول إلى أجهزتهم — أعد المحاولة بعد قليل.'
+                                                 : 'لم يفعّلها أحد ممن اخترت بعد، فلم تصل الرسالة إلى أحد.'); return; }
+          /* تم الإرسال: النص يفرغ فيتعطل الزر — فلا ترسل الرسالة نفسها مرتين بضغطة ثانية */
+          mb.value = ''; mt.value = ''; go.disabled = true;
+          say('أُرسل إلى ' + Shouba.count(x.j.teachers,{one:'معلم',two:'معلمين',few:'معلمين',many:'معلما'})
+            + (x.j.teachers < x.j.chosen ? ' من ' + x.j.chosen : '') + '.', true);
+        }).catch(function(){ go.disabled = false; say('لا اتصال — لم ترسل الرسالة.'); });
       }
       go.addEventListener('click', send);
     }).catch(function(){ Shouba.toast('لا اتصال — الإرسال يحتاج الإنترنت'); });

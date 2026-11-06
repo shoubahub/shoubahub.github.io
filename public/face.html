@@ -545,7 +545,10 @@
       .then(function (j) { if (j && j.data) start(j.data); else gone(); })
       .catch(gone);
     /* ⚠ لا لوحة فارغة (رصد معاينة السلوك، النسخة 0.38.0 · بناء 133): ما تقوله t.html في الحالات نفسها وبعناصرها */
-    var N = window.TNotify, say = function (t) { $('notify').appendChild(N.el('div', 'msg', t)); };
+    var N = window.TNotify, say = function (t) {
+      $('notify').appendChild(N.el('div', 'part', 'إشعارات الجوال'));   /* عنوان القسم فوق الرسالة كحالاته الاخرى (المطوّر البصري) */
+      $('notify').appendChild(N.el('div', 'msg', t));
+    };
     N.load().then(function (r) {
       if (r.ok) return N.mount($('notify'), r.j);
       if (r.status === 404) {
@@ -553,8 +556,8 @@
         $('notify').appendChild(N.el('p', 'lead2', 'اطلب من رئيس الشعبة رابطاً جديداً.'));
         return;
       }
-      say('تعذر الوصول إلى الخادم — أعد فتح الصفحة بعد قليل.');
-    }).catch(function () { say('لا اتصال — افتح الصفحة حين تتصل بالإنترنت.'); });
+      say('تعذر الوصول إلى الخادم. أعد فتح الصفحة بعد قليل.');
+    }).catch(function () { say('لا اتصال بالإنترنت. افتح الصفحة حين تتصل.'); });
     return;
   }
   var m = location.pathname.match(/\/face\/([0-9a-f]{10})\/?$/);

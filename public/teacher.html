@@ -143,7 +143,13 @@
         .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); });
     }
     function urlOf(){ return location.origin + '/t/' + L.token; }
-    function valText(){ return !L ? 'لم ينشأ' : L.devices ? 'مفعّل على ' + Shouba.count(L.devices,{one:'جهاز',two:'جهازين',few:'أجهزة',many:'جهازا'}) : 'لم يفعّله بعد'; }
+    /* الحال (2026-11-08، القبول): طلب ينتظرك · الجهاز المقبول · لم يفتح بعد */
+    function valText(){
+      if (!L) return 'لم ينشأ';
+      if (L.pending && L.pending.length) return 'طلب ينتظرك';
+      if (L.device) return (L.devices ? 'مفعّل على ' : 'مقبول: ') + L.device.label;
+      return 'لم يفتحه بعد';
+    }
     function paintEntry(){
       linkSlot.innerHTML = '';
       var keep = entries; entries = linkSlot;
@@ -154,6 +160,8 @@
       if (!r.ok) return;
       L = (r.j.links || []).filter(function(x){ return x.name === T; })[0] || null;
       paintEntry();
+      /* ?link=1 ⟵ قادم من إشعار «طلب فتح رابط»: يفتح لوحة الرابط وفيها الطلب */
+      if (new URLSearchParams(location.search).get('link')) openSheet();
     }).catch(function(){});
 
     function openSheet(){
@@ -168,9 +176,18 @@
         Shouba.sheet.open('رابط إشعارات أ. ' + Shouba.shortName(T), n);
         return;
       }
-      note.textContent = L.devices
-        ? 'فعّل أ. ' + Shouba.shortName(T) + ' الإشعارات على ' + Shouba.count(L.devices,{one:'جهاز',two:'جهازين',few:'أجهزة',many:'جهازا'}) + '.'
-        : 'أرسل الرابط إلى أ. ' + Shouba.shortName(T) + ' ليفتحه على هاتفه ويفعّل الإشعارات منه. والرابط يعمل على جهاز واحد.';
+      note.textContent = L.device
+        ? 'قبلتَ جهاز أ. ' + Shouba.shortName(T) + ' (' + L.device.label + ')' + (L.devices ? ' وفعّل منه الإشعارات.' : '، ولم يفعّل منه الإشعارات بعد.')
+        : 'أرسل الرابط إلى أ. ' + Shouba.shortName(T) + '. حين يفتحه يصلك طلب تقبله، فلا يرى أحد شيئاً قبل قبولك. والرابط يعمل على جهاز واحد.';
+      /* الطلبات المعلقة: كل طلب سطر يفتح «اقبله» و«ارفضه» (Shouba.tdevAsk) */
+      (L.pending || []).forEach(function(q){
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'entry';
+        b.innerHTML = '<b></b><span class="val"></span><span class="chev">‹</span>';
+        b.querySelector('b').textContent = 'طلب من ' + q.label;
+        b.querySelector('.val').textContent = Shouba.tdevWhen(q.at);
+        b.addEventListener('click', function(){ Shouba.tdevAsk(Object.assign({ name: T }, q), refresh); });
+        n.appendChild(b);
+      });
       var box = document.createElement('div'); box.className = 'paper';
       var inp = document.createElement('input'); inp.readOnly = true; inp.value = urlOf(); inp.dir = 'ltr';
       inp.style.fontFamily = 'var(--font-num)'; inp.style.fontSize = '13.5px';
@@ -187,6 +204,19 @@
         sh.addEventListener('click', function(){ navigator.share({ title: 'إشعارات شعبة', url: urlOf() }).catch(function(){}); });
         n.appendChild(sh);
       }
+      if (L.device) {
+        var dr = document.createElement('button'); dr.type = 'button'; dr.className = 'btn-ghost'; dr.textContent = 'ألغِ جهازه المقبول';
+        dr.addEventListener('click', function(){
+          Shouba.ask('إلغاء الجهاز', 'يتوقف الرابط على ' + L.device.label + ' أ. ' + Shouba.shortName(T) + '، وتتوقف إشعاراته عليه. ويعود بطلب جديد تقبله.',
+            'ألغه', function(){
+              tapi('POST', 'api/tpush/drop', { name: T }).then(function(r){
+                if (!r.ok) { Shouba.toast(r.j.error || 'تعذر الإلغاء'); return; }
+                Shouba.toast('أُلغي جهاز أ. ' + Shouba.shortName(T)); refresh();
+              }).catch(function(){ Shouba.toast('لا اتصال — لم يُلغَ الجهاز'); });
+            });
+        });
+        n.appendChild(dr);
+      }
       var rn = document.createElement('button'); rn.type = 'button'; rn.className = 'btn-ghost'; rn.textContent = 'أبطل الرابط وأصدر غيره';
       rn.addEventListener('click', function(){
         Shouba.ask('إبطال الرابط', 'يتوقف الرابط الحالي، وتتوقف الإشعارات على كل جهاز فعّلها منه، ويصدر رابط جديد ترسله إليه.',
@@ -194,6 +224,14 @@
       });
       n.appendChild(rn);
       Shouba.sheet.open('رابط إشعارات أ. ' + Shouba.shortName(T), n);
+    }
+    /* بعد الحسم او الإلغاء: الحال من الخادم، ثم اللوحة من جديد */
+    function refresh(){
+      tapi('GET', 'api/tpush/links').then(function(r){
+        if (!r.ok) return;
+        L = (r.j.links || []).filter(function(x){ return x.name === T; })[0] || null;
+        paintEntry(); Shouba.sheet.close(); openSheet();
+      }).catch(function(){});
     }
     /* الخادم يعرف المعلم من وثيقة الشعبة عنده — فما لم يصله بعد يرسل اولا */
     function make(renew, btn){

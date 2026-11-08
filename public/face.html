@@ -550,6 +550,8 @@
       $('notify').appendChild(N.el('div', 'msg', t));
     };
     N.load().then(function (r) {
+      /* أُلغي جهازه والصفحة مفتوحة (2026-11-08): تعود فيخدمه الخادم صفحة حاله */
+      if (r.ok && r.j.state !== 'ok') return location.reload();
       if (r.ok) return N.mount($('notify'), r.j);
       if (r.status === 404) {
         $('notify').appendChild(N.el('div', 'part', 'هذا الرابط لم يعد يعمل'));

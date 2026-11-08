@@ -617,7 +617,8 @@
     if (BUSY || !ME) return;
     var ids = only || (add ? SEL : pubSel());                 /* اسحب: المنشور من المحدد وحده — فما لم ينشر لا يعيد النشر ولا يرفع الرقم */
     if (!add && !ids.length) return;
-    var n = ids.length, f = F.setShown(face(), F.nextShown(evList(), pubNow(), ids, add)), snap = snapshot(f);
+    /* انشر: نسخة جديدة من البيانات الحالية · اسحب: المنشور نفسه ناقصا ما سحب (F.pullFrom) — فلا ينشر معه تعديل لم ينشر */
+    var n = ids.length, f = F.setShown(face(), F.nextShown(evList(), pubNow(), ids, add)), snap = add ? snapshot(f) : F.pullFrom(pubNow(), evList(), ids);
     BUSY = true; paintPub();
     api('POST', 'api/face/publish', { data: snap }).then(function (j) {
       BUSY = false;

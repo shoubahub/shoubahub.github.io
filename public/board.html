@@ -1051,7 +1051,7 @@
       items = items.filter(function(it){ return !it.req; });
       q.slice().reverse().forEach(function(x){
         items.unshift({ req: true, ini: x.name.charAt(0), title: 'أ. ' + Shouba.shortName(x.name), badge: 'طلب',
-          text: 'يطلب فتح رابطه من ' + x.label,
+          text: 'يطلب فتح رابطه من ' + x.label + ' · ' + Shouba.tdevWhen(x.at),   /* بوقته: فطلبان من جهازين متماثلين لا يلتبسان (معاينة 139) */
           act: function(){ Shouba.tdevAsk(x, function(){
             items = items.filter(function(it){ return it.reqId !== x.id; }); paintTodo(); }); }, reqId: x.id });
       });

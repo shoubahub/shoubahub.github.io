@@ -208,7 +208,7 @@
       if (L.device) {
         var dr = document.createElement('button'); dr.type = 'button'; dr.className = 'rmdev'; dr.textContent = 'ألغِ جهازه المقبول';
         dr.addEventListener('click', function(){
-          Shouba.ask('إلغاء الجهاز', 'يتوقف الرابط على ' + L.device.label + ' أ. ' + Shouba.shortName(T) + '، وتتوقف إشعاراته عليه. ويعود بطلب جديد تقبله.',
+          Shouba.ask('إلغاء الجهاز', 'يتوقف الرابط على ' + L.device.label + ' أ. ' + Shouba.shortName(T) + '، وتتوقف إشعاراته عليه. ولا يعود إلا برابط جديد تصدره له.',   /* قرار المستخدم 2026-11-08: «٢» */
             'ألغه', function(){
               tapi('POST', 'api/tpush/drop', { name: T }).then(function(r){
                 if (!r.ok) { Shouba.toast(r.j.error || 'تعذر الإلغاء'); return; }

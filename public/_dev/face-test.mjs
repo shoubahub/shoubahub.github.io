@@ -134,9 +134,13 @@ ok(admT.includes('id="pull"') && admT.includes('id="pullAll"') && admT.includes(
   && admT.includes('حدد فعالية أولا'), 'شاشة الادارة: حال كل فعالية، وسحب الواجهة كلها رابط هادئ، وبلا تحديد «حدد فعالية أولا»');
 ok((admT.match(/حدد فعالية أولا/g) || []).length === 1 && !admT.includes("btn.textContent = 'حدد فعالية أولا'"),
   'شاشة الادارة: «حدد فعالية أولا» سطر واحد تحت القائمة — لا عنوانا للزر العنبري (2026-10-20)');
-ok(admT.includes('var ids = add ? SEL : pubSel()') && admT.includes('if (!add && !ids.length) return;') && admT.includes('pull.hidden = !k'),
+ok(admT.includes('var ids = only || (add ? SEL : pubSel())') && admT.includes('if (!add && !ids.length) return;') && admT.includes('pull.hidden = !k'),
   'شاشة الادارة: «اسحب» للمنشور من المحدد وحده، ويختفي حتى يحدد منشور (2026-10-20)');
-ok(admT.includes('F.stale(e, pubNow())') && admT.includes('عدلت بعد النشر — انشرها لتحديثها'),
+ok(admT.includes("if (on) op('اسحبها', '', function () { send(false, [e.id]); });") && admT.includes("op('عدّلها', '', function () { addSheet(e); });")
+   && admT.includes("op('عدّلها في السجل'") && admT.includes("addEventListener('click', function () { addSheet(); })")
+   && admT.includes("doneLabel: o ? 'احفظ التعديل' : ''") && admT.includes('S.sheet.doneOff(!ready())'),
+  'شاشة الادارة: «اسحبها» على سطر المنشورة، و«عدّلها» لفعالية الواجهة، و«عدّلها في السجل» لفعالية السجل (2026-11-06)');
+ok(admT.includes('F.stale(e, pubNow())') && admT.includes('عُدّلت بعد النشر، فانشرها لتحديثها.'),
   'شاشة الادارة: المنشورة المعدلة بعد نشرها تبقى منشورة وتنبه (2026-10-20)');
 ok(admT.includes("var DOT = '<span aria-hidden=\"true\">·</span>&nbsp;'") && !admT.includes('<span aria-hidden="true">·</span><span>'),
   'شاشة الادارة: الفاصل داخل ما يليه بمسافة لا تنكسر — لا يعلق في آخر السطر (2026-10-20)');

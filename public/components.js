@@ -583,6 +583,41 @@ Shouba.nextLabel = function (def) {
      مربع رقم النسخة، فلما صار الرقم ملصقا فقد الزر دلالته. */
   /* تأكيد لما لا يسترجع (2026-09-11): نص يصرح بالاثر + زر الحذف + تراجع، في لوحة سفلية.
      من لوحة مفتوحة (اجراءات السجل مثلا) يفتح خطوة فيها، و«تراجع» يعيد اليها لا يغلق كل شيء (قاعدة الادخال 2026-09-13) */
+  /* طلب فتح رابط معلم (2026-11-08، tpush.js): «اقبله» او «ارفضه» — مصدر واحد للوحة وملف المعلم.
+     req: { id, name, label, at } · onDone(state) بعد الحسم */
+  Shouba.tdevWhen = function (isoAt) {
+    var d = new Date(isoAt); if (isNaN(d.getTime())) return '';
+    var p = function (x) { return (x < 10 ? '0' : '') + x; };
+    return (Shouba.todayIso && Shouba.todayIso(d) === Shouba.todayIso() ? 'اليوم' : Shouba.dm(d)) + ' · ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  };
+  Shouba.tdevAsk = function (req, onDone) {
+    var step = Shouba.sheet.isOpen();
+    var n = document.createElement('div'); n.className = 'ask';
+    var p = document.createElement('p');
+    p.textContent = 'فُتح رابط أ. ' + Shouba.shortName(req.name) + ' من ' + req.label + ' (' + Shouba.tdevWhen(req.at) + '). '
+      + 'إن قبلته رأى صفحة الشعبة ووصلته إشعاراته على هذا الجهاز، وتوقف أي جهاز قبلته له من قبل.';
+    var yes = document.createElement('button'), no = document.createElement('button');
+    yes.type = no.type = 'button'; yes.className = 'cta'; no.className = 'btn-ghost';
+    yes.textContent = 'اقبله'; no.textContent = 'ارفضه';
+    function decide(ok) {
+      yes.disabled = no.disabled = true;
+      fetch('api/tpush/decide', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: req.id, ok: ok }) })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (x) {
+          Shouba.sheet.close();
+          if (!x.ok) { Shouba.toast(x.j.error || 'تعذر الحسم'); if (onDone) onDone(x.j.state || ''); return; }
+          Shouba.toast(ok ? 'قُبل جهاز أ. ' + Shouba.shortName(req.name) : 'رُفض الطلب');
+          if (onDone) onDone(x.j.state);
+        })
+        .catch(function () { yes.disabled = no.disabled = false; Shouba.toast('لا اتصال — لم يُحسم الطلب'); });
+    }
+    yes.addEventListener('click', function () { decide(true); });
+    no.addEventListener('click', function () { decide(false); });
+    n.appendChild(p); n.appendChild(yes); n.appendChild(no);
+    Shouba.sheet.open('طلب فتح رابط', n, { step: step });
+  };
+
   Shouba.ask = function (title, text, yesLabel, onYes) {
     var n = document.createElement('div'), p = document.createElement('p');
     var yes = document.createElement('button'), no = document.createElement('button');

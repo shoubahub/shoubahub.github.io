@@ -69,7 +69,10 @@
       return;
     }
     if (!r.ok) { say(loadMsg, 'تعذر الوصول إلى الخادم — أعد فتح الصفحة بعد قليل.'); return; }
-    var P = r.j; loadMsg.remove();
+    loadMsg.remove();
+    /* لم يقبل رئيس الشعبة هذا الجهاز بعد (2026-11-08): حاله وحدها، بلا اسم ولا قسم */
+    if (r.j.state !== 'ok') { T.gate(wrap, r.j.state); return; }
+    var P = r.j;
     document.getElementById('tName').textContent = 'أ. ' + P.name;
     document.getElementById('tLine').textContent = P.department ? 'شعبة ' + P.department : 'شعبة';
     document.title = 'شعبة · إشعارات أ. ' + P.name;

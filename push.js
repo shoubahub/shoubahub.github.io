@@ -257,6 +257,8 @@ function start(pub) {
 }
 
 module.exports = { routes, start, tick, due, clock, announce, selfName, keys, schoolDay, mins, ORD,
+  /* إلى أجهزة رئيس شعبة بعينه (طلب قبول جهاز معلم — tpush.js) */
+  toUser: (userId, msg) => Promise.all(subsOf(userId).map(r => deliver(r, msg))).then(a => a.filter(Boolean).length),
   send: (sub, body, opts) => sender(sub, body, opts),   /* إشعارات المعلمين (tpush.js) تمر بالمرسل نفسه — فيبدله الفحص مرة */
   dropFor: id => { db.prepare('DELETE FROM push_subs WHERE user_id = ?').run(id); db.prepare('DELETE FROM push_sent WHERE user_id = ?').run(id); },
   _setSender: f => { sender = f; } };

@@ -13,10 +13,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=138" />
-<link rel="stylesheet" href="shell.css?v=138" />
-<link rel="stylesheet" href="components.css?v=138" />
-<link rel="stylesheet" href="frame.css?v=138" />
+<link rel="stylesheet" href="identity/tokens.css?v=139" />
+<link rel="stylesheet" href="shell.css?v=139" />
+<link rel="stylesheet" href="components.css?v=139" />
+<link rel="stylesheet" href="frame.css?v=139" />
 <style>
   /* صفحة المعلم (2026-11-06، طلب المستخدم: «رابط لمعلمي الشعبة يتيح من خلاله اشعارات الجدول») — tpush.js.
      يفتحها المعلم برابطه الخاص بلا حساب: لا تقرأ وثيقة الشعبة ولا مخزن الجهاز، وكل ما فيها من api/t/<الرمز>.
@@ -53,7 +53,7 @@
   </div>
  </div></div>
 
-<script src="t-notify.js?v=138"></script>
+<script src="t-notify.js?v=139"></script>
 <script>
 (function(){
   var T = window.TNotify, el = T.el;
@@ -69,7 +69,10 @@
       return;
     }
     if (!r.ok) { say(loadMsg, 'تعذر الوصول إلى الخادم — أعد فتح الصفحة بعد قليل.'); return; }
-    var P = r.j; loadMsg.remove();
+    loadMsg.remove();
+    /* لم يقبل رئيس الشعبة هذا الجهاز بعد (2026-11-08): حاله وحدها، بلا اسم ولا قسم */
+    if (r.j.state !== 'ok') { T.gate(wrap, r.j.state); return; }
+    var P = r.j;
     document.getElementById('tName').textContent = 'أ. ' + P.name;
     document.getElementById('tLine').textContent = P.department ? 'شعبة ' + P.department : 'شعبة';
     document.title = 'شعبة · إشعارات أ. ' + P.name;

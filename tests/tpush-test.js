@@ -34,9 +34,9 @@ tpush.pages(app);
 app.use(express.static(path.join(__dirname, '..', 'public')));
 tpush.routes(app, auth.requireUser);
 const srv = app.listen(0, run);
-function call(method, url, cookie, body) {
+function call(method, url, cookie, body, extra) {
   return new Promise((done, no) => {
-    const headers = {};
+    const headers = Object.assign({}, extra || {});
     if (cookie) headers.Cookie = cookie;
     const data = body ? Buffer.from(JSON.stringify(body)) : null;
     if (data) { headers['Content-Type'] = 'application/json'; headers['Content-Length'] = data.length; }
@@ -139,48 +139,95 @@ async function run() {
     ok((await call('POST', '/api/tpush/link', A, { name: 'أحمد الفهد' })).json.token === tok, 'ويعيده نفسه لا جديدا');
     const tokS = (await call('POST', '/api/tpush/link', A, { name: 'سالم العلي' })).json.token;
 
-    // ── صفحة المعلم: بلا حساب، والرمز بوابتها
+    // ── صفحة المعلم: بلا حساب، والرمز بوابتها — ولا يفتح شيء حتى يقبل رئيس الشعبة الجهاز (2026-11-08)
+    const IPH = { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148' };
+    const AND = { 'User-Agent': 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/130.0 Mobile Safari/537.36' };
+    db.prepare('INSERT INTO push_subs (endpoint,user_id,p256dh,auth) VALUES (?,?,?,?)').run('https://push.example.com/head', uid, 'BPh', 'auh');
+    const head = () => sent.filter(x => /\/head$/.test(x.to));
+    const reqs = async () => (await call('GET', '/api/tpush/requests', A)).json.requests;
+    /* جهاز يطلب، ورئيس الشعبة يقبله — يعيد كعكته */
+    async function approved(t, ua, name) {
+      const a = await call('POST', '/api/t/' + t + '/ask', null, {}, ua || AND);
+      const q = (await reqs()).filter(x => x.name === name).pop();
+      await call('POST', '/api/tpush/decide', A, { id: q.id, ok: true });
+      return a.cookie;
+    }
+
     r = await call('GET', '/api/t/' + tok);
-    ok(r.status === 200 && r.json.name === 'أحمد الفهد' && r.json.department === 'المواد الفلسفية' && r.json.key && !r.json.schedules,
-      'صفحته تعطي اسمه وقسمه والمفتاح فقط', r.json);
+    ok(r.status === 200 && r.json.state === 'none' && !r.json.name && !r.json.key, 'قبل الطلب: حاله وحدها بلا اسم ولا مفتاح', r.json);
     ok((await call('GET', '/api/t/0000000000000000')).status === 404, 'رمز مجهول: ٤٠٤');
     ok((await call('GET', '/api/t/zz')).status === 404, 'رمز غير صالح: ٤٠٤');
+    ok((await call('GET', '/api/t/' + tok + '/face')).status === 403, 'ولا يقرأ الواجهة قبل القبول');
+    ok((await call('POST', '/api/t/' + tok + '/subscribe', null, { subscription: SUB(1) })).status === 403, 'ولا يفعّل الإشعارات قبل القبول');
     r = await call('GET', '/t/' + tok);
     ok(r.status === 200 && /text\/html/.test(r.type) && /إشعاراتي/.test(r.raw), 'الصفحة تفتح برابطه');
     r = await call('GET', '/t/0000000000000000');
     ok(r.status === 404 && /إشعاراتي/.test(r.raw) && /tokens\.css/.test(r.raw), 'والرابط المبطل: الصفحة نفسها بهويتها وردها ٤٠٤');
     ok((await call('GET', '/t.html')).status === 404 && (await call('GET', '/t-sw.js')).status === 404, 'ولا تفتح الصفحة ولا عاملها مباشرة');
     ok((await call('GET', '/teacher.html')).status === 200, 'وسائر الملفات الساكنة تخدم كما هي');
-    ok((await call('GET', '/api/t/' + tok + '/face')).status === 404, 'بلا واجهة منشورة: لا نسخة');
-    db.prepare("INSERT INTO face (user_id, slug, data, at, rev) VALUES (?,?,?,?,1)").run(uid, 'abcdef0123', JSON.stringify({ dept: 'المواد الفلسفية' }), '2026-11-06T10:00:00Z');
-    r = await call('GET', '/t/' + tok);
-    ok(r.status === 200 && /واجهة الشعبة/.test(r.raw) && /tabN/.test(r.raw), 'والواجهة منشورة: رابطه يفتح الواجهة بتبويب «إشعاراتي»');
-    r = await call('GET', '/api/t/' + tok + '/face');
-    ok(r.status === 200 && r.json.data.dept === 'المواد الفلسفية', 'ويقرأ الواجهة المنشورة من رابطه', r.json);
-    db.prepare("UPDATE face SET data = '' WHERE user_id = ?").run(uid);
-    ok(/إشعاراتي/.test((await call('GET', '/t/' + tok)).raw) && !/tabN/.test((await call('GET', '/t/' + tok)).raw), 'وإن سُحب النشر عاد إلى صفحة الإشعارات وحدها');
-    db.prepare("UPDATE face SET data = ? WHERE user_id = ?").run(JSON.stringify({ dept: 'x' }), uid);
-    ok((await call('GET', '/api/t/0000000000000000/face')).status === 404, 'ولا واجهة لرابط باطل');
-    db.prepare("UPDATE face SET data = '' WHERE user_id = ?").run(uid);
     r = await call('GET', '/t/' + tok + '/manifest.webmanifest');
-    ok(r.status === 200 && r.json.start_url === '/t/' + tok && r.json.scope === '/t/', 'ملف التطبيق يفتح على رابطه هو', r.json);
+    ok(r.status === 200 && r.json.start_url === '/t/' + tok && r.json.scope === '/t/', 'ملف التطبيق قبل القبول (للتثبيت على آيفون) يفتح على رابطه', r.json);
     r = await call('GET', '/t/sw.js');
     ok(r.status === 200 && /javascript/.test(r.type) && /showNotification/.test(r.raw), 'عامل الخدمة الخاص بـ/t/');
 
+    // ── الطلب
     sent.length = 0;
-    ok((await call('POST', '/api/t/' + tok + '/subscribe', null, { subscription: { endpoint: 'http://x' } })).status === 400, 'يرفض اشتراكا غير صالح');
-    r = await call('POST', '/api/t/' + tok + '/subscribe', null, { subscription: SUB(1) });
-    ok(r.status === 200 && sent.length === 1 && sent[0].m.title === 'تفعّلت إشعارات شعبة', 'التفعيل يرسل إشعار ترحيب', sent);
-    await call('POST', '/api/t/' + tok + '/subscribe', null, { subscription: SUB(1), quiet: true });
-    ok(sent.length === 1, 'والتأكيد الصامت لا يكرره');
-    r = await call('POST', '/api/t/' + tok + '/subscribe', null, { subscription: SUB(2) });
-    ok(r.status === 409 && r.json.locked && !db.prepare('SELECT 1 FROM teacher_subs WHERE endpoint = ?').get(SUB(2).endpoint),
-      'الرابط لجهاز واحد: جهاز ثان لا يفعّل به', r.json);
-    ok((await call('GET', '/api/t/' + tok)).json.devices === 1, 'والصفحة تعرف أنه مفعّل على جهاز');
-    ok((await call('PUT', '/api/t/' + tok + '/prefs', null, { start: false })).status === 409, 'ولا يغيّر اختياره من غير جهازه');
-    await call('POST', '/api/t/' + tokS + '/subscribe', null, { subscription: SUB(3), quiet: true });
+    r = await call('POST', '/api/t/' + tok + '/ask', null, {}, IPH);
+    const D1 = r.cookie;
+    ok(r.status === 200 && r.json.state === 'pending' && /^tdev=[0-9a-f]{32}$/.test(D1 || ''), 'الطلب يعطي الجهاز كعكته وحاله «ينتظر»', { j: r.json, c: D1 });
+    await new Promise(z => setTimeout(z, 30));
+    ok(head().length === 1 && head()[0].m.title === 'طلب فتح رابط أ. أحمد الفهد' && /آيفون/.test(head()[0].m.body)
+      && /teacher\.html\?t=/.test(head()[0].m.url), 'ويصل رئيس الشعبة إشعار باسم المعلم ونوع الجهاز', head());
+    r = await call('POST', '/api/t/' + tok + '/ask', D1, {}, IPH);
+    ok(r.json.state === 'pending' && head().length === 1, 'وإعادة الطلب من الجهاز نفسه لا تكرر الإشعار');
+    ok((await call('GET', '/api/t/' + tok, D1)).json.state === 'pending', 'وصفحته تعرف أنه ينتظر');
+    let q = await reqs();
+    ok(q.length === 1 && q[0].name === 'أحمد الفهد' && q[0].label === 'آيفون' && q[0].id, 'الطلب في «بحاجة إلى إجراء»', q);
+    ok((await call('GET', '/api/tpush/requests', B)).status === 404 && (await call('POST', '/api/tpush/decide', B, { id: q[0].id, ok: true })).status === 404,
+      'ومن خارج التجربة لا يرى الطلبات ولا يحسمها');
     r = await call('GET', '/api/tpush/links', A);
-    ok(r.json.links.find(l => l.name === 'أحمد الفهد').devices === 1, 'رئيس الشعبة يرى عدد أجهزته', r.json);
+    ok(r.json.links.find(l => l.name === 'أحمد الفهد').pending.length === 1, 'والطلب في ملف المعلم أيضاً');
+
+    // ── الرفض
+    const bad = await call('POST', '/api/t/' + tok + '/ask', null, {}, AND);
+    q = await reqs();
+    r = await call('POST', '/api/tpush/decide', A, { id: q.find(x => x.label === 'أندرويد').id, ok: false });
+    ok(r.json.state === 'no' && (await call('GET', '/api/t/' + tok, bad.cookie)).json.state === 'no', 'المرفوض يعرف أنه رُفض');
+    ok((await call('POST', '/api/t/' + tok + '/ask', bad.cookie, {}, AND)).json.state === 'no', 'ولا يعيد الطلب');
+    ok((await call('GET', '/api/t/' + tok + '/face', bad.cookie)).status === 403, 'ولا يقرأ شيئاً');
+
+    // ── القبول
+    r = await call('POST', '/api/tpush/decide', A, { id: q.find(x => x.label === 'آيفون').id, ok: true });
+    ok(r.json.state === 'ok', 'يقبل الجهاز', r.json);
+    ok((await call('POST', '/api/tpush/decide', A, { id: q.find(x => x.label === 'آيفون').id, ok: false })).status === 409, 'والمحسوم لا يحسم ثانية');
+    r = await call('GET', '/api/t/' + tok, D1);
+    ok(r.json.state === 'ok' && r.json.name === 'أحمد الفهد' && r.json.department === 'المواد الفلسفية' && r.json.key && !r.json.schedules,
+      'بعد القبول: اسمه وقسمه والمفتاح فقط', r.json);
+    ok((await call('GET', '/api/t/' + tok)).json.state === 'none', 'ومن غير جهازه لا يرى شيئاً');
+    ok((await call('GET', '/api/t/' + tok + '/face', D1)).status === 404, 'بلا واجهة منشورة: لا نسخة');
+    db.prepare("INSERT INTO face (user_id, slug, data, at, rev) VALUES (?,?,?,?,1)").run(uid, 'abcdef0123', JSON.stringify({ dept: 'المواد الفلسفية' }), '2026-11-06T10:00:00Z');
+    r = await call('GET', '/t/' + tok, D1);
+    ok(r.status === 200 && /واجهة الشعبة/.test(r.raw) && /tabN/.test(r.raw), 'والواجهة منشورة: جهازه المقبول يفتح الواجهة بتبويب «إشعاراتي»');
+    ok(!/tabN/.test((await call('GET', '/t/' + tok)).raw), 'وغير المقبول يفتح صفحة الحال وحدها');
+    r = await call('GET', '/api/t/' + tok + '/face', D1);
+    ok(r.status === 200 && r.json.data.dept === 'المواد الفلسفية', 'ويقرأ الواجهة المنشورة من رابطه', r.json);
+    db.prepare("UPDATE face SET data = '' WHERE user_id = ?").run(uid);
+    ok(!/tabN/.test((await call('GET', '/t/' + tok, D1)).raw), 'وإن سُحب النشر عاد إلى صفحة الإشعارات وحدها');
+    ok((await call('GET', '/api/t/0000000000000000/face')).status === 404, 'ولا واجهة لرابط باطل');
+
+    sent.length = 0;
+    ok((await call('POST', '/api/t/' + tok + '/subscribe', D1, { subscription: { endpoint: 'http://x' } })).status === 400, 'يرفض اشتراكا غير صالح');
+    r = await call('POST', '/api/t/' + tok + '/subscribe', D1, { subscription: SUB(1) });
+    ok(r.status === 200 && sent.length === 1 && sent[0].m.title === 'تفعّلت إشعارات شعبة', 'التفعيل يرسل إشعار ترحيب', sent);
+    await call('POST', '/api/t/' + tok + '/subscribe', D1, { subscription: SUB(1), quiet: true });
+    ok(sent.length === 1, 'والتأكيد الصامت لا يكرره');
+    ok((await call('GET', '/api/t/' + tok, D1)).json.devices === 1, 'والصفحة تعرف أنه مفعّل على جهازه');
+    ok((await call('PUT', '/api/t/' + tok + '/prefs', bad.cookie, { start: false, endpoint: SUB(1).endpoint })).status === 403, 'ولا يغيّر اختياره من غير جهازه');
+    const DS = await approved(tokS, AND, 'سالم العلي');
+    await call('POST', '/api/t/' + tokS + '/subscribe', DS, { subscription: SUB(3), quiet: true });
+    r = await call('GET', '/api/tpush/links', A);
+    let la = r.json.links.find(l => l.name === 'أحمد الفهد');
+    ok(la.devices === 1 && la.device && la.device.label === 'آيفون' && la.pending.length === 0, 'رئيس الشعبة يرى جهازه المقبول', la);
 
     // ── الفحص الدوري
     sent.length = 0;
@@ -192,14 +239,14 @@ async function run() {
     ok(sent.length === 2 && /t-3$/.test(sent[1].to) && /الثانية/.test(sent[1].m.title), 'وزميله يصله تنبيه حصته', sent.slice(1));
 
     // ── اختياره من صفحته
-    r = await call('PUT', '/api/t/' + tok + '/prefs', null, { start: false, endpoint: SUB(1).endpoint });
+    r = await call('PUT', '/api/t/' + tok + '/prefs', D1, { start: false, endpoint: SUB(1).endpoint });
     ok(r.status === 200 && r.json.prefs.start === false && r.json.prefs.pre === true, 'يطفئ «عند البداية» من صفحته', r.json);
     sent.length = 0;
     await tpush.tick(at(TUE, '07:55'));
     ok(sent.length === 0, 'فلا يصله عند البداية');
     await tpush.tick(at(TUE, '08:35'));
     ok(sent.length === 1 && /نهاية/.test(sent[0].m.title), 'ويبقى ما لم يطفئه', sent);
-    await call('PUT', '/api/t/' + tok + '/prefs', null, { start: true, endpoint: SUB(1).endpoint });
+    await call('PUT', '/api/t/' + tok + '/prefs', D1, { start: true, endpoint: SUB(1).endpoint });
 
     // ── الرسالة الحرة
     ok((await call('POST', '/api/tpush/send', A, { to: 'all', body: '' })).status === 400, 'لا رسالة بلا نص');
@@ -212,7 +259,7 @@ async function run() {
     sent.length = 0;
     r = await call('POST', '/api/tpush/send', A, { to: ['سالم العلي'], title: 'تذكير', body: 'سلّم الخطة غداً' });
     ok(r.json.teachers === 1 && sent.length === 1 && /t-3$/.test(sent[0].to) && sent[0].m.title === 'تذكير', 'لمن تختار: تصله وحده', sent);
-    await call('PUT', '/api/t/' + tokS + '/prefs', null, { pre: false, start: false, end: false, endpoint: SUB(3).endpoint });
+    await call('PUT', '/api/t/' + tokS + '/prefs', DS, { pre: false, start: false, end: false, endpoint: SUB(3).endpoint });
     sent.length = 0;
     await call('POST', '/api/tpush/send', A, { to: ['سالم العلي'], body: 'رسالة' });
     ok(sent.length === 1, 'والرسالة الحرة تصل ولو أطفأ تنبيهات الحصص');
@@ -222,27 +269,48 @@ async function run() {
     await call('POST', '/api/tpush/send', A, { to: ['أحمد الفهد'], body: 'x' });
     ok(!db.prepare('SELECT 1 FROM teacher_subs WHERE endpoint = ?').get(SUB(1).endpoint), 'الجهاز الذي رد ٤١٠ يحذف اشتراكه');
     reject = null;
-    r = await call('POST', '/api/t/' + tok + '/subscribe', null, { subscription: SUB(2), quiet: true });
-    ok(r.status === 200, 'وبعد خلو الرابط يفعّل به جهاز آخر');
-    await call('POST', '/api/t/' + tok + '/unsubscribe', null, { endpoint: SUB(2).endpoint });
-    await call('POST', '/api/t/' + tok + '/subscribe', null, { subscription: SUB(1), quiet: true });
+    await call('POST', '/api/t/' + tok + '/subscribe', D1, { subscription: SUB(1), quiet: true });
 
     // ── الإيقاف من صفحته
-    await call('POST', '/api/t/' + tok + '/unsubscribe', null, { endpoint: SUB(1).endpoint });
+    await call('POST', '/api/t/' + tok + '/unsubscribe', D1, { endpoint: SUB(1).endpoint });
     ok(!db.prepare('SELECT 1 FROM teacher_subs WHERE endpoint = ?').get(SUB(1).endpoint), 'يوقف إشعاراته من صفحته');
-    await call('POST', '/api/t/' + tok + '/subscribe', null, { subscription: SUB(1), quiet: true });
+    await call('POST', '/api/t/' + tok + '/subscribe', D1, { subscription: SUB(1), quiet: true });
+
+    // ── جهاز جديد يُقبل: يوقف القديم (جهاز واحد لكل معلم)
+    const D2 = await approved(tok, AND, 'أحمد الفهد');
+    ok((await call('GET', '/api/t/' + tok, D1)).json.state === 'gone' && (await call('GET', '/api/t/' + tok, D2)).json.state === 'ok',
+      'قبول جهاز جديد يوقف القديم');
+    ok(!db.prepare('SELECT 1 FROM teacher_subs WHERE endpoint = ?').get(SUB(1).endpoint), 'وتحذف اشتراكات القديم');
+    sent.length = 0;
+    await call('POST', '/api/tpush/send', A, { to: ['أحمد الفهد'], body: 'x' });
+    ok(sent.length === 0, 'فلا يصله شيء');
+    await call('POST', '/api/t/' + tok + '/subscribe', D2, { subscription: SUB(2), quiet: true });
+    // ── إلغاء الجهاز من ملف المعلم
+    ok((await call('POST', '/api/tpush/drop', A, { name: 'أحمد الفهد' })).status === 200
+      && (await call('GET', '/api/t/' + tok, D2)).json.state === 'gone' && !db.prepare('SELECT 1 FROM teacher_subs WHERE endpoint = ?').get(SUB(2).endpoint),
+      'إلغاء الجهاز من ملفه يوقفه ويحذف اشتراكه');
+    // ── حد الطلبات المعلقة
+    for (let i = 0; i < 3; i++) await call('POST', '/api/t/' + tok + '/ask', null, {}, AND);
+    ok((await call('POST', '/api/t/' + tok + '/ask', null, {}, AND)).status === 429, 'ولا يقبل أكثر من ثلاثة طلبات معلقة');
+
+    // ── ما سبق الميزة بلا جهاز: يحذف عند الإقلاع
+    db.prepare('INSERT INTO teacher_subs (endpoint,token,p256dh,auth) VALUES (?,?,?,?)').run('https://push.example.com/old', tokS, 'x', 'y');
+    delete require.cache[require.resolve('../tpush')]; require('../tpush');
+    ok(!db.prepare('SELECT 1 FROM teacher_subs WHERE endpoint = ?').get('https://push.example.com/old'), 'الاشتراك القديم بلا جهاز يحذف فيطلب القبول من جديد');
 
     // ── الإبطال
     r = await call('POST', '/api/tpush/link', A, { name: 'أحمد الفهد', renew: true });
     ok(r.json.token !== tok && r.json.devices === 0, 'الإبطال يصدر رابطا جديدا بلا أجهزة', r.json);
     ok((await call('GET', '/api/t/' + tok)).status === 404, 'والرابط القديم لا يعمل');
-    ok(!db.prepare('SELECT 1 FROM teacher_subs WHERE token = ?').get(tok), 'وأجهزته القديمة حذفت');
+    ok(!db.prepare('SELECT 1 FROM teacher_subs WHERE token = ?').get(tok) && !db.prepare('SELECT 1 FROM teacher_devices WHERE token = ?').get(tok),
+      'وأجهزته وطلباته القديمة حذفت');
 
     // ── مواعيد التسليم: من الوثيقة إلى جهازه، و«سُلّم» يوقفها
     const tok2 = (await call('POST', '/api/tpush/link', A, { name: 'أحمد الفهد' })).json.token;
-    await call('POST', '/api/t/' + tok2 + '/subscribe', null, { subscription: SUB(7), quiet: true });
+    const D7 = await approved(tok2, AND, 'أحمد الفهد');
+    await call('POST', '/api/t/' + tok2 + '/subscribe', D7, { subscription: SUB(7), quiet: true });
     db.prepare('UPDATE shouba SET data = ? WHERE user_id = ?').run(JSON.stringify(DLS), uid);
-    r = await call('GET', '/api/t/' + tok2);
+    r = await call('GET', '/api/t/' + tok2, D7);
     ok(r.json.deadlines && r.json.deadlines.length >= 1 && r.json.deadlines.every(x => x.title && x.date && x.when && !x.to && !x.done),
       'صفحته تعطي مواعيده القادمة بعنوانها وتاريخها وحدهما', r.json.deadlines);
     sent.length = 0;

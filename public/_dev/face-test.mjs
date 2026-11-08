@@ -146,8 +146,9 @@ ok(admT.includes('F.stale(e, pubNow())') && admT.includes('عُدّلت بعد �
 ok(admT.includes("var DOT = '<span aria-hidden=\"true\">·</span>&nbsp;'") && !admT.includes('<span aria-hidden="true">·</span><span>'),
   'شاشة الادارة: الفاصل داخل ما يليه بمسافة لا تنكسر — لا يعلق في آخر السطر (2026-10-20)');
 const cmp = await (await fetch(`${BASE}/components.js`)).text();
-ok(cmp.includes('{ step: step, noDone: true }') && cmp.includes('doneBtn.hidden = current.noDone') && (cmp.match(/noDone: true/g) || []).length === 1,
-  'التأكيد (Shouba.ask) بلا «تم» — وحده، وبقية اللوحات على حالها (2026-10-20)');
+/* والثانية لوحة «طلب فتح رابط» (Shouba.tdevAsk): «اقبله» و«ارفضه» بلا «تم» (المطوّر البصري 2026-11-08) */
+ok(cmp.includes('{ step: step, noDone: true }') && cmp.includes('doneBtn.hidden = current.noDone') && (cmp.match(/noDone: true/g) || []).length === 2,
+  'التأكيد (Shouba.ask) ولوحة طلب فتح الرابط بلا «تم» — وحدهما، وبقية اللوحات على حالها (2026-10-20، 2026-11-08)');
 ok(admT.includes('ناقصة — أكملها في السجل') && admT.includes('بلا عنوان') && admT.includes("'record.html?id='"),
   'شاشة الادارة: الناقصة تذكر في مجموعتها وبابها السجل');
 ok((await fetch(`${BASE}/face.html`, { headers: anon })).status === 404, 'الصفحة مباشرة (face.html): مغلقة على الزائر — بابه /face/<الرمز>');

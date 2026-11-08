@@ -128,7 +128,7 @@
     }).then(function(sub){
       if (Notification.permission === 'denied') return blocked();
       var on = !!sub && Notification.permission === 'granted';
-      if (!on) return P.devices ? locked() : show(false);
+      if (!on) return show(false);   /* الجهاز مقبول (2026-11-08) — فلا قفل «مفعّل على جهاز آخر» بعد اليوم */
       /* جهاز مشترك من قبل: يؤكد اشتراكه عند الخادم بلا إشعار ترحيب — فإن رده لأن غيره صار المفعل، فهو مقفل */
       mine = sub.endpoint; show(true);
       api('POST', API + '/subscribe', { subscription: sub.toJSON(), quiet: true })
@@ -168,5 +168,53 @@
     });
   }
 
-  window.TNotify = { token: TOKEN, api: api, load: function(){ return api('GET', API); }, mount: mount, el: el };
+  /* ما قبل القبول (2026-11-08، اقتراح المستخدم: «يصلني زر تفعيل او قبول فيفتح له الرابط»): من فتح الرابط لا يرى
+     شيئا حتى يقبل رئيس الشعبة جهازه — فهنا حاله وحدها: يطلب · ينتظر · رُفض · توقف.
+     ⚠ آيفون: سفاري وأيقونة الشاشة الرئيسية جهازان (لكل منهما كعكاته) — فلا يطلب من سفاري، بل يرشد إلى التثبيت
+       ثم يطلب من الأيقونة، فيصل رئيس الشعبة طلب واحد (قرار المستخدم 05:11) */
+  function gate(wrap, state){
+    var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    var part = el('div', 'part'), lead = el('p', 'lead2'), msg = el('div', 'msg');
+    wrap.appendChild(part); wrap.appendChild(lead); wrap.appendChild(msg);
+    function paint(st){
+      if (st === 'pending') {
+        part.textContent = 'بانتظار موافقة رئيس الشعبة';
+        lead.textContent = 'أُرسل طلبك إلى رئيس الشعبة. تُفتح الصفحة هنا حين يوافق.';
+        wait();
+      } else if (st === 'no') {
+        part.textContent = 'لم يُقبل هذا الجهاز';
+        lead.textContent = 'اطلب من رئيس الشعبة رابطاً جديداً.';
+      } else if (st === 'gone') {
+        part.textContent = 'توقف الرابط على هذا الجهاز';
+        lead.textContent = 'قبل رئيس الشعبة جهازاً آخر لهذا الرابط أو ألغى هذا الجهاز. اطلب منه رابطاً جديداً إن احتجته.';
+      } else if (st === 'ok') {
+        location.reload();
+      } else if (ios && !standalone) {
+        part.textContent = 'ثبّت الصفحة على شاشتك أولاً';
+        lead.textContent = 'افتح هذا الرابط في سفاري، والمس زر المشاركة، ثم «إضافة إلى الشاشة الرئيسية»، وافتحها من أيقونتها. ومن هناك يُرسل طلبك إلى رئيس الشعبة.';
+      } else ask();
+    }
+    function ask(){
+      part.textContent = 'بانتظار موافقة رئيس الشعبة'; lead.textContent = '';
+      api('POST', API + '/ask', {}).then(function(r){
+        if (r.ok) return paint(r.j.state);
+        say(msg, r.j.error || 'تعذر إرسال الطلب. أعد فتح الصفحة بعد قليل.');
+      }).catch(function(){ say(msg, 'لا اتصال بالإنترنت. افتح الصفحة حين تتصل.'); });
+    }
+    /* ينتظر وهو ينظر: يسأل كل ١٥ ثانية، وحين يعود إلى الصفحة — فإذا قُبل فتحت وحدها */
+    var timer = null;
+    function wait(){
+      if (timer) return;
+      function check(){
+        if (document.hidden) return;
+        api('GET', API).then(function(r){ if (r.ok && r.j.state !== 'pending') { clearInterval(timer); timer = null; paint(r.j.state); } }).catch(function(){});
+      }
+      timer = setInterval(check, 15000);
+      document.addEventListener('visibilitychange', check);
+    }
+    paint(state);
+  }
+
+  window.TNotify = { token: TOKEN, api: api, load: function(){ return api('GET', API); }, mount: mount, gate: gate, el: el };
 })();

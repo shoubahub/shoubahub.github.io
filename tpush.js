@@ -11,8 +11,11 @@
         يختار — في وثيقة الشعبة (deadlines). تنبيهان 7:00: آخر يوم دراسي قبل الموعد، ويوم الموعد. ومن أشّر له
         «سُلّم» لا يصله ما بقي. ويرى المعلم مواعيده القادمة في «إشعاراتي».
 
-   ⚠ الرابط هو المفتاح: من عرفه فعّل إشعارات ذلك المعلم — فلا يخرج منه إلا
-     اسمه وقسمه وحصصه. وإبطاله يحذف أجهزته كلها، ويصدر رابطا غيره.
+   ⚠ الرابط وحده لا يفتح شيئا (2026-11-08، اقتراح المستخدم: «ارسله للمعلم المعين ثم يصلني زر تفعيل او قبول»):
+     من فتحه طلب القبول من جهازه، فيصل رئيس الشعبة إشعار وبند في «بحاجة إلى إجراء» — ولا يرى صاحب الطلب
+     شيئا حتى يقبله. والجهاز كعكة tdev (عشوائية، httpOnly). ولكل معلم جهاز واحد مقبول: قبول جديد يوقف القديم.
+     وعلى آيفون لا يطلب من سفاري، بل من أيقونة الشاشة الرئيسية (لكل منهما كعكاته فيكونان جهازين).
+     وإبطال الرابط يحذف أجهزته وطلباته كلها، ويصدر رابطا غيره.
    ⚠ المعلم معروف باسمه في وثيقة الشعبة (teachers / schedules): يُقرأ الجدول
      من الوثيقة المحفوظة عند الخادم في كل فحص — فما عدله رئيس الشعبة يسري.
      ومن أزيل من القائمة سكت رابطه (ولا يحذف: لو أعيد بالاسم نفسه عاد رابطه).
@@ -44,6 +47,15 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
   CREATE INDEX IF NOT EXISTS teacher_subs_token ON teacher_subs (token);
+  CREATE TABLE IF NOT EXISTS teacher_devices (
+    did        TEXT NOT NULL,                  -- كعكة الجهاز
+    token      TEXT NOT NULL,
+    label      TEXT NOT NULL,                  -- «آيفون» · «أندرويد» … للعرض على رئيس الشعبة
+    state      TEXT NOT NULL DEFAULT 'pending',-- pending · ok · no (رفض) · gone (قبل غيره بعده، او ألغاه)
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    decided_at TEXT,
+    PRIMARY KEY (did, token)
+  );
   CREATE TABLE IF NOT EXISTS teacher_sent (
     token   TEXT NOT NULL,
     key     TEXT NOT NULL,
@@ -52,7 +64,15 @@ db.exec(`
   );
 `);
 
+/* الاشتراك لجهاز مقبول: device = كعكته. وما سبق الميزة بلا جهاز — يحذف، فيطلب كل جهاز القبول من جديد
+   (قرار المستخدم 2026-11-08: «٢») */
+if (!db.prepare("SELECT 1 FROM pragma_table_info('teacher_subs') WHERE name = 'device'").get())
+  db.exec('ALTER TABLE teacher_subs ADD COLUMN device TEXT');
+db.exec('DELETE FROM teacher_subs WHERE device IS NULL');
+
 const TOKEN_RE = /^[0-9a-f]{16}$/;
+const DID_RE = /^[0-9a-f]{32}$/;
+const MAX_PENDING = 3;                             /* طلبات معلقة لرابط واحد — فلا يغرق رئيس الشعبة بطلبات عبث */
 const LEAD = 5;                                    /* قبل البداية وقبل النهاية: خمس دقائق */
 const GRACE = 2;                                   /* من فاته الفحص (إقلاع أو نشر) يلحقه دقيقتين لا أكثر — بعدها لا معنى له */
 const KINDS = ['pre', 'start', 'end'];
@@ -106,9 +126,42 @@ function faceOf(userId) {
   catch (e) { return null; }
 }
 function dropLink(token) {
+  db.prepare('DELETE FROM teacher_devices WHERE token = ?').run(token);
   db.prepare('DELETE FROM teacher_subs WHERE token = ?').run(token);
   db.prepare('DELETE FROM teacher_sent WHERE token = ?').run(token);
   db.prepare('DELETE FROM teacher_links WHERE token = ?').run(token);
+}
+
+/* ── الأجهزة: الطلب والقبول (2026-11-08) ───────────────── */
+function didOf(req) {
+  const hit = String(req.headers.cookie || '').split(';').map(x => x.trim()).find(x => x.startsWith('tdev='));
+  const v = hit ? hit.slice(5) : '';
+  return DID_RE.test(v) ? v : '';
+}
+function setDid(res, did) {
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  res.append('Set-Cookie', `tdev=${did}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${2 * 365 * 86400}${secure}`);
+}
+function labelOf(ua) {
+  ua = String(ua || '');
+  if (/iPhone|iPod/.test(ua)) return 'آيفون';
+  if (/iPad/.test(ua)) return 'آيباد';
+  if (/Android/.test(ua)) return 'أندرويد';
+  if (/Macintosh/.test(ua)) return 'ماك';
+  if (/Windows/.test(ua)) return 'حاسوب ويندوز';
+  return 'جهاز';
+}
+function deviceOf(token, did) {
+  return did ? db.prepare('SELECT rowid AS id, * FROM teacher_devices WHERE token = ? AND did = ?').get(token, did) : null;
+}
+function stateOf(token, did) { const d = deviceOf(token, did); return d ? d.state : 'none'; }
+const iso = t => (t ? String(t).replace(' ', 'T') + 'Z' : '');
+/* قبول جهاز: يوقف المقبول قبله واشتراكاته — فلكل معلم جهاز واحد (قرار المستخدم 05:11) */
+function accept(row) {
+  db.prepare("SELECT did FROM teacher_devices WHERE token = ? AND state = 'ok' AND did <> ?").all(row.token, row.did)
+    .forEach(o => db.prepare('DELETE FROM teacher_subs WHERE token = ? AND device = ?').run(row.token, o.did));
+  db.prepare("UPDATE teacher_devices SET state = 'gone', decided_at = datetime('now') WHERE token = ? AND state = 'ok' AND did <> ?").run(row.token, row.did);
+  db.prepare("UPDATE teacher_devices SET state = 'ok', decided_at = datetime('now') WHERE token = ? AND did = ?").run(row.token, row.did);
 }
 
 /* ── الإرسال ────────────────────────────────────────── */
@@ -125,7 +178,11 @@ function deliver(row, msg) {
       return false;
     });
 }
-function subsOf(token) { return db.prepare('SELECT * FROM teacher_subs WHERE token = ?').all(token); }
+/* اشتراكات الجهاز المقبول وحده — فما بقي من جهاز أوقف لا يصله شيء */
+function subsOf(token) {
+  return db.prepare(`SELECT s.* FROM teacher_subs s JOIN teacher_devices d ON d.token = s.token AND d.did = s.device AND d.state = 'ok'
+                     WHERE s.token = ?`).all(token);
+}
 function toTeacher(token, msg) {
   return Promise.all(subsOf(token).map(r => deliver(r, msg))).then(a => a.filter(Boolean).length);
 }
@@ -244,8 +301,45 @@ function routes(app, requireUser) {
     const names = teachersOf(dataOf(req.user.id));
     const rows = db.prepare(`SELECT l.token, l.name, l.prefs, (SELECT COUNT(*) FROM teacher_subs s WHERE s.token = l.token) AS devices
                              FROM teacher_links l WHERE l.user_id = ?`).all(req.user.id);
-    res.json({ links: rows.filter(r => names.indexOf(r.name) > -1)
-      .map(r => ({ name: r.name, token: r.token, devices: r.devices, prefs: prefsOf(r) })) });
+    res.json({ links: rows.filter(r => names.indexOf(r.name) > -1).map(r => {
+      const ok = db.prepare("SELECT label, decided_at FROM teacher_devices WHERE token = ? AND state = 'ok'").get(r.token);
+      return { name: r.name, token: r.token, devices: subsOf(r.token).length, prefs: prefsOf(r),
+        device: ok ? { label: ok.label, at: iso(ok.decided_at) } : null, pending: pendingOf(r.token) };
+    }) });
+  });
+  function pendingOf(token) {
+    return db.prepare("SELECT rowid AS id, label, created_at FROM teacher_devices WHERE token = ? AND state = 'pending' ORDER BY created_at")
+      .all(token).map(d => ({ id: d.id, label: d.label, at: iso(d.created_at) }));
+  }
+
+  /* ①ب طلبات القبول المعلقة — لبند «بحاجة إلى إجراء» في اللوحة */
+  app.get('/api/tpush/requests', requireUser, gate, (req, res) => {
+    const names = teachersOf(dataOf(req.user.id));
+    const out = [];
+    db.prepare('SELECT token, name FROM teacher_links WHERE user_id = ?').all(req.user.id)
+      .filter(l => names.indexOf(l.name) > -1)
+      .forEach(l => pendingOf(l.token).forEach(p => out.push(Object.assign({ name: l.name }, p))));
+    res.json({ requests: out.sort((a, b) => (a.at < b.at ? -1 : 1)) });
+  });
+  /* ①ج القبول او الرفض: ok=true يقبل (ويوقف المقبول قبله) · false يرفض — والمرفوض لا يعيد الطلب */
+  app.post('/api/tpush/decide', requireUser, gate, (req, res) => {
+    const b = req.body || {};
+    const row = db.prepare(`SELECT d.rowid AS id, d.*, l.name FROM teacher_devices d JOIN teacher_links l ON l.token = d.token
+                            WHERE d.rowid = ? AND l.user_id = ?`).get(Number(b.id) || 0, req.user.id);
+    if (!row) return res.status(404).json({ error: 'هذا الطلب لم يعد قائماً' });
+    if (row.state !== 'pending') return res.status(409).json({ error: 'حُسم هذا الطلب من قبل', state: row.state });
+    if (b.ok) accept(row);
+    else db.prepare("UPDATE teacher_devices SET state = 'no', decided_at = datetime('now') WHERE rowid = ?").run(row.id);
+    res.json({ ok: true, name: row.name, state: b.ok ? 'ok' : 'no' });
+  });
+  /* ①د إلغاء الجهاز المقبول من ملف المعلم: يتوقف الرابط عليه، ولا يعود إلا بطلب جديد */
+  app.post('/api/tpush/drop', requireUser, gate, (req, res) => {
+    const l = db.prepare('SELECT token FROM teacher_links WHERE user_id = ? AND name = ?').get(req.user.id, String((req.body && req.body.name) || ''));
+    if (!l) return res.status(404).json({ error: 'لا رابط لهذا المعلم' });
+    db.prepare("SELECT did FROM teacher_devices WHERE token = ? AND state = 'ok'").all(l.token)
+      .forEach(o => db.prepare('DELETE FROM teacher_subs WHERE token = ? AND device = ?').run(l.token, o.did));
+    db.prepare("UPDATE teacher_devices SET state = 'gone', decided_at = datetime('now') WHERE token = ? AND state = 'ok'").run(l.token);
+    res.json({ ok: true });
   });
 
   /* ② رابط المعلم: يعاد إن وجد، وينشأ إن لم يوجد — renew: يبطل القديم وأجهزته ويصدر غيره */
@@ -285,34 +379,57 @@ function routes(app, requireUser) {
     if (!L) { res.status(404).json({ error: 'هذا الرابط لم يعد يعمل — اطلب من رئيس الشعبة رابطا جديدا' }); return null; }
     return L;
   };
+  /* المقبول وحده: ما لم يقبل جهازه رئيس الشعبة فلا شيء غير حاله (قرار المستخدم 05:06: «٢» الصفحة كلها) */
+  const A = (req, res) => {
+    const L = T(req, res); if (!L) return null;
+    const st = stateOf(L.row.token, didOf(req));
+    if (st !== 'ok') { res.status(403).json({ error: 'بانتظار موافقة رئيس الشعبة', state: st }); return null; }
+    return Object.assign(L, { did: didOf(req) });
+  };
   app.get('/api/t/:token', (req, res) => {
     const L = T(req, res); if (!L) return;
-    res.json({ name: L.row.name, department: L.data.department || '', school: L.data.school || '',
-      prefs: prefsOf(L.row), key: push.keys().publicKey, devices: subsOf(L.row.token).length,
+    const st = stateOf(L.row.token, didOf(req));
+    if (st !== 'ok') return res.json({ state: st });
+    res.json({ state: 'ok', name: L.row.name, department: L.data.department || '', school: L.data.school || '',
+      prefs: prefsOf(L.row), key: push.keys().publicKey,
+      devices: db.prepare('SELECT COUNT(*) AS n FROM teacher_subs WHERE token = ? AND device = ?').get(L.row.token, didOf(req)).n,
       deadlines: upcoming(L.data, L.row.name, push.clock().date) });
   });
   /* الواجهة المنشورة لصاحب الرابط — كما تقرؤها /api/face/<الرمز> بلا زيادة */
-  app.get('/api/t/:token/face', (req, res) => {
+  /* طلب القبول من هذا الجهاز: مرة واحدة — وما سبق طلبه يرد حاله ولا يعيد الإشعار */
+  app.post('/api/t/:token/ask', (req, res) => {
     const L = T(req, res); if (!L) return;
+    let did = didOf(req);
+    const cur = deviceOf(L.row.token, did);
+    if (cur) return res.json({ state: cur.state });
+    const n = db.prepare("SELECT COUNT(*) AS n FROM teacher_devices WHERE token = ? AND state = 'pending'").get(L.row.token).n;
+    if (n >= MAX_PENDING) return res.status(429).json({ error: 'طلبات كثيرة على هذا الرابط. اطلب من رئيس الشعبة أن ينظر فيها.' });
+    if (!did) { did = crypto.randomBytes(16).toString('hex'); setDid(res, did); }
+    const label = labelOf(req.headers['user-agent']);
+    db.prepare('INSERT INTO teacher_devices (did, token, label) VALUES (?,?,?)').run(did, L.row.token, label);
+    push.toUser(L.row.user_id, { title: 'طلب فتح رابط أ. ' + L.row.name, body: 'من ' + label + '. اقبله أو ارفضه من ملفه.',
+      tag: 'ask' + L.row.token, url: '/teacher.html?t=' + encodeURIComponent(L.row.name) + '&link=1', ttl: 24 * 3600, urgency: 'high' })
+      .catch(() => 0).then(() => res.json({ state: 'pending' }));
+  });
+  app.get('/api/t/:token/face', (req, res) => {
+    const L = A(req, res); if (!L) return;
     const f = faceOf(L.row.user_id);
     if (!f) return res.status(404).json({ error: 'لا واجهة منشورة' });
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.end(JSON.stringify({ at: f.at, data: JSON.parse(f.data) }));
   });
   app.post('/api/t/:token/subscribe', (req, res) => {
-    const L = T(req, res); if (!L) return;
+    const L = A(req, res); if (!L) return;
     const s = cleanSub(req.body && req.body.subscription);
     if (!s) return res.status(400).json({ error: 'اشتراك غير صالح' });
-    const was = db.prepare('SELECT token FROM teacher_subs WHERE endpoint = ?').get(s.endpoint);
-    /* ⚠ الرابط لجهاز واحد (قرار المستخدم 2026-11-06: «كيف نضمن ان من لديه الرابط هو معلمي بالشعبة؟»):
-       ما دام جهاز مفعلا عليه فلا يفعل غيره — فمن نسخ الرابط بعد تفعيله لم ينتفع به. ومن احتاج جهازا آخر
-       اوقف الاول من صفحته، او اصدر له رئيس الشعبة رابطا جديدا */
-    const other = db.prepare('SELECT 1 FROM teacher_subs WHERE token = ? AND endpoint <> ?').get(L.row.token, s.endpoint);
-    if (other) return res.status(409).json({ error: 'هذا الرابط مفعّل على جهاز آخر', locked: true });
-    db.prepare(`INSERT INTO teacher_subs (endpoint,token,p256dh,auth) VALUES (?,?,?,?)
-                ON CONFLICT(endpoint) DO UPDATE SET token=excluded.token, p256dh=excluded.p256dh, auth=excluded.auth`)
-      .run(s.endpoint, L.row.token, s.p256dh, s.auth);
-    if ((!was || was.token !== L.row.token) && !(req.body && req.body.quiet)) {
+    const was = db.prepare('SELECT token, device FROM teacher_subs WHERE endpoint = ?').get(s.endpoint);
+    /* ⚠ الرابط لجهاز واحد: كان قفل «أول من فعّل» (0.37.3 · بناء 132)، وصار القبول (2026-11-08) — فالاشتراك
+       للجهاز المقبول وحده، وما بقي لغيره على هذا الرابط يحذف */
+    db.prepare('DELETE FROM teacher_subs WHERE token = ? AND device <> ?').run(L.row.token, L.did);
+    db.prepare(`INSERT INTO teacher_subs (endpoint,token,p256dh,auth,device) VALUES (?,?,?,?,?)
+                ON CONFLICT(endpoint) DO UPDATE SET token=excluded.token, p256dh=excluded.p256dh, auth=excluded.auth, device=excluded.device`)
+      .run(s.endpoint, L.row.token, s.p256dh, s.auth, L.did);
+    if ((!was || was.token !== L.row.token || was.device !== L.did) && !(req.body && req.body.quiet)) {
       const row = db.prepare('SELECT * FROM teacher_subs WHERE endpoint = ?').get(s.endpoint);
       return deliver(row, { title: 'تفعّلت إشعارات شعبة', body: 'تصلك على هذا الجهاز تنبيهات حصصك، ورسائل رئيس الشعبة.',
         tag: 'hello', url: '/t/' + L.row.token, ttl: 600 }).then(sent => res.json({ ok: true, sent }));
@@ -320,12 +437,12 @@ function routes(app, requireUser) {
     res.json({ ok: true, sent: false });
   });
   app.post('/api/t/:token/unsubscribe', (req, res) => {
-    const L = T(req, res); if (!L) return;
+    const L = A(req, res); if (!L) return;
     db.prepare('DELETE FROM teacher_subs WHERE endpoint = ? AND token = ?').run(String((req.body && req.body.endpoint) || ''), L.row.token);
     res.json({ ok: true });
   });
   app.put('/api/t/:token/prefs', (req, res) => {
-    const L = T(req, res); if (!L) return;
+    const L = A(req, res); if (!L) return;
     /* الاختيار للجهاز المفعل وحده — لا لمن فتح الرابط من غيره */
     if (!db.prepare('SELECT 1 FROM teacher_subs WHERE token = ? AND endpoint = ?').get(L.row.token, String((req.body && req.body.endpoint) || '')))
       return res.status(409).json({ error: 'فعّل الإشعارات على هذا الجهاز أولاً', locked: true });
@@ -357,7 +474,8 @@ function routes(app, requireUser) {
     const L = live(req.params.token);
     /* رابط واحد للمعلم (قرار المستخدم 2026-11-06: «الا يمكن دمجهم برابط واحد؟»): الواجهة المنشورة ومعها
        تبويب «إشعاراتي» — وما لم تنشر الواجهة فصفحة الإشعارات وحدها */
-    const page = L && faceOf(L.row.user_id) ? 'face.html' : 't.html';
+    /* وما لم يقبل جهازه: صفحة الإشعارات تقول حاله وتطلب القبول (2026-11-08) */
+    const page = L && stateOf(L.row.token, didOf(req)) === 'ok' && faceOf(L.row.user_id) ? 'face.html' : 't.html';
     res.status(L ? 200 : 404).sendFile(path.join(__dirname, 'public', page));
   });
 }

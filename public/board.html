@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=138" />
-<link rel="stylesheet" href="shell.css?v=138" />
-<link rel="stylesheet" href="components.css?v=138" />
-<link rel="stylesheet" href="frame.css?v=138" />
+<link rel="stylesheet" href="identity/tokens.css?v=139" />
+<link rel="stylesheet" href="shell.css?v=139" />
+<link rel="stylesheet" href="components.css?v=139" />
+<link rel="stylesheet" href="frame.css?v=139" />
 <style>
   /* خاص باللوحة — الرأس والجداول والمصفوفة من components.css */
   .board{display:flex;flex-direction:column;gap:20px;padding-top:14px}
@@ -189,14 +189,14 @@
   </div>
  </div></div>
 
-<script src="build.js?v=138"></script>
-<script src="refdata.js?v=138"></script>
-<script src="rec-templates.js?v=138"></script>
-<script src="rec-engine.js?v=138"></script>
-<script src="derive.js?v=138"></script>
-<script src="plan-data.js?v=138"></script>
-<script src="icons.js?v=138"></script>
-<script src="components.js?v=138"></script>
+<script src="build.js?v=139"></script>
+<script src="refdata.js?v=139"></script>
+<script src="rec-templates.js?v=139"></script>
+<script src="rec-engine.js?v=139"></script>
+<script src="derive.js?v=139"></script>
+<script src="plan-data.js?v=139"></script>
+<script src="icons.js?v=139"></script>
+<script src="components.js?v=139"></script>
 <script>
   var KEY='shouba.setup', R=window.SHOUBA_REF;
   function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
@@ -978,59 +978,85 @@
      أصلا، فكان كل معلم متأخرا بحكم البناء. يعود يوم يصير للإنجاز مصدر حقيقي
      (تأشير ما قطعه المعلم في سجل «ما قطع من المنهج» — الخطوة هـ من شريط الخطة). وحذفت Shouba.behindPlan القديمة
      (2026-09-13) مع نموذجها الذي لم يملأ قط. */
-  document.getElementById('todoCount').textContent = items.length ? items.length : 'لا شيء';
-  if(!items.length){
-    todoEl.closest('section').classList.add('calm');
-    todoEl.innerHTML='<div class="invite">لا شيء ينتظر إجراء الآن — شعبتك منضبطة.</div>';
-  } else {
-    /* بان واحد للسطر — تستعمله البطاقة واللوحة معا فلا يفترق شكلهما.
-       والسطر **باب الإجراء نفسه**: الطلب «لم يدخل جدوله»، فالضغطة تفتح
-       جدول ذلك المعلم وحده. وإلا كانت البطاقة إخبارا بالعمل لا طريقا إليه
-       (قرار المستخدم 2026-09-08). */
-    function titem(it){
-      var el=document.createElement('div'); el.className='titem go';
-      el.setAttribute('role','button'); el.setAttribute('tabindex','0');
-      el.innerHTML='<span class="ini"></span><div class="tx"><b></b><small></small></div>'
-                 + '<span class="chip"></span><span class="chev">›</span>';
-      /* البند عام (2026-09-12): حرفه وعنوانه ووجهته منه — معلم بلا جدول، او اجراء في الخطة */
-      el.querySelector('.ini').textContent = it.ini;
-      el.querySelector('b').textContent = it.title;
-      el.querySelector('small').textContent = it.text;
-      el.querySelector('.chip').textContent = it.badge;
-      if (it.chip) el.querySelector('.chip').classList.add(it.chip);
-      function go(){ location.href = it.href; }
-      el.addEventListener('click', go);
-      el.addEventListener('keydown', function(e){
-        if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); }
-      });
-      return el;
-    }
-    /* البطاقة تعرض اثنين — لا تطول فتزاحم ما تحتها */
-    items.slice(0,2).forEach(function(it){ todoEl.appendChild(titem(it)); });
-
-    /* والبقية خلف ضغطة: السطر السفلي صار زرا يفتح القائمة كاملة
-       بالتنسيق نفسه (قرار المستخدم 2026-09-08). كان نصا جامدا يخبر
-       بالعدد ولا يوصل إليه. */
-    if(items.length>2){
-      var more=document.getElementById('todoMore');
-      more.classList.add('tappable');
-      more.setAttribute('role','button');
-      more.setAttribute('tabindex','0');
-      var rest = items.length - 2;
-      more.innerHTML = '<span></span><span class="chev">›</span>';
-      more.querySelector('span').textContent =
-        'و' + Shouba.count(rest,{one:'طلب',two:'طلبان',few:'طلبات',many:'طلبا'}) + ' في الانتظار';
-      function openAll(){
-        var n=document.createElement('div'); n.className='todo';
-        items.forEach(function(it){ n.appendChild(titem(it)); });
-        Shouba.sheet.open('بحاجة إلى إجراء', n);
+  /* يرسم القسم من items — ويعاد رسمه حين تصل طلبات القبول من الخادم (2026-11-08) */
+  function paintTodo(){
+    todoEl.innerHTML = '';
+    todoEl.closest('section').classList.remove('calm');
+    var old = document.getElementById('todoMore'), fresh = old.cloneNode(false);   /* بلا مستمعي الرسم السابق */
+    fresh.className = 'more'; fresh.removeAttribute('role'); fresh.removeAttribute('tabindex');
+    old.parentNode.replaceChild(fresh, old);
+    document.getElementById('todoCount').textContent = items.length ? items.length : 'لا شيء';
+    if(!items.length){
+      todoEl.closest('section').classList.add('calm');
+      todoEl.innerHTML='<div class="invite">لا شيء ينتظر إجراء الآن — شعبتك منضبطة.</div>';
+    } else {
+      /* بان واحد للسطر — تستعمله البطاقة واللوحة معا فلا يفترق شكلهما.
+         والسطر **باب الإجراء نفسه**: الطلب «لم يدخل جدوله»، فالضغطة تفتح
+         جدول ذلك المعلم وحده. وإلا كانت البطاقة إخبارا بالعمل لا طريقا إليه
+         (قرار المستخدم 2026-09-08). */
+      function titem(it){
+        var el=document.createElement('div'); el.className='titem go';
+        el.setAttribute('role','button'); el.setAttribute('tabindex','0');
+        el.innerHTML='<span class="ini"></span><div class="tx"><b></b><small></small></div>'
+                   + '<span class="chip"></span><span class="chev">›</span>';
+        /* البند عام (2026-09-12): حرفه وعنوانه ووجهته منه — معلم بلا جدول، او اجراء في الخطة */
+        el.querySelector('.ini').textContent = it.ini;
+        el.querySelector('b').textContent = it.title;
+        el.querySelector('small').textContent = it.text;
+        el.querySelector('.chip').textContent = it.badge;
+        if (it.chip) el.querySelector('.chip').classList.add(it.chip);
+        function go(){ if (it.act) it.act(); else location.href = it.href; }
+        el.addEventListener('click', go);
+        el.addEventListener('keydown', function(e){
+          if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); }
+        });
+        return el;
       }
-      more.addEventListener('click', openAll);
-      more.addEventListener('keydown', function(e){
-        if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openAll(); }
-      });
+      /* البطاقة تعرض اثنين — لا تطول فتزاحم ما تحتها */
+      items.slice(0,2).forEach(function(it){ todoEl.appendChild(titem(it)); });
+
+      /* والبقية خلف ضغطة: السطر السفلي صار زرا يفتح القائمة كاملة
+         بالتنسيق نفسه (قرار المستخدم 2026-09-08). كان نصا جامدا يخبر
+         بالعدد ولا يوصل إليه. */
+      if(items.length>2){
+        var more=document.getElementById('todoMore');
+        more.classList.add('tappable');
+        more.setAttribute('role','button');
+        more.setAttribute('tabindex','0');
+        var rest = items.length - 2;
+        more.innerHTML = '<span></span><span class="chev">›</span>';
+        more.querySelector('span').textContent =
+          'و' + Shouba.count(rest,{one:'طلب',two:'طلبان',few:'طلبات',many:'طلبا'}) + ' في الانتظار';
+        function openAll(){
+          var n=document.createElement('div'); n.className='todo';
+          items.forEach(function(it){ n.appendChild(titem(it)); });
+          Shouba.sheet.open('بحاجة إلى إجراء', n);
+        }
+        more.addEventListener('click', openAll);
+        more.addEventListener('keydown', function(e){
+          if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openAll(); }
+        });
+      }
     }
   }
+  paintTodo();
+
+  /* طلبات فتح روابط المعلمين (2026-11-08، اقتراح المستخدم: «يصلني زر تفعيل او قبول فيفتح له الرابط»):
+     من الخادم لا من الوثيقة — وتتقدم البنود لأن المعلم ينتظر. والسطر يفتح القبول والرفض في لوحة */
+  if (Shouba.tdevAsk) fetch('api/tpush/requests', { credentials: 'same-origin', cache: 'no-store' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      var q = (j && j.requests) || [];
+      if (!q.length) return;
+      items = items.filter(function(it){ return !it.req; });
+      q.slice().reverse().forEach(function(x){
+        items.unshift({ req: true, ini: x.name.charAt(0), title: 'أ. ' + Shouba.shortName(x.name), badge: 'طلب',
+          text: 'يطلب فتح رابطه من ' + x.label,
+          act: function(){ Shouba.tdevAsk(x, function(){
+            items = items.filter(function(it){ return it.reqId !== x.id; }); paintTodo(); }); }, reqId: x.id });
+      });
+      paintTodo();
+    }).catch(function(){});
 
   /* ===== التنقل ===== */
   /* ⚠ `.tab[data-go]` لا `.tab` المطلقة: تبويب «قيد الإعداد» بلا وجهة، فكان ينتقل

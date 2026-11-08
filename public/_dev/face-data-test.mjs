@@ -128,6 +128,23 @@ ok(F.nextShown(list, PUBS, ['r1'], true).sort().join() === 'r1,w1', 'انشر ا
 ok(F.nextShown(list, PUBS, ['w1', 'r6'], false).join() === 'r1', 'اسحب: المنشور بلا المحدد، وغير المنشور لا اثر له');
 ok(F.nextShown(list, PUBS, ['r5', 'r7'], true).sort().join() === 'r1,w1', 'الناقصة لا تنشر ولو حددت');
 ok(F.nextShown(list, null, ['r6'], true).join() === 'r6', 'الواجهة غير منشورة: انشر المحدد وحده — لا show القديمة');
+{ /* السحب من المنشور نفسه (2026-11-08، قرار «١»): لا ينشر معه تعديل لم ينشر في فعالية اخرى ولا في الفريق */
+  const pub = { v: 1, dept: 'قديم', team: { head: null }, events: [
+    { id: 'a', src: 'own', title: 'زيارة الموجه', date: '2026-11-20' },
+    { id: 'b', src: 'own', title: 'يوم الفلسفة', date: '2026-11-21' },
+    { id: 'c', src: 'rec', title: 'ندوة', date: '2026-11-22' }] };
+  const now = [
+    { id: 'a', src: 'own', title: 'زيارة الموجه التربوي', date: '2026-11-20' },
+    { id: 'b', src: 'own', title: 'يوم الفلسفة', date: '2026-11-21' },
+    { id: 'c', src: 'rec', title: 'ندوة', date: '2026-11-22' }];
+  const out = F.pullFrom(pub, now, ['b']);
+  ok(out.events.map(e => e.id).join() === 'a,c' && out.events[0].title === 'زيارة الموجه' && out.dept === 'قديم',
+    'اسحب: المنشور نفسه بلا المسحوبة — «زيارة الموجه» بعنوانها المنشور، والقسم كما نشر', out.events);
+  ok(pub.events.length === 3, 'اسحب: لا يمس النسخة المنشورة الاصل');
+  const old = { events: [{ title: 'قديمة', date: '2026-11-25' }, { title: 'اخرى', date: '2026-11-26' }] };
+  ok(F.pullFrom(old, [{ id: 'x', src: 'rec', title: 'قديمة', date: '2026-11-25' }], ['x']).events.map(e => e.title).join() === 'اخرى',
+    'اسحب من نسخة اقدم بلا معرفات: بالعنوان والتاريخ');
+}
 const f2 = F.setShown(face, ['r4', 'r6', 'w3']);
 ok(f2.show.join() === 'r4,r6,w3' && f2.hide.indexOf('r4') < 0 && face.show.length === 8 && face.hide[0] === 'r4', 'setShown: show ما نشر، وhide القديمة ترفع عنه، والاصل لا يمس');
 const l2 = F.events(f2, recs, T, groups), by2 = id => l2.filter(e => e.id === id)[0];

@@ -40,6 +40,14 @@
 
   /* يبني القسم في wrap ببيانات P (جواب api/t/<الرمز>) */
   function mount(wrap, P){
+    /* أُلغي جهازه والصفحة مفتوحة (رصد معاينة السلوك، النسخة 0.41.0 · بناء 139): يسأل عن حاله حين يعود إليها وكل دقيقة،
+       فإن لم يعد مقبولا أعاد التحميل فيخدمه الخادم صفحة حاله — فلا تبقى «مفعّلة على هذا الجهاز» وهي ليست كذلك */
+    function still(){
+      if (document.hidden) return;
+      api('GET', API).then(function(r){ if (r.ok && r.j.state && r.j.state !== 'ok') location.reload(); }).catch(function(){});
+    }
+    document.addEventListener('visibilitychange', still);
+    setInterval(still, 60000);
     /* مواعيد التسليم القادمة (2026-11-06، قرار المستخدم 17:38): ما لم يسلّمه، بالأقرب — قبل الإشعارات لأنها تتغير وهي ثابتة */
     var dl = P.deadlines || [];
     wrap.appendChild(el('div', 'part', 'مواعيد التسليم'));

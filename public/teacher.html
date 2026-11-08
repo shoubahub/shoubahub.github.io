@@ -18,7 +18,8 @@
 <style>
   .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
   .rm{padding:0 var(--gap-side)}
-  .rm button{width:100%;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;
+  /* و«ألغِ جهازه المقبول» في لوحة الرابط بالأسلوب نفسه (المطوّر البصري 2026-11-08) */
+  .rm button, .rmdev{width:100%;border:0;cursor:pointer;font-family:var(--font-ar);font-size:13px;font-weight:700;
     color:var(--shouba-error);background:rgba(183,68,58,.08);border-radius:14px;padding:13px}
 </style>
 </head>
@@ -205,7 +206,7 @@
         n.appendChild(sh);
       }
       if (L.device) {
-        var dr = document.createElement('button'); dr.type = 'button'; dr.className = 'btn-ghost'; dr.textContent = 'ألغِ جهازه المقبول';
+        var dr = document.createElement('button'); dr.type = 'button'; dr.className = 'rmdev'; dr.textContent = 'ألغِ جهازه المقبول';
         dr.addEventListener('click', function(){
           Shouba.ask('إلغاء الجهاز', 'يتوقف الرابط على ' + L.device.label + ' أ. ' + Shouba.shortName(T) + '، وتتوقف إشعاراته عليه. ويعود بطلب جديد تقبله.',
             'ألغه', function(){

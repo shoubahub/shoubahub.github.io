@@ -615,7 +615,8 @@ Shouba.nextLabel = function (def) {
     yes.addEventListener('click', function () { decide(true); });
     no.addEventListener('click', function () { decide(false); });
     n.appendChild(p); n.appendChild(yes); n.appendChild(no);
-    Shouba.sheet.open('طلب فتح رابط', n, { step: step });
+    /* «اقبله» و«ارفضه» وحدهما: لا «تم» تحتهما، وتغلق باللسان او بالسحب (المطوّر البصري 2026-11-08) */
+    Shouba.sheet.open('طلب فتح رابط', n, { step: step, noDone: true });
   };
 
   Shouba.ask = function (title, text, yesLabel, onYes) {

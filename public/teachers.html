@@ -11,10 +11,10 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=136" />
-<link rel="stylesheet" href="shell.css?v=136" />
-<link rel="stylesheet" href="components.css?v=136" />
-<link rel="stylesheet" href="frame.css?v=136" />
+<link rel="stylesheet" href="identity/tokens.css?v=137" />
+<link rel="stylesheet" href="shell.css?v=137" />
+<link rel="stylesheet" href="components.css?v=137" />
+<link rel="stylesheet" href="frame.css?v=137" />
 <style>
   /* خاص بهذه الشاشة — القائمة والسطور من components.css */
   .wrap{display:flex;flex-direction:column;gap:14px;padding-top:14px}
@@ -82,11 +82,11 @@
   </div>
  </div></div>
 
-<script src="build.js?v=136"></script>
-<script src="refdata.js?v=136"></script>
-<script src="derive.js?v=136"></script>
-<script src="icons.js?v=136"></script>
-<script src="components.js?v=136"></script>
+<script src="build.js?v=137"></script>
+<script src="refdata.js?v=137"></script>
+<script src="derive.js?v=137"></script>
+<script src="icons.js?v=137"></script>
+<script src="components.js?v=137"></script>
 <script>
   var d = Shouba.data();
 
@@ -350,7 +350,8 @@
     n.innerHTML = '<div class="field" data-need="req"><label for="dt">العنوان</label>'
       + '<div class="paper"><input id="dt" type="text" maxlength="60" placeholder="ما الذي يسلّمه؟" /></div></div>'
       + '<div class="field" data-need="req"><label for="dd">تاريخ التسليم</label>'
-      + '<div class="paper"><input id="dd" type="date" /></div></div>'
+      + '<div class="paper"><input id="dd" type="date" /></div>'
+      + '<div class="hint" id="ddh">من الأحد إلى الخميس.</div></div>'
       + '<div class="field"><label>من يسلّمه</label><div class="stack" id="to"></div></div>';
     /* «تم» هو الفعل نفسه: «أضف الموعد» او «احفظ التعديل» بالعنبري، معطلا حتى يكتمل العنوان والتاريخ ومن يسلّمه
        (المطوّر البصري 2026-11-06) — و«رجوع» بجانبه محايد */
@@ -367,8 +368,15 @@
       var row = pickRow('أ. ' + Shouba.shortName(t), Shouba.subjectsOfTeacher(t).map(function(s){ return s.name; }).join(' · '));
       row.dataset.t = t; rows.push(row); to.appendChild(row);
     });
+    /* لا تسليم في العطلة (قرار المستخدم 2026-11-08): الجمعة والسبت لا يقبلان — ومنتقي التاريخ لا يحجب أياما،
+       فيرد هنا بتنبيه تحت الحقل و«أضف الموعد» معطل */
+    var ddh = n.querySelector('#ddh');
+    function weekend(){ if (!dd.value) return false; var p = dd.value.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]).getDay() > 4; }
     function ready(){
-      Shouba.sheet.doneOff(inp.value.trim().length < 2 || !dd.value || !teachers.length
+      var off = weekend();
+      ddh.textContent = off ? 'هذا اليوم عطلة. اختر يوماً من الأحد إلى الخميس.' : 'من الأحد إلى الخميس.';
+      ddh.style.color = off ? 'var(--shouba-error)' : '';
+      Shouba.sheet.doneOff(inp.value.trim().length < 2 || !dd.value || off || !teachers.length
         || (!all && !Object.keys(chosen).some(function(k){ return chosen[k]; })));
     }
     function paintTo(){ set(allRow, all); rows.forEach(function(row){ set(row, !all && !!chosen[row.dataset.t]); }); ready(); }
@@ -389,6 +397,7 @@
       /* لا اهمال صامت ولا حفظ صامت (قاعدة الادخال 2026-09-13) */
       if (v.length < 2) { Shouba.toast('اكتب عنوان الموعد — حرفان على الأقل.'); inp.focus(); return false; }
       if (!dd.value) { Shouba.toast('اختر تاريخ التسليم.'); return false; }
+      if (weekend()) { Shouba.toast('هذا اليوم عطلة. اختر يوماً من الأحد إلى الخميس.'); return false; }
       if (!teachers.length) { Shouba.toast('أضف معلمي شعبتك أولاً.'); return false; }
       var list = all ? teachers.slice() : teachers.filter(function(t){ return chosen[t]; });
       var x = dl ? JSON.parse(JSON.stringify(dl)) : { done: [] };

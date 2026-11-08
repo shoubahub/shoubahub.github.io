@@ -188,6 +188,14 @@
     else on = on.filter(function (id) { return sel.indexOf(id) < 0; });
     return on;
   };
+  /* السحب من المنشور نفسه (2026-11-08، قرار المستخدم «١» بعد معاينة بناء 136): النسخة المنشورة كما هي ناقصة الفعاليات
+     المسحوبة — لا نسخة جديدة من البيانات الحالية، فلا يظهر للزوار مع السحب تعديل لم ينشر في فعالية أخرى ولا في غيرها */
+  F.pullFrom = function (snap, list, ids) {
+    var out = JSON.parse(JSON.stringify(snap || {})), gone = arr(list).filter(function (e) { return arr(ids).indexOf(e.id) > -1; })
+      .map(function (e) { return F.pubOf(e, snap); }).filter(Boolean);
+    out.events = arr(snap && snap.events).filter(function (p) { return gone.indexOf(p) < 0; }).map(function (p) { return JSON.parse(JSON.stringify(p)); });
+    return out;
+  };
   /* اعدادات الواجهة بعد الفعل (نسخة لا تمس الاصل): show المنشورة كلها، وhide القديمة ترفع عما نشر — والا بقي مخفيا */
   F.setShown = function (face, ids) {
     var f = JSON.parse(JSON.stringify(face || {}));

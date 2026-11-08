@@ -134,6 +134,7 @@ ok(admT.includes('id="pull"') && admT.includes('id="pullAll"') && admT.includes(
   && admT.includes('حدد فعالية أولا'), 'شاشة الادارة: حال كل فعالية، وسحب الواجهة كلها رابط هادئ، وبلا تحديد «حدد فعالية أولا»');
 ok((admT.match(/حدد فعالية أولا/g) || []).length === 1 && !admT.includes("btn.textContent = 'حدد فعالية أولا'"),
   'شاشة الادارة: «حدد فعالية أولا» سطر واحد تحت القائمة — لا عنوانا للزر العنبري (2026-10-20)');
+ok(admT.includes("snap = add ? snapshot(f) : F.pullFrom(pubNow(), evList(), ids)"), 'شاشة الادارة: «اسحب» من المنشور نفسه لا من البيانات الحالية (2026-11-08)');
 ok(admT.includes('var ids = only || (add ? SEL : pubSel())') && admT.includes('if (!add && !ids.length) return;') && admT.includes('pull.hidden = !k'),
   'شاشة الادارة: «اسحب» للمنشور من المحدد وحده، ويختفي حتى يحدد منشور (2026-10-20)');
 ok(admT.includes("if (on) op('اسحبها', '', function () { send(false, [e.id]); });") && admT.includes("op('عدّلها', '', function () { addSheet(e); });")

@@ -263,7 +263,9 @@
     $('nowWhen').innerHTML = when ? ' · ' + when : '';
     $('nowRow').innerHTML = out; $('nowRow').hidden = !out;
     $('nowMsg').innerHTML = msg; $('nowMsg').hidden = !msg;
-    $('nowSec').hidden = false;                            /* ظاهر دائما — لا يختفي ابدا */
+    /* ظاهر دائما للزائر — ورابط المعلم بلاه (2026-11-08، طلب المستخدم: «لا يظهر له من بالشعبة يعمل حاليا الا من خلال
+       الجدول اليومي كالذي في لوحتي»): من في فصله الآن يراه المعلم في جدول اليوم وحده */
+    $('nowSec').hidden = !!TOKEN;
     xhint($('nowRow'));
   }
 
@@ -300,13 +302,27 @@
     if (!b) return a.day + ' ' + a.month;
     return a.day + (a.month !== b.month ? ' ' + a.month : '') + ' – ' + b.day + ' ' + b.month;
   }
+  /* رابط المعلم (2026-11-08، طلب المستخدم: «خطة المنهج لا تظهر له الا خطط مناهجه»): سطور الخطة التي هو من معلميها
+     (who في النسخة منذ هذا البناء)، وفي نسخة اقدم بلا who: مواده من جدوله. وحتى يعرف اسمه لا خطة — فلا تظهر خطط غيره لحظة */
+  var TNAME = '';
+  function myPlan() {
+    var P = SNAP.plan;
+    if (!TOKEN || !P) return P;
+    if (!TNAME) return null;
+    var me = (SNAP.people || []).filter(function (p) { return p.name === TNAME; })[0], subs = {};
+    if (me) Object.keys(me.wk || {}).forEach(function (d) { (me.wk[d] || []).forEach(function (v) { var x = F.slot(v).subject; if (x) subs[x] = 1; }); });
+    var rows = (P.rows || []).filter(function (r) {
+      return r.who ? r.who.indexOf(TNAME) > -1 : Object.keys(subs).some(function (x) { return r.name === x || r.name.indexOf(x) === 0 || x.indexOf(r.name) === 0; });
+    });
+    return rows.length ? { weeks: P.weeks, rows: rows } : null;
+  }
   function paintPlan() {
-    var now = F.planNow(SNAP.plan, today()), box = $('plan');
+    var PL = myPlan(), now = F.planNow(PL, today()), box = $('plan');
     $('planSec').hidden = !now;
     box.innerHTML = ''; $('planWks').innerHTML = '';
     if (!now) return;
-    if (!planSel || !F.planWeek(SNAP.plan, planSel)) planSel = now.n;
-    var P = F.planWeek(SNAP.plan, planSel), weeks = (SNAP.plan.weeks || []).filter(Boolean);
+    if (!planSel || !F.planWeek(PL, planSel)) planSel = now.n;
+    var P = F.planWeek(PL, planSel), weeks = (PL.weeks || []).filter(Boolean);
     var total = weeks.reduce(function (m, w) { return Math.max(m, +w.n || 0); }, 0);
     weeks.forEach(function (w) {
       var c = document.createElement('i');
@@ -502,7 +518,8 @@
   function route() {
     var h = '';
     try { h = decodeURIComponent(location.hash.slice(1)); } catch (e) {}
-    var n = TOKEN && h === 'إشعاراتي', j = !n && h === 'الجدول', s = !n && !j;
+    /* رابط المعلم يفتح على «الجدول» (2026-11-08، طلب المستخدم) — والزائر على «الشعبة» */
+    var n = TOKEN && h === 'إشعاراتي', j = !n && (h === 'الجدول' || (!!TOKEN && h !== 'الشعبة')), s = !n && !j;
     $('paneS').hidden = !s; $('paneJ').hidden = !j; $('paneN').hidden = !n;
     $('tabS').classList.toggle('on', s); $('tabJ').classList.toggle('on', j); $('tabN').classList.toggle('on', n);
     $('tabS').setAttribute('aria-current', s ? 'page' : 'false'); $('tabJ').setAttribute('aria-current', j ? 'page' : 'false');
@@ -552,7 +569,7 @@
     N.load().then(function (r) {
       /* أُلغي جهازه والصفحة مفتوحة (2026-11-08): تعود فيخدمه الخادم صفحة حاله */
       if (r.ok && r.j.state !== 'ok') return location.reload();
-      if (r.ok) return N.mount($('notify'), r.j);
+      if (r.ok) { TNAME = r.j.name || ''; if (SNAP) paintPlan(); return N.mount($('notify'), r.j); }
       if (r.status === 404) {
         $('notify').appendChild(N.el('div', 'part', 'هذا الرابط لم يعد يعمل'));
         $('notify').appendChild(N.el('p', 'lead2', 'اطلب من رئيس الشعبة رابطاً جديداً.'));

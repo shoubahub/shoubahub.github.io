@@ -134,6 +134,11 @@ ok(admT.includes('id="pull"') && admT.includes('id="pullAll"') && admT.includes(
   && admT.includes('حدد فعالية أولا'), 'شاشة الادارة: حال كل فعالية، وسحب الواجهة كلها رابط هادئ، وبلا تحديد «حدد فعالية أولا»');
 ok((admT.match(/حدد فعالية أولا/g) || []).length === 1 && !admT.includes("btn.textContent = 'حدد فعالية أولا'"),
   'شاشة الادارة: «حدد فعالية أولا» سطر واحد تحت القائمة — لا عنوانا للزر العنبري (2026-10-20)');
+{ const fh = fs.readFileSync(path.join(ROOT, 'public', 'face.html'), 'utf8');
+  ok(fh.includes("(h === 'الجدول' || (!!TOKEN && h !== 'الشعبة'))") && fh.includes("$('nowSec').hidden = !!TOKEN;"),
+    'رابط المعلم: يفتح على «الجدول»، وبلا «الآن في الشعبة» (2026-11-08)');
+  ok(fh.includes('function myPlan()') && fh.includes('r.who ? r.who.indexOf(TNAME) > -1') && fh.includes("if (!TNAME) return null;"),
+    'رابط المعلم: خطط مواده وحدها، ولا خطة حتى يعرف اسمه (2026-11-08)'); }
 ok(admT.includes("snap = add ? snapshot(f) : F.pullFrom(pubNow(), evList(), ids)"), 'شاشة الادارة: «اسحب» من المنشور نفسه لا من البيانات الحالية (2026-11-08)');
 ok(admT.includes('var ids = only || (add ? SEL : pubSel())') && admT.includes('if (!add && !ids.length) return;') && admT.includes('pull.hidden = !k'),
   'شاشة الادارة: «اسحب» للمنشور من المحدد وحده، ويختفي حتى يحدد منشور (2026-10-20)');

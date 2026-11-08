@@ -42,9 +42,9 @@ const pack = F.planPack(data.calendar, S.planLinks(data).pairs, S.planLessons);
 ok(pack && pack.rows.map(r => r.name + '·' + r.grade).join(' | ') === 'الرياضيات·العاشر | الإحصاء·الحادي عشر | الرياضيات·الحادي عشر',
   'سطر لكل مادة لها خطة — والفلك (بلا خطة) لا يذكر', pack && pack.rows.map(r => r.name + '·' + r.grade));
 ok(!JSON.stringify(pack).includes('الفلك'), 'ولا اثر للمادة بلا خطة في النسخة');
-ok(pack.rows.every(r => Object.keys(r).sort().join() === 'grade,name,w')
+ok(pack.rows.every(r => Object.keys(r).sort().join() === 'grade,name,w,who') && pack.rows.every(r => Array.isArray(r.who) && r.who.length)
   && pack.rows.every(r => Object.values(r.w).every(ls => ls.every(l => Object.keys(l).sort().join() === 'p,t'))),
-  'السطر: اسمه وصفه ودروس اسابيعه (عنوان وحصص) وحدها');
+  'السطر: اسمه وصفه ودروس اسابيعه (عنوان وحصص) ومعلموه (who لرابط المعلم 2026-11-08) وحدها');
 ok(Object.keys(pack).sort().join() === 'rows,weeks' && pack.weeks.every(w => Object.keys(w).sort().join() === 'from,n,to'),
   'القسم: الاسابيع بتواريخها والسطور — لا نسبة ولا ما قطع ولا «يجب رفع الخطة»');
 ok(!/pct|percent|done|missing|unpicked|choose|behind|ahead|pace|teachers|classes|source|key/i.test(JSON.stringify(Object.keys(pack)) + JSON.stringify(pack.rows.map(r => Object.keys(r)))),

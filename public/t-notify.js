@@ -83,16 +83,11 @@
     var box = el('div', 'stack'), note = el('div', 'msg');
     wrap.appendChild(box); wrap.appendChild(note);
     var top = 0, loaded = false, want = false, busy = false;
-    function fetchList(){
-      if (busy) return; busy = true;
-      api('GET', API + '/messages').then(function(r){
-      busy = false;
-      if (!r.ok) { say(note, 'تعذر جلب الرسائل. أعد فتح الصفحة بعد قليل.'); return; }
-      say(note, '');
-      var list = r.j.messages || [], seen = r.j.seen || 0;
+    /* المعاينة من شاشة الإدارة (P.messages): القائمة كما هي، بلا جهاز ولا «جديدة» ولا جلب */
+    if (P.messages) { paint(P.messages, Infinity); return { seen: function(){} }; }
+    function paint(list, seen){
       box.textContent = ''; top = 0;
       if (!list.length) box.appendChild(el('p', 'lead2', 'لا رسائل بعد.'));
-      if (onCount) onCount(list.filter(function(m){ return m.id > seen; }).length);
       list.forEach(function(m){
         var fresh = m.id > seen;
         var c = el('div', 'pick due' + (fresh ? ' new' : ''));
@@ -103,6 +98,16 @@
         box.appendChild(c);
         if (m.id > top) top = m.id;
       });
+    }
+    function fetchList(){
+      if (busy) return; busy = true;
+      api('GET', API + '/messages').then(function(r){
+      busy = false;
+      if (!r.ok) { say(note, 'تعذر جلب الرسائل. أعد فتح الصفحة بعد قليل.'); return; }
+      say(note, '');
+      var list = r.j.messages || [], seen = r.j.seen || 0;
+      if (onCount) onCount(list.filter(function(m){ return m.id > seen; }).length);
+      paint(list, seen);
       loaded = true;
       if (want || (isOpen && isOpen())) seenNow();
       }).catch(function(){ busy = false; say(note, 'لا اتصال بالإنترنت. افتح الصفحة حين تتصل.'); });

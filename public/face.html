@@ -630,7 +630,8 @@
       if (r.ok) {
         TNAME = r.j.name || ''; if (SNAP) paintPlan();
         /* «الرسائل» ثم إعدادات الإشعارات في آخره · «المواعيد» (قرار المستخدم 2026-11-09) — والرقم على التبويب بما لم يُقرأ */
-        MSGS = N.messages($('notify'), r.j, function (k) { var b = $('tbadge'); b.textContent = k; b.hidden = !k; });
+        MSGS = N.messages($('notify'), r.j, function (k) { var b = $('tbadge'); b.textContent = k; b.hidden = !k; },
+          function () { return !$('paneN').hidden; });
         N.settings($('notify'), r.j);
         N.dates($('dates'), r.j);
         if (!$('paneN').hidden) MSGS.seen();

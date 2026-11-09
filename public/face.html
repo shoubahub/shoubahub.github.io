@@ -9,8 +9,8 @@
 <title>واجهة الشعبة</title>
 <meta name="theme-color" content="#E8A33D" /><!-- --shouba-amber: أعلى تدرج الترويسة -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=141" />
-<link rel="stylesheet" href="face.css?v=141" />
+<link rel="stylesheet" href="identity/tokens.css?v=142" />
+<link rel="stylesheet" href="face.css?v=142" />
 <!-- ===========================================================================
      واجهة الشعبة — صفحة الزائر (2026-10-20، الاتجاه المعتمد بعد «أنسب للعمل وليست للعرض»)
      تبويبان تحت الترويسة (#الشعبة · #الجدول): الشعبة للآن والفعاليات والحصيلة، والجدول الكامل في تبويبه.
@@ -80,6 +80,8 @@
       <div class="slices" id="planWks" role="group" aria-label="أسابيع الفصل"></div>
       <div class="planline" id="planLine"></div>
       <div class="tbl ptbl" id="plan"></div>
+      <!-- «الخطة كاملة ›» على رابط المعلم وحده (2026-11-08، طلب المستخدم: «اظهر خيار اظهار الخطة كاملة كما في لوحتي»): خطة مواده بأسابيعها كلها -->
+      <a class="fall" id="planAll" href="#" hidden>الخطة كاملة ›</a>
     </section>
 
 
@@ -92,6 +94,8 @@
       <h2>فعاليات قادمة</h2>
       <div class="soon" id="soon"></div>
     </section>
+
+    <p class="fnote" id="evNone" hidden>لا فعاليات منشورة الآن.</p>
 
     <section class="fsec" id="statSec" hidden>
       <h2>حصيلة العام</h2>
@@ -133,9 +137,9 @@
   <button type="button" class="close" id="shClose">أغلق</button>
 </div>
 
-<script src="icons.js?v=141"></script>
-<script src="face-data.js?v=141"></script>
-<script src="t-notify.js?v=141"></script>
+<script src="icons.js?v=142"></script>
+<script src="face-data.js?v=142"></script>
+<script src="t-notify.js?v=142"></script>
 <script>
 (function () {
   var F = window.ShoubaFace, SNAP = null, FILES = 'api/pub/file/', DONE = [];
@@ -194,7 +198,8 @@
     var t = SNAP.team || {}, out = '';
     if (t.head) out += '<div class="tm head">' + avatar(t.head, 'lg') + '<b>' + esc((t.head.title || 'أ.') + ' ' + t.head.name) + '</b><span>رئيس الشعبة</span></div>';
     (t.people || []).forEach(function (p) { out += '<div class="tm">' + avatar(p, '') + '<b>' + esc(title(p.name)) + '</b></div>'; });
-    $('team').innerHTML = out; $('team').hidden = !out;
+    /* رابط المعلم بلا صف الفريق (2026-11-09، طلب المستخدم): عبارة الاسبوع (خانة الاسبوع تحته) مكانه */
+    $('team').innerHTML = out; $('team').hidden = !out || !!TOKEN;
   }
 
   /* ② خانة الاسبوع */
@@ -316,8 +321,25 @@
     });
     return rows.length ? { weeks: P.weeks, rows: rows } : null;
   }
+  /* الخطة كاملة (رابط المعلم): كل اسبوع فيه دروس بعنوانه وتاريخه، وتحته سطر لكل مادة ودروسها بحصصها — والاسبوع الجاري عنبري */
+  function planAll() {
+    var PL = myPlan(); if (!PL) return;
+    var now = F.planNow(PL, today()), out = '';
+    (PL.weeks || []).forEach(function (w) {
+      var P = F.planWeek(PL, w.n); if (!P || !P.rows.length) return;
+      out += '<div class="fpw' + (now && +now.n === +w.n ? ' now' : '') + '"><h4>الأسبوع ' + esc(w.n) + '<small>' + esc(weekRange(w.from, w.to)) + '</small></h4>'
+        + P.rows.map(function (r) {
+          return '<div class="r"><b>' + esc(r.name) + ' <small>' + esc(r.grade) + '</small></b>'
+            + r.lessons.map(function (l) { return '<div class="l"><span>' + esc(F.planTitle(l.t)) + '</span><em>' + (l.p ? esc(l.p) + ' ح' : '') + '</em></div>'; }).join('') + '</div>';
+        }).join('') + '</div>';
+    });
+    openSheet('الخطة كاملة', out || '<p class="fnote">لا دروس في خطتك.</p>');
+    var cur = $('shBody').querySelector('.fpw.now'); if (cur) $('shBody').scrollTop = cur.offsetTop - $('shBody').offsetTop;
+  }
+  $('planAll').addEventListener('click', function (e) { e.preventDefault(); planAll(); });
   function paintPlan() {
     var PL = myPlan(), now = F.planNow(PL, today()), box = $('plan');
+    $('planAll').hidden = !TOKEN || !now;
     $('planSec').hidden = !now;
     box.innerHTML = ''; $('planWks').innerHTML = '';
     if (!now) return;
@@ -368,7 +390,7 @@
   /* ⑧ الجدول (2026-11-06، طلب المستخدم: «ننقل الجدول الموجود بلوحتي … كما هو بكل محتوياته وتنسيقاته وتوقيتاته»):
      كجدول حصص اليوم في اللوحة (board.html paintTable) بأنماطه منقولة الى face.css — صف لكل حصة وفرصة بوقت بدئها،
      والجارية مظللة وعليها «باقي mm:ss»، والماضية «انتهت»، وشارة بسطرين لكل من يدرس (اسمه الاخير بلونه الثابت · مادته وفصله)
-     وعدد المتفرغين. ويوم الزائر يطوى كاللوحة (الجارية والتالية) وزر «افرد الجدول كاملا» يفتح الباقي؛ وبقية الايام مفرودة.
+     وعدد المتفرغين (ورابط المعلم بلاه — 2026-11-09، طلب المستخدم). ويوم الزائر يطوى كاللوحة (الجارية والتالية) وزر «افرد الجدول كاملا» يفتح الباقي؛ وبقية الايام مفرودة.
      وشريط الايام فوقه لان الزائر يرى غير يومه، ولمسة الشارة تعرض جدول اسبوع معلمها */
   var ORD = ['الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة', 'السادسة', 'السابعة', 'الثامنة'], dayAll = false, dayOpen = {};
   function lastName(n) { var p = String(n || '').trim().split(' ').filter(Boolean); return p[p.length - 1] || n; }
@@ -413,7 +435,7 @@
             + '<span class="nm">' + esc(lastName(x.p.name)) + '</span><span class="l2"><span class="sub">' + esc(sl.subject) + '</span>'
             + '<span class="cl">' + num(c[1] || '') + (c[2] ? ' <i>' + esc(c[2]) + '</i>' : '') + '</span></span></span>';
         }).join('')
-        + (free > 0 ? '<span class="freechip">' + count(free, ['متفرغ', 'متفرغان', 'متفرغون', 'متفرغا']) + '</span>' : '')
+        + (free > 0 && !TOKEN ? '<span class="freechip">' + count(free, ['متفرغ', 'متفرغان', 'متفرغون', 'متفرغا']) + '</span>' : '')
         + '</div></div>';
     });
     if (ended && !dayAll) html = '<div class="empty">انتهى دوام اليوم — افرد الجدول لمراجعته.</div>';
@@ -511,7 +533,9 @@
     function unit(n, f) { return n === 1 ? f[0] : n === 2 ? f[1] : (n >= 3 && n <= 10) ? f[2] : f[3]; }
     if (m) out += '<div class="stat"><b dir="ltr">' + m + '</b><span>' + unit(m, ['اجتماع عقد', 'اجتماعان عقدا', 'اجتماعات عقدت', 'اجتماعا عقد']) + '</span></div>';
     if (e) out += '<div class="stat"><b dir="ltr">' + e + '</b><span>' + unit(e, ['فعالية أقيمت', 'فعاليتان أقيمتا', 'فعاليات أقيمت', 'فعالية أقيمت']) + '</span></div>';
-    $('stats').innerHTML = out; $('statSec').hidden = !out;
+    /* رابط المعلم: «الشعبة» للفعاليات وحدها (2026-11-09، طلب المستخدم) — بلا حصيلة، وبلا فعاليات سطر يقول ذلك */
+    $('stats').innerHTML = out; $('statSec').hidden = !out || !!TOKEN;
+    $('evNone').hidden = !TOKEN || !!(v.soon.length || v.done.length);
   }
 
   /* التبويبان برابط: #الشعبة (الافتراضي) · #الجدول — فيفتح كل منهما مباشرة، ويعمل رجوع المتصفح بينهما */
@@ -557,6 +581,9 @@
      من api/t/<الرمز>/face، ومعها تبويب «إشعاراتي» يبنيه t-notify.js بعناصر صفحة المعلم */
   if (TOKEN) {
     $('tabN').hidden = false;
+    /* رابط المعلم (2026-11-09، طلب المستخدم: «في نفس واجهة الجدول ضع الخطة اسفله بحيث لو فرد الجدول تنزل الخطة»):
+       قسم الخطة في تبويب «الجدول» تحت جدول اليوم — فيدفعه الجدول مفرودا الى اسفل */
+    $('paneJ').appendChild($('planSec'));
     fetch('api/t/' + TOKEN + '/face', { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) { if (j && j.data) start(j.data); else gone(); })

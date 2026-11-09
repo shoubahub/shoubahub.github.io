@@ -78,15 +78,21 @@
     var day = d.toDateString() === n.toDateString() ? 'اليوم' : d.getDate() + ' / ' + (d.getMonth() + 1);
     return day + ' · ' + p(d.getHours()) + ':' + p(d.getMinutes());
   }
-  function messages(wrap, P, onCount){
+  function messages(wrap, P, onCount, isOpen){
     wrap.appendChild(el('div', 'part', 'الرسائل'));
     var box = el('div', 'stack'), note = el('div', 'msg');
     wrap.appendChild(box); wrap.appendChild(note);
-    var top = 0, loaded = false, want = false;
-    api('GET', API + '/messages').then(function(r){
+    var top = 0, loaded = false, want = false, busy = false;
+    function fetchList(){
+      if (busy) return; busy = true;
+      api('GET', API + '/messages').then(function(r){
+      busy = false;
       if (!r.ok) { say(note, 'تعذر جلب الرسائل. أعد فتح الصفحة بعد قليل.'); return; }
+      say(note, '');
       var list = r.j.messages || [], seen = r.j.seen || 0;
+      box.textContent = ''; top = 0;
       if (!list.length) box.appendChild(el('p', 'lead2', 'لا رسائل بعد.'));
+      if (onCount) onCount(list.filter(function(m){ return m.id > seen; }).length);
       list.forEach(function(m){
         var fresh = m.id > seen;
         var c = el('div', 'pick due' + (fresh ? ' new' : ''));
@@ -98,10 +104,23 @@
         if (m.id > top) top = m.id;
       });
       loaded = true;
-      if (want) seenNow();
-    }).catch(function(){ say(note, 'لا اتصال بالإنترنت. افتح الصفحة حين تتصل.'); });
+      if (want || (isOpen && isOpen())) seenNow();
+      }).catch(function(){ busy = false; say(note, 'لا اتصال بالإنترنت. افتح الصفحة حين تتصل.'); });
+    }
+    fetchList();
+    /* رسالة وصلت والصفحة مفتوحة في الخلفية (رصد معاينة السلوك، النسخة 0.46.0 · بناء 145): تُجلب من جديد
+       حين يعود إليها، وحين يلمس إشعاراً فيرسل عامل الخدمة رابطه (t-sw.js) فتنتقل إلى تبويبه */
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden) fetchList(); });
+    if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function(e){
+      var u = e.data && e.data.open; if (!u) return;
+      try { u = new URL(u, location.href); } catch (x) { return; }
+      if (u.pathname !== location.pathname) { location.href = u.href; return; }
+      if (u.hash && u.hash !== location.hash) location.hash = u.hash;
+      fetchList();
+    });
     function seenNow(){
       if (!loaded) { want = true; return; }
+      want = false;
       if (onCount) onCount(0);
       if (top) api('POST', API + '/seen', { id: top }).catch(function(){});
     }
@@ -282,7 +301,7 @@
 
   /* صفحة بلا تبويبات (t.html — الواجهة غير منشورة): الأقسام متتالية، والرسائل تُعد مقروءة بفتحها */
   function mount(wrap, P){
-    messages(wrap, P).seen();
+    messages(wrap, P, null, function(){ return true; }).seen();
     dates(wrap, P);
     settings(wrap, P);
   }

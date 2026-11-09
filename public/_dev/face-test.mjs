@@ -139,9 +139,12 @@ ok((admT.match(/حدد فعالية أولا/g) || []).length === 1 && !admT.inc
     'رابط المعلم: يفتح على «الجدول»، وبلا «الآن في الشعبة» (2026-11-08)');
   ok(fh.includes('function myPlan()') && fh.includes('r.who ? r.who.indexOf(TNAME) > -1') && fh.includes("if (!TNAME) return null;"),
     'رابط المعلم: خطط مواده وحدها، ولا خطة حتى يعرف اسمه (2026-11-08)');
-  ok(fh.includes("$('paneJ').appendChild($('planSec'));") && fh.includes("$('team').hidden = !out || !!TOKEN;") && fh.includes("$('statSec').hidden = !out || !!TOKEN;")
+  ok(fh.includes("$('paneJ').appendChild($('planSec'));") && fh.includes("$('teamSec').hidden = !out || !!TOKEN;") && fh.includes("$('statSec').hidden = !out || !!TOKEN;")
      && fh.includes('id="planAll"') && fh.includes("$('planAll').hidden = !TOKEN || !now;") && fh.includes('id="evNone"') && fh.includes("free > 0 && !TOKEN ?"),
-    'رابط المعلم: الخطة تحت جدول اليوم و«الخطة كاملة ›»، و«الشعبة» للفعاليات، وبلا صف الفريق (2026-11-09)'); }
+    'رابط المعلم: الخطة تحت جدول اليوم و«الخطة كاملة ›»، و«الشعبة» للفعاليات، وبلا صف الفريق (2026-11-09)');
+  ok(fh.includes("TEAM = out; $('team').hidden = true;") && fh.includes('id="teamSec"') && fh.indexOf('id="teamSec"') > fh.indexOf('id="doneSec"')
+     && fh.includes("openSheet('فريق الشعبة'"),
+    'الواجهة: الفريق سطر تحت «فعاليات أقيمت» يفتح دوائره في اللوحة السفلية، والاعلى لعبارة الاسبوع (2026-11-09)'); }
 ok(admT.includes("snap = add ? snapshot(f) : F.pullFrom(pubNow(), evList(), ids)"), 'شاشة الادارة: «اسحب» من المنشور نفسه لا من البيانات الحالية (2026-11-08)');
 ok(admT.includes('var ids = only || (add ? SEL : pubSel())') && admT.includes('if (!add && !ids.length) return;') && admT.includes('pull.hidden = !k'),
   'شاشة الادارة: «اسحب» للمنشور من المحدد وحده، ويختفي حتى يحدد منشور (2026-10-20)');

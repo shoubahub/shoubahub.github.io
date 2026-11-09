@@ -95,6 +95,19 @@
 .fteam b{font-size:12.5px;font-weight:700;color:var(--shouba-navy);line-height:1.45;
   display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .fteam span{font-size:11px;font-weight:700;color:var(--shouba-label);margin-top:-4px}
+/* سطر الفريق تحت «فعاليات أقيمت» (2026-11-09): دوائر متراكبة واسم القسم وعدده وسهم — ولمسته تفتح الفريق في اللوحة السفلية */
+.fteamrow{width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--shouba-line);border-radius:16px;
+  background:var(--shouba-paper-grad);font-family:var(--font-ar);text-align:right;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.fteamrow:active{background:rgba(22,69,110,.05)}
+.fteamrow .stack{display:flex;flex:none}
+.fteamrow .av{width:34px;height:34px;border-radius:999px;object-fit:cover;display:grid;place-items:center;background:var(--shouba-paper);
+  border:2px solid var(--shouba-canvas);font-size:13px;font-weight:800;color:var(--shouba-navy)}
+.fteamrow .av + .av{margin-inline-start:-10px}
+.fteamrow .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.fteamrow .tx b{font-size:14px;font-weight:800;color:var(--shouba-navy)}
+.fteamrow .tx small{font-size:12px;font-weight:600;color:var(--shouba-label)}
+.fteamrow .chev{flex:none;color:var(--shouba-hint);font-size:16px;font-weight:700}
+.fteam.insheet{margin:4px 0 8px}
 
 /* منتقي الايام في تبويب الجدول: تتقاسم الايام العرض بلا تمرير */
 .days{display:flex;gap:6px;margin-bottom:14px}

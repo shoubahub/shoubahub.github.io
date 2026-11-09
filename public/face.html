@@ -9,8 +9,8 @@
 <title>واجهة الشعبة</title>
 <meta name="theme-color" content="#E8A33D" /><!-- --shouba-amber: أعلى تدرج الترويسة -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=146" />
-<link rel="stylesheet" href="face.css?v=146" />
+<link rel="stylesheet" href="identity/tokens.css?v=147" />
+<link rel="stylesheet" href="face.css?v=147" />
 <!-- ===========================================================================
      واجهة الشعبة — صفحة الزائر (2026-10-20، الاتجاه المعتمد بعد «أنسب للعمل وليست للعرض»)
      تبويبان تحت الترويسة (#الشعبة · #الجدول): الشعبة للآن والفعاليات والحصيلة، والجدول الكامل في تبويبه.
@@ -149,9 +149,9 @@
   <button type="button" class="close" id="shClose">أغلق</button>
 </div>
 
-<script src="icons.js?v=146"></script>
-<script src="face-data.js?v=146"></script>
-<script src="t-notify.js?v=146"></script>
+<script src="icons.js?v=147"></script>
+<script src="face-data.js?v=147"></script>
+<script src="t-notify.js?v=147"></script>
 <script>
 (function () {
   var F = window.ShoubaFace, SNAP = null, FILES = 'api/pub/file/', DONE = [];
@@ -565,8 +565,8 @@
     try { h = decodeURIComponent(location.hash.slice(1)); } catch (e) {}
     /* رابط المعلم يفتح على «الجدول» (2026-11-08، طلب المستخدم) — والزائر على «الشعبة» */
     /* «#إشعاراتي» القديم (روابط وإشعارات سابقة) يفتح «الرسائل» */
-    var real = TOKEN && TOKEN !== 'preview';
-    var n = real && (h === 'الرسائل' || h === 'إشعاراتي'), m = real && h === 'المواعيد';
+    /* ومعاينة المعلم من شاشة الإدارة بتبويباته الأربعة (2026-11-09، طلب المستخدم: «اريد ان تظهر حسب اخر تحديث») */
+    var n = !!TOKEN && (h === 'الرسائل' || h === 'إشعاراتي'), m = !!TOKEN && h === 'المواعيد';
     var j = !n && !m && (h === 'الجدول' || (!!TOKEN && h !== 'الشعبة')), s = !n && !m && !j;
     $('paneS').hidden = !s; $('paneJ').hidden = !j; $('paneN').hidden = !n; $('paneM').hidden = !m;
     $('tabS').classList.toggle('on', s); $('tabJ').classList.toggle('on', j); $('tabN').classList.toggle('on', n); $('tabM').classList.toggle('on', m);
@@ -604,7 +604,18 @@
        يعرضها كما يراها من رابطه — بلا «إشعاراتي» (لا جهاز ولا اشتراك في المعاينة) */
     var as = (location.search.match(/[?&]as=([^&]*)/) || [])[1];
     if (as) { try { TNAME = decodeURIComponent(as); } catch (e) {} }
-    if (TNAME) { TOKEN = 'preview'; $('paneJ').appendChild($('planSec')); }
+    if (TNAME) {
+      TOKEN = 'preview'; $('paneJ').appendChild($('planSec'));
+      /* «الرسائل» بما أُرسل إليه، و«المواعيد» بمواعيده وأيام المراقبة — بلا إعدادات الإشعارات (لا جهاز في المعاينة) */
+      $('tabN').hidden = false; $('tabM').hidden = false;
+      fetch('api/tpush/preview?name=' + encodeURIComponent(TNAME), { cache: 'no-store', credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (!j) return;
+          window.TNotify.messages($('notify'), { messages: j.messages || [] });
+          window.TNotify.dates($('dates'), j);
+        }).catch(function () {});
+    }
     if (snap) start(JSON.parse(JSON.stringify(snap))); else gone();
     return;
   }

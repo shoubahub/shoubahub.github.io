@@ -275,6 +275,13 @@ async function run() {
     await call('POST', '/api/t/' + tokS + '/seen', DS, { id: 1 });
     ok((await call('GET', '/api/t/' + tokS + '/messages', DS)).json.seen === r.json.messages[0].id, 'ولا يرجع إلى الوراء');
     ok((await call('POST', '/api/t/' + tokS + '/seen', bad.cookie, { id: 1 })).status === 403, 'ولا يغيّره غير جهازه');
+    r = await call('GET', '/api/tpush/preview?name=' + encodeURIComponent('سالم العلي'), A);
+    ok(r.status === 200 && r.json.messages.length === 2 && r.json.messages[0].title === 'تذكير' && Array.isArray(r.json.deadlines)
+      && r.json.duty && Array.isArray(r.json.duty.days), 'معاينة المعلم من شاشة الإدارة: رسائله ومواعيده بجلسة رئيس الشعبة', r.json);
+    ok((await call('GET', '/api/tpush/preview?name=' + encodeURIComponent('مجهول'), A)).status === 404
+      && (await call('GET', '/api/tpush/preview?name=' + encodeURIComponent('سالم العلي'), B)).status === 404
+      && (await call('GET', '/api/tpush/preview?name=' + encodeURIComponent('سالم العلي'))).status === 401,
+      'ولا يعاين غير معلمي شعبته، ولا من خارج التجربة، ولا بلا جلسة');
     await call('PUT', '/api/t/' + tokS + '/prefs', DS, { pre: false, start: false, end: false, endpoint: SUB(3).endpoint });
     sent.length = 0;
     await call('POST', '/api/tpush/send', A, { to: ['سالم العلي'], body: 'رسالة' });

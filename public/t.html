@@ -32,6 +32,10 @@
   [hidden]{display:none !important}
   /* موعد تسليم للعرض: بطاقة مسطحة بلا اختيار ولا ظل ضغط (المطوّر البصري 2026-11-06) */
   .pick.due{cursor:default;background:var(--shouba-paper);border:1px solid var(--shouba-line);box-shadow:none}
+  /* الرسائل (2026-11-09): نصها تحت عنوانها، والجديدة بحد كحلي */
+  .pick.due .tx p{margin:2px 0 0;font-size:13.5px;font-weight:500;color:var(--shouba-ink);line-height:1.8;white-space:pre-wrap;text-align:right}
+  .pick.due.new{border-color:var(--shouba-navy)}
+  .pick.due.new small{color:var(--shouba-navy);font-weight:700}
 </style>
 </head>
 <body class="framed">

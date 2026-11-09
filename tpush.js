@@ -304,6 +304,15 @@ function cleanSub(s) {
   if (String(k.p256dh).length > 200 || String(k.auth).length > 100) return null;
   return { endpoint: ep, p256dh: String(k.p256dh), auth: String(k.auth) };
 }
+/* «المواعيد»: أيام مراقبة الشعبة وفرصها بأوقاتها (duty.js) */
+function dutyOf(data) {
+  return { days: (ref().days || []).filter(d => (data.duty || {})[d]),
+    breaks: require('./duty').breaksOf(data.stage).map(b => ({ label: b.label, from: b.from, to: b.to })) };
+}
+function msgsOf(userId, name) {
+  return db.prepare('SELECT id, title, body, at FROM teacher_msgs WHERE user_id = ? AND name = ? ORDER BY id DESC LIMIT 500')
+    .all(userId, name).map(r => ({ id: r.id, title: r.title, body: r.body, at: iso(r.at) }));
+}
 function clip(s, n) { return String(s == null ? '' : s).replace(/\s+\n/g, '\n').trim().slice(0, n); }
 
 function routes(app, requireUser) {
@@ -325,6 +334,14 @@ function routes(app, requireUser) {
     return db.prepare("SELECT rowid AS id, label, created_at FROM teacher_devices WHERE token = ? AND state = 'pending' ORDER BY created_at")
       .all(token).map(d => ({ id: d.id, label: d.label, at: iso(d.created_at) }));
   }
+
+  /* ①أ «عاين كما يراها المعلم» (2026-11-09، طلب المستخدم: «اريد ان تظهر حسب اخر تحديث»): «الرسائل» و«المواعيد»
+     بما يراه المعلم من رابطه — بجلسة رئيس الشعبة، لمعلم من شعبته */
+  app.get('/api/tpush/preview', requireUser, gate, (req, res) => {
+    const data = dataOf(req.user.id), name = String(req.query.name || '');
+    if (teachersOf(data).indexOf(name) < 0) return res.status(404).json({ error: 'ليس من معلمي شعبتك' });
+    res.json({ name, messages: msgsOf(req.user.id, name), deadlines: upcoming(data, name, push.clock().date), duty: dutyOf(data) });
+  });
 
   /* ①ب طلبات القبول المعلقة — لبند «بحاجة إلى إجراء» في اللوحة */
   app.get('/api/tpush/requests', requireUser, gate, (req, res) => {
@@ -414,8 +431,7 @@ function routes(app, requireUser) {
       devices: db.prepare('SELECT COUNT(*) AS n FROM teacher_subs WHERE token = ? AND device = ?').get(L.row.token, didOf(req)).n,
       deadlines: upcoming(L.data, L.row.name, push.clock().date),
       /* «المواعيد»: أيام مراقبة الشعبة وفرصها (duty.js) · «الرسائل»: عدد ما لم يره هذا الجهاز */
-      duty: { days: (ref().days || []).filter(d => (L.data.duty || {})[d]),
-        breaks: require('./duty').breaksOf(L.data.stage).map(b => ({ label: b.label, from: b.from, to: b.to })) },
+      duty: dutyOf(L.data),
       unread: db.prepare('SELECT COUNT(*) AS n FROM teacher_msgs WHERE user_id = ? AND name = ? AND id > ?')
         .get(L.row.user_id, L.row.name, (deviceOf(L.row.token, didOf(req)) || {}).seen || 0).n });
   });
@@ -438,9 +454,7 @@ function routes(app, requireUser) {
   /* «الرسائل»: الأرشيف كاملا، الأحدث أولا — وseen آخر ما رآه هذا الجهاز قبل فتحه، فيميز ما بعده */
   app.get('/api/t/:token/messages', (req, res) => {
     const L = A(req, res); if (!L) return;
-    const rows = db.prepare('SELECT id, title, body, at FROM teacher_msgs WHERE user_id = ? AND name = ? ORDER BY id DESC LIMIT 500')
-      .all(L.row.user_id, L.row.name).map(r => ({ id: r.id, title: r.title, body: r.body, at: iso(r.at) }));
-    res.json({ messages: rows, seen: (deviceOf(L.row.token, L.did) || {}).seen || 0 });
+    res.json({ messages: msgsOf(L.row.user_id, L.row.name), seen: (deviceOf(L.row.token, L.did) || {}).seen || 0 });
   });
   app.post('/api/t/:token/seen', (req, res) => {
     const L = A(req, res); if (!L) return;

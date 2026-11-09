@@ -9,8 +9,8 @@
 <title>واجهة الشعبة</title>
 <meta name="theme-color" content="#E8A33D" /><!-- --shouba-amber: أعلى تدرج الترويسة -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=142" />
-<link rel="stylesheet" href="face.css?v=142" />
+<link rel="stylesheet" href="identity/tokens.css?v=143" />
+<link rel="stylesheet" href="face.css?v=143" />
 <!-- ===========================================================================
      واجهة الشعبة — صفحة الزائر (2026-10-20، الاتجاه المعتمد بعد «أنسب للعمل وليست للعرض»)
      تبويبان تحت الترويسة (#الشعبة · #الجدول): الشعبة للآن والفعاليات والحصيلة، والجدول الكامل في تبويبه.
@@ -90,6 +90,12 @@
       <div class="done" id="done"></div>
     </section>
 
+    <!-- سطر الفريق (2026-11-09، قرار المستخدم: «عبارة الاسبوع مع وجود سطر الفريق اسفل الفعاليات التي أُقيمت»):
+         دوائر الفريق نزلت من الاعلى الى سطر واحد تفتح لمسته الفريق كاملا — والاعلى لعبارة الاسبوع -->
+    <section class="fsec" id="teamSec" hidden>
+      <button type="button" class="fteamrow" id="teamRow"></button>
+    </section>
+
     <section class="fsec" id="soonSec" hidden>
       <h2>فعاليات قادمة</h2>
       <div class="soon" id="soon"></div>
@@ -137,9 +143,9 @@
   <button type="button" class="close" id="shClose">أغلق</button>
 </div>
 
-<script src="icons.js?v=142"></script>
-<script src="face-data.js?v=142"></script>
-<script src="t-notify.js?v=142"></script>
+<script src="icons.js?v=143"></script>
+<script src="face-data.js?v=143"></script>
+<script src="t-notify.js?v=143"></script>
 <script>
 (function () {
   var F = window.ShoubaFace, SNAP = null, FILES = 'api/pub/file/', DONE = [];
@@ -194,12 +200,20 @@
     return ph ? '<img class="av ' + cls + '" alt="" src="' + ph + '" />'
       : '<span class="av ' + cls + ' ini" aria-hidden="true">' + esc(F.initial(p.name)) + '</span>';
   }
+  var TEAM = '';
+  $('teamRow').addEventListener('click', function () { openSheet('فريق الشعبة', '<div class="fteam insheet">' + TEAM + '</div>'); });
   function paintTeam() {
     var t = SNAP.team || {}, out = '';
     if (t.head) out += '<div class="tm head">' + avatar(t.head, 'lg') + '<b>' + esc((t.head.title || 'أ.') + ' ' + t.head.name) + '</b><span>رئيس الشعبة</span></div>';
     (t.people || []).forEach(function (p) { out += '<div class="tm">' + avatar(p, '') + '<b>' + esc(title(p.name)) + '</b></div>'; });
-    /* رابط المعلم بلا صف الفريق (2026-11-09، طلب المستخدم): عبارة الاسبوع (خانة الاسبوع تحته) مكانه */
-    $('team').innerHTML = out; $('team').hidden = !out || !!TOKEN;
+    /* الفريق لم يعد في الاعلى (2026-11-09، طلب المستخدم): عبارة الاسبوع مكانه، وهو سطر تحت «فعاليات أقيمت» تفتح لمسته
+       دوائره في اللوحة السفلية — ورابط المعلم بلا السطر */
+    TEAM = out; $('team').hidden = true;
+    var all = (t.head ? [t.head] : []).concat(t.people || []);
+    $('teamSec').hidden = !out || !!TOKEN;
+    $('teamRow').innerHTML = '<span class="stack" aria-hidden="true">' + all.slice(0, 4).map(function (p) { return avatar(p, 'sm'); }).join('') + '</span>'
+      + '<span class="tx"><b>فريق الشعبة</b><small>' + count(all.length, ['معلم واحد', 'معلمان', 'معلمين', 'معلما']) + '</small></span>'
+      + '<span class="chev" aria-hidden="true">‹</span>';
   }
 
   /* ② خانة الاسبوع */
@@ -574,6 +588,11 @@
     var snap = null;
     try { snap = window.parent.FACE_PREVIEW; } catch (e) {}
     FILES = 'api/files/';
+    /* معاينة واجهة المعلم (2026-11-09، طلب المستخدم: «اضافة معاينة واجهة المعلمين بجانب واجهة الزوار»): ?as=<اسمه>
+       يعرضها كما يراها من رابطه — بلا «إشعاراتي» (لا جهاز ولا اشتراك في المعاينة) */
+    var as = (location.search.match(/[?&]as=([^&]*)/) || [])[1];
+    if (as) { try { TNAME = decodeURIComponent(as); } catch (e) {} }
+    if (TNAME) { TOKEN = 'preview'; $('paneJ').appendChild($('planSec')); }
     if (snap) start(JSON.parse(JSON.stringify(snap))); else gone();
     return;
   }

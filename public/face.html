@@ -588,6 +588,11 @@
     var snap = null;
     try { snap = window.parent.FACE_PREVIEW; } catch (e) {}
     FILES = 'api/files/';
+    /* معاينة واجهة المعلم (2026-11-09، طلب المستخدم: «اضافة معاينة واجهة المعلمين بجانب واجهة الزوار»): ?as=<اسمه>
+       يعرضها كما يراها من رابطه — بلا «إشعاراتي» (لا جهاز ولا اشتراك في المعاينة) */
+    var as = (location.search.match(/[?&]as=([^&]*)/) || [])[1];
+    if (as) { try { TNAME = decodeURIComponent(as); } catch (e) {} }
+    if (TNAME) { TOKEN = 'preview'; $('paneJ').appendChild($('planSec')); }
     if (snap) start(JSON.parse(JSON.stringify(snap))); else gone();
     return;
   }

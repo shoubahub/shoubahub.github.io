@@ -11,11 +11,11 @@
 <meta name="apple-mobile-web-app-title" content="شعبة" />
 <link rel="apple-touch-icon" href="identity/assets/app-icon-approved.png" />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="identity/tokens.css?v=142" />
-<link rel="stylesheet" href="shell.css?v=142" />
-<link rel="stylesheet" href="components.css?v=142" />
-<link rel="stylesheet" href="frame.css?v=142" />
-<link rel="stylesheet" href="face.css?v=142" />
+<link rel="stylesheet" href="identity/tokens.css?v=143" />
+<link rel="stylesheet" href="shell.css?v=143" />
+<link rel="stylesheet" href="components.css?v=143" />
+<link rel="stylesheet" href="frame.css?v=143" />
+<link rel="stylesheet" href="face.css?v=143" />
 <style>
   /* ادارة واجهة الشعبة (2026-10-20، نطاق اعتمده المستخدم) — يفتحها الزر الاوسط عند من فعلت له الواجهة.
      خانة الاسبوع · فعاليات السجل (نشر وسحب لا يمس السجل) · فعاليات للواجهة وحدها · معاينة ونشر وسحب ونسخ الرابط.
@@ -47,6 +47,8 @@
           <div class="acts">
             <button type="button" class="ghost2" id="copy">انسخ الرابط</button>
             <button type="button" class="ghost2" id="preview">عاين كما يراها الزائر</button>
+            <!-- معاينة رابط المعلم (2026-11-09، طلب المستخدم): يختار معلما فيراها كما يراها من رابطه الخاص -->
+            <button type="button" class="ghost2" id="tpreview">عاين كما يراها المعلم</button>
           </div>
         </div>
 
@@ -94,21 +96,21 @@
 
   <!-- المعاينة: صفحة الزائر نفسها بالنسخة التي ستنشر -->
   <div class="pview" id="pview" hidden>
-    <div class="pbar"><span>معاينة — كما يراها الزائر، ولم تنشر بعد</span><button type="button" id="pclose">أغلق</button></div>
+    <div class="pbar"><span class="ptx"><b id="pbarTx">معاينة كما يراها الزائر</b><small id="pbarSub" hidden>لم تُنشر بعد.</small></span><button type="button" id="pclose">أغلق</button></div>
     <iframe id="pframe" title="معاينة واجهة الشعبة"></iframe>
   </div>
  </div></div>
 
-<script src="build.js?v=142"></script>
-<script src="refdata.js?v=142"></script>
-<script src="rec-templates.js?v=142"></script>
-<script src="rec-engine.js?v=142"></script>
-<script src="derive.js?v=142"></script>
-<script src="icons.js?v=142"></script>
-<script src="components.js?v=142"></script>
-<script src="rec-files.js?v=142"></script>
-<script src="plan-data.js?v=142"></script>
-<script src="face-data.js?v=142"></script>
+<script src="build.js?v=143"></script>
+<script src="refdata.js?v=143"></script>
+<script src="rec-templates.js?v=143"></script>
+<script src="rec-engine.js?v=143"></script>
+<script src="derive.js?v=143"></script>
+<script src="icons.js?v=143"></script>
+<script src="components.js?v=143"></script>
+<script src="rec-files.js?v=143"></script>
+<script src="plan-data.js?v=143"></script>
+<script src="face-data.js?v=143"></script>
 <script>
 (function () {
   var S = Shouba, F = ShoubaFace, R = window.SHOUBA_REF || {};
@@ -176,7 +178,7 @@
     var btn = $('publish'), diff = changed(), n = SEL.length, pull = $('pull'), k = pubSel().length;
     $('pubLink').textContent = link();
     $('copy').disabled = !ME;
-    $('preview').disabled = blank();
+    $('preview').disabled = blank(); $('tpreview').disabled = blank();
     $('pullAll').hidden = !(ME && ME.published);
     pull.hidden = !k || !(ME && ME.published);
     pull.disabled = BUSY;
@@ -657,8 +659,30 @@
   $('preview').addEventListener('click', function () {
     if (blank()) return;
     window.FACE_PREVIEW = snapshot();
+    /* شريط المعاينة (المطوّر البصري 2026-11-09): سطر عريض لمن يراها، وتحته «لم تُنشر بعد.» ان كان فيها ما لم ينشر */
+    $('pbarTx').textContent = 'معاينة كما يراها الزائر'; $('pbarSub').hidden = !changed();
     $('pframe').src = 'face.html?preview=1&t=' + Date.now();
     $('pview').hidden = false;
+  });
+  /* معاينة رابط المعلم: النسخة نفسها و?as=<اسمه> */
+  function openPreview(name) {
+    window.FACE_PREVIEW = snapshot();
+    $('pbarTx').textContent = 'معاينة كما يراها أ. ' + name; $('pbarSub').hidden = !changed();
+    $('pframe').src = 'face.html?preview=1&as=' + encodeURIComponent(name) + '&t=' + Date.now();
+    $('pview').hidden = false;
+  }
+  /* المعلمون من جدول النسخة (من له جدول) — ولمسة الاسم تفتح معاينته */
+  $('tpreview').addEventListener('click', function () {
+    if (blank()) return;
+    var names = (snapshot().people || []).map(function (p) { return p.name; });
+    if (!names.length) { S.toast('لا معلمين بجداول بعد — الجدول يملأ واجهة المعلم'); return; }
+    var n = el('div', 'tpick');
+    names.forEach(function (nm) {
+      var b = el('button', 'tpk'); b.type = 'button'; b.textContent = 'أ. ' + nm;
+      b.addEventListener('click', function () { S.sheet.close(); openPreview(nm); });
+      n.appendChild(b);
+    });
+    S.sheet.open('عاين كما يراها المعلم', n, { noDone: true });
   });
   $('pclose').addEventListener('click', function () { $('pview').hidden = true; $('pframe').src = 'about:blank'; });
 

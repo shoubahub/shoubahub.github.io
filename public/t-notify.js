@@ -39,16 +39,9 @@
   manifest();
 
   /* يبني القسم في wrap ببيانات P (جواب api/t/<الرمز>) */
-  function mount(wrap, P){
-    /* أُلغي جهازه والصفحة مفتوحة (رصد معاينة السلوك، النسخة 0.41.0 · بناء 139): يسأل عن حاله حين يعود إليها وكل دقيقة،
-       فإن لم يعد مقبولا أعاد التحميل فيخدمه الخادم صفحة حاله — فلا تبقى «مفعّلة على هذا الجهاز» وهي ليست كذلك */
-    function still(){
-      if (document.hidden) return;
-      api('GET', API).then(function(r){ if (r.ok && r.j.state && r.j.state !== 'ok') location.reload(); }).catch(function(){});
-    }
-    document.addEventListener('visibilitychange', still);
-    setInterval(still, 60000);
-    /* مواعيد التسليم القادمة (2026-11-06، قرار المستخدم 17:38): ما لم يسلّمه، بالأقرب — قبل الإشعارات لأنها تتغير وهي ثابتة */
+  /* «المواعيد» (2026-11-09، طلب المستخدم: «تبويب مواعيد بجانب الرسائل»): مواعيد التسليم القادمة وأيام مراقبة الشعبة */
+  function dates(wrap, P){
+    /* مواعيد التسليم القادمة (2026-11-06، قرار المستخدم 17:38): ما لم يسلّمه، بالأقرب */
     var dl = P.deadlines || [];
     wrap.appendChild(el('div', 'part', 'مواعيد التسليم'));
     if (!dl.length) wrap.appendChild(el('p', 'lead2', 'لا مواعيد تسليم قادمة.'));
@@ -63,6 +56,69 @@
       });
       wrap.appendChild(dls);
     }
+    /* أيام مراقبة الشعبة (duty.js): أيامها وفرصها بأوقاتها */
+    var du = P.duty || {}, days = du.days || [], br = du.breaks || [];
+    wrap.appendChild(el('div', 'part', 'مراقبة الشعبة'));
+    if (!days.length) wrap.appendChild(el('p', 'lead2', 'لم تُحدَّد أيام المراقبة بعد.'));
+    else {
+      var r = el('div', 'pick due');
+      r.innerHTML = '<div class="tx"><b></b><small></small></div>';
+      r.querySelector('b').textContent = days.join(' · ');
+      r.querySelector('small').textContent = br.length
+        ? 'في ' + br.map(function(b){ return b.label + ' ' + b.from + '–' + b.to; }).join('، و') : 'في الفرص';
+      var st = el('div', 'stack'); st.appendChild(r); wrap.appendChild(st);
+    }
+  }
+
+  /* «الرسائل» (2026-11-09، طلب المستخدم: «تبويب للرسائل بحيث يدخل عليه المعلم فيجد الرسالة الجديدة و الارشيف كامل»):
+     الأحدث أولا، وما لم يره هذا الجهاز «جديدة». seen() يسجل أنه رآها (حين يفتح التبويب) — onCount يحدّث رقم التبويب */
+  function when(isoAt){
+    var d = new Date(isoAt); if (isNaN(d.getTime())) return '';
+    var p = function(x){ return (x < 10 ? '0' : '') + x; }, n = new Date();
+    var day = d.toDateString() === n.toDateString() ? 'اليوم' : d.getDate() + ' / ' + (d.getMonth() + 1);
+    return day + ' · ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  function messages(wrap, P, onCount){
+    wrap.appendChild(el('div', 'part', 'الرسائل'));
+    var box = el('div', 'stack'), note = el('div', 'msg');
+    wrap.appendChild(box); wrap.appendChild(note);
+    var top = 0, loaded = false, want = false;
+    api('GET', API + '/messages').then(function(r){
+      if (!r.ok) { say(note, 'تعذر جلب الرسائل. أعد فتح الصفحة بعد قليل.'); return; }
+      var list = r.j.messages || [], seen = r.j.seen || 0;
+      if (!list.length) box.appendChild(el('p', 'lead2', 'لا رسائل بعد.'));
+      list.forEach(function(m){
+        var fresh = m.id > seen;
+        var c = el('div', 'pick due' + (fresh ? ' new' : ''));
+        c.innerHTML = '<div class="tx"><small></small><b></b><p></p></div>';
+        c.querySelector('small').textContent = (fresh ? 'جديدة · ' : '') + when(m.at);
+        c.querySelector('b').textContent = m.title;
+        c.querySelector('p').textContent = m.body;
+        box.appendChild(c);
+        if (m.id > top) top = m.id;
+      });
+      loaded = true;
+      if (want) seenNow();
+    }).catch(function(){ say(note, 'لا اتصال بالإنترنت. افتح الصفحة حين تتصل.'); });
+    function seenNow(){
+      if (!loaded) { want = true; return; }
+      if (onCount) onCount(0);
+      if (top) api('POST', API + '/seen', { id: top }).catch(function(){});
+    }
+    if (onCount) onCount(P.unread || 0);
+    return { seen: seenNow };
+  }
+
+  /* إعدادات الإشعارات: التفعيل وتنبيهات الحصة — في آخر «الرسائل» (قرار المستخدم 2026-11-09) */
+  function settings(wrap, P){
+    /* أُلغي جهازه والصفحة مفتوحة (رصد معاينة السلوك، النسخة 0.41.0 · بناء 139): يسأل عن حاله حين يعود إليها وكل دقيقة،
+       فإن لم يعد مقبولا أعاد التحميل فيخدمه الخادم صفحة حاله — فلا تبقى «مفعّلة على هذا الجهاز» وهي ليست كذلك */
+    function still(){
+      if (document.hidden) return;
+      api('GET', API).then(function(r){ if (r.ok && r.j.state && r.j.state !== 'ok') location.reload(); }).catch(function(){});
+    }
+    document.addEventListener('visibilitychange', still);
+    setInterval(still, 60000);
     wrap.appendChild(el('div', 'part', 'إشعارات الجوال'));
     var lead = el('p', 'lead2'), btn = el('button', 'btn-ghost'), msg = el('div', 'msg');
     btn.type = 'button'; btn.hidden = true;
@@ -224,5 +280,13 @@
     paint(state);
   }
 
-  window.TNotify = { token: TOKEN, api: api, load: function(){ return api('GET', API); }, mount: mount, gate: gate, el: el };
+  /* صفحة بلا تبويبات (t.html — الواجهة غير منشورة): الأقسام متتالية، والرسائل تُعد مقروءة بفتحها */
+  function mount(wrap, P){
+    messages(wrap, P).seen();
+    dates(wrap, P);
+    settings(wrap, P);
+  }
+
+  window.TNotify = { token: TOKEN, api: api, load: function(){ return api('GET', API); }, mount: mount, gate: gate, el: el,
+    messages: messages, dates: dates, settings: settings };
 })();

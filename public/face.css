@@ -511,3 +511,12 @@
 .fnotify .pick .tx small{font-size:11.5px;color:var(--shouba-hint)}
 /* موعد تسليم للعرض (المرحلة الثانية): بطاقة مسطحة بلا اختيار ولا ظل ضغط (المطوّر البصري) */
 .fnotify .pick.due{cursor:default;background:var(--shouba-paper);border:1px solid var(--shouba-line);box-shadow:none}
+
+/* «الرسائل» و«المواعيد» (2026-11-09): أربعة تبويبات على رابط المعلم تضيق فتتسع لعرض الجوال، ورقم ما لم يُقرأ على «الرسائل» */
+.ftabs .seg2:has(#tabM:not([hidden])) a{min-width:0;padding:9px 13px}
+.ftabs .tbadge{display:inline-block;min-width:18px;padding:0 5px;margin-inline-start:5px;border-radius:999px;line-height:18px;
+  background:var(--shouba-amber);color:var(--shouba-on-amber);font-size:11px;font-family:var(--font-num);vertical-align:1px}
+.ftabs .tbadge[hidden]{display:none}
+.fnotify .pick.due .tx p{margin:2px 0 0;font-size:13.5px;font-weight:500;color:var(--shouba-ink);line-height:1.8;white-space:pre-wrap;text-align:right}
+.fnotify .pick.due.new{border-color:var(--shouba-navy)}
+.fnotify .pick.due.new small{color:var(--shouba-navy);font-weight:700}

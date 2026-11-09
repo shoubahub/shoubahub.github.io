@@ -55,8 +55,10 @@
     <div class="seg2">
       <a href="#الشعبة" id="tabS" class="on">الشعبة</a>
       <a href="#الجدول" id="tabJ">الجدول</a>
-      <!-- «إشعاراتي» على رابط المعلم الخاص وحده (/t/<الرمز>، 2026-11-06 · tpush.js) — والرابط العام بلا هذا التبويب -->
-      <a href="#إشعاراتي" id="tabN" hidden>إشعاراتي</a>
+      <!-- «الرسائل» و«المواعيد» على رابط المعلم الخاص وحده (/t/<الرمز>، tpush.js) — والرابط العام بلا هذين التبويبين.
+           كان «إشعاراتي» (2026-11-06)، وصار تبويبين (2026-11-09، طلب المستخدم: «تبويب للرسائل … و تبويب مواعيد بجانب الرسائل») -->
+      <a href="#الرسائل" id="tabN" hidden>الرسائل<span class="tbadge" id="tbadge" hidden></span></a>
+      <a href="#المواعيد" id="tabM" hidden>المواعيد</a>
     </div>
   </nav>
 
@@ -122,6 +124,10 @@
     <section class="fsec fnotify" id="notify"></section>
    </div>
 
+   <div class="fpane" id="paneM" hidden>
+    <section class="fsec fnotify" id="dates"></section>
+   </div>
+
     <footer class="ffoot">
       <img src="identity/assets/logo-vec-color.svg" alt="شعبة" />
       <span>صفحة منشورة من منصة شعبة</span>
@@ -150,6 +156,7 @@
 (function () {
   var F = window.ShoubaFace, SNAP = null, FILES = 'api/pub/file/', DONE = [];
   var TOKEN = (/^\/t\/[0-9a-f]{16}\/?$/.test(location.pathname) && window.TNotify) ? window.TNotify.token : '';
+  var MSGS = null;   /* «الرسائل» (t-notify.js) — seen() حين يُفتح تبويبها */
   /* سهما التلميح كما في صف «الآن» — ينسخان من الصفحة لمعرض كل بطاقة */
   var XARR = [].map.call(document.querySelectorAll('#nowSec .xarr'), function (b) { return b.outerHTML; }).join('');
 
@@ -557,15 +564,20 @@
     var h = '';
     try { h = decodeURIComponent(location.hash.slice(1)); } catch (e) {}
     /* رابط المعلم يفتح على «الجدول» (2026-11-08، طلب المستخدم) — والزائر على «الشعبة» */
-    var n = TOKEN && h === 'إشعاراتي', j = !n && (h === 'الجدول' || (!!TOKEN && h !== 'الشعبة')), s = !n && !j;
-    $('paneS').hidden = !s; $('paneJ').hidden = !j; $('paneN').hidden = !n;
-    $('tabS').classList.toggle('on', s); $('tabJ').classList.toggle('on', j); $('tabN').classList.toggle('on', n);
+    /* «#إشعاراتي» القديم (روابط وإشعارات سابقة) يفتح «الرسائل» */
+    var real = TOKEN && TOKEN !== 'preview';
+    var n = real && (h === 'الرسائل' || h === 'إشعاراتي'), m = real && h === 'المواعيد';
+    var j = !n && !m && (h === 'الجدول' || (!!TOKEN && h !== 'الشعبة')), s = !n && !m && !j;
+    $('paneS').hidden = !s; $('paneJ').hidden = !j; $('paneN').hidden = !n; $('paneM').hidden = !m;
+    $('tabS').classList.toggle('on', s); $('tabJ').classList.toggle('on', j); $('tabN').classList.toggle('on', n); $('tabM').classList.toggle('on', m);
     $('tabS').setAttribute('aria-current', s ? 'page' : 'false'); $('tabJ').setAttribute('aria-current', j ? 'page' : 'false');
-    $('tabN').setAttribute('aria-current', n ? 'page' : 'false');
+    $('tabN').setAttribute('aria-current', n ? 'page' : 'false'); $('tabM').setAttribute('aria-current', m ? 'page' : 'false');
+    /* فتح «الرسائل» يعدّها مقروءة على هذا الجهاز، فيختفي رقم التبويب */
+    if (n && MSGS) MSGS.seen();
   }
   window.addEventListener('hashchange', route);
   /* ⚠ <base href="../"> يجعل «#الجدول» رابطا الى جذر المنصة — فيكتب الرابط كاملا بمسار الصفحة نفسها */
-  [['tabS', 'الشعبة'], ['tabJ', 'الجدول'], ['toJ', 'الجدول'], ['tabN', 'إشعاراتي']].forEach(function (x) {
+  [['tabS', 'الشعبة'], ['tabJ', 'الجدول'], ['toJ', 'الجدول'], ['tabN', 'الرسائل'], ['tabM', 'المواعيد']].forEach(function (x) {
     $(x[0]).setAttribute('href', location.pathname + location.search + '#' + encodeURIComponent(x[1]));
   });
 
@@ -599,7 +611,7 @@
   /* رابط المعلم الخاص /t/<الرمز> (2026-11-06، قرار المستخدم: «الا يمكن دمجهم برابط واحد؟»): الواجهة نفسها
      من api/t/<الرمز>/face، ومعها تبويب «إشعاراتي» يبنيه t-notify.js بعناصر صفحة المعلم */
   if (TOKEN) {
-    $('tabN').hidden = false;
+    $('tabN').hidden = false; $('tabM').hidden = false;
     /* رابط المعلم (2026-11-09، طلب المستخدم: «في نفس واجهة الجدول ضع الخطة اسفله بحيث لو فرد الجدول تنزل الخطة»):
        قسم الخطة في تبويب «الجدول» تحت جدول اليوم — فيدفعه الجدول مفرودا الى اسفل */
     $('paneJ').appendChild($('planSec'));
@@ -615,7 +627,15 @@
     N.load().then(function (r) {
       /* أُلغي جهازه والصفحة مفتوحة (2026-11-08): تعود فيخدمه الخادم صفحة حاله */
       if (r.ok && r.j.state !== 'ok') return location.reload();
-      if (r.ok) { TNAME = r.j.name || ''; if (SNAP) paintPlan(); return N.mount($('notify'), r.j); }
+      if (r.ok) {
+        TNAME = r.j.name || ''; if (SNAP) paintPlan();
+        /* «الرسائل» ثم إعدادات الإشعارات في آخره · «المواعيد» (قرار المستخدم 2026-11-09) — والرقم على التبويب بما لم يُقرأ */
+        MSGS = N.messages($('notify'), r.j, function (k) { var b = $('tbadge'); b.textContent = k; b.hidden = !k; });
+        N.settings($('notify'), r.j);
+        N.dates($('dates'), r.j);
+        if (!$('paneN').hidden) MSGS.seen();
+        return;
+      }
       if (r.status === 404) {
         $('notify').appendChild(N.el('div', 'part', 'هذا الرابط لم يعد يعمل'));
         $('notify').appendChild(N.el('p', 'lead2', 'اطلب من رئيس الشعبة رابطاً جديداً.'));

@@ -47,6 +47,15 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
   CREATE INDEX IF NOT EXISTS teacher_subs_token ON teacher_subs (token);
+  CREATE TABLE IF NOT EXISTS teacher_msgs (       -- أرشيف رسائل رئيس الشعبة (2026-11-09) — بالمعلم لا بالرابط: يبقى بعد إبطاله
+    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    name    TEXT NOT NULL,
+    title   TEXT NOT NULL,
+    body    TEXT NOT NULL,
+    at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS teacher_msgs_who ON teacher_msgs (user_id, name);
   CREATE TABLE IF NOT EXISTS teacher_devices (
     did        TEXT NOT NULL,                  -- كعكة الجهاز
     token      TEXT NOT NULL,
@@ -69,6 +78,9 @@ db.exec(`
 if (!db.prepare("SELECT 1 FROM pragma_table_info('teacher_subs') WHERE name = 'device'").get())
   db.exec('ALTER TABLE teacher_subs ADD COLUMN device TEXT');
 db.exec('DELETE FROM teacher_subs WHERE device IS NULL');
+/* آخر رسالة رآها الجهاز في «الرسائل» — وما بعدها رقم على التبويب (2026-11-09) */
+if (!db.prepare("SELECT 1 FROM pragma_table_info('teacher_devices') WHERE name = 'seen'").get())
+  db.exec('ALTER TABLE teacher_devices ADD COLUMN seen INTEGER NOT NULL DEFAULT 0');
 
 const TOKEN_RE = /^[0-9a-f]{16}$/;
 const DID_RE = /^[0-9a-f]{32}$/;
@@ -249,7 +261,7 @@ function dueDeadlines(data, name, c, token) {
   const out = [];
   if (!data || teachersOf(data).indexOf(name) === -1) return out;
   if (c.min < DL_FROM || c.min >= DL_TO) return out;
-  const url = '/t/' + (token || '') + '#' + encodeURIComponent('إشعاراتي');
+  const url = '/t/' + (token || '') + '#' + encodeURIComponent('المواعيد');
   deadlinesOf(data, name).forEach(d => {
     const title = String(d.title).trim(), m = { body: title, tag: 'dl' + d.id, url, ttl: 12 * 3600, urgency: 'high' };
     if (c.date === alertDay(d.date))
@@ -276,7 +288,7 @@ function tick(now) {
     if (!L) return;
     due(L.data, L.row.name, prefsOf(L.row), c, L.row.token).concat(dueDeadlines(L.data, L.row.name, c, L.row.token))
       /* يوم مراقبة الشعبة (duty.js، 2026-11-09): لا يطفئه المعلم — فلا يمر باختياره */
-      .concat(require('./duty').dutyDue(L.data, c, push.schoolDay(L.data, c), '/t/' + L.row.token))
+      .concat(require('./duty').dutyDue(L.data, c, push.schoolDay(L.data, c), '/t/' + L.row.token + '#' + encodeURIComponent('المواعيد')))
       .forEach(j => jobs.push(once(L.row.token, j.key, j.msg)));
   });
   return Promise.all(jobs);
@@ -369,7 +381,12 @@ function routes(app, requireUser) {
     const links = db.prepare('SELECT token, name FROM teacher_links WHERE user_id = ?').all(req.user.id)
       .filter(l => to.indexOf(l.name) > -1);
     const msg = { title: title || 'رسالة من رئيس الشعبة', body, ttl: 24 * 3600, urgency: 'high' };
-    Promise.all(links.map(l => toTeacher(l.token, Object.assign({ url: '/t/' + l.token, tag: 'm' + Date.now() }, msg))))
+    /* الأرشيف (2026-11-09، طلب المستخدم: «تبويب للرسائل … فيجد الرسالة الجديدة و الارشيف كامل»): لكل من اختير،
+       فعّل او لم يفعّل — فيجدها حين يفتح رابطه */
+    const ins = db.prepare('INSERT INTO teacher_msgs (user_id, name, title, body) VALUES (?,?,?,?)');
+    to.forEach(n => ins.run(req.user.id, n, msg.title, body));
+    const MSGS = '#' + encodeURIComponent('الرسائل');
+    Promise.all(links.map(l => toTeacher(l.token, Object.assign({ url: '/t/' + l.token + MSGS, tag: 'm' + Date.now() }, msg))))
       .then(a => res.json({ ok: true, teachers: a.filter(n => n > 0).length, devices: a.reduce((x, y) => x + y, 0), chosen: to.length,
         subscribed: links.filter(l => subsOf(l.token).length).length }));
   });
@@ -395,7 +412,12 @@ function routes(app, requireUser) {
     res.json({ state: 'ok', name: L.row.name, department: L.data.department || '', school: L.data.school || '',
       prefs: prefsOf(L.row), key: push.keys().publicKey,
       devices: db.prepare('SELECT COUNT(*) AS n FROM teacher_subs WHERE token = ? AND device = ?').get(L.row.token, didOf(req)).n,
-      deadlines: upcoming(L.data, L.row.name, push.clock().date) });
+      deadlines: upcoming(L.data, L.row.name, push.clock().date),
+      /* «المواعيد»: أيام مراقبة الشعبة وفرصها (duty.js) · «الرسائل»: عدد ما لم يره هذا الجهاز */
+      duty: { days: (ref().days || []).filter(d => (L.data.duty || {})[d]),
+        breaks: require('./duty').breaksOf(L.data.stage).map(b => ({ label: b.label, from: b.from, to: b.to })) },
+      unread: db.prepare('SELECT COUNT(*) AS n FROM teacher_msgs WHERE user_id = ? AND name = ? AND id > ?')
+        .get(L.row.user_id, L.row.name, (deviceOf(L.row.token, didOf(req)) || {}).seen || 0).n });
   });
   /* الواجهة المنشورة لصاحب الرابط — كما تقرؤها /api/face/<الرمز> بلا زيادة */
   /* طلب القبول من هذا الجهاز: مرة واحدة — وما سبق طلبه يرد حاله ولا يعيد الإشعار */
@@ -412,6 +434,19 @@ function routes(app, requireUser) {
     push.toUser(L.row.user_id, { title: 'طلب فتح رابط أ. ' + L.row.name, body: 'من ' + label + '. اقبله أو ارفضه من ملفه.',
       tag: 'ask' + L.row.token, url: '/teacher.html?t=' + encodeURIComponent(L.row.name) + '&link=1', ttl: 24 * 3600, urgency: 'high' })
       .catch(() => 0).then(() => res.json({ state: 'pending' }));
+  });
+  /* «الرسائل»: الأرشيف كاملا، الأحدث أولا — وseen آخر ما رآه هذا الجهاز قبل فتحه، فيميز ما بعده */
+  app.get('/api/t/:token/messages', (req, res) => {
+    const L = A(req, res); if (!L) return;
+    const rows = db.prepare('SELECT id, title, body, at FROM teacher_msgs WHERE user_id = ? AND name = ? ORDER BY id DESC LIMIT 500')
+      .all(L.row.user_id, L.row.name).map(r => ({ id: r.id, title: r.title, body: r.body, at: iso(r.at) }));
+    res.json({ messages: rows, seen: (deviceOf(L.row.token, L.did) || {}).seen || 0 });
+  });
+  app.post('/api/t/:token/seen', (req, res) => {
+    const L = A(req, res); if (!L) return;
+    const id = Math.max(0, Number((req.body && req.body.id) || 0) | 0);
+    db.prepare('UPDATE teacher_devices SET seen = MAX(seen, ?) WHERE token = ? AND did = ?').run(id, L.row.token, L.did);
+    res.json({ ok: true });
   });
   app.get('/api/t/:token/face', (req, res) => {
     const L = A(req, res); if (!L) return;

@@ -104,7 +104,7 @@ async function run() {
     d = dd(TUE, '07:00');
     ok(d.length === 1 && d[0].key === 'dl:d1:pre:2026-11-11' && d[0].msg.title === 'غداً موعد تسليم'
       && d[0].msg.body === 'تسليم مشروع الوحدة الثانية', 'الموعد: صباح اليوم السابق «غداً موعد تسليم»', d);
-    ok(d[0].msg.url === '/t/tok#' + encodeURIComponent('إشعاراتي'), 'والإشعار يفتح «إشعاراتي»');
+    ok(d[0].msg.url === '/t/tok#' + encodeURIComponent('المواعيد'), 'والإشعار يفتح «المواعيد»');
     ok(dd(TUE, '15:00').length === 1 && dd(TUE, '20:00').length === 0, 'ومن فاته 7:00 يلحقه يومه حتى 20:00 لا بعدها');
     d = dd('2026-11-11', '07:00');
     ok(d.length === 1 && d[0].key === 'dl:d1:day:2026-11-11' && d[0].msg.title === 'اليوم موعد تسليم', 'الموعد: صباح يومه «اليوم موعد تسليم»', d);
@@ -259,10 +259,27 @@ async function run() {
     sent.length = 0;
     r = await call('POST', '/api/tpush/send', A, { to: ['سالم العلي'], title: 'تذكير', body: 'سلّم الخطة غداً' });
     ok(r.json.teachers === 1 && sent.length === 1 && /t-3$/.test(sent[0].to) && sent[0].m.title === 'تذكير', 'لمن تختار: تصله وحده', sent);
+    ok(sent[0].m.url === '/t/' + tokS + '#' + encodeURIComponent('الرسائل'), 'والرسالة تفتح «الرسائل»', sent[0].m.url);
+
+    // ── «الرسائل»: الأرشيف ورقم غير المقروء
+    ok((await call('GET', '/api/t/' + tokS + '/messages')).status === 403 && (await call('GET', '/api/t/' + tokS + '/messages', bad.cookie)).status === 403,
+      'الأرشيف لا يُقرأ من غير جهازه');
+    r = await call('GET', '/api/t/' + tokS + '/messages', DS);
+    ok(r.status === 200 && r.json.messages.length === 2 && r.json.messages[0].title === 'تذكير' && r.json.messages[0].body === 'سلّم الخطة غداً'
+      && r.json.messages[1].title === 'رسالة من رئيس الشعبة' && r.json.messages[0].at && r.json.seen === 0,
+      'أرشيفه رسائله هو، الأحدث أولاً', r.json);
+    ok((await call('GET', '/api/t/' + tok + '/messages', D1)).json.messages.length === 1, 'وزميله أرشيفه ما وصله وحده');
+    ok((await call('GET', '/api/t/' + tokS, DS)).json.unread === 2, 'وصفحته تعرف رقم غير المقروء');
+    ok((await call('POST', '/api/t/' + tokS + '/seen', DS, { id: r.json.messages[0].id })).status === 200
+      && (await call('GET', '/api/t/' + tokS, DS)).json.unread === 0, 'وفتح «الرسائل» يصفّره');
+    await call('POST', '/api/t/' + tokS + '/seen', DS, { id: 1 });
+    ok((await call('GET', '/api/t/' + tokS + '/messages', DS)).json.seen === r.json.messages[0].id, 'ولا يرجع إلى الوراء');
+    ok((await call('POST', '/api/t/' + tokS + '/seen', bad.cookie, { id: 1 })).status === 403, 'ولا يغيّره غير جهازه');
     await call('PUT', '/api/t/' + tokS + '/prefs', DS, { pre: false, start: false, end: false, endpoint: SUB(3).endpoint });
     sent.length = 0;
     await call('POST', '/api/tpush/send', A, { to: ['سالم العلي'], body: 'رسالة' });
     ok(sent.length === 1, 'والرسالة الحرة تصل ولو أطفأ تنبيهات الحصص');
+    ok((await call('GET', '/api/t/' + tokS, DS)).json.unread === 1, 'والجديدة بعد الفتح تُعدّ وحدها');
 
     // ── جهاز ألغى اشتراكه ⟵ يحذف
     reject = { 'https://push.example.com/t-1': 410 };
@@ -334,7 +351,7 @@ async function run() {
     await call('PUT', '/api/t/' + tok2 + '/prefs', D7, { pre: false, start: false, end: false, endpoint: SUB(7).endpoint });
     sent.length = 0;
     await tpush.tick(at(TUE, '10:15'));
-    ok(his().length === 1 && his()[0].m.title === 'مراقبة الشعبة بعد 5 دقائق' && his()[0].m.url === '/t/' + tok2,
+    ok(his().length === 1 && his()[0].m.title === 'مراقبة الشعبة بعد 5 دقائق' && his()[0].m.url === '/t/' + tok2 + '#' + encodeURIComponent('المواعيد'),
       'المراقبة تصل المعلم قبل الفرصة ولو أطفأ تنبيهات الحصص', sent);
     await tpush.tick(at(TUE, '10:16'));
     ok(his().length === 1, 'ولا تتكرر');

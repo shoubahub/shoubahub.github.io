@@ -259,14 +259,16 @@
     arr(pairs).forEach(function (p) {
       if (!p || !p.plan) return;
       var name = str(p.spec || p.subject), k = name + '|' + str(p.grade), w = {}, any = false;
-      if (!name || seen[k]) return;
+      /* who: معلمو السطر — لرابط المعلم يرى خطط مواده وحدها (2026-11-08). والسطر المكرر يضم معلميه الى الاول */
+      if (name && seen[k]) { arr(p.teachers).forEach(function (t) { if (seen[k].who.indexOf(t) < 0) seen[k].who.push(t); }); return; }
+      if (!name) return;
       cal.forEach(function (c) {
         var ls = arr(lessonsOf(p.plan, c.n)).map(function (l) { return { t: str(l.t), p: +l.p || 0 }; }).filter(function (l) { return l.t; });
         if (ls.length) { w[c.n] = ls; any = true; last = Math.max(last, c.n); }
       });
       if (!any) return;
-      seen[k] = true;
-      rows.push({ name: name, grade: str(p.grade), w: w });
+      seen[k] = { name: name, grade: str(p.grade), w: w, who: arr(p.teachers).map(str).filter(Boolean) };
+      rows.push(seen[k]);
     });
     var weeks = cal.filter(function (c) { return c.n <= last; }).map(function (c) { return { n: c.n, from: c.from, to: c.to }; });
     return rows.length ? { weeks: weeks, rows: rows } : null;

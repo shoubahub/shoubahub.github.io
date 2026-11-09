@@ -164,7 +164,8 @@ function due(data, c, displayName) {
         tag: 'am', url: 'board.html', ttl: (MORNING_LAST - c.min) * 60 } });
     }
   }
-  return out;
+  /* ④ يوم مراقبة الشعبة (duty.js، 2026-11-09): صباحه وقبل كل فرصة */
+  return out.concat(require('./duty').dutyDue(data, c, weeklyOk, 'board.html'));
 }
 
 /* ── الفحص كل دقيقة ──────────────────────────────────── */

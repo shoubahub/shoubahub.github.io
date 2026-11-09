@@ -66,6 +66,20 @@ async function run() {
     const c = push.clock(at(TUE, '07:00'));
     ok(c.date === TUE && c.min === 420 && c.day === 'الثلاثاء', 'الساعة بتوقيت المدرسة لا UTC', c);
 
+    // ── يوم مراقبة الشعبة (duty.js، 2026-11-09): لرئيس الشعبة صباحه وقبل كل فرصة
+    {
+      const DU = Object.assign({}, DATA, { stage: 'ثانوي', duty: { 'الثلاثاء': true } });
+      const du = hm => push.due(DU, push.clock(at(TUE, hm)), 'محمد البراك').filter(x => /^duty:/.test(x.key));
+      let x = du('07:00');
+      ok(x.length === 1 && x[0].msg.title === 'اليوم مراقبة الشعبة' && /الفرصة الأولى من 10:20 إلى 10:35، وفرصة الصلاة من 12:10 إلى 12:20/.test(x[0].msg.body),
+        'المراقبة: صباح يومها بفرصها وأوقاتها', x);
+      x = du('10:15');
+      ok(x.length === 1 && x[0].key === 'duty:0:' + TUE && x[0].msg.title === 'مراقبة الشعبة بعد 5 دقائق', 'المراقبة: قبل الفرصة بخمس دقائق', x);
+      ok(du('10:17').length === 0, 'ولا يلحقه بعد دقيقتين');
+      ok(push.due(DU, push.clock(at('2026-11-11', '07:00')), 'محمد البراك').filter(x => /^duty:/.test(x.key)).length === 0, 'ولا شيء في غير يومها');
+      ok(push.due(DU, push.clock(at(FRI, '07:00')), 'محمد البراك').filter(x => /^duty:/.test(x.key)).length === 0, 'ولا يوم الجمعة');
+    }
+
     let d = push.due(DATA, push.clock(at(TUE, '10:14')), 'محمد البراك');
     ok(!d.some(x => x.key.startsWith('ev:e1')), 'لا تذكير قبل ربع الساعة');
     d = push.due(DATA, push.clock(at(TUE, '10:15')), 'محمد البراك');

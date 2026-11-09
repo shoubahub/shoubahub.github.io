@@ -275,6 +275,8 @@ function tick(now) {
     const L = live(r.token);
     if (!L) return;
     due(L.data, L.row.name, prefsOf(L.row), c, L.row.token).concat(dueDeadlines(L.data, L.row.name, c, L.row.token))
+      /* يوم مراقبة الشعبة (duty.js، 2026-11-09): لا يطفئه المعلم — فلا يمر باختياره */
+      .concat(require('./duty').dutyDue(L.data, c, push.schoolDay(L.data, c), '/t/' + L.row.token))
       .forEach(j => jobs.push(once(L.row.token, j.key, j.msg)));
   });
   return Promise.all(jobs);

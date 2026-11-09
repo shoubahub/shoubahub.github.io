@@ -328,6 +328,17 @@ async function run() {
     ok(his().length === 1 && sent.some(x => /t-3$/.test(x.to) && x.m.title === 'اليوم موعد تسليم' && x.m.body === 'تسليم مشروع الوحدة الثانية'),
       'ومن أُشّر له «سُلّم» لا يصله تنبيه يوم الموعد، ويصل من لم يسلّم', sent);
 
+    // ── يوم مراقبة الشعبة: يصل المعلم المقبول، ولا يطفئه
+    const DU = Object.assign({}, DLS, { duty: { 'الثلاثاء': true } });
+    db.prepare('UPDATE shouba SET data = ? WHERE user_id = ?').run(JSON.stringify(DU), uid);
+    await call('PUT', '/api/t/' + tok2 + '/prefs', D7, { pre: false, start: false, end: false, endpoint: SUB(7).endpoint });
+    sent.length = 0;
+    await tpush.tick(at(TUE, '10:15'));
+    ok(his().length === 1 && his()[0].m.title === 'مراقبة الشعبة بعد 5 دقائق' && his()[0].m.url === '/t/' + tok2,
+      'المراقبة تصل المعلم قبل الفرصة ولو أطفأ تنبيهات الحصص', sent);
+    await tpush.tick(at(TUE, '10:16'));
+    ok(his().length === 1, 'ولا تتكرر');
+
     // ── من أزيل من الشعبة سكت رابطه
     db.prepare('UPDATE shouba SET data = ? WHERE user_id = ?').run(JSON.stringify(Object.assign({}, DATA, { teachers: ['أحمد الفهد'] })), uid);
     ok((await call('GET', '/api/t/' + tokS)).status === 404, 'المعلم المزال: رابطه لا يعمل');
